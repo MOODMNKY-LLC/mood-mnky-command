@@ -19,7 +19,7 @@ function mapFragranceOilPage(page: NotionPage) {
     notionId: page.id,
     name: getTitle(p["Fragrance Name"] || p["Name"]),
     description: getRichText(p["Description"]),
-    family: getSelect(p["Primary Family"]) || getSelect(p["Family"]) || "",
+    family: getSelect(p["Family"]) || "",
     subfamilies: getMultiSelect(p["Sub Families"] || p["Subfamilies"]),
     topNotes: getMultiSelect(p["Top Notes"]),
     middleNotes: getMultiSelect(p["Middle Notes"]),

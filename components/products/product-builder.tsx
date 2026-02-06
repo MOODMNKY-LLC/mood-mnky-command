@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import useSWR from "swr"
 import {
   Check,
   ChevronRight,
@@ -11,6 +12,7 @@ import {
   Loader2,
   ExternalLink,
   Flame,
+  WifiOff,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,9 +21,43 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import { FRAGRANCE_OILS, FORMULAS, CONTAINERS, WICK_OPTIONS } from "@/lib/data"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
-import type { Formula, FragranceOil, ContainerOption } from "@/lib/types"
+import type { Formula, FragranceOil, ContainerOption, FragranceFamily } from "@/lib/types"
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+function mapNotionOilToLocal(item: Record<string, unknown>): FragranceOil {
+  return {
+    id: (item.notionId as string) || String(Math.random()),
+    name: (item.name as string) || "Untitled",
+    description: (item.description as string) || "",
+    family: ((item.family as string) || "Floral") as FragranceFamily,
+    subfamilies: ((item.subfamilies as string[]) || []) as FragranceFamily[],
+    topNotes: (item.topNotes as string[]) || [],
+    middleNotes: (item.middleNotes as string[]) || [],
+    baseNotes: (item.baseNotes as string[]) || [],
+    type: ((item.type as string) || "Fragrance Oil") as "Fragrance Oil" | "Blending Element",
+    candleSafe: (item.candleSafe as boolean) ?? true,
+    soapSafe: (item.soapSafe as boolean) ?? false,
+    lotionSafe: (item.lotionSafe as boolean) ?? false,
+    perfumeSafe: (item.perfumeSafe as boolean) ?? false,
+    roomSpraySafe: (item.roomSpraySafe as boolean) ?? false,
+    waxMeltSafe: (item.waxMeltSafe as boolean) ?? false,
+    maxUsageCandle: (item.maxUsageCandle as number) ?? 0,
+    maxUsageSoap: (item.maxUsageSoap as number) ?? 0,
+    maxUsageLotion: (item.maxUsageLotion as number) ?? 0,
+    price1oz: (item.price1oz as number) ?? 0,
+    price4oz: (item.price4oz as number) ?? 0,
+    price16oz: (item.price16oz as number) ?? 0,
+    rating: (item.rating as number) ?? 0,
+    reviewCount: (item.reviewCount as number) ?? 0,
+    blendsWellWith: (item.blendsWellWith as string[]) || [],
+    alternativeBranding: (item.alternativeBranding as string[]) || [],
+    suggestedColors: (item.suggestedColors as string[]) || [],
+  }
+}
 
 const STEPS = [
   { id: 1, label: "Fragrance", icon: Droplets },
@@ -292,68 +328,112 @@ function StepFragrance({
   selected: FragranceOil | null
   onSelect: (oil: FragranceOil) => void
 }) {
+  const { data: notionData, isLoading } = useSWR(
+    "/api/notion/sync/fragrance-oils",
+    fetcher,
+    { revalidateOnFocus: false, errorRetryCount: 1, dedupingInterval: 60000 }
+  )
+
+  const isLive = notionData?.fragranceOils && !notionData?.error
+  const oils: FragranceOil[] = useMemo(() => {
+    if (!isLive) return FRAGRANCE_OILS
+    return (notionData.fragranceOils as Record<string, unknown>[]).map(mapNotionOilToLocal)
+  }, [isLive, notionData])
+
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-foreground">
-        Select a Fragrance Oil
-      </h2>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {FRAGRANCE_OILS.map((oil) => (
-          <Card
-            key={oil.id}
-            className={`cursor-pointer border-border bg-card transition-all hover:border-primary/40 ${
-              selected?.id === oil.id
-                ? "border-primary ring-1 ring-primary/30"
-                : ""
-            }`}
-            onClick={() => onSelect(oil)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold text-foreground">
-                    {oil.name}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="w-fit text-[10px]"
-                    style={{
-                      borderColor: `${FAMILY_COLORS[oil.family]}40`,
-                      color: FAMILY_COLORS[oil.family],
-                    }}
-                  >
-                    {oil.family}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-primary text-primary" />
-                  <span className="text-xs text-foreground">{oil.rating}</span>
-                </div>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {oil.topNotes.slice(0, 2).map((n) => (
-                  <Badge
-                    key={n}
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 text-muted-foreground"
-                  >
-                    {n}
-                  </Badge>
-                ))}
-                {oil.baseNotes.slice(0, 1).map((n) => (
-                  <Badge
-                    key={n}
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 text-muted-foreground"
-                  >
-                    {n}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          Select a Fragrance Oil
+        </h2>
+        {isLoading ? (
+          <Badge variant="secondary" className="text-[10px] gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Loading
+          </Badge>
+        ) : isLive ? (
+          <Badge className="text-[10px] border-0 bg-success/10 text-success">
+            {oils.length} from Notion
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="text-[10px] gap-1 text-muted-foreground">
+            <WifiOff className="h-3 w-3" />
+            Sample data
+          </Badge>
+        )}
       </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border bg-card p-4">
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-3 w-16 mb-3" />
+              <div className="flex gap-1">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-4 w-14" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {oils.map((oil) => (
+            <Card
+              key={oil.id}
+              className={`cursor-pointer border-border bg-card transition-all hover:border-primary/40 ${
+                selected?.id === oil.id
+                  ? "border-primary ring-1 ring-primary/30"
+                  : ""
+              }`}
+              onClick={() => onSelect(oil)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-foreground">
+                      {oil.name}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="w-fit text-[10px]"
+                      style={{
+                        borderColor: `${FAMILY_COLORS[oil.family]}40`,
+                        color: FAMILY_COLORS[oil.family],
+                      }}
+                    >
+                      {oil.family}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-primary text-primary" />
+                    <span className="text-xs text-foreground">{oil.rating}</span>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {oil.topNotes.slice(0, 2).map((n) => (
+                    <Badge
+                      key={n}
+                      variant="outline"
+                      className="text-[10px] border-chart-1/30 text-chart-1"
+                    >
+                      {n}
+                    </Badge>
+                  ))}
+                  {oil.baseNotes.slice(0, 1).map((n) => (
+                    <Badge
+                      key={n}
+                      variant="outline"
+                      className="text-[10px] border-chart-3/30 text-chart-3"
+                    >
+                      {n}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

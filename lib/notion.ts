@@ -224,6 +224,11 @@ export function getRelationIds(prop: NotionProperty | undefined): string[] {
   return prop.relation.map((r) => r.id)
 }
 
+export function getStatus(prop: NotionProperty | undefined): string | null {
+  if (!prop?.status) return null
+  return prop.status.name ?? null
+}
+
 export function getFiles(prop: NotionProperty | undefined): string[] {
   if (!prop?.files) return []
   return prop.files
