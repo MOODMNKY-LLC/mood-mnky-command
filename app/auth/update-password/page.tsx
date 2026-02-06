@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { SignUpForm } from "@/components/auth/sign-up-form"
+import { UpdatePasswordForm } from "@/components/auth/update-password-form"
 
-export default function SignUpPage() {
+export default function UpdatePasswordPage() {
   return (
     <div className="flex min-h-svh w-full items-center justify-center bg-background p-6">
       <div className="w-full max-w-sm">
@@ -17,18 +17,18 @@ export default function SignUpPage() {
               MOOD MNKY Lab
             </h1>
             <p className="text-sm text-muted-foreground">
-              Create your account
+              Set a new password
             </p>
           </div>
           <Card className="w-full border-border bg-card">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Sign up</CardTitle>
+              <CardTitle className="text-lg">Update password</CardTitle>
               <CardDescription>
-                Get access to the MOOD MNKY product lab
+                Enter your new password below
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SignUpForm />
+              <UpdatePasswordForm />
             </CardContent>
           </Card>
         </div>

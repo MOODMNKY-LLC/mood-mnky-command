@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import {
   getDatabaseInfo,
+  queryAllPages,
   NOTION_DATABASE_IDS,
   isConfigured,
 } from "@/lib/notion"
@@ -17,39 +18,46 @@ export async function GET() {
   }
 
   try {
-    const [fragranceOils, formulas, collections] = await Promise.all([
-      getDatabaseInfo(NOTION_DATABASE_IDS.fragranceOils).catch((e) => ({
-        id: NOTION_DATABASE_IDS.fragranceOils,
-        title: "MNKY Science Fragrance Oils",
-        url: "",
-        propertyCount: 0,
-        lastEditedTime: "",
-        error: e instanceof Error ? e.message : "Failed to fetch",
-      })),
-      getDatabaseInfo(NOTION_DATABASE_IDS.formulas).catch((e) => ({
-        id: NOTION_DATABASE_IDS.formulas,
-        title: "MNKY Formulas",
-        url: "",
-        propertyCount: 0,
-        lastEditedTime: "",
-        error: e instanceof Error ? e.message : "Failed to fetch",
-      })),
-      getDatabaseInfo(NOTION_DATABASE_IDS.collections).catch((e) => ({
-        id: NOTION_DATABASE_IDS.collections,
-        title: "MNKY Collections",
-        url: "",
-        propertyCount: 0,
-        lastEditedTime: "",
-        error: e instanceof Error ? e.message : "Failed to fetch",
-      })),
-    ])
+    const dbKeys = [
+      { key: "fragranceOils", id: NOTION_DATABASE_IDS.fragranceOils, fallbackTitle: "MNKY Science Fragrance Oils" },
+      { key: "formulas", id: NOTION_DATABASE_IDS.formulas, fallbackTitle: "MNKY Formulas" },
+      { key: "collections", id: NOTION_DATABASE_IDS.collections, fallbackTitle: "MNKY Collections" },
+    ]
+
+    const databases = await Promise.all(
+      dbKeys.map(async ({ key, id, fallbackTitle }) => {
+        try {
+          const [info, pages] = await Promise.all([
+            getDatabaseInfo(id),
+            queryAllPages(id),
+          ])
+          return {
+            key,
+            title: info.title || fallbackTitle,
+            url: info.url,
+            propertyCount: info.propertyCount,
+            recordCount: pages.length,
+            lastEditedTime: info.lastEditedTime,
+          }
+        } catch (e) {
+          return {
+            key,
+            title: fallbackTitle,
+            url: "",
+            propertyCount: 0,
+            recordCount: 0,
+            lastEditedTime: "",
+            error: e instanceof Error ? e.message : "Failed to fetch",
+          }
+        }
+      })
+    )
+
+    const totalRecords = databases.reduce((acc, db) => acc + db.recordCount, 0)
 
     return NextResponse.json({
-      databases: [
-        { ...fragranceOils, key: "fragranceOils" },
-        { ...formulas, key: "formulas" },
-        { ...collections, key: "collections" },
-      ],
+      databases,
+      totalRecords,
       configured: true,
     })
   } catch (error) {

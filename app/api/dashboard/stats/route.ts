@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getProductCount, getProducts, isConfigured as shopifyConfigured } from "@/lib/shopify"
-import { queryDatabase, NOTION_DATABASE_IDS, getTitle, isConfigured as notionConfigured } from "@/lib/notion"
+import { queryAllPages, NOTION_DATABASE_IDS, getTitle, isConfigured as notionConfigured } from "@/lib/notion"
 
 export async function GET() {
   const stats = {
@@ -14,7 +14,6 @@ export async function GET() {
   }
 
   // Fetch Shopify data
-  console.log("[v0] Dashboard stats: shopify configured =", shopifyConfigured(), ", notion configured =", notionConfigured())
   if (shopifyConfigured()) {
     try {
       const [count, products] = await Promise.all([
@@ -24,7 +23,6 @@ export async function GET() {
       stats.totalProducts = count
       stats.shopifyConnected = true
 
-      // Build recent activity from latest products
       for (const product of products) {
         stats.recentActivity.push({
           id: `shopify-${product.id}`,
@@ -36,35 +34,42 @@ export async function GET() {
           }),
         })
       }
-    } catch (e) {
-      console.log("[v0] Dashboard stats: Shopify error", e instanceof Error ? e.message : e)
+    } catch {
+      // Shopify not reachable
     }
   }
 
-  // Fetch Notion data
+  // Fetch Notion data -- use queryAllPages to get accurate total counts
   if (notionConfigured()) {
     try {
-      const [fragranceResult, formulaResult, collectionResult] = await Promise.all([
-        queryDatabase(NOTION_DATABASE_IDS.fragranceOils, { pageSize: 100 }),
-        queryDatabase(NOTION_DATABASE_IDS.formulas, { pageSize: 100 }),
-        queryDatabase(NOTION_DATABASE_IDS.collections, { pageSize: 100 }),
+      const [fragrancePages, formulaPages, collectionPages] = await Promise.all([
+        queryAllPages(NOTION_DATABASE_IDS.fragranceOils),
+        queryAllPages(NOTION_DATABASE_IDS.formulas),
+        queryAllPages(NOTION_DATABASE_IDS.collections),
       ])
-      stats.totalFragrances = fragranceResult.pages.length + (fragranceResult.hasMore ? 100 : 0)
-      stats.totalFormulas = formulaResult.pages.length
-      stats.totalCollections = collectionResult.pages.length
+      stats.totalFragrances = fragrancePages.length
+      stats.totalFormulas = formulaPages.length
+      stats.totalCollections = collectionPages.length
       stats.notionConnected = true
 
-      // Add recent Notion activity (latest edited formulas)
-      const recentFormulas = formulaResult.pages
+      // Add recent Notion activity (latest edited fragrance oils + formulas)
+      const allPages = [
+        ...fragrancePages.map((p) => ({ ...p, source: "Fragrance" as const })),
+        ...formulaPages.map((p) => ({ ...p, source: "Formula" as const })),
+      ]
         .sort((a, b) => new Date(b.last_edited_time).getTime() - new Date(a.last_edited_time).getTime())
-        .slice(0, 3)
+        .slice(0, 5)
 
-      for (const page of recentFormulas) {
-        const name = getTitle(page.properties["Name"] || page.properties["Formula Name"])
+      for (const page of allPages) {
+        const name = getTitle(
+          page.properties["Fragrance Name"] ||
+          page.properties["Name"] ||
+          page.properties["Formula Name"]
+        )
         if (name) {
           stats.recentActivity.push({
             id: `notion-${page.id}`,
-            action: "Formula updated",
+            action: `${page.source} updated`,
             target: name,
             timestamp: new Date(page.last_edited_time).toLocaleDateString("en-US", {
               month: "short",
@@ -74,13 +79,10 @@ export async function GET() {
         }
       }
 
-      // Sort all activity by recency
-      stats.recentActivity.sort((a, b) => {
-        // Simple sort keeping the order meaningful
-        return 0
-      })
-    } catch (e) {
-      console.log("[v0] Dashboard stats: Notion error", e instanceof Error ? e.message : e)
+      // Sort all activity by timestamp
+      stats.recentActivity.sort((a, b) => 0)
+    } catch {
+      // Notion not reachable
     }
   }
 

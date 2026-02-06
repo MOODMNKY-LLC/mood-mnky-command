@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { SignUpForm } from "@/components/auth/sign-up-form"
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 
-export default function SignUpPage() {
+export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-svh w-full items-center justify-center bg-background p-6">
       <div className="w-full max-w-sm">
@@ -17,18 +17,18 @@ export default function SignUpPage() {
               MOOD MNKY Lab
             </h1>
             <p className="text-sm text-muted-foreground">
-              Create your account
+              Reset your password
             </p>
           </div>
           <Card className="w-full border-border bg-card">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Sign up</CardTitle>
+              <CardTitle className="text-lg">Forgot password</CardTitle>
               <CardDescription>
-                Get access to the MOOD MNKY product lab
+                {"We'll send you a link to reset it"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SignUpForm />
+              <ForgotPasswordForm />
             </CardContent>
           </Card>
         </div>

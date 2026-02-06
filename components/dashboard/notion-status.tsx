@@ -15,15 +15,17 @@ export function NotionStatus() {
   } = useSWR("/api/notion/databases", fetcher, {
     revalidateOnFocus: false,
     errorRetryCount: 1,
+    dedupingInterval: 30000,
   })
 
   const isConnected = data?.databases && !error
-  const databases = data?.databases || []
-  const totalRecords = databases.reduce(
-    (acc: number, db: { propertyCount?: number }) =>
-      acc + (db.propertyCount || 0),
-    0
-  )
+  const databases: Array<{
+    key: string
+    title: string
+    recordCount: number
+    error?: string
+  }> = data?.databases || []
+  const totalRecords = data?.totalRecords ?? 0
 
   return (
     <Card className="bg-card border-border">
@@ -63,7 +65,7 @@ export function NotionStatus() {
                 MNKY_MIND Workspace
               </span>
               <a
-                href="https://www.notion.so/2e1cd2a654228009920ee6fa51188f46"
+                href="https://www.notion.so"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
@@ -72,34 +74,27 @@ export function NotionStatus() {
               </a>
             </div>
             <div className="flex flex-col gap-1.5">
-              {databases.map(
-                (db: {
-                  key: string
-                  title: string
-                  propertyCount: number
-                  error?: string
-                }) => (
-                  <div
-                    key={db.key}
-                    className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
-                  >
-                    <span className="text-xs text-muted-foreground">
-                      {db.title}
+              {databases.map((db) => (
+                <div
+                  key={db.key}
+                  className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
+                >
+                  <span className="text-xs text-muted-foreground truncate">
+                    {db.title}
+                  </span>
+                  {db.error ? (
+                    <span className="text-xs text-destructive">Error</span>
+                  ) : (
+                    <span className="text-xs font-mono font-semibold text-foreground">
+                      {db.recordCount} records
                     </span>
-                    {db.error ? (
-                      <span className="text-xs text-destructive">Error</span>
-                    ) : (
-                      <span className="text-xs font-mono font-semibold text-foreground">
-                        {db.propertyCount} props
-                      </span>
-                    )}
-                  </div>
-                )
-              )}
+                  )}
+                </div>
+              ))}
             </div>
             <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-xs text-muted-foreground">
-                Total Properties
+                Total Records
               </span>
               <span className="text-sm font-mono font-semibold text-foreground">
                 {totalRecords}

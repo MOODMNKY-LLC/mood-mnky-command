@@ -57,14 +57,11 @@ export async function GET() {
   }
 
   try {
-    console.log("[v0] Notion fragrance sync: querying database", NOTION_DATABASE_IDS.fragranceOils)
     const pages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils, {
       sorts: [{ property: "Fragrance Name", direction: "ascending" }],
     })
-    console.log("[v0] Notion fragrance sync: received", pages.length, "pages")
 
     const fragranceOils = pages.map(mapFragranceOilPage)
-    console.log("[v0] Notion fragrance sync: mapped", fragranceOils.length, "oils, first:", fragranceOils[0]?.name)
 
     return NextResponse.json({
       fragranceOils,
