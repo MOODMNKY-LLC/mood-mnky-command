@@ -174,6 +174,24 @@ export interface FragranceOil {
   suggestedColors: string[]
 }
 
+// ---- Container Types (CandleScience catalog) ----
+export type ContainerMaterial = "glass" | "tin" | "ceramic"
+
+export interface ContainerOption {
+  id: string
+  name: string
+  material: ContainerMaterial
+  capacity: string // e.g. "8 oz"
+  capacityOz: number
+  diameter: string // inches
+  diameterInches: number
+  compatibleWicks: string[] // wick option ids
+  price: number
+  bulkPrice?: number
+  suggestedRetail: number
+  source: "candlescience" | "custom"
+}
+
 // ---- Fragrance Blending ----
 export interface BlendComponent {
   fragranceOilId: string

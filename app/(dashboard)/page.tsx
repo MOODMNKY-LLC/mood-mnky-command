@@ -1,8 +1,9 @@
-import { FlaskConical, Droplets, Package, ShoppingCart } from "lucide-react"
+import { FlaskConical, Droplets, Package, Palette } from "lucide-react"
 import { DASHBOARD_STATS } from "@/lib/data"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { QuickActions } from "@/components/dashboard/quick-actions"
+import { ShopifyStatus } from "@/components/dashboard/shopify-status"
 
 export default function DashboardPage() {
   return (
@@ -39,13 +40,14 @@ export default function DashboardPage() {
           title="Blends"
           value={8}
           description="Custom blends saved"
-          icon={ShoppingCart}
+          icon={Palette}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <ActivityFeed activities={DASHBOARD_STATS.recentActivity} />
         <QuickActions />
+        <ShopifyStatus />
       </div>
     </div>
   )
