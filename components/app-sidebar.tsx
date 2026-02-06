@@ -12,6 +12,9 @@ import {
   Flame,
   Database,
   LogOut,
+  Server,
+  Table2,
+  Terminal,
 } from "lucide-react"
 
 import {
@@ -68,6 +71,24 @@ const navItems = [
   },
 ]
 
+const platformItems = [
+  {
+    title: "Overview",
+    href: "/platform",
+    icon: Server,
+  },
+  {
+    title: "Table Editor",
+    href: "/platform/tables",
+    icon: Table2,
+  },
+  {
+    title: "SQL Editor",
+    href: "/platform/sql",
+    icon: Terminal,
+  },
+]
+
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
@@ -106,6 +127,31 @@ export function AppSidebar() {
                     isActive={
                       item.href === "/"
                         ? pathname === "/"
+                        : pathname.startsWith(item.href)
+                    }
+                    tooltip={item.title}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Supabase</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {platformItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={
+                      item.href === "/platform"
+                        ? pathname === "/platform"
                         : pathname.startsWith(item.href)
                     }
                     tooltip={item.title}
