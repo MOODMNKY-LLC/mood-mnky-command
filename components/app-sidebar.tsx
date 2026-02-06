@@ -15,6 +15,17 @@ import {
   Server,
   Table2,
   Terminal,
+  Store,
+  ShoppingCart,
+  FolderOpen,
+  ClipboardList,
+  Users,
+  Warehouse,
+  Tags,
+  Megaphone,
+  FileText,
+  Wallet,
+  BarChart3,
 } from "lucide-react"
 
 import {
@@ -68,6 +79,64 @@ const navItems = [
     title: "Notion Sync",
     href: "/notion",
     icon: Database,
+  },
+]
+
+const storeItems = [
+  {
+    title: "Store Overview",
+    href: "/store",
+    icon: Store,
+  },
+  {
+    title: "Products",
+    href: "/store/products",
+    icon: ShoppingCart,
+  },
+  {
+    title: "Collections",
+    href: "/store/collections",
+    icon: FolderOpen,
+  },
+  {
+    title: "Orders",
+    href: "/store/orders",
+    icon: ClipboardList,
+  },
+  {
+    title: "Customers",
+    href: "/store/customers",
+    icon: Users,
+  },
+  {
+    title: "Inventory",
+    href: "/store/inventory",
+    icon: Warehouse,
+  },
+  {
+    title: "Discounts",
+    href: "/store/discounts",
+    icon: Tags,
+  },
+  {
+    title: "Marketing",
+    href: "/store/marketing",
+    icon: Megaphone,
+  },
+  {
+    title: "Content",
+    href: "/store/content",
+    icon: FileText,
+  },
+  {
+    title: "Finance",
+    href: "/store/finance",
+    icon: Wallet,
+  },
+  {
+    title: "Analytics",
+    href: "/store/analytics",
+    icon: BarChart3,
   },
 ]
 
@@ -127,6 +196,31 @@ export function AppSidebar() {
                     isActive={
                       item.href === "/"
                         ? pathname === "/"
+                        : pathname.startsWith(item.href)
+                    }
+                    tooltip={item.title}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Shopify Store</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {storeItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={
+                      item.href === "/store"
+                        ? pathname === "/store"
                         : pathname.startsWith(item.href)
                     }
                     tooltip={item.title}
