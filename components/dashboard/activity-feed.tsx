@@ -1,37 +1,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { ActivityItem } from "@/lib/types"
 
 interface ActivityFeedProps {
   activities: ActivityItem[]
+  isLoading?: boolean
 }
 
-export function ActivityFeed({ activities }: ActivityFeedProps) {
+export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
   return (
     <Card className="bg-card border-border">
       <CardHeader>
         <CardTitle className="text-lg text-foreground">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4">
-          {activities.map((activity) => (
-            <div
-              key={activity.id}
-              className="flex items-start justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0"
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm text-foreground">
-                  {activity.action}
-                </span>
-                <span className="text-sm font-medium text-primary">
-                  {activity.target}
+        {isLoading ? (
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-start justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0">
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-3 w-12" />
+              </div>
+            ))}
+          </div>
+        ) : activities.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No recent activity. Connect your integrations to see live updates.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-start justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-foreground">
+                    {activity.action}
+                  </span>
+                  <span className="text-sm font-medium text-primary">
+                    {activity.target}
+                  </span>
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {activity.timestamp}
                 </span>
               </div>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {activity.timestamp}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
