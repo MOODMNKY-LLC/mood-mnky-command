@@ -4,9 +4,9 @@ const NOTION_BASE_URL = "https://api.notion.com/v1"
 
 // ---- MNKY_MIND Database IDs ----
 export const NOTION_DATABASE_IDS = {
-  fragranceOils: "2c8cd2a65422813a8d0fefdd74a80a6f",
-  formulas: "604555f9db4843d6af5d2e21cc0429b6",
-  collections: "0abe801acd154ac19f9ac298d3250ee7",
+  fragranceOils: "2c8cd2a6-5422-813a-8d0f-efdd74a80a6f",
+  formulas: "604555f9-db48-43d6-af5d-2e21cc0429b6",
+  collections: "0abe801a-cd15-4ac1-9f9a-c298d3250ee7",
 } as const
 
 // ---- Types ----

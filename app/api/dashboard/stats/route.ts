@@ -14,6 +14,7 @@ export async function GET() {
   }
 
   // Fetch Shopify data
+  console.log("[v0] Dashboard stats: shopify configured =", shopifyConfigured(), ", notion configured =", notionConfigured())
   if (shopifyConfigured()) {
     try {
       const [count, products] = await Promise.all([
@@ -35,8 +36,8 @@ export async function GET() {
           }),
         })
       }
-    } catch {
-      // Shopify not reachable
+    } catch (e) {
+      console.log("[v0] Dashboard stats: Shopify error", e instanceof Error ? e.message : e)
     }
   }
 
@@ -78,8 +79,8 @@ export async function GET() {
         // Simple sort keeping the order meaningful
         return 0
       })
-    } catch {
-      // Notion not reachable
+    } catch (e) {
+      console.log("[v0] Dashboard stats: Notion error", e instanceof Error ? e.message : e)
     }
   }
 
