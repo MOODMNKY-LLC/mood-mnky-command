@@ -10,6 +10,7 @@ import {
   FlaskConical,
   Palette,
   Flame,
+  Database,
 } from "lucide-react"
 
 import {
@@ -55,6 +56,11 @@ const navItems = [
     title: "Product Builder",
     href: "/products",
     icon: Package,
+  },
+  {
+    title: "Notion Sync",
+    href: "/notion",
+    icon: Database,
   },
 ]
 

@@ -4,6 +4,7 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ShopifyStatus } from "@/components/dashboard/shopify-status"
+import { NotionStatus } from "@/components/dashboard/notion-status"
 
 export default function DashboardPage() {
   return (
@@ -44,10 +45,11 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4">
         <ActivityFeed activities={DASHBOARD_STATS.recentActivity} />
         <QuickActions />
         <ShopifyStatus />
+        <NotionStatus />
       </div>
     </div>
   )
