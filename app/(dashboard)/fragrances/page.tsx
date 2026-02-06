@@ -7,18 +7,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FRAGRANCE_OILS } from "@/lib/data"
 import type { FragranceOil } from "@/lib/types"
+import { FRAGRANCE_FAMILIES } from "@/lib/types"
 import { FragranceCard } from "@/components/fragrances/fragrance-card"
 import { FragranceDetail } from "@/components/fragrances/fragrance-detail"
 
-const categories = [
-  "All",
-  "Spicy",
-  "Tropical",
-  "Luxurious",
-  "Floral",
-  "Woody",
-  "Fresh",
-]
+const categories = ["All", ...FRAGRANCE_FAMILIES]
 
 export default function FragrancesPage() {
   const [selectedOil, setSelectedOil] = useState<FragranceOil | null>(null)
@@ -40,7 +33,7 @@ export default function FragrancesPage() {
           n.toLowerCase().includes(search.toLowerCase())
         )
       const matchesCategory =
-        categoryFilter === "All" || oil.category === categoryFilter
+        categoryFilter === "All" || oil.family === categoryFilter
       return matchesSearch && matchesCategory
     })
   }, [search, categoryFilter])

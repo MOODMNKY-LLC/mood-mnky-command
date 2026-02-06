@@ -36,9 +36,9 @@ export default function DashboardPage() {
           icon={Package}
         />
         <StatCard
-          title="Orders"
-          value={156}
-          description="This month"
+          title="Blends"
+          value={8}
+          description="Custom blends saved"
           icon={ShoppingCart}
         />
       </div>

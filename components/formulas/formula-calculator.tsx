@@ -54,6 +54,19 @@ export function FormulaCalculator({ formula }: FormulaCalculatorProps) {
             <Badge className="bg-primary/10 text-primary border-0">
               {PRODUCT_TYPE_LABELS[formula.productType]}
             </Badge>
+            {formula.wickType && (
+              <Badge
+                variant="outline"
+                className={`text-xs ${formula.wickType === "wood" ? "border-accent/40 text-accent" : "border-primary/40 text-primary"}`}
+              >
+                {formula.wickType === "wood" ? "Wood Wick" : "Cotton Wick"}
+              </Badge>
+            )}
+            {formula.waxType && (
+              <Badge variant="outline" className="text-xs text-muted-foreground">
+                {formula.waxType}
+              </Badge>
+            )}
             {formula.tags.map((tag) => (
               <Badge
                 key={tag}

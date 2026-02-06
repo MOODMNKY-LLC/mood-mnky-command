@@ -191,7 +191,7 @@ function StepFragrance({
                     {oil.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {oil.category}
+                    {oil.family}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -411,7 +411,7 @@ function StepReview({
           <SummaryRow
             label="Fragrance"
             value={fragrance?.name || "Not selected"}
-            sublabel={fragrance?.category}
+            sublabel={fragrance?.family}
           />
           <Separator className="bg-border" />
           <SummaryRow

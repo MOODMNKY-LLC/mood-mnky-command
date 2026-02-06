@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FlaskConical, Droplets, Package, RefreshCw } from "lucide-react"
+import { FlaskConical, Droplets, Package, Palette, Blend } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const actions = [
@@ -24,10 +24,10 @@ const actions = [
     icon: Package,
   },
   {
-    title: "Sync Notion",
-    description: "Pull latest fragrance oil data",
-    href: "#",
-    icon: RefreshCw,
+    title: "Blending Lab",
+    description: "Build custom fragrance blends",
+    href: "/blending",
+    icon: Palette,
   },
 ]
 

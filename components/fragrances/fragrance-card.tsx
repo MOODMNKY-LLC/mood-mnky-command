@@ -4,6 +4,7 @@ import { Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { FragranceOil } from "@/lib/types"
+import { FAMILY_COLORS } from "@/lib/types"
 
 interface FragranceCardProps {
   oil: FragranceOil
@@ -61,9 +62,14 @@ export function FragranceCard({ oil, onSelect, isSelected }: FragranceCardProps)
           <div className="flex items-center justify-between">
             <Badge
               variant="secondary"
-              className="bg-secondary text-muted-foreground text-[10px]"
+              className="text-[10px]"
+              style={{
+                backgroundColor: `${FAMILY_COLORS[oil.family]}18`,
+                color: FAMILY_COLORS[oil.family],
+                borderColor: `${FAMILY_COLORS[oil.family]}40`,
+              }}
             >
-              {oil.category}
+              {oil.family}
             </Badge>
             <span className="text-xs font-mono text-muted-foreground">
               ${oil.price1oz.toFixed(2)}/oz

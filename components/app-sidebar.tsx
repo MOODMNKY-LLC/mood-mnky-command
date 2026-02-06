@@ -8,6 +8,9 @@ import {
   LayoutDashboard,
   Package,
   FlaskConical,
+  Palette,
+  Flame,
+  Blend
 } from "lucide-react"
 
 import {
@@ -38,6 +41,16 @@ const navItems = [
     title: "Fragrance Oils",
     href: "/fragrances",
     icon: Droplets,
+  },
+  {
+    title: "Blending Lab",
+    href: "/blending",
+    icon: Palette,
+  },
+  {
+    title: "Wicks & Wax",
+    href: "/wicks",
+    icon: Flame,
   },
   {
     title: "Product Builder",

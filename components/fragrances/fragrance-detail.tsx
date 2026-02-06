@@ -3,8 +3,13 @@
 import { Star, CheckCircle, XCircle, DollarSign } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import type { FragranceOil } from "@/lib/types"
+import {
+  FAMILY_COLORS,
+  FAMILY_KINDRED,
+  FAMILY_COMPLEMENTARY,
+  FAMILY_SEASONS,
+} from "@/lib/types"
 
 interface FragranceDetailProps {
   oil: FragranceOil
@@ -26,6 +31,10 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
     { size: "16 oz", price: oil.price16oz },
   ]
 
+  const kindred = FAMILY_KINDRED[oil.family]
+  const complementary = FAMILY_COMPLEMENTARY[oil.family]
+  const season = FAMILY_SEASONS[oil.family]
+
   return (
     <div className="flex flex-col gap-4">
       {/* Header */}
@@ -37,9 +46,28 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
                 {oil.name}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge className="bg-primary/10 text-primary border-0">
-                  {oil.category}
+                <Badge
+                  className="border-0"
+                  style={{
+                    backgroundColor: `${FAMILY_COLORS[oil.family]}20`,
+                    color: FAMILY_COLORS[oil.family],
+                  }}
+                >
+                  {oil.family}
                 </Badge>
+                {oil.subfamilies.map((sub) => (
+                  <Badge
+                    key={sub}
+                    variant="outline"
+                    className="text-xs"
+                    style={{
+                      borderColor: `${FAMILY_COLORS[sub]}40`,
+                      color: FAMILY_COLORS[sub],
+                    }}
+                  >
+                    {sub}
+                  </Badge>
+                ))}
                 <Badge variant="outline" className="text-muted-foreground">
                   {oil.type}
                 </Badge>
@@ -76,6 +104,66 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Family Blending Guide */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-sm text-foreground">
+            Fragrance Wheel Relationships
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <span className="w-28 shrink-0 text-xs font-medium text-muted-foreground">
+                Season
+              </span>
+              <Badge variant="outline" className="text-xs text-foreground">
+                {season}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-28 shrink-0 text-xs font-medium text-muted-foreground">
+                Kindred
+              </span>
+              <div className="flex gap-1.5">
+                {kindred.map((fam) => (
+                  <Badge
+                    key={fam}
+                    variant="outline"
+                    className="text-xs"
+                    style={{
+                      borderColor: `${FAMILY_COLORS[fam]}40`,
+                      color: FAMILY_COLORS[fam],
+                    }}
+                  >
+                    {fam}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-28 shrink-0 text-xs font-medium text-muted-foreground">
+                Complementary
+              </span>
+              <Badge
+                variant="outline"
+                className="text-xs"
+                style={{
+                  borderColor: `${FAMILY_COLORS[complementary]}40`,
+                  color: FAMILY_COLORS[complementary],
+                }}
+              >
+                {complementary}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Kindred families are adjacent on the fragrance wheel and blend harmoniously.
+              Complementary families are across the wheel and create complex, intriguing blends.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -202,11 +290,7 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {oil.suggestedColors.map((color) => (
-                <Badge
-                  key={color}
-                  variant="secondary"
-                  className="text-sm"
-                >
+                <Badge key={color} variant="secondary" className="text-sm">
                   {color}
                 </Badge>
               ))}
