@@ -10,7 +10,6 @@ import {
   FlaskConical,
   Palette,
   Flame,
-  Blend
 } from "lucide-react"
 
 import {

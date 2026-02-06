@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FlaskConical, Droplets, Package, Palette, Blend } from "lucide-react"
+import { FlaskConical, Droplets, Package, Palette } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const actions = [
