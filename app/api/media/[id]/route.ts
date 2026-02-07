@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { updateMediaAsset, deleteMediaAsset, type BucketId } from "@/lib/supabase/storage"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createServerClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -23,21 +23,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Update failed" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createServerClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   try {
-    // Get the asset first
     const { data: asset } = await supabase
       .from("media_assets")
       .select("id, bucket_id, storage_path")
@@ -55,7 +54,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Delete failed" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

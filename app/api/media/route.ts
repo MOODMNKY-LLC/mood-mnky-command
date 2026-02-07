@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { getMediaAssets, type BucketId } from "@/lib/supabase/storage"
 
 export async function GET(request: Request) {
-  const supabase = await createServerClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to fetch" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
