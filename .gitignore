@@ -8,5 +8,12 @@ instrumentation-client.ts
 # Common ignores
 node_modules/
 .next/
+.env
 .env*.local
 .DS_Store
+.pnpm-store/
+temp/
+
+# Serwist
+public/sw*
+public/swe-worker*

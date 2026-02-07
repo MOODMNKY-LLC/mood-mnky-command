@@ -9,7 +9,7 @@ import { SignUpForm } from "@/components/auth/sign-up-form"
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6">
+    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-1">

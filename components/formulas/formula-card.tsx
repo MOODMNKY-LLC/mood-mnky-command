@@ -4,7 +4,7 @@ import { FlaskConical } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Formula } from "@/lib/types"
-import { PRODUCT_TYPE_LABELS } from "@/lib/types"
+import { PRODUCT_TYPE_LABELS, FORMULA_CATEGORY_LABELS } from "@/lib/types"
 
 interface FormulaCardProps {
   formula: Formula
@@ -43,7 +43,9 @@ export function FormulaCard({ formula, onSelect, isSelected }: FormulaCardProps)
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-xs">
-            {PRODUCT_TYPE_LABELS[formula.productType]}
+            {formula.categoryId
+              ? FORMULA_CATEGORY_LABELS[formula.categoryId]
+              : PRODUCT_TYPE_LABELS[formula.productType]}
           </Badge>
           <Badge variant="outline" className="text-xs text-muted-foreground">
             {formula.phases.length} phases

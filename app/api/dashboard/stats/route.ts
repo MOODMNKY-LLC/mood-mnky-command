@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
-import { getProductCount, getProducts, isConfigured as shopifyConfigured } from "@/lib/shopify"
+import { getProductCount, getProducts, getAllCollections, isConfigured as shopifyConfigured } from "@/lib/shopify"
 import { queryAllPages, NOTION_DATABASE_IDS, getTitle, isConfigured as notionConfigured } from "@/lib/notion"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET() {
   const stats = {
@@ -16,11 +17,13 @@ export async function GET() {
   // Fetch Shopify data
   if (shopifyConfigured()) {
     try {
-      const [count, products] = await Promise.all([
+      const [count, products, collections] = await Promise.all([
         getProductCount(),
         getProducts({ limit: 5, status: "active" }),
+        getAllCollections(),
       ])
       stats.totalProducts = count
+      stats.totalCollections = collections.length
       stats.shopifyConnected = true
 
       for (const product of products) {
@@ -39,32 +42,31 @@ export async function GET() {
     }
   }
 
-  // Fetch Notion data -- use queryAllPages to get accurate total counts
+  // Fetch formulas count from database (Whole Elise formulas)
+  try {
+    const supabase = await createClient()
+    const { count } = await supabase.from("formulas").select("*", { count: "exact", head: true })
+    stats.totalFormulas = count ?? 0
+  } catch {
+    // DB not reachable
+  }
+
+  // Fetch Notion data -- fragrances and formulas no longer from Notion
   if (notionConfigured()) {
     try {
-      const [fragrancePages, formulaPages, collectionPages] = await Promise.all([
-        queryAllPages(NOTION_DATABASE_IDS.fragranceOils),
-        queryAllPages(NOTION_DATABASE_IDS.formulas),
-        queryAllPages(NOTION_DATABASE_IDS.collections),
-      ])
+      const fragrancePages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils)
       stats.totalFragrances = fragrancePages.length
-      stats.totalFormulas = formulaPages.length
-      stats.totalCollections = collectionPages.length
       stats.notionConnected = true
 
-      // Add recent Notion activity (latest edited fragrance oils + formulas)
-      const allPages = [
-        ...fragrancePages.map((p) => ({ ...p, source: "Fragrance" as const })),
-        ...formulaPages.map((p) => ({ ...p, source: "Formula" as const })),
-      ]
+      // Add recent Notion activity (latest edited fragrance oils)
+      const allPages = fragrancePages.map((p) => ({ ...p, source: "Fragrance" as const }))
         .sort((a, b) => new Date(b.last_edited_time).getTime() - new Date(a.last_edited_time).getTime())
         .slice(0, 5)
 
       for (const page of allPages) {
         const name = getTitle(
           page.properties["Fragrance Name"] ||
-          page.properties["Name"] ||
-          page.properties["Formula Name"]
+          page.properties["Name"]
         )
         if (name) {
           stats.recentActivity.push({

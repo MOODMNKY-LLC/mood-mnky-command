@@ -52,7 +52,7 @@ export default function DashboardPage() {
             <StatCard
               title="Formulas"
               value={stats?.totalFormulas ?? 0}
-              description={stats?.notionConnected ? "Synced from Notion" : "Connect Notion to sync"}
+              description="Bath & body from Whole Elise"
               icon={FlaskConical}
             />
             <StatCard
@@ -70,7 +70,7 @@ export default function DashboardPage() {
             <StatCard
               title="Collections"
               value={stats?.totalCollections ?? 0}
-              description={stats?.notionConnected ? "Active collections" : "Connect Notion to sync"}
+              description={stats?.shopifyConnected ? "Active on Shopify" : "Connect Shopify to sync"}
               icon={Palette}
             />
           </>

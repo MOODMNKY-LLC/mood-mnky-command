@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  Beaker,
   Droplets,
   LayoutDashboard,
   Package,
@@ -162,8 +161,14 @@ export function AppSidebar() {
       {/* ---- Header ---- */}
       <SidebarHeader className="border-b border-sidebar-border">
         <Link href="/" className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <Beaker className="h-4 w-4 text-primary-foreground" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary p-1">
+            <img
+              src="/mood-mnky-icon.svg"
+              alt="MOOD MNKY"
+              className="h-full w-full object-contain"
+              width={32}
+              height={32}
+            />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">

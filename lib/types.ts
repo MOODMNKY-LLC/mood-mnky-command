@@ -28,18 +28,18 @@ export const FAMILY_SEASONS: Record<FragranceFamily, string> = {
   Fruity: "Spring",
 }
 
-// Colors for each family on the fragrance wheel
+// Colors for each family on the fragrance wheel (matches CandleScience PDF)
 export const FAMILY_COLORS: Record<FragranceFamily, string> = {
-  Spicy: "#c0392b",
-  Gourmand: "#d35400",
-  Amber: "#e67e22",
-  Woody: "#795548",
-  Aromatic: "#27ae60",
-  Floral: "#e91e90",
-  Citrus: "#f1c40f",
-  "Marine/Ozonic": "#3498db",
-  Green: "#2ecc71",
-  Fruity: "#e74c8c",
+  Spicy: "#d8514e",
+  Gourmand: "#e7a151",
+  Amber: "#bd723d",
+  Woody: "#66453e",
+  Aromatic: "#5c64a7",
+  Floral: "#dd7edd",
+  Citrus: "#f9d96e",
+  "Marine/Ozonic": "#6ec4e8",
+  Green: "#7dc27d",
+  Fruity: "#f89e5c",
 }
 
 // Blending relationship: kindred families are adjacent on the wheel, complementary are opposite
@@ -56,18 +56,15 @@ export const FAMILY_KINDRED: Record<FragranceFamily, FragranceFamily[]> = {
   Fruity: ["Green", "Spicy"],
 }
 
-export const FAMILY_COMPLEMENTARY: Record<FragranceFamily, FragranceFamily> = {
-  Spicy: "Aromatic",
-  Gourmand: "Floral",
-  Amber: "Citrus",
-  Woody: "Marine/Ozonic",
-  Aromatic: "Spicy",
-  Floral: "Gourmand",
-  Citrus: "Amber",
-  "Marine/Ozonic": "Woody",
-  Green: "Gourmand",
-  Fruity: "Woody",
-}
+// Complementary = directly across the wheel (geometry-derived)
+const HALF_WHEEL = FRAGRANCE_FAMILIES.length / 2
+export const FAMILY_COMPLEMENTARY: Record<FragranceFamily, FragranceFamily> =
+  Object.fromEntries(
+    FRAGRANCE_FAMILIES.map((family, i) => [
+      family,
+      FRAGRANCE_FAMILIES[(i + HALF_WHEEL) % FRAGRANCE_FAMILIES.length],
+    ])
+  ) as Record<FragranceFamily, FragranceFamily>
 
 // ---- Wick Types ----
 export type WickType = "cotton" | "wood"
@@ -96,6 +93,16 @@ export interface WaxType {
   compatibleWicks: WickType[]
 }
 
+// ---- Formula Categories (Whole Elise / DB) ----
+export type FormulaCategory = "skincare" | "haircare" | "diy" | "candle"
+
+export const FORMULA_CATEGORY_LABELS: Record<FormulaCategory, string> = {
+  skincare: "Skincare",
+  haircare: "Haircare",
+  diy: "DIY",
+  candle: "Candle",
+}
+
 // ---- Product Types ----
 export type ProductType =
   | "candle"
@@ -104,6 +111,13 @@ export type ProductType =
   | "room-spray"
   | "perfume"
   | "wax-melt"
+  | "skincare"
+  | "haircare"
+  | "body-butter"
+  | "lip-balm"
+  | "shampoo"
+  | "conditioner"
+  | "cleanser"
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   candle: "Candle",
@@ -112,6 +126,13 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   "room-spray": "Room Spray",
   perfume: "Perfume",
   "wax-melt": "Wax Melt",
+  skincare: "Skincare",
+  haircare: "Haircare",
+  "body-butter": "Body Butter",
+  "lip-balm": "Lip Balm",
+  shampoo: "Shampoo",
+  conditioner: "Conditioner",
+  cleanser: "Cleanser",
 }
 
 // ---- Formula System ----
@@ -142,6 +163,10 @@ export interface Formula {
   wickType?: WickType
   waxType?: string
   createdAt: string
+  /** DB-backed: category from formula_categories */
+  categoryId?: FormulaCategory
+  /** DB-backed: link to original tutorial */
+  externalUrl?: string
 }
 
 // ---- Fragrance Oils ----

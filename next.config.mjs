@@ -1,3 +1,6 @@
+import { spawnSync } from "node:child_process"
+import withSerwistInit from "@serwist/next"
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -15,4 +18,14 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+const revision =
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ??
+  crypto.randomUUID()
+
+const withSerwist = withSerwistInit({
+  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+})
+
+export default withSerwist(nextConfig)

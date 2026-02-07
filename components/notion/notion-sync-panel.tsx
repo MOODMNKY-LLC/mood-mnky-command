@@ -24,7 +24,6 @@ import {
   CheckCircle2,
   ExternalLink,
   Droplets,
-  FlaskConical,
   FolderOpen,
 } from "lucide-react"
 
@@ -279,14 +278,10 @@ export function NotionSyncPanel() {
 
       {/* Sync Tabs */}
       <Tabs defaultValue="fragrance-oils" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="fragrance-oils" className="text-xs">
             <Droplets className="mr-1 h-3 w-3" />
             Fragrance Oils
-          </TabsTrigger>
-          <TabsTrigger value="formulas" className="text-xs">
-            <FlaskConical className="mr-1 h-3 w-3" />
-            Formulas
           </TabsTrigger>
           <TabsTrigger value="collections" className="text-xs">
             <FolderOpen className="mr-1 h-3 w-3" />
@@ -306,22 +301,6 @@ export function NotionSyncPanel() {
               { key: "type", label: "Type" },
               { key: "maxUsageCandle", label: "Max Candle %" },
               { key: "rating", label: "Rating" },
-            ]}
-          />
-        </TabsContent>
-
-        <TabsContent value="formulas" className="mt-4">
-          <DatabaseCard
-            title="MNKY Formulas"
-            icon={FlaskConical}
-            endpoint="/api/notion/sync/formulas"
-            itemKey="formulas"
-            columns={[
-              { key: "name", label: "Name" },
-              { key: "productType", label: "Type" },
-              { key: "baseType", label: "Base" },
-              { key: "status", label: "Status" },
-              { key: "fragranceLoad", label: "Frag Load %" },
             ]}
           />
         </TabsContent>

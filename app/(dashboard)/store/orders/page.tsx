@@ -182,6 +182,7 @@ export default function StoreOrdersPage() {
                   <p className="text-sm">No orders found</p>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -270,6 +271,7 @@ export default function StoreOrdersPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -290,6 +292,7 @@ export default function StoreOrdersPage() {
                   <p className="text-sm">No draft orders</p>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -329,6 +332,7 @@ export default function StoreOrdersPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -349,6 +353,7 @@ export default function StoreOrdersPage() {
                   <p className="text-sm">No abandoned checkouts</p>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -406,6 +411,7 @@ export default function StoreOrdersPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>

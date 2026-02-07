@@ -8,7 +8,7 @@ export default function NotionPage() {
           Notion Sync
         </h1>
         <p className="text-sm text-muted-foreground">
-          Sync fragrance oils, formulas, and collections from the MNKY_MIND
+          Sync fragrance oils and collections from the MNKY_MIND
           Notion workspace
         </p>
       </div>

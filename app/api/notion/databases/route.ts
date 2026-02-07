@@ -20,7 +20,6 @@ export async function GET() {
   try {
     const dbKeys = [
       { key: "fragranceOils", id: NOTION_DATABASE_IDS.fragranceOils, fallbackTitle: "MNKY Science Fragrance Oils" },
-      { key: "formulas", id: NOTION_DATABASE_IDS.formulas, fallbackTitle: "MNKY Formulas" },
       { key: "collections", id: NOTION_DATABASE_IDS.collections, fallbackTitle: "MNKY Collections" },
     ]
 

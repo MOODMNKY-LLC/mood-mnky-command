@@ -216,7 +216,7 @@ export default function SqlEditorPage() {
               />
               <div className="flex items-center justify-between border-t border-border px-4 py-2">
                 <span className="text-[10px] text-muted-foreground">
-                  {navigator.platform?.includes("Mac") ? "Cmd" : "Ctrl"}+Enter
+                  {typeof navigator !== "undefined" && navigator.platform?.includes("Mac") ? "Cmd" : "Ctrl"}+Enter
                   to run
                 </span>
                 <Button
