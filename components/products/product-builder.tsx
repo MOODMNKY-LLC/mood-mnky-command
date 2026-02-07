@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FRAGRANCE_OILS, FORMULAS, CONTAINERS, WICK_OPTIONS } from "@/lib/data"
+import { MediaPicker } from "@/components/media/media-picker"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
 import type { Formula, FragranceOil, ContainerOption, FragranceFamily } from "@/lib/types"
 
@@ -75,6 +76,7 @@ export function ProductBuilder() {
     useState<ContainerOption | null>(null)
   const [productName, setProductName] = useState("")
   const [productDescription, setProductDescription] = useState("")
+  const [productImages, setProductImages] = useState<string[]>([])
   const [pushStatus, setPushStatus] = useState<
     "idle" | "pushing" | "success" | "error"
   >("idle")
@@ -160,6 +162,7 @@ export function ProductBuilder() {
           price: selectedContainer.suggestedRetail.toFixed(2),
           sku: `MM-${selectedFragrance.id}-${selectedContainer.id}`.toUpperCase(),
           weight: selectedFormula.totalWeight,
+          images: productImages.map((src) => ({ src })),
         }),
       })
 
@@ -242,6 +245,8 @@ export function ProductBuilder() {
           setProductName={setProductName}
           productDescription={productDescription}
           setProductDescription={setProductDescription}
+          productImages={productImages}
+          setProductImages={setProductImages}
         />
       )}
 
@@ -651,6 +656,8 @@ function StepReview({
   setProductName,
   productDescription,
   setProductDescription,
+  productImages,
+  setProductImages,
 }: {
   fragrance: FragranceOil | null
   formula: Formula | null
@@ -659,6 +666,8 @@ function StepReview({
   setProductName: (v: string) => void
   productDescription: string
   setProductDescription: (v: string) => void
+  productImages: string[]
+  setProductImages: (urls: string[]) => void
 }) {
   const margin = container
     ? container.suggestedRetail - container.price
@@ -703,6 +712,15 @@ function StepReview({
               className="min-h-[120px] bg-secondary border-border text-foreground"
             />
           </div>
+          <MediaPicker
+            bucket="product-images"
+            label="Product Images"
+            maxFiles={5}
+            value={productImages}
+            onChange={setProductImages}
+            tags={fragrance ? [fragrance.family.toLowerCase()] : []}
+            compact
+          />
         </CardContent>
       </Card>
 

@@ -28,6 +28,8 @@ import {
   BarChart3,
   ChevronRight,
   Plus,
+  ImagePlus,
+  FolderArchive,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -114,6 +116,10 @@ const storeItems: NavItemWithChildren[] = [
   },
   { title: "Content", href: "/store/content", icon: FileText },
   { title: "Finance", href: "/store/finance", icon: Wallet },
+]
+
+const assetItems: NavItem[] = [
+  { title: "Media Library", href: "/media", icon: ImagePlus },
 ]
 
 const platformItems: NavItem[] = [
@@ -222,6 +228,31 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuAction>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* ======== Assets ======== */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Assets</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {assetItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(pathname, item.href)}
+                    tooltip={item.title}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
