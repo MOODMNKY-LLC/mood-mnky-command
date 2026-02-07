@@ -42,10 +42,13 @@ export function FragranceWheel({
   // Start at -PI/2 so first slice is at the top
   const startOffset = -Math.PI / 2
 
+  // Round to avoid hydration mismatch from floating-point differences between server/client
+  const round = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d
+
   function polarToCart(angle: number, radius: number) {
     return {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
+      x: round(cx + radius * Math.cos(angle)),
+      y: round(cy + radius * Math.sin(angle)),
     }
   }
 
@@ -76,7 +79,7 @@ export function FragranceWheel({
     const midAngle =
       (startOffset + index * anglePerSlice + anglePerSlice / 2) *
       (180 / Math.PI)
-    return midAngle
+    return round(midAngle)
   }
 
   function getOpacity(family: FragranceFamily) {
