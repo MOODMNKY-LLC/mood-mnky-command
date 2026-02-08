@@ -93,9 +93,7 @@ export async function GET() {
   }
 
   try {
-    const pages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils, {
-      sorts: [{ property: "Fragrance Name", direction: "ascending" }],
-    })
+    const pages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils)
 
     const fragranceOils = pages.map(mapFragranceOilPage)
 
@@ -122,9 +120,7 @@ export async function POST() {
   const supabase = createAdminClient()
 
   try {
-    const pages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils, {
-      sorts: [{ property: "Fragrance Name", direction: "ascending" }],
-    })
+    const pages = await queryAllPages(NOTION_DATABASE_IDS.fragranceOils)
 
     const mapped = pages.map(mapFragranceOilPage)
     const rows = mapped.map(toDbRow)
