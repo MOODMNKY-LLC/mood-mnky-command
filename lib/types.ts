@@ -197,6 +197,8 @@ export interface FragranceOil {
   blendsWellWith: string[]
   alternativeBranding: string[]
   suggestedColors: string[]
+  /** Notion page URL, present when synced from Notion */
+  notionUrl?: string | null
 }
 
 // ---- Container Types (CandleScience catalog) ----

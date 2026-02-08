@@ -2,12 +2,11 @@
 
 import { useState, useMemo } from "react"
 import useSWR from "swr"
-import { Search, Loader2, WifiOff } from "lucide-react"
+import { Search, Loader2, Database } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { FRAGRANCE_OILS } from "@/lib/data"
 import type { FragranceOil, FragranceFamily } from "@/lib/types"
 import { FRAGRANCE_FAMILIES } from "@/lib/types"
 import { FragranceCard } from "@/components/fragrances/fragrance-card"
@@ -17,37 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 const categories = ["All", ...FRAGRANCE_FAMILIES]
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-function mapNotionOilToLocal(item: Record<string, unknown>): FragranceOil {
-  return {
-    id: (item.notionId as string) || String(Math.random()),
-    name: (item.name as string) || "Untitled",
-    description: (item.description as string) || "",
-    family: ((item.family as string) || "Floral") as FragranceFamily,
-    subfamilies: ((item.subfamilies as string[]) || []) as FragranceFamily[],
-    topNotes: (item.topNotes as string[]) || [],
-    middleNotes: (item.middleNotes as string[]) || [],
-    baseNotes: (item.baseNotes as string[]) || [],
-    type: ((item.type as string) || "Fragrance Oil") as "Fragrance Oil" | "Blending Element",
-    candleSafe: (item.candleSafe as boolean) ?? true,
-    soapSafe: (item.soapSafe as boolean) ?? false,
-    lotionSafe: (item.lotionSafe as boolean) ?? false,
-    perfumeSafe: (item.perfumeSafe as boolean) ?? false,
-    roomSpraySafe: (item.roomSpraySafe as boolean) ?? false,
-    waxMeltSafe: (item.waxMeltSafe as boolean) ?? false,
-    maxUsageCandle: (item.maxUsageCandle as number) ?? 0,
-    maxUsageSoap: (item.maxUsageSoap as number) ?? 0,
-    maxUsageLotion: (item.maxUsageLotion as number) ?? 0,
-    price1oz: (item.price1oz as number) ?? 0,
-    price4oz: (item.price4oz as number) ?? 0,
-    price16oz: (item.price16oz as number) ?? 0,
-    rating: (item.rating as number) ?? 0,
-    reviewCount: (item.reviewCount as number) ?? 0,
-    blendsWellWith: (item.blendsWellWith as string[]) || [],
-    alternativeBranding: (item.alternativeBranding as string[]) || [],
-    suggestedColors: (item.suggestedColors as string[]) || [],
-  }
-}
 
 function CardSkeleton() {
   return (
@@ -74,20 +42,13 @@ export default function FragrancesPage() {
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
 
-  const { data: notionData, isLoading: notionLoading } = useSWR(
-    "/api/notion/sync/fragrance-oils",
+  const { data, isLoading } = useSWR<{ fragranceOils: FragranceOil[]; total: number }>(
+    "/api/fragrance-oils",
     fetcher,
     { revalidateOnFocus: false, errorRetryCount: 1, dedupingInterval: 60000 }
   )
 
-  const isLiveData = notionData?.fragranceOils && !notionData?.error
-  const liveOils: FragranceOil[] = useMemo(() => {
-    if (!isLiveData) return []
-    return (notionData.fragranceOils as Record<string, unknown>[]).map(mapNotionOilToLocal)
-  }, [isLiveData, notionData])
-
-  // Use live data if available, otherwise fall back to static data
-  const sourceOils = isLiveData ? liveOils : FRAGRANCE_OILS
+  const sourceOils = data?.fragranceOils ?? []
 
   const filteredOils = useMemo(() => {
     return sourceOils.filter((oil) => {
@@ -116,19 +77,19 @@ export default function FragrancesPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
             Fragrance Oil Catalog
           </h1>
-          {notionLoading ? (
+          {isLoading ? (
             <Badge variant="secondary" className="text-[10px] gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Syncing
+              Loading
             </Badge>
-          ) : isLiveData ? (
+          ) : sourceOils.length > 0 ? (
             <Badge className="text-[10px] border-0 bg-success/10 text-success">
-              {notionData.total} oils from Notion
+              <Database className="h-3 w-3" />
+              {data?.total ?? sourceOils.length} oils from Supabase
             </Badge>
           ) : (
             <Badge variant="secondary" className="text-[10px] gap-1 text-muted-foreground">
-              <WifiOff className="h-3 w-3" />
-              Sample data
+              No data — sync from Notion first
             </Badge>
           )}
         </div>
@@ -170,7 +131,7 @@ export default function FragrancesPage() {
         <div className="flex flex-col gap-3 lg:col-span-1">
           <ScrollArea className="h-[calc(100vh-280px)]">
             <div className="flex flex-col gap-3 pr-4">
-              {notionLoading && !isLiveData ? (
+              {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <CardSkeleton key={i} />
                 ))

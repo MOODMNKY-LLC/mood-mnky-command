@@ -53,12 +53,18 @@ function DatabaseCard({
   endpoint,
   itemKey,
   columns,
+  syncMethod = "GET",
+  postSyncItemsEndpoint,
+  rowKeyProp = "notionId",
 }: {
   title: string
   icon: React.ElementType
   endpoint: string
   itemKey: string
   columns: Array<{ key: string; label: string }>
+  syncMethod?: "GET" | "POST"
+  postSyncItemsEndpoint?: string
+  rowKeyProp?: string
 }) {
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -68,16 +74,24 @@ function DatabaseCard({
     setIsSyncing(true)
     setSyncError(null)
     try {
-      const res = await fetch(endpoint)
+      const res = await fetch(endpoint, {
+        method: syncMethod,
+      })
       const data = await res.json()
       if (data.error) {
         setSyncError(data.error)
       } else {
+        let items = data[itemKey] || []
+        if (syncMethod === "POST" && postSyncItemsEndpoint && data.recordsSynced != null) {
+          const itemsRes = await fetch(postSyncItemsEndpoint)
+          const itemsData = await itemsRes.json()
+          items = itemsData[itemKey] || itemsData.fragranceOils || []
+        }
         setSyncResult({
-          database: data.database,
-          total: data.total,
-          syncedAt: data.syncedAt,
-          items: data[itemKey] || [],
+          database: data.database || title,
+          total: data.recordsSynced ?? data.total ?? items.length,
+          syncedAt: data.syncedAt ?? new Date().toISOString(),
+          items,
         })
       }
     } catch (e) {
@@ -85,7 +99,7 @@ function DatabaseCard({
     } finally {
       setIsSyncing(false)
     }
-  }, [endpoint, itemKey])
+  }, [endpoint, itemKey, syncMethod, postSyncItemsEndpoint, title])
 
   return (
     <Card className="bg-card border-border">
@@ -98,7 +112,9 @@ function DatabaseCard({
           <div className="flex items-center gap-2">
             {syncResult && (
               <Badge className="text-[10px] border-0 bg-success/10 text-success">
-                {syncResult.total} records
+                {syncMethod === "POST"
+                  ? `${syncResult.total} synced to Supabase`
+                  : `${syncResult.total} records`}
               </Badge>
             )}
             <Button
@@ -148,7 +164,7 @@ function DatabaseCard({
                 </TableHeader>
                 <TableBody>
                   {syncResult.items.slice(0, 50).map((item, idx) => (
-                    <TableRow key={`${String(item.notionId || idx)}`}>
+                    <TableRow key={`${String((item as Record<string, unknown>)[rowKeyProp] ?? item.id ?? idx)}`}>
                       {columns.map((col) => (
                         <TableCell key={col.key} className="text-xs">
                           {Array.isArray(item[col.key])
@@ -295,6 +311,9 @@ export function NotionSyncPanel() {
             icon={Droplets}
             endpoint="/api/notion/sync/fragrance-oils"
             itemKey="fragranceOils"
+            syncMethod="POST"
+            postSyncItemsEndpoint="/api/fragrance-oils"
+            rowKeyProp="id"
             columns={[
               { key: "name", label: "Name" },
               { key: "family", label: "Family" },

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import useSWR from "swr"
 import { Plus, X, FlaskConical, Droplets } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { FRAGRANCE_OILS } from "@/lib/data"
 import type { FragranceOil, ProductType, FragranceFamily } from "@/lib/types"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface BlendSlot {
   oilId: string | null
@@ -40,6 +42,13 @@ export function BlendingCalculator() {
   const [slots, setSlots] = useState<BlendSlot[]>([
     { oilId: null, percentage: 100 },
   ])
+
+  const { data, isLoading } = useSWR<{ fragranceOils: FragranceOil[] }>(
+    "/api/fragrance-oils",
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  )
+  const fragranceOils = data?.fragranceOils ?? []
 
   const maxLoad = PRODUCT_MAX_LOAD[productType] ?? 10
 
@@ -93,14 +102,14 @@ export function BlendingCalculator() {
     const families: FragranceFamily[] = []
     for (const slot of slots) {
       if (slot.oilId) {
-        const oil = FRAGRANCE_OILS.find((o) => o.id === slot.oilId)
+        const oil = fragranceOils.find((o) => o.id === slot.oilId)
         if (oil && !families.includes(oil.family)) {
           families.push(oil.family)
         }
       }
     }
     return families
-  }, [slots])
+  }, [slots, fragranceOils])
 
   return (
     <div className="flex flex-col gap-6">
@@ -208,7 +217,7 @@ export function BlendingCalculator() {
         <CardContent className="flex flex-col gap-4">
           {slots.map((slot, index) => {
             const oil = slot.oilId
-              ? FRAGRANCE_OILS.find((o) => o.id === slot.oilId)
+              ? fragranceOils.find((o) => o.id === slot.oilId)
               : null
             const slotWeight = (slot.percentage / 100) * fragranceWeight
 
@@ -238,15 +247,24 @@ export function BlendingCalculator() {
                     <Select
                       value={slot.oilId ?? ""}
                       onValueChange={(v) => updateOil(index, v)}
+                      disabled={isLoading}
                     >
                       <SelectTrigger className="bg-secondary border-border text-foreground">
-                        <SelectValue placeholder="Choose a fragrance..." />
+                        <SelectValue
+                          placeholder={
+                            isLoading
+                              ? "Loading fragrances..."
+                              : "Choose a fragrance..."
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        {FRAGRANCE_OILS.filter(
-                          (o) =>
-                            !usedOilIds.includes(o.id) || o.id === slot.oilId
-                        ).map((o) => (
+                        {fragranceOils
+                          .filter(
+                            (o) =>
+                              !usedOilIds.includes(o.id) || o.id === slot.oilId
+                          )
+                          .map((o) => (
                           <SelectItem key={o.id} value={o.id}>
                             <span className="flex items-center gap-2">
                               <span
@@ -389,7 +407,7 @@ export function BlendingCalculator() {
               {slots
                 .filter((s) => s.oilId)
                 .map((slot) => {
-                  const oil = FRAGRANCE_OILS.find(
+                  const oil = fragranceOils.find(
                     (o) => o.id === slot.oilId
                   )!
                   const weight = (slot.percentage / 100) * fragranceWeight
