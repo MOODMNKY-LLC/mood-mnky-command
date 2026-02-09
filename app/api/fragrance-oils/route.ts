@@ -31,6 +31,9 @@ function dbRowToFragranceOil(row: {
   rating: number
   review_count: number
   notion_url: string | null
+  notion_id: string
+  image_url: string | null
+  image_source: string | null
 }): FragranceOil {
   return {
     id: row.id,
@@ -60,6 +63,9 @@ function dbRowToFragranceOil(row: {
     alternativeBranding: row.alternative_branding ?? [],
     suggestedColors: row.suggested_colors ?? [],
     notionUrl: row.notion_url ?? null,
+    notionId: row.notion_id ?? null,
+    imageUrl: row.image_url ?? null,
+    imageSource: row.image_source ?? null,
   }
 }
 
@@ -68,7 +74,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("fragrance_oils")
-    .select("*, notion_url")
+    .select("*, notion_url, image_url, image_source")
     .order("name")
 
   if (error) {

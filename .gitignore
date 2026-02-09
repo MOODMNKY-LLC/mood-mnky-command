@@ -7,6 +7,7 @@ instrumentation-client.ts
 
 # Common ignores
 node_modules/
+.cursor/
 .next/
 .env
 .env*.local

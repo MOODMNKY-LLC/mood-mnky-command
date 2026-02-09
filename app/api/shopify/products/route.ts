@@ -52,6 +52,10 @@ export async function POST(request: Request) {
       product_type: body.product_type || "Candle",
       status: body.status || "draft",
       tags: body.tags || "",
+      images:
+        body.images?.length > 0
+          ? body.images.map((img: { src: string }) => ({ src: img.src }))
+          : undefined,
       variants: body.variants || [
         {
           price: body.price || "0.00",

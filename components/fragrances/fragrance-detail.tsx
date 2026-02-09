@@ -1,8 +1,11 @@
 "use client"
 
-import { Star, CheckCircle, XCircle, DollarSign } from "lucide-react"
+import { useState } from "react"
+import Link from "next/link"
+import { Star, CheckCircle, XCircle, DollarSign, Pencil, ExternalLink, ImageIcon, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { FragranceOil } from "@/lib/types"
 import {
   FAMILY_COLORS,
@@ -10,12 +13,15 @@ import {
   FAMILY_COMPLEMENTARY,
   FAMILY_SEASONS,
 } from "@/lib/types"
+import { FragranceEditDialog } from "@/components/fragrances/fragrance-edit-dialog"
 
 interface FragranceDetailProps {
   oil: FragranceOil
+  onEditSuccess?: () => void
 }
 
-export function FragranceDetail({ oil }: FragranceDetailProps) {
+export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
+  const [editOpen, setEditOpen] = useState(false)
   const safetyItems = [
     { label: "Candle", safe: oil.candleSafe, max: oil.maxUsageCandle },
     { label: "Soap", safe: oil.soapSafe, max: oil.maxUsageSoap },
@@ -73,18 +79,71 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
                 </Badge>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5">
-              <Star className="h-4 w-4 fill-primary text-primary" />
-              <span className="text-sm font-semibold text-foreground">
-                {oil.rating}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({oil.reviewCount})
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5">
+                <Star className="h-4 w-4 fill-primary text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  {oil.rating}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({oil.reviewCount})
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5"
+                onClick={() => setEditOpen(true)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </Button>
+              {oil.notionUrl && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  asChild
+                >
+                  <a href={oil.notionUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Notion
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Image display */}
+          {oil.imageUrl ? (
+            <div className="mb-4 flex items-start gap-3">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border">
+                <img
+                  src={oil.imageUrl}
+                  alt={`${oil.name} fragrance scene`}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" size="sm" className="h-8 w-fit gap-1.5" asChild>
+                  <Link href={`/studio?fragranceId=${oil.id}&fragranceName=${encodeURIComponent(oil.name)}`}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Generate Scene
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4 flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8 gap-1.5" asChild>
+                <Link href={`/studio?fragranceId=${oil.id}&fragranceName=${encodeURIComponent(oil.name)}`}>
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Generate Scene
+                </Link>
+              </Button>
+            </div>
+          )}
           <p className="text-sm leading-relaxed text-muted-foreground">
             {oil.description}
           </p>
@@ -298,6 +357,13 @@ export function FragranceDetail({ oil }: FragranceDetailProps) {
           </CardContent>
         </Card>
       )}
+
+      <FragranceEditDialog
+        oil={oil}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSuccess={() => onEditSuccess?.()}
+      />
     </div>
   )
 }

@@ -42,7 +42,7 @@ export default function FragrancesPage() {
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
 
-  const { data, isLoading } = useSWR<{ fragranceOils: FragranceOil[]; total: number }>(
+  const { data, isLoading, mutate } = useSWR<{ fragranceOils: FragranceOil[]; total: number }>(
     "/api/fragrance-oils",
     fetcher,
     { revalidateOnFocus: false, errorRetryCount: 1, dedupingInterval: 60000 }
@@ -158,7 +158,7 @@ export default function FragrancesPage() {
           {selectedOil ? (
             <ScrollArea className="h-[calc(100vh-280px)]">
               <div className="pr-4">
-                <FragranceDetail oil={selectedOil} />
+                <FragranceDetail oil={selectedOil} onEditSuccess={() => mutate()} />
               </div>
             </ScrollArea>
           ) : (

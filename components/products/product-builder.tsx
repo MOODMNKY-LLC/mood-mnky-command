@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import useSWR from "swr"
+import Link from "next/link"
 import {
   Check,
   ChevronRight,
@@ -13,6 +14,7 @@ import {
   ExternalLink,
   Flame,
   WifiOff,
+  Sparkles,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -712,15 +714,30 @@ function StepReview({
               className="min-h-[120px] bg-secondary border-border text-foreground"
             />
           </div>
-          <MediaPicker
-            bucket="product-images"
-            label="Product Images"
-            maxFiles={5}
-            value={productImages}
-            onChange={setProductImages}
-            tags={fragrance ? [fragrance.family.toLowerCase()] : []}
-            compact
-          />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs text-muted-foreground">Product Images</Label>
+              {fragrance && (
+                <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs" asChild>
+                  <Link
+                    href={`/studio?fragranceId=${fragrance.id}&fragranceName=${encodeURIComponent(fragrance.name)}`}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Generate from fragrance
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <MediaPicker
+              bucket="product-images"
+              label=""
+              maxFiles={5}
+              value={productImages}
+              onChange={setProductImages}
+              tags={fragrance ? [fragrance.family.toLowerCase()] : []}
+              compact
+            />
+          </div>
         </CardContent>
       </Card>
 

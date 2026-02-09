@@ -11,6 +11,9 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const bucket = searchParams.get("bucket") as BucketId | null
+  const category = searchParams.get("category") || undefined
+  const linkedEntityType = searchParams.get("linked_entity_type") || undefined
+  const linkedEntityId = searchParams.get("linked_entity_id") || undefined
   const search = searchParams.get("search") || undefined
   const tagsParam = searchParams.get("tags")
   const tags = tagsParam ? tagsParam.split(",") : undefined
@@ -20,6 +23,9 @@ export async function GET(request: Request) {
   try {
     const { assets, count } = await getMediaAssets(supabase, {
       bucket_id: bucket ?? undefined,
+      category,
+      linked_entity_type: linkedEntityType,
+      linked_entity_id: linkedEntityId,
       search,
       tags,
       limit,

@@ -46,6 +46,9 @@ export interface MediaAsset {
   public_url: string | null
   created_at: string
   updated_at: string
+  category?: string | null
+  source_model?: string | null
+  generation_prompt?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -305,6 +308,9 @@ export async function saveMediaAsset(
     linked_entity_type?: string
     linked_entity_id?: string
     public_url?: string
+    category?: string
+    source_model?: string
+    generation_prompt?: string
   },
 ): Promise<MediaAsset> {
   const { data, error } = await supabase
@@ -332,6 +338,7 @@ export async function getMediaAssets(
     linked_entity_type?: string
     linked_entity_id?: string
     tags?: string[]
+    category?: string
     search?: string
     limit?: number
     offset?: number
@@ -347,6 +354,7 @@ export async function getMediaAssets(
     query = query.eq("linked_entity_type", filters.linked_entity_type)
   if (filters?.linked_entity_id)
     query = query.eq("linked_entity_id", filters.linked_entity_id)
+  if (filters?.category) query = query.eq("category", filters.category)
   if (filters?.tags?.length) query = query.overlaps("tags", filters.tags)
   if (filters?.search) query = query.ilike("file_name", `%${filters.search}%`)
   if (filters?.limit) query = query.limit(filters.limit)
@@ -372,12 +380,24 @@ export async function deleteMediaAsset(
 }
 
 /**
- * Update media asset metadata (tags, alt_text, description, linked entity).
+ * Update media asset metadata (tags, alt_text, description, linked entity, category, generation fields).
  */
 export async function updateMediaAsset(
   supabase: SupabaseClient,
   id: string,
-  updates: Partial<Pick<MediaAsset, "tags" | "alt_text" | "description" | "linked_entity_type" | "linked_entity_id">>,
+  updates: Partial<
+    Pick<
+      MediaAsset,
+      | "tags"
+      | "alt_text"
+      | "description"
+      | "linked_entity_type"
+      | "linked_entity_id"
+      | "category"
+      | "source_model"
+      | "generation_prompt"
+    >
+  >,
 ): Promise<MediaAsset> {
   const { data, error } = await supabase
     .from("media_assets")

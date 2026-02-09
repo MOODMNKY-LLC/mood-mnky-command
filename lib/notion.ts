@@ -251,3 +251,172 @@ export interface NotionSyncStatus {
 export function isConfigured(): boolean {
   return Boolean(NOTION_API_KEY)
 }
+
+// ---- Update Page ----
+
+export interface FragranceOilUpdate {
+  name?: string
+  description?: string
+  family?: string
+  subfamilies?: string[]
+  topNotes?: string[]
+  middleNotes?: string[]
+  baseNotes?: string[]
+  type?: string
+  alternativeBranding?: string[]
+  candleSafe?: boolean
+  soapSafe?: boolean
+  lotionSafe?: boolean
+  perfumeSafe?: boolean
+  roomSpraySafe?: boolean
+  waxMeltSafe?: boolean
+  maxUsageCandle?: number
+  maxUsageSoap?: number
+  maxUsageLotion?: number
+  price1oz?: number
+  price4oz?: number
+  price16oz?: number
+  rating?: number
+  reviewCount?: number
+  blendsWellWith?: string[]
+  suggestedColors?: string[]
+  allergenStatement?: string | null
+  imageUrl?: string | null
+}
+
+interface NotionDatabaseSchema {
+  properties: Record<string, { id: string; type: string }>
+}
+
+/** Get database schema to discover property names (e.g. title might be "Name" or "Fragrance Name") */
+export async function getDatabaseSchema(
+  databaseId: string
+): Promise<Record<string, { id: string; type: string }>> {
+  const data = await notionFetch<NotionDatabaseSchema>(
+    `/databases/${databaseId}`
+  )
+  return data.properties
+}
+
+/** Find the title property name in a database schema */
+export function getTitlePropertyName(
+  schema: Record<string, { id: string; type: string }>
+): string | null {
+  for (const [name, def] of Object.entries(schema)) {
+    if (def.type === "title") return name
+  }
+  return null
+}
+
+/** Resolve property name from schema when multiple names exist (e.g. "Sub Families" | "Subfamilies") */
+function resolvePropertyName(
+  schema: Record<string, { id: string; type: string }>,
+  candidates: string[]
+): string {
+  for (const c of candidates) {
+    if (c in schema) return c
+  }
+  return candidates[0]
+}
+
+/** Update a Notion page with fragrance oil properties. Uses property names from schema. */
+export async function updateFragrancePage(
+  pageId: string,
+  updates: FragranceOilUpdate,
+  schema?: Record<string, { id: string; type: string }>
+): Promise<void> {
+  const properties = schema ?? (await getDatabaseSchema(NOTION_DATABASE_IDS.fragranceOils))
+  const titleName = getTitlePropertyName(properties) ?? "Name"
+
+  const body: Record<string, unknown> = {}
+
+  if (updates.name !== undefined) {
+    body[titleName] = { title: [{ text: { content: updates.name } }] }
+  }
+  if (updates.description !== undefined) {
+    body["Description"] = { rich_text: [{ text: { content: updates.description } }] }
+  }
+  if (updates.family !== undefined) {
+    body["Family"] = { select: { name: updates.family } }
+  }
+  if (updates.subfamilies !== undefined) {
+    const subFam = resolvePropertyName(properties, ["Sub Families", "Subfamilies"])
+    body[subFam] = { multi_select: updates.subfamilies.map((n) => ({ name: n })) }
+  }
+  if (updates.topNotes !== undefined) {
+    body["Top Notes"] = { multi_select: updates.topNotes.map((n) => ({ name: n })) }
+  }
+  if (updates.middleNotes !== undefined) {
+    body["Middle Notes"] = { multi_select: updates.middleNotes.map((n) => ({ name: n })) }
+  }
+  if (updates.baseNotes !== undefined) {
+    body["Base Notes"] = { multi_select: updates.baseNotes.map((n) => ({ name: n })) }
+  }
+  if (updates.type !== undefined) {
+    body["Type"] = { select: { name: updates.type } }
+  }
+  if (updates.alternativeBranding !== undefined) {
+    body["Alternative Branding"] = { multi_select: updates.alternativeBranding.map((n) => ({ name: n })) }
+  }
+  if (updates.candleSafe !== undefined) {
+    body["Candle Safe"] = { checkbox: updates.candleSafe }
+  }
+  if (updates.soapSafe !== undefined) {
+    body["Soap Safe"] = { checkbox: updates.soapSafe }
+  }
+  if (updates.lotionSafe !== undefined) {
+    body["Lotion Safe"] = { checkbox: updates.lotionSafe }
+  }
+  if (updates.perfumeSafe !== undefined) {
+    body["Perfume Safe"] = { checkbox: updates.perfumeSafe }
+  }
+  if (updates.roomSpraySafe !== undefined) {
+    body["Room Spray Safe"] = { checkbox: updates.roomSpraySafe }
+  }
+  if (updates.waxMeltSafe !== undefined) {
+    body["Wax Melt Safe"] = { checkbox: updates.waxMeltSafe }
+  }
+  if (updates.maxUsageCandle !== undefined) {
+    body["Max Usage Candle"] = { number: updates.maxUsageCandle }
+  }
+  if (updates.maxUsageSoap !== undefined) {
+    body["Max Usage Soap"] = { number: updates.maxUsageSoap }
+  }
+  if (updates.maxUsageLotion !== undefined) {
+    body["Max Usage Lotion"] = { number: updates.maxUsageLotion }
+  }
+  if (updates.price1oz !== undefined) {
+    body["Price 1oz"] = { number: updates.price1oz }
+  }
+  if (updates.price4oz !== undefined) {
+    body["Price 4oz"] = { number: updates.price4oz }
+  }
+  if (updates.price16oz !== undefined) {
+    body["Price 16oz"] = { number: updates.price16oz }
+  }
+  if (updates.rating !== undefined) {
+    body["Rating"] = { number: updates.rating }
+  }
+  if (updates.reviewCount !== undefined) {
+    body["Review Count"] = { number: updates.reviewCount }
+  }
+  if (updates.blendsWellWith !== undefined) {
+    body["Blends Well With"] = { multi_select: updates.blendsWellWith.map((n) => ({ name: n })) }
+  }
+  if (updates.suggestedColors !== undefined) {
+    body["Suggested Colors"] = { multi_select: updates.suggestedColors.map((n) => ({ name: n })) }
+  }
+  if (updates.allergenStatement !== undefined) {
+    body["Allergen Statement"] = updates.allergenStatement
+      ? { url: updates.allergenStatement }
+      : { url: null }
+  }
+  if (updates.imageUrl !== undefined) {
+    const imageUrlProp = resolvePropertyName(properties, ["Image URL", "Image", "Product Image URL"])
+    body[imageUrlProp] = updates.imageUrl ? { url: updates.imageUrl } : { url: null }
+  }
+
+  if (Object.keys(body).length === 0) return
+
+  await notionFetch(`/pages/${pageId}`, { method: "PATCH", body: { properties: body } })
+}

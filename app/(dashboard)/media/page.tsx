@@ -56,28 +56,39 @@ function MimeIcon({ mime }: { mime: string | null }) {
 
 export default function MediaLibraryPage() {
   const [activeBucket, setActiveBucket] = useState<BucketId | "all">("all")
+  const [activeCategory, setActiveCategory] = useState<string>("all")
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [selectedAsset, setSelectedAsset] = useState<MediaAsset | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState<string | null>(null)
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [editingTags, setEditingTags] = useState(false)
+  const [tagInput, setTagInput] = useState("")
 
   // Active upload bucket
   const [uploadBucket, setUploadBucket] = useState<BucketId>("product-images")
 
   const queryParams = new URLSearchParams()
   if (activeBucket !== "all") queryParams.set("bucket", activeBucket)
+  if (activeCategory !== "all") queryParams.set("category", activeCategory)
   if (search) queryParams.set("search", search)
   queryParams.set("limit", "100")
   const apiUrl = `/api/media?${queryParams.toString()}`
 
-  const { data, isLoading } = useSWR(apiUrl, fetcher, {
+  const { data, isLoading, mutate } = useSWR(apiUrl, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
   })
 
   const assets: MediaAsset[] = data?.assets ?? []
   const totalCount: number = data?.count ?? 0
+
+  const { data: fragranceData } = useSWR<{
+    fragranceOils: { id: string; name: string; notionId?: string | null }[]
+  }>("/api/fragrance-oils", fetcher)
+  const fragranceOils = fragranceData?.fragranceOils ?? []
 
   const upload = useSupabaseUpload({
     bucket: uploadBucket,
@@ -106,6 +117,82 @@ export default function MediaLibraryPage() {
     },
     [apiUrl, selectedAsset]
   )
+
+  const handleAssignToFragrance = useCallback(
+    async (asset: MediaAsset, fragranceId: string) => {
+      const oil = fragranceOils.find((o) => o.id === fragranceId)
+      if (!oil) return
+      setUpdating(asset.id)
+      try {
+        await fetch(`/api/media/${asset.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            linked_entity_type: "fragrance",
+            linked_entity_id: fragranceId,
+          }),
+        })
+        mutate()
+        setSelectedAsset((prev) =>
+          prev?.id === asset.id
+            ? { ...prev, linked_entity_type: "fragrance", linked_entity_id: fragranceId }
+            : prev
+        )
+      } catch {
+        // Error handling
+      }
+      setUpdating(null)
+    },
+    [fragranceOils, mutate]
+  )
+
+  const handleUpdateTags = useCallback(
+    async (asset: MediaAsset, newTags: string[]) => {
+      setUpdating(asset.id)
+      try {
+        await fetch(`/api/media/${asset.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tags: newTags }),
+        })
+        mutate()
+        setSelectedAsset((prev) => (prev?.id === asset.id ? { ...prev, tags: newTags } : prev))
+      } catch {
+        // Error handling
+      }
+      setUpdating(null)
+    },
+    [mutate]
+  )
+
+  const handleSyncToNotion = useCallback(
+    async (asset: MediaAsset) => {
+      const fragranceId = asset.linked_entity_id
+      const oil = fragranceOils.find((o) => o.id === fragranceId)
+      const notionId = oil?.notionId
+      if (!notionId || !asset.public_url) return
+      setSyncing(asset.id)
+      try {
+        const res = await fetch("/api/notion/update-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notionPageId: notionId, imageUrl: asset.public_url }),
+        })
+        if (!res.ok) throw new Error((await res.json()).error)
+      } catch {
+        // Error handling
+      }
+      setSyncing(null)
+    },
+    [fragranceOils]
+  )
+
+  const CATEGORIES = [
+    { value: "all", label: "All" },
+    { value: "fragrance-scene", label: "Fragrance Scene" },
+    { value: "product", label: "Product" },
+    { value: "mascot", label: "Mascot" },
+  ]
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -152,6 +239,19 @@ export default function MediaLibraryPage() {
                 </button>
               ))}
             </div>
+
+            {/* Category filter */}
+            <select
+              value={activeCategory}
+              onChange={(e) => setActiveCategory(e.target.value)}
+              className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
 
             <div className="ml-auto flex items-center gap-2">
               {/* Search */}
@@ -363,7 +463,16 @@ export default function MediaLibraryPage() {
       </div>
 
       {/* Asset detail dialog */}
-      <Dialog open={!!selectedAsset} onOpenChange={(open) => !open && setSelectedAsset(null)}>
+      <Dialog
+        open={!!selectedAsset}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedAsset(null)
+            setEditingTags(false)
+            setTagInput("")
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           {selectedAsset && (
             <>
@@ -422,21 +531,121 @@ export default function MediaLibraryPage() {
                       })}
                     </p>
                   </div>
-                  {selectedAsset.tags?.length > 0 && (
+                  {selectedAsset.category && (
                     <div>
-                      <span className="text-muted-foreground">Tags</span>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {selectedAsset.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-[9px]">
-                            <Tag className="mr-0.5 h-2.5 w-2.5" />
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
+                      <span className="text-muted-foreground">Category</span>
+                      <p className="font-medium text-foreground capitalize">
+                        {selectedAsset.category.replace(/-/g, " ")}
+                      </p>
                     </div>
                   )}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Tags</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingTags(!editingTags)
+                          setTagInput("")
+                        }}
+                        className="text-[10px] text-primary hover:underline"
+                      >
+                        {editingTags ? "Done" : "Edit"}
+                      </button>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {selectedAsset.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-[9px] group/tag"
+                        >
+                          <Tag className="mr-0.5 h-2.5 w-2.5" />
+                          {tag}
+                          {editingTags && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleUpdateTags(
+                                  selectedAsset,
+                                  selectedAsset.tags.filter((t) => t !== tag)
+                                )
+                              }
+                              disabled={updating === selectedAsset.id}
+                              className="ml-1 rounded hover:bg-destructive/20 px-0.5"
+                            >
+                              <X className="h-2.5 w-2.5" />
+                            </button>
+                          )}
+                        </Badge>
+                      ))}
+                      {editingTags && (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            const t = tagInput.trim()
+                            if (t && !selectedAsset.tags.includes(t)) {
+                              handleUpdateTags(selectedAsset, [...selectedAsset.tags, t])
+                              setTagInput("")
+                            }
+                          }}
+                          className="flex gap-1"
+                        >
+                          <Input
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            placeholder="Add tag"
+                            className="h-6 w-20 text-[10px] px-1.5"
+                          />
+                          <Button type="submit" size="sm" variant="ghost" className="h-6 px-1.5 text-[10px]">
+                            Add
+                          </Button>
+                        </form>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Assign to Fragrance + Sync to Notion */}
+              {fragranceOils.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Assign to:</span>
+                    <select
+                      value={selectedAsset.linked_entity_type === "fragrance" ? selectedAsset.linked_entity_id ?? "" : ""}
+                      onChange={(e) => {
+                        const id = e.target.value
+                        if (id) handleAssignToFragrance(selectedAsset, id)
+                      }}
+                      disabled={updating === selectedAsset.id}
+                      className="h-8 flex-1 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
+                    >
+                      <option value="">Select fragrance...</option>
+                      {fragranceOils.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {selectedAsset.linked_entity_type === "fragrance" &&
+                    selectedAsset.linked_entity_id &&
+                    fragranceOils.some((o) => o.id === selectedAsset.linked_entity_id && o.notionId) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs bg-transparent w-full"
+                        disabled={syncing === selectedAsset.id || !selectedAsset.public_url}
+                        onClick={() => handleSyncToNotion(selectedAsset)}
+                      >
+                        {syncing === selectedAsset.id ? "Syncing..." : "Sync URL to Notion"}
+                      </Button>
+                    )}
+                </div>
+              )}
 
               <Separator />
 

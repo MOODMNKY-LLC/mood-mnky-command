@@ -199,6 +199,12 @@ export interface FragranceOil {
   suggestedColors: string[]
   /** Notion page URL, present when synced from Notion */
   notionUrl?: string | null
+  /** Notion page ID for API updates */
+  notionId?: string | null
+  /** CDN URL for fragrance scene/image */
+  imageUrl?: string | null
+  /** notional | supabase | ai-generated */
+  imageSource?: string | null
 }
 
 // ---- Container Types (CandleScience catalog) ----

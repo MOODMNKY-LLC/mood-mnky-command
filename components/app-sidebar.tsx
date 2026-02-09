@@ -29,6 +29,7 @@ import {
   Plus,
   ImagePlus,
   FolderArchive,
+  Sparkles,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -117,7 +118,8 @@ const storeItems: NavItemWithChildren[] = [
   { title: "Finance", href: "/store/finance", icon: Wallet },
 ]
 
-const assetItems: NavItem[] = [
+const studioItems: NavItem[] = [
+  { title: "Studio", href: "/studio", icon: Sparkles },
   { title: "Media Library", href: "/media", icon: ImagePlus },
 ]
 
@@ -239,12 +241,12 @@ export function AppSidebar() {
 
         <SidebarSeparator />
 
-        {/* ======== Assets ======== */}
+        {/* ======== Studio ======== */}
         <SidebarGroup>
-          <SidebarGroupLabel>Assets</SidebarGroupLabel>
+          <SidebarGroupLabel>Studio</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {assetItems.map((item) => (
+              {studioItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild

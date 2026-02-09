@@ -18,6 +18,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       description: body.description,
       linked_entity_type: body.linked_entity_type,
       linked_entity_id: body.linked_entity_id,
+      category: body.category,
+      source_model: body.source_model,
+      generation_prompt: body.generation_prompt,
     })
     return NextResponse.json({ asset })
   } catch (err) {
