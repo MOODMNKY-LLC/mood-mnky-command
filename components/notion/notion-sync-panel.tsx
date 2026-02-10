@@ -25,6 +25,9 @@ import {
   ExternalLink,
   Droplets,
   FolderOpen,
+  BookOpen,
+  ArrowDownToLine,
+  ArrowUpToLine,
 } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -205,6 +208,178 @@ function DatabaseCard({
   )
 }
 
+const FRAGRANCE_NOTES_ENDPOINT = "/api/notion/sync/fragrance-notes"
+
+function NoteGlossaryCard({ title, icon: Icon }: { title: string; icon: React.ElementType }) {
+  const [notes, setNotes] = useState<Array<{ name: string; slug: string; descriptionShort: string }>>([])
+  const [total, setTotal] = useState(0)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [syncDirection, setSyncDirection] = useState<"to-supabase" | "to-notion" | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleFetch = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(FRAGRANCE_NOTES_ENDPOINT)
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setNotes(data.notes ?? [])
+        setTotal(data.total ?? 0)
+        setLastSyncedAt(data.syncedAt ?? null)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fetch failed")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const handleSync = useCallback(async (direction: "to-supabase" | "to-notion") => {
+    setSyncDirection(direction)
+    setError(null)
+    try {
+      const res = await fetch(FRAGRANCE_NOTES_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direction }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setLastSyncedAt(data.syncedAt ?? new Date().toISOString())
+        if (direction === "to-supabase") {
+          setTotal(data.recordsSynced ?? data.total ?? total)
+        }
+        await handleFetch()
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sync failed")
+    } finally {
+      setSyncDirection(null)
+    }
+  }, [total, handleFetch])
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm text-foreground flex items-center gap-2">
+            <Icon className="h-4 w-4 text-primary" />
+            {title}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {lastSyncedAt && total > 0 && (
+              <Badge className="text-[10px] border-0 bg-success/10 text-success">
+                {total} records
+              </Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFetch}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+            >
+              {isLoading && !syncDirection ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1 h-3 w-3" />
+              )}
+              Fetch
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSync("to-supabase")}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+              title="Notion → Supabase"
+            >
+              {syncDirection === "to-supabase" ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <ArrowDownToLine className="mr-1 h-3 w-3" />
+              )}
+              To Supabase
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSync("to-notion")}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+              title="Supabase → Notion"
+            >
+              {syncDirection === "to-notion" ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <ArrowUpToLine className="mr-1 h-3 w-3" />
+              )}
+              To Notion
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <div className="flex items-center gap-2 text-sm text-destructive mb-3">
+            <AlertCircle className="h-4 w-4" />
+            {error}
+          </div>
+        )}
+        {notes.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {lastSyncedAt && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CheckCircle2 className="h-3 w-3 text-success" />
+                Last fetched: {formatDate(lastSyncedAt)}
+              </div>
+            )}
+            <div className="max-h-80 overflow-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Name</TableHead>
+                    <TableHead className="text-xs">Slug</TableHead>
+                    <TableHead className="text-xs">Description</TableHead>
+                    <TableHead className="text-xs w-10">Link</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {notes.slice(0, 50).map((note, idx) => (
+                    <TableRow key={note.slug || idx}>
+                      <TableCell className="text-xs">{note.name}</TableCell>
+                      <TableCell className="text-xs font-mono">{note.slug}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                        {note.descriptionShort || "—"}
+                      </TableCell>
+                      <TableCell />
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        ) : !isLoading ? (
+          <p className="text-sm text-muted-foreground">
+            Click Fetch to load from Notion, or use To Supabase / To Notion to sync.
+          </p>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {syncDirection ? "Syncing..." : "Fetching from Notion..."}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function NotionSyncPanel() {
   const {
     data: dbData,
@@ -265,6 +440,7 @@ export function NotionSyncPanel() {
                 key: string
                 title: string
                 propertyCount: number
+                recordCount?: number
                 lastEditedTime: string
                 error?: string
               }) => (
@@ -278,7 +454,7 @@ export function NotionSyncPanel() {
                   <span className="text-[10px] text-muted-foreground">
                     {db.error
                       ? "Error connecting"
-                      : `${db.propertyCount} properties`}
+                      : `${db.recordCount ?? 0} records`}
                   </span>
                   {db.lastEditedTime && (
                     <span className="text-[10px] text-muted-foreground">
@@ -294,7 +470,7 @@ export function NotionSyncPanel() {
 
       {/* Sync Tabs */}
       <Tabs defaultValue="fragrance-oils" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="fragrance-oils" className="text-xs">
             <Droplets className="mr-1 h-3 w-3" />
             Fragrance Oils
@@ -302,6 +478,10 @@ export function NotionSyncPanel() {
           <TabsTrigger value="collections" className="text-xs">
             <FolderOpen className="mr-1 h-3 w-3" />
             Collections
+          </TabsTrigger>
+          <TabsTrigger value="note-glossary" className="text-xs">
+            <BookOpen className="mr-1 h-3 w-3" />
+            Note Glossary
           </TabsTrigger>
         </TabsList>
 
@@ -338,6 +518,10 @@ export function NotionSyncPanel() {
               { key: "status", label: "Status" },
             ]}
           />
+        </TabsContent>
+
+        <TabsContent value="note-glossary" className="mt-4">
+          <NoteGlossaryCard title="MNKY Note Glossary" icon={BookOpen} />
         </TabsContent>
       </Tabs>
     </div>

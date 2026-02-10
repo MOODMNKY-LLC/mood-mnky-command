@@ -169,6 +169,18 @@ export interface Formula {
   externalUrl?: string
 }
 
+// ---- Fragrance Notes Glossary ----
+export interface FragranceNote {
+  id: string
+  name: string
+  slug: string
+  descriptionShort: string
+  olfactiveProfile: string
+  facts: string
+  createdAt: string
+  updatedAt: string
+}
+
 // ---- Fragrance Oils ----
 export interface FragranceOil {
   id: string

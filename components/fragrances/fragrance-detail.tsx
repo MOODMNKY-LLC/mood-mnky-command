@@ -368,6 +368,13 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
   )
 }
 
+function noteToSlug(note: string): string {
+  return note
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+}
+
 function NoteRow({
   label,
   notes,
@@ -383,15 +390,21 @@ function NoteRow({
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
-        {notes.map((note) => (
-          <Badge
-            key={note}
-            variant="outline"
-            className={`text-xs ${colorClass}`}
-          >
-            {note}
-          </Badge>
-        ))}
+        {notes.map((note) => {
+          const slug = noteToSlug(note)
+          return (
+            <Badge
+              key={note}
+              variant="outline"
+              className={`text-xs ${colorClass} cursor-pointer hover:opacity-90 transition-opacity`}
+              asChild
+            >
+              <Link href={slug ? `/glossary/${slug}` : "/glossary"}>
+                {note}
+              </Link>
+            </Badge>
+          )
+        })}
       </div>
     </div>
   )

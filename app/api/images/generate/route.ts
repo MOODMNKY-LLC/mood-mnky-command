@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       linked_entity_type: fragranceId ? "fragrance" : undefined,
       linked_entity_id: fragranceId,
       category: "fragrance-scene",
-      source_model: model ?? "gpt-image-1",
+      source_model: model ?? "gpt-image-1.5",
       generation_prompt: prompt,
     })
 

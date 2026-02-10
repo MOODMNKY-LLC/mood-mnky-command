@@ -1,17 +1,28 @@
 "use client"
 
-import useSWR from "swr"
+import { useState, useCallback } from "react"
+import useSWR, { useSWRConfig } from "swr"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Database, Loader2, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ExternalLink, Database, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
+const FRAGRANCE_OILS_SYNC_ENDPOINT = "/api/notion/sync/fragrance-oils"
+const DASHBOARD_STATS_KEY = "/api/dashboard/stats"
+
 export function NotionStatus() {
+  const { mutate } = useSWRConfig()
+  const [isSyncingOils, setIsSyncingOils] = useState(false)
+  const [syncOilsError, setSyncOilsError] = useState<string | null>(null)
+
   const {
     data,
     error,
     isLoading,
+    mutate: mutateDatabases,
   } = useSWR("/api/notion/databases", fetcher, {
     revalidateOnFocus: false,
     errorRetryCount: 1,
@@ -26,6 +37,25 @@ export function NotionStatus() {
     error?: string
   }> = data?.databases || []
   const totalRecords = data?.totalRecords ?? 0
+
+  const syncFragranceOils = useCallback(async () => {
+    setIsSyncingOils(true)
+    setSyncOilsError(null)
+    try {
+      const res = await fetch(FRAGRANCE_OILS_SYNC_ENDPOINT, { method: "POST" })
+      const json = await res.json()
+      if (json.error) {
+        setSyncOilsError(json.error)
+        return
+      }
+      await mutate(DASHBOARD_STATS_KEY)
+      await mutateDatabases()
+    } catch (e) {
+      setSyncOilsError(e instanceof Error ? e.message : "Sync failed")
+    } finally {
+      setIsSyncingOils(false)
+    }
+  }, [mutate, mutateDatabases])
 
   return (
     <Card className="bg-card border-border">
@@ -99,6 +129,31 @@ export function NotionStatus() {
               <span className="text-sm font-mono font-semibold text-foreground">
                 {totalRecords}
               </span>
+            </div>
+            {syncOilsError && (
+              <p className="text-xs text-destructive">{syncOilsError}</p>
+            )}
+            <div className="flex flex-col gap-2 pt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={syncFragranceOils}
+                disabled={isSyncingOils}
+                className="w-full text-xs"
+              >
+                {isSyncingOils ? (
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-3 w-3" />
+                )}
+                {isSyncingOils ? "Syncing..." : "Sync fragrance oils to Supabase"}
+              </Button>
+              <Link
+                href="/notion"
+                className="text-center text-xs text-primary hover:underline"
+              >
+                Full sync &amp; options →
+              </Link>
             </div>
           </div>
         ) : (

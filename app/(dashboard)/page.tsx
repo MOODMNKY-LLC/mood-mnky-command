@@ -58,7 +58,7 @@ export default function DashboardPage() {
             <StatCard
               title="Fragrance Oils"
               value={stats?.totalFragrances ?? 0}
-              description={stats?.notionConnected ? "In MNKY Science catalog" : "Connect Notion to sync"}
+              description={stats?.notionConnected ? "Synced from Notion" : "Connect Notion to sync"}
               icon={Droplets}
             />
             <StatCard

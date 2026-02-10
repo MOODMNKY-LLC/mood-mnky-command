@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FRAGRANCE_SCENE_PROMPTS, getPromptForFragrance } from "@/lib/prompts/fragrance-scenes"
+import { IMAGE_WORKFLOWS } from "@/lib/image-workflows"
 import type { MediaAsset } from "@/lib/supabase/storage"
 import { BUCKET_CONFIG, type BucketId } from "@/lib/supabase/storage"
 import type { FragranceOil } from "@/lib/types"
@@ -104,7 +105,7 @@ function StudioContent() {
           referenceImageUrl: referenceUrl || undefined,
           fragranceId: fragranceOils.find((o) => o.name === selectedFragrance)?.id,
           fragranceName: selectedFragrance || undefined,
-          model: "gpt-image-1",
+          model: "gpt-image-1.5",
           size: "1024x1024",
           quality: "high",
         }),
@@ -132,8 +133,10 @@ function StudioContent() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Studio</h1>
         <p className="text-sm text-muted-foreground">
-          Generate bespoke fragrance scene images using AI. Use your mascot as reference for
-          consistent brand imagery.
+          {IMAGE_WORKFLOWS.STUDIO_FRAGRANCE_SCENE.description}
+        </p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">
+          Workflow: {IMAGE_WORKFLOWS.STUDIO_FRAGRANCE_SCENE.name} · Model: {IMAGE_WORKFLOWS.STUDIO_FRAGRANCE_SCENE.model}
         </p>
       </div>
 

@@ -30,6 +30,7 @@ import {
   ImagePlus,
   FolderArchive,
   Sparkles,
+  BookOpen,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -78,6 +79,7 @@ const labItems: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Formulas", href: "/formulas", icon: FlaskConical },
   { title: "Fragrance Oils", href: "/fragrances", icon: Droplets },
+  { title: "Glossary", href: "/glossary", icon: BookOpen },
   { title: "Blending Lab", href: "/blending", icon: Palette },
   { title: "Wicks & Wax", href: "/wicks", icon: Flame },
   { title: "Product Builder", href: "/products", icon: Package },

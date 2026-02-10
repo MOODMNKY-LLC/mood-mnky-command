@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import { Search, Loader2, Database } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -37,7 +38,8 @@ function CardSkeleton() {
   )
 }
 
-export default function FragrancesPage() {
+function FragrancesContent() {
+  const searchParams = useSearchParams()
   const [selectedOil, setSelectedOil] = useState<FragranceOil | null>(null)
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
@@ -49,6 +51,14 @@ export default function FragrancesPage() {
   )
 
   const sourceOils = data?.fragranceOils ?? []
+
+  const oilIdFromUrl = searchParams.get("oil")
+  useEffect(() => {
+    if (oilIdFromUrl && sourceOils.length > 0) {
+      const oil = sourceOils.find((o) => o.id === oilIdFromUrl)
+      if (oil) setSelectedOil(oil)
+    }
+  }, [oilIdFromUrl, sourceOils])
 
   const filteredOils = useMemo(() => {
     return sourceOils.filter((oil) => {
@@ -171,5 +181,32 @@ export default function FragrancesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function FragrancesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col gap-6 p-6">
+          <div className="h-8 w-48 animate-pulse rounded bg-secondary" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-lg bg-secondary"
+                />
+              ))}
+            </div>
+            <div className="lg:col-span-2 flex min-h-[400px] items-center justify-center rounded-lg border border-dashed border-border bg-card/50">
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <FragrancesContent />
+    </Suspense>
   )
 }

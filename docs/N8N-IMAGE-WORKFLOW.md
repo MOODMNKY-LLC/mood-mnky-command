@@ -2,6 +2,17 @@
 
 This document describes how to set up an n8n workflow that generates fragrance scene images, stores them in Supabase, and maps the URLs to Notion.
 
+## Image Workflows (Use Cases)
+
+| Workflow | Description | Endpoints |
+|----------|-------------|-----------|
+| **Studio – Fragrance Scene** | Generate bespoke fragrance scene images in the app. Select a fragrance, optionally add a mascot reference for brand consistency. Images stored in ai-generations. | `POST /api/images/generate` |
+| **n8n – Batch Fragrance Scenes** | Automated workflow for generating images for multiple fragrances. Trigger via schedule or manual. Calls generate API, then optionally updates Notion page image. | `POST /api/images/generate`, `POST /api/notion/update-image` |
+| **Media Library – Assign & Sync** | Assign an existing image to a fragrance in Media Library. Use "Sync to Notion" to push the image URL to the Notion fragrance page (one-way). | `PATCH /api/media/[id]`, `POST /api/notion/update-image` |
+| **Upload from URL** | Store an image from an external URL into Supabase. Used by n8n when the image source is external. Requires CDN_API_KEY. | `POST /api/images/upload-from-url` |
+
+**Model**: All AI generation uses `gpt-image-1.5` (latest OpenAI image model) by default.
+
 ## Prerequisites
 
 - n8n instance (self-hosted or cloud)
@@ -26,7 +37,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
   "referenceImageUrl": "https://...",
   "fragranceId": "uuid",
   "fragranceName": "Caribbean Casita",
-  "model": "gpt-image-1",
+  "model": "gpt-image-1.5",
   "size": "1024x1024",
   "quality": "high"
 }

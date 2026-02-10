@@ -5,7 +5,13 @@ const NOTION_BASE_URL = "https://api.notion.com/v1"
 // ---- MNKY_MIND Database IDs ----
 export const NOTION_DATABASE_IDS = {
   fragranceOils: "2c8cd2a6-5422-813a-8d0f-efdd74a80a6f",
+  fragranceNotes: "1e8a4b85-160d-43c2-b6ae-c013744608d7",
   collections: "0abe801a-cd15-4ac1-9f9a-c298d3250ee7",
+  products: "a57635f9-276d-4d37-a368-6db6c0a02f8e",
+  formulas: "604555f9-db48-43d6-af5d-2e21cc0429b6",
+  brandAssets: "e757bb3f-7d8f-4b5f-b380-7a6115751c85",
+  productCopy: "998270c2-30c4-4767-a884-e57d28c1adb2",
+  customOrders: "120e6471-74a5-4430-abee-2dabfb5ab106",
 } as const
 
 // ---- Types ----
@@ -73,6 +79,13 @@ interface NotionDatabaseResponse {
 
 // ---- Core API Fetch ----
 
+const NOTION_RATE_LIMIT_RETRY_MS = 2000
+const NOTION_RATE_LIMIT_MAX_RETRIES = 5
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function notionFetch<T>(
   endpoint: string,
   options: { method?: string; body?: Record<string, unknown> } = {}
@@ -86,19 +99,35 @@ async function notionFetch<T>(
     "Content-Type": "application/json",
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
-  })
+  let lastError: Error | null = null
+  for (let attempt = 0; attempt <= NOTION_RATE_LIMIT_MAX_RETRIES; attempt++) {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+    })
 
-  if (!res.ok) {
+    if (res.ok) {
+      return res.json() as Promise<T>
+    }
+
     const errorText = await res.text()
-    throw new Error(`Notion API error (${res.status}): ${errorText}`)
+    lastError = new Error(`Notion API error (${res.status}): ${errorText}`)
+
+    if (res.status === 429 && attempt < NOTION_RATE_LIMIT_MAX_RETRIES) {
+      const retryAfterSec = res.headers.get("Retry-After")
+      const waitMs = retryAfterSec
+        ? Math.max(1000, parseFloat(retryAfterSec) * 1000)
+        : NOTION_RATE_LIMIT_RETRY_MS
+      await sleep(waitMs)
+      continue
+    }
+
+    throw lastError
   }
 
-  return res.json() as Promise<T>
+  throw lastError ?? new Error("Notion API request failed")
 }
 
 // ---- Database Methods ----
@@ -151,6 +180,9 @@ export async function queryDatabase(
   }
 }
 
+/** Delay between paginated Notion queries to stay under ~3 req/s */
+const NOTION_PAGINATION_DELAY_MS = 350
+
 export async function queryAllPages(
   databaseId: string,
   options: {
@@ -171,9 +203,57 @@ export async function queryAllPages(
     allPages.push(...result.pages)
     hasMore = result.hasMore
     nextCursor = result.nextCursor ?? undefined
+    if (hasMore) {
+      await sleep(NOTION_PAGINATION_DELAY_MS)
+    }
   }
 
   return allPages
+}
+
+// ---- Page Create / Update (for two-way sync) ----
+
+const NOTION_RICH_TEXT_CHUNK_SIZE = 2000
+
+/** Split content into Notion rich_text blocks (max 2000 chars per block) */
+export function richTextChunks(content: string): Array<{ text: { content: string } }> {
+  if (!content || content.length === 0) return []
+  const chunks: Array<{ text: { content: string } }> = []
+  for (let i = 0; i < content.length; i += NOTION_RICH_TEXT_CHUNK_SIZE) {
+    chunks.push({ text: { content: content.slice(i, i + NOTION_RICH_TEXT_CHUNK_SIZE) } })
+  }
+  return chunks
+}
+
+interface NotionCreatePageResponse {
+  id: string
+  url: string
+}
+
+/** Create a page in a Notion database */
+export async function createPageInDatabase(
+  databaseId: string,
+  properties: Record<string, unknown>
+): Promise<{ id: string; url: string }> {
+  const data = await notionFetch<NotionCreatePageResponse>("/pages", {
+    method: "POST",
+    body: {
+      parent: { database_id: databaseId },
+      properties,
+    },
+  })
+  return { id: data.id, url: data.url }
+}
+
+/** Update a Notion page's properties */
+export async function updatePageProperties(
+  pageId: string,
+  properties: Record<string, unknown>
+): Promise<void> {
+  await notionFetch(`/pages/${pageId}`, {
+    method: "PATCH",
+    body: { properties },
+  })
 }
 
 // ---- Property Extractors ----

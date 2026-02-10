@@ -27,40 +27,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { FRAGRANCE_OILS, FORMULAS, CONTAINERS, WICK_OPTIONS } from "@/lib/data"
 import { MediaPicker } from "@/components/media/media-picker"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
-import type { Formula, FragranceOil, ContainerOption, FragranceFamily } from "@/lib/types"
+import type { Formula, FragranceOil, ContainerOption } from "@/lib/types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-function mapNotionOilToLocal(item: Record<string, unknown>): FragranceOil {
-  return {
-    id: (item.notionId as string) || String(Math.random()),
-    name: (item.name as string) || "Untitled",
-    description: (item.description as string) || "",
-    family: ((item.family as string) || "Floral") as FragranceFamily,
-    subfamilies: ((item.subfamilies as string[]) || []) as FragranceFamily[],
-    topNotes: (item.topNotes as string[]) || [],
-    middleNotes: (item.middleNotes as string[]) || [],
-    baseNotes: (item.baseNotes as string[]) || [],
-    type: ((item.type as string) || "Fragrance Oil") as "Fragrance Oil" | "Blending Element",
-    candleSafe: (item.candleSafe as boolean) ?? true,
-    soapSafe: (item.soapSafe as boolean) ?? false,
-    lotionSafe: (item.lotionSafe as boolean) ?? false,
-    perfumeSafe: (item.perfumeSafe as boolean) ?? false,
-    roomSpraySafe: (item.roomSpraySafe as boolean) ?? false,
-    waxMeltSafe: (item.waxMeltSafe as boolean) ?? false,
-    maxUsageCandle: (item.maxUsageCandle as number) ?? 0,
-    maxUsageSoap: (item.maxUsageSoap as number) ?? 0,
-    maxUsageLotion: (item.maxUsageLotion as number) ?? 0,
-    price1oz: (item.price1oz as number) ?? 0,
-    price4oz: (item.price4oz as number) ?? 0,
-    price16oz: (item.price16oz as number) ?? 0,
-    rating: (item.rating as number) ?? 0,
-    reviewCount: (item.reviewCount as number) ?? 0,
-    blendsWellWith: (item.blendsWellWith as string[]) || [],
-    alternativeBranding: (item.alternativeBranding as string[]) || [],
-    suggestedColors: (item.suggestedColors as string[]) || [],
-  }
-}
 
 const STEPS = [
   { id: 1, label: "Fragrance", icon: Droplets },
@@ -335,17 +304,21 @@ function StepFragrance({
   selected: FragranceOil | null
   onSelect: (oil: FragranceOil) => void
 }) {
-  const { data: notionData, isLoading } = useSWR(
-    "/api/notion/sync/fragrance-oils",
-    fetcher,
-    { revalidateOnFocus: false, errorRetryCount: 1, dedupingInterval: 60000 }
-  )
+  const { data: fragranceData, isLoading, error } = useSWR<{
+    fragranceOils: FragranceOil[]
+    total: number
+  }>("/api/fragrance-oils", fetcher, {
+    revalidateOnFocus: false,
+    errorRetryCount: 1,
+    dedupingInterval: 60000,
+  })
 
-  const isLive = notionData?.fragranceOils && !notionData?.error
   const oils: FragranceOil[] = useMemo(() => {
-    if (!isLive) return FRAGRANCE_OILS
-    return (notionData.fragranceOils as Record<string, unknown>[]).map(mapNotionOilToLocal)
-  }, [isLive, notionData])
+    if (fragranceData?.fragranceOils?.length) return fragranceData.fragranceOils
+    return FRAGRANCE_OILS
+  }, [fragranceData])
+
+  const isLive = fragranceData?.fragranceOils && !error
 
   return (
     <div className="flex flex-col gap-4">
@@ -360,7 +333,7 @@ function StepFragrance({
           </Badge>
         ) : isLive ? (
           <Badge className="text-[10px] border-0 bg-success/10 text-success">
-            {oils.length} from Notion
+            {oils.length} from catalog
           </Badge>
         ) : (
           <Badge variant="secondary" className="text-[10px] gap-1 text-muted-foreground">

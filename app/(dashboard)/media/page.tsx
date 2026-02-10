@@ -36,6 +36,7 @@ import {
   type BucketId,
   type MediaAsset,
 } from "@/lib/supabase/storage"
+import { IMAGE_WORKFLOWS } from "@/lib/image-workflows"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -203,6 +204,9 @@ export default function MediaLibraryPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           Upload, organize, and manage all media assets across your application.
+        </p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">
+          Workflow: {IMAGE_WORKFLOWS.MEDIA_ASSIGN_AND_SYNC.name} — Assign images to fragrances, sync URL to Notion.
         </p>
       </div>
 
