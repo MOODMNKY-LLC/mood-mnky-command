@@ -215,6 +215,8 @@ export interface FragranceOil {
   notionId?: string | null
   /** CDN URL for fragrance scene/image */
   imageUrl?: string | null
+  /** Thumbnail URL (300px, WebP) - when imageUrl is Supabase storage */
+  thumbnailUrl?: string | null
   /** notional | supabase | ai-generated */
   imageSource?: string | null
 }

@@ -12,6 +12,7 @@ export const NOTION_DATABASE_IDS = {
   brandAssets: "e757bb3f-7d8f-4b5f-b380-7a6115751c85",
   productCopy: "998270c2-30c4-4767-a884-e57d28c1adb2",
   customOrders: "120e6471-74a5-4430-abee-2dabfb5ab106",
+  docs: "ab8ea6f8-2542-4d45-afc2-bfd9ba31d70e",
 } as const
 
 // ---- Types ----

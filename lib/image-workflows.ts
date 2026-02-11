@@ -39,7 +39,7 @@ export const IMAGE_WORKFLOWS = {
     id: "upload-from-url",
     name: "Upload from URL",
     description:
-      "Store an image from an external URL into Supabase (ai-generations or other bucket). Used by n8n when the image source is external, or when importing from another system. Requires CDN_API_KEY.",
+      "Store an image from an external URL into Supabase (ai-generations or other bucket). Used by n8n when the image source is external, or when importing from another system. Requires MEDIA_API_KEY.",
     endpoints: ["POST /api/images/upload-from-url"],
     model: null,
   },

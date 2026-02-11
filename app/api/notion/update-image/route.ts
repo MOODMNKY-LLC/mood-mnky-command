@@ -4,12 +4,12 @@ import { updateFragrancePage } from "@/lib/notion"
 /**
  * Update a Notion page's image URL property.
  * Used by n8n and Studio workflow to sync generated image URLs to Notion.
- * Auth: x-api-key header must match CDN_API_KEY, or authenticated user.
+ * Auth: x-api-key header must match MEDIA_API_KEY (or legacy CDN_API_KEY), or authenticated user.
  */
 export async function POST(request: Request) {
   const apiKey = request.headers.get("x-api-key")
-  const cdnKey = process.env.CDN_API_KEY
-  const useApiKey = cdnKey && apiKey === cdnKey
+  const mediaKey = process.env.MEDIA_API_KEY || process.env.CDN_API_KEY
+  const useApiKey = mediaKey && apiKey === mediaKey
 
   if (!useApiKey) {
     // If no API key auth, require Supabase auth

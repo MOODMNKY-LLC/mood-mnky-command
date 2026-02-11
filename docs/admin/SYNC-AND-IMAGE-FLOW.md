@@ -22,6 +22,13 @@ This document describes how fragrance data flows between Notion, Supabase, and t
 - **Studio** and **Media Library** use "Sync to Notion" to push the selected image URL to the Notion page's "Image URL" property.
 - This is **one-way**: app → Notion. Images set only in Notion are not automatically written back to Supabase.
 
+### Asset URL Patterns
+
+- **Thumbnail** (300px): Use for grids and list thumbnails. Available as `thumbnail_url` from `/api/media` or `thumbnailUrl` from `/api/fragrance-oils`.
+- **Medium** (800px): Use for detail previews. Available as `medium_url` from `/api/media`.
+- **Transformed image proxy**: `GET /api/media/[id]/image?preset=thumbnail|medium|full` redirects to the Supabase transformed URL.
+- See `docs/ASSET-AND-CDN-ARCHITECTURE.md` for full documentation.
+
 ### Fragrance Display in App
 
 - The app displays fragrance images from **Supabase** `fragrance_oils.image_url`.
@@ -36,4 +43,4 @@ This document describes how fragrance data flows between Notion, Supabase, and t
 - See `docs/N8N-IMAGE-WORKFLOW.md` for image workflows and use cases.
 - **Image workflows**: Studio (manual), n8n batch (automated), Media Library (assign & sync), Upload from URL.
 - **Model**: `gpt-image-1.5` (latest OpenAI image model) is used for all AI generation.
-- The workflow uses `APP_URL`, `CDN_API_KEY`, and endpoints for generate, upload-from-url, and update-image.
+- The workflow uses `APP_URL`, `MEDIA_API_KEY`, and endpoints for generate, upload-from-url, and update-image.

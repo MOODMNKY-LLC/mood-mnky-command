@@ -5,6 +5,8 @@ import {
   uploadFile,
   saveMediaAsset,
   getPublicUrl,
+  getThumbnailUrl,
+  getMediumUrl,
   BUCKETS,
   type BucketId,
 } from "@/lib/supabase/storage"
@@ -97,8 +99,11 @@ export async function POST(request: Request) {
       generation_prompt: prompt,
     })
 
+    const thumbnailUrl = getThumbnailUrl(adminSupabase, BUCKETS.aiGenerations as BucketId, path)
+    const mediumUrl = getMediumUrl(adminSupabase, BUCKETS.aiGenerations as BucketId, path)
+
     return NextResponse.json({
-      asset,
+      asset: { ...asset, thumbnail_url: thumbnailUrl, medium_url: mediumUrl },
       publicUrl,
     })
   } catch (err) {

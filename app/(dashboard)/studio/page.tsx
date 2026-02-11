@@ -181,7 +181,7 @@ function StudioContent() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {referenceAssets
-                    .filter((a) => a.public_url && a.mime_type?.startsWith("image/"))
+                    .filter((a) => (a.thumbnail_url ?? a.public_url) && a.mime_type?.startsWith("image/"))
                     .slice(0, 6)
                     .map((asset) => (
                       <button
@@ -199,7 +199,7 @@ function StudioContent() {
                         }`}
                       >
                         <img
-                          src={asset.public_url!}
+                          src={asset.thumbnail_url ?? asset.public_url!}
                           alt={asset.alt_text || asset.file_name}
                           className="h-full w-full object-cover"
                         />
@@ -253,7 +253,7 @@ function StudioContent() {
                   <p className="text-sm font-medium">Generated</p>
                   <div className="flex items-center gap-2">
                     <img
-                      src={generatedAsset.public_url}
+                      src={generatedAsset.medium_url ?? generatedAsset.public_url}
                       alt="Generated"
                       className="h-24 w-24 rounded-lg object-cover"
                     />
@@ -299,9 +299,9 @@ function StudioContent() {
                       key={asset.id}
                       className="group relative aspect-square overflow-hidden rounded-lg border border-border"
                     >
-                      {asset.public_url && asset.mime_type?.startsWith("image/") ? (
+                      {(asset.thumbnail_url ?? asset.public_url) && asset.mime_type?.startsWith("image/") ? (
                         <img
-                          src={asset.public_url}
+                          src={asset.thumbnail_url ?? asset.public_url!}
                           alt={asset.alt_text || asset.file_name}
                           className="h-full w-full object-cover"
                         />

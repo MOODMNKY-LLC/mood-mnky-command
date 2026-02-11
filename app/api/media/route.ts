@@ -1,6 +1,40 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { getMediaAssets, type BucketId } from "@/lib/supabase/storage"
+import {
+  getMediaAssets,
+  getThumbnailUrl,
+  getMediumUrl,
+  type BucketId,
+  type MediaAsset,
+} from "@/lib/supabase/storage"
+
+function enrichAssetWithTransforms(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  asset: MediaAsset
+): MediaAsset & { thumbnail_url?: string; medium_url?: string } {
+  const enriched = { ...asset }
+  if (
+    asset.mime_type?.startsWith("image/") &&
+    asset.bucket_id &&
+    asset.storage_path
+  ) {
+    try {
+      enriched.thumbnail_url = getThumbnailUrl(
+        supabase,
+        asset.bucket_id as BucketId,
+        asset.storage_path
+      )
+      enriched.medium_url = getMediumUrl(
+        supabase,
+        asset.bucket_id as BucketId,
+        asset.storage_path
+      )
+    } catch {
+      // Fallback to public_url if transforms unavailable
+    }
+  }
+  return enriched
+}
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -31,7 +65,8 @@ export async function GET(request: Request) {
       limit,
       offset,
     })
-    return NextResponse.json({ assets, count })
+    const enrichedAssets = assets.map((a) => enrichAssetWithTransforms(supabase, a))
+    return NextResponse.json({ assets: enrichedAssets, count })
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to fetch" },

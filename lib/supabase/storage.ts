@@ -49,6 +49,10 @@ export interface MediaAsset {
   category?: string | null
   source_model?: string | null
   generation_prompt?: string | null
+  /** Thumbnail URL (300px, WebP) - from API when transforms available */
+  thumbnail_url?: string | null
+  /** Medium URL (800px, WebP) - from API when transforms available */
+  medium_url?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +192,36 @@ export function getMediumUrl(
     format: "webp",
     resize: "contain",
   })
+}
+
+/**
+ * Parse a Supabase storage public URL to extract bucket and path.
+ * Returns null if URL is not a Supabase storage URL.
+ */
+export function parseSupabaseStorageUrl(
+  url: string,
+): { bucket: string; path: string } | null {
+  try {
+    const u = new URL(url)
+    const match = u.pathname.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/)
+    if (!match) return null
+    return { bucket: match[1], path: decodeURIComponent(match[2]) }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Get thumbnail URL from a Supabase storage public URL.
+ * Returns the original URL if parsing fails or transform is unavailable.
+ */
+export function getThumbnailUrlFromPublicUrl(
+  supabase: SupabaseClient,
+  publicUrl: string,
+): string {
+  const parsed = parseSupabaseStorageUrl(publicUrl)
+  if (!parsed) return publicUrl
+  return getThumbnailUrl(supabase, parsed.bucket as BucketId, parsed.path)
 }
 
 // ---------------------------------------------------------------------------

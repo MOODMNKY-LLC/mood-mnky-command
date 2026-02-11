@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { getThumbnailUrlFromPublicUrl } from "@/lib/supabase/storage"
 import type { FragranceOil, FragranceFamily } from "@/lib/types"
 
 function dbRowToFragranceOil(row: {
@@ -81,10 +82,23 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const fragranceOils = (data ?? []).map(dbRowToFragranceOil)
+  const fragranceOils = (data ?? []).map(dbRowToFragranceOil) as FragranceOil[]
+
+  // Add thumbnailUrl for Supabase storage images (optimized 300px for display)
+  const enriched = fragranceOils.map((oil) => {
+    if (oil.imageUrl) {
+      try {
+        const thumbnailUrl = getThumbnailUrlFromPublicUrl(supabase, oil.imageUrl)
+        return { ...oil, thumbnailUrl }
+      } catch {
+        return oil
+      }
+    }
+    return oil
+  })
 
   return NextResponse.json({
-    fragranceOils,
-    total: fragranceOils.length,
+    fragranceOils: enriched,
+    total: enriched.length,
   })
 }

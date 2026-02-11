@@ -4,6 +4,7 @@ import { useState } from "react"
 import type { FragranceFamily } from "@/lib/types"
 import { FragranceWheel } from "@/components/blending/fragrance-wheel"
 import { BlendingCalculator } from "@/components/blending/blending-calculator"
+import { DocsTrigger } from "@/components/docs/docs-trigger"
 
 export default function BlendingPage() {
   const [selectedFamily, setSelectedFamily] = useState<FragranceFamily | null>(
@@ -13,9 +14,14 @@ export default function BlendingPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
-          Fragrance Blending
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
+            Fragrance Blending
+          </h1>
+          <DocsTrigger category="guide" slug="blending-lab">
+            View guide
+          </DocsTrigger>
+        </div>
         <p className="text-sm text-muted-foreground">
           Use the CandleScience fragrance wheel to explore scent families and
           build custom blends with up to 4 fragrances

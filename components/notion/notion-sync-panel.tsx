@@ -26,6 +26,7 @@ import {
   Droplets,
   FolderOpen,
   BookOpen,
+  FileText,
   ArrowDownToLine,
   ArrowUpToLine,
 } from "lucide-react"
@@ -380,6 +381,176 @@ function NoteGlossaryCard({ title, icon: Icon }: { title: string; icon: React.El
   )
 }
 
+const DOCS_SYNC_ENDPOINT = "/api/notion/sync/docs"
+
+function DocsCommandCard({ title, icon: Icon }: { title: string; icon: React.ElementType }) {
+  const [docs, setDocs] = useState<Array<{ title: string; slug: string; category: string; description: string }>>([])
+  const [total, setTotal] = useState(0)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [syncDirection, setSyncDirection] = useState<"to-files" | "to-notion" | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleFetch = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(DOCS_SYNC_ENDPOINT)
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setDocs(data.docs ?? [])
+        setTotal(data.total ?? 0)
+        setLastSyncedAt(data.syncedAt ?? null)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Fetch failed")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const handleSync = useCallback(async (direction: "to-files" | "to-notion") => {
+    setSyncDirection(direction)
+    setError(null)
+    try {
+      const res = await fetch(DOCS_SYNC_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direction }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setLastSyncedAt(data.syncedAt ?? new Date().toISOString())
+        setTotal(data.total ?? data.written ?? (data.created ?? 0) + (data.updated ?? 0) ?? total)
+        await handleFetch()
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sync failed")
+    } finally {
+      setSyncDirection(null)
+    }
+  }, [total, handleFetch])
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm text-foreground flex items-center gap-2">
+            <Icon className="h-4 w-4 text-primary" />
+            {title}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {lastSyncedAt && total > 0 && (
+              <Badge className="text-[10px] border-0 bg-success/10 text-success">
+                {total} docs
+              </Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFetch}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+            >
+              {isLoading && !syncDirection ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1 h-3 w-3" />
+              )}
+              Fetch
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSync("to-files")}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+              title="Notion → Files"
+            >
+              {syncDirection === "to-files" ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <ArrowDownToLine className="mr-1 h-3 w-3" />
+              )}
+              To Files
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSync("to-notion")}
+              disabled={isLoading}
+              className="h-7 text-xs bg-transparent"
+              title="Files → Notion"
+            >
+              {syncDirection === "to-notion" ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <ArrowUpToLine className="mr-1 h-3 w-3" />
+              )}
+              To Notion
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <div className="flex items-center gap-2 text-sm text-destructive mb-3">
+            <AlertCircle className="h-4 w-4" />
+            {error}
+          </div>
+        )}
+        {docs.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {lastSyncedAt && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CheckCircle2 className="h-3 w-3 text-success" />
+                Last fetched: {formatDate(lastSyncedAt)}
+              </div>
+            )}
+            <div className="max-h-80 overflow-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Title</TableHead>
+                    <TableHead className="text-xs">Slug</TableHead>
+                    <TableHead className="text-xs">Category</TableHead>
+                    <TableHead className="text-xs max-w-[200px]">Description</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {docs.slice(0, 50).map((doc, idx) => (
+                    <TableRow key={`${doc.category}-${doc.slug}-${idx}`}>
+                      <TableCell className="text-xs">{doc.title}</TableCell>
+                      <TableCell className="text-xs font-mono">{doc.slug}</TableCell>
+                      <TableCell className="text-xs">{doc.category}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                        {doc.description || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        ) : !isLoading ? (
+          <p className="text-sm text-muted-foreground">
+            Click Fetch to load from Notion, or use To Files / To Notion to sync.
+          </p>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {syncDirection ? "Syncing..." : "Fetching from Notion..."}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function NotionSyncPanel() {
   const {
     data: dbData,
@@ -470,7 +641,7 @@ export function NotionSyncPanel() {
 
       {/* Sync Tabs */}
       <Tabs defaultValue="fragrance-oils" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="fragrance-oils" className="text-xs">
             <Droplets className="mr-1 h-3 w-3" />
             Fragrance Oils
@@ -482,6 +653,10 @@ export function NotionSyncPanel() {
           <TabsTrigger value="note-glossary" className="text-xs">
             <BookOpen className="mr-1 h-3 w-3" />
             Note Glossary
+          </TabsTrigger>
+          <TabsTrigger value="docs" className="text-xs">
+            <FileText className="mr-1 h-3 w-3" />
+            Command Docs
           </TabsTrigger>
         </TabsList>
 
@@ -522,6 +697,9 @@ export function NotionSyncPanel() {
 
         <TabsContent value="note-glossary" className="mt-4">
           <NoteGlossaryCard title="MNKY Note Glossary" icon={BookOpen} />
+        </TabsContent>
+        <TabsContent value="docs" className="mt-4">
+          <DocsCommandCard title="MNKY Command Docs" icon={FileText} />
         </TabsContent>
       </Tabs>
     </div>

@@ -327,9 +327,9 @@ export default function MediaLibraryPage() {
                       : "border-border"
                   }`}
                 >
-                  {asset.mime_type?.startsWith("image/") && asset.public_url ? (
+                  {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
                     <img
-                      src={asset.public_url || "/placeholder.svg"}
+                      src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
                       alt={asset.alt_text || asset.file_name}
                       className="h-full w-full object-cover"
                     />
@@ -358,9 +358,9 @@ export default function MediaLibraryPage() {
                     selectedAsset?.id === asset.id ? "border-primary bg-accent" : "border-border"
                   }`}
                 >
-                  {asset.mime_type?.startsWith("image/") && asset.public_url ? (
+                  {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
                     <img
-                      src={asset.public_url || "/placeholder.svg"}
+                      src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
                       alt={asset.alt_text || asset.file_name}
                       className="h-10 w-10 shrink-0 rounded object-cover"
                     />
@@ -487,9 +487,9 @@ export default function MediaLibraryPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_200px]">
                 {/* Preview */}
                 <div className="flex items-center justify-center rounded-lg bg-secondary/50 p-4">
-                  {selectedAsset.mime_type?.startsWith("image/") && selectedAsset.public_url ? (
+                  {selectedAsset.mime_type?.startsWith("image/") && (selectedAsset.medium_url ?? selectedAsset.public_url) ? (
                     <img
-                      src={selectedAsset.public_url || "/placeholder.svg"}
+                      src={selectedAsset.medium_url ?? selectedAsset.public_url ?? "/placeholder.svg"}
                       alt={selectedAsset.alt_text || selectedAsset.file_name}
                       className="max-h-[400px] rounded object-contain"
                     />

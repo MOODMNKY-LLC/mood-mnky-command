@@ -37,9 +37,9 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
     { size: "16 oz", price: oil.price16oz },
   ]
 
-  const kindred = FAMILY_KINDRED[oil.family]
-  const complementary = FAMILY_COMPLEMENTARY[oil.family]
-  const season = FAMILY_SEASONS[oil.family]
+  const kindred = FAMILY_KINDRED[oil.family] ?? []
+  const complementary = FAMILY_COMPLEMENTARY[oil.family] ?? "Floral"
+  const season = FAMILY_SEASONS[oil.family] ?? "All Season"
 
   return (
     <div className="flex flex-col gap-4">
@@ -55,20 +55,20 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
                 <Badge
                   className="border-0"
                   style={{
-                    backgroundColor: `${FAMILY_COLORS[oil.family]}20`,
-                    color: FAMILY_COLORS[oil.family],
+                    backgroundColor: `${FAMILY_COLORS[oil.family] ?? "#888"}20`,
+                    color: FAMILY_COLORS[oil.family] ?? "#888",
                   }}
                 >
-                  {oil.family}
+                  {oil.family || "Unknown"}
                 </Badge>
-                {oil.subfamilies.map((sub) => (
+                {oil.subfamilies?.map((sub) => (
                   <Badge
                     key={sub}
                     variant="outline"
                     className="text-xs"
                     style={{
-                      borderColor: `${FAMILY_COLORS[sub]}40`,
-                      color: FAMILY_COLORS[sub],
+                      borderColor: `${FAMILY_COLORS[sub] ?? "#888"}40`,
+                      color: FAMILY_COLORS[sub] ?? "#888",
                     }}
                   >
                     {sub}
@@ -99,17 +99,15 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
                 Edit
               </Button>
               {oil.notionUrl && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1.5"
-                  asChild
+                <a
+                  href={oil.notionUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  <a href={oil.notionUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    Notion
-                  </a>
-                </Button>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Notion
+                </a>
               )}
             </div>
           </div>
@@ -120,7 +118,7 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
             <div className="mb-4 flex items-start gap-3">
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border">
                 <img
-                  src={oil.imageUrl}
+                  src={oil.thumbnailUrl ?? oil.imageUrl}
                   alt={`${oil.name} fragrance scene`}
                   className="h-full w-full object-cover"
                 />
@@ -194,8 +192,8 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
                     variant="outline"
                     className="text-xs"
                     style={{
-                      borderColor: `${FAMILY_COLORS[fam]}40`,
-                      color: FAMILY_COLORS[fam],
+                      borderColor: `${FAMILY_COLORS[fam] ?? "#888"}40`,
+                      color: FAMILY_COLORS[fam] ?? "#888",
                     }}
                   >
                     {fam}
@@ -211,8 +209,8 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
                 variant="outline"
                 className="text-xs"
                 style={{
-                  borderColor: `${FAMILY_COLORS[complementary]}40`,
-                  color: FAMILY_COLORS[complementary],
+                  borderColor: `${FAMILY_COLORS[complementary] ?? "#888"}40`,
+                  color: FAMILY_COLORS[complementary] ?? "#888",
                 }}
               >
                 {complementary}

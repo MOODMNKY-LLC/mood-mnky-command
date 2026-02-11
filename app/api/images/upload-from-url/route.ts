@@ -11,12 +11,12 @@ import {
 /**
  * Upload an image from a URL to Supabase storage and record in media_assets.
  * Used by n8n and other server-side workflows.
- * Auth: x-api-key header must match CDN_API_KEY; userId is required in body.
+ * Auth: x-api-key header must match MEDIA_API_KEY (or legacy CDN_API_KEY); userId is required in body.
  */
 export async function POST(request: Request) {
   const apiKey = request.headers.get("x-api-key")
-  const cdnKey = process.env.CDN_API_KEY
-  if (!cdnKey || apiKey !== cdnKey) {
+  const mediaKey = process.env.MEDIA_API_KEY || process.env.CDN_API_KEY
+  if (!mediaKey || apiKey !== mediaKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

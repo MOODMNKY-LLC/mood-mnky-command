@@ -9,7 +9,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 | **Studio – Fragrance Scene** | Generate bespoke fragrance scene images in the app. Select a fragrance, optionally add a mascot reference for brand consistency. Images stored in ai-generations. | `POST /api/images/generate` |
 | **n8n – Batch Fragrance Scenes** | Automated workflow for generating images for multiple fragrances. Trigger via schedule or manual. Calls generate API, then optionally updates Notion page image. | `POST /api/images/generate`, `POST /api/notion/update-image` |
 | **Media Library – Assign & Sync** | Assign an existing image to a fragrance in Media Library. Use "Sync to Notion" to push the image URL to the Notion fragrance page (one-way). | `PATCH /api/media/[id]`, `POST /api/notion/update-image` |
-| **Upload from URL** | Store an image from an external URL into Supabase. Used by n8n when the image source is external. Requires CDN_API_KEY. | `POST /api/images/upload-from-url` |
+| **Upload from URL** | Store an image from an external URL into Supabase. Used by n8n when the image source is external. Requires MEDIA_API_KEY. | `POST /api/images/upload-from-url` |
 
 **Model**: All AI generation uses `gpt-image-1.5` (latest OpenAI image model) by default.
 
@@ -19,7 +19,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 - MOOD MNKY Lab app deployed (Vercel URL)
 - Environment variables configured:
   - `OPENAI_API_KEY` - In app (Vercel)
-  - `CDN_API_KEY` - In app (Vercel), for n8n API auth
+  - `MEDIA_API_KEY` - In app (Vercel), for n8n API auth (legacy: CDN_API_KEY)
   - `NOTION_API_KEY` - In app (Vercel)
 
 ## API Endpoints
@@ -28,7 +28,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 
 **POST** `{{APP_URL}}/api/images/generate`
 
-**Auth**: Supabase session (browser) or `CDN_API_KEY` via header (server)
+**Auth**: Supabase session (browser) or `MEDIA_API_KEY` via header (server)
 
 **Body**:
 ```json
@@ -55,7 +55,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 
 **POST** `{{APP_URL}}/api/images/upload-from-url`
 
-**Auth**: `x-api-key: {{CDN_API_KEY}}`
+**Auth**: `x-api-key: {{MEDIA_API_KEY}}`
 
 **Body**:
 ```json
@@ -74,7 +74,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 
 **POST** `{{APP_URL}}/api/notion/update-image`
 
-**Auth**: `x-api-key: {{CDN_API_KEY}}` or Supabase session
+**Auth**: `x-api-key: {{MEDIA_API_KEY}}` or Supabase session
 
 **Body**:
 ```json
@@ -112,14 +112,14 @@ This document describes how to set up an n8n workflow that generates fragrance s
    - Method: POST
    - URL: `{{$env.APP_URL}}/api/images/generate`
    - Body: JSON with `prompt`, `fragranceId`, `fragranceName`, optional `referenceImageUrl`
-   - Headers: `x-api-key: {{$env.CDN_API_KEY}}` (if using API key auth)
+   - Headers: `x-api-key: {{$env.MEDIA_API_KEY}}` (if using API key auth)
    - Note: Browser auth requires a different flow (use Studio in-app for that)
 
 3. **Update Notion node**:
    - Method: POST
    - URL: `{{$env.APP_URL}}/api/notion/update-image`
    - Body: `{ "notionPageId": "{{$node["HTTP Request"].json.notionPageId}}", "imageUrl": "{{$node["HTTP Request"].json.publicUrl}}" }`
-   - Headers: `x-api-key: {{$env.CDN_API_KEY}}`
+   - Headers: `x-api-key: {{$env.MEDIA_API_KEY}}`
 
 4. **Data flow**: The generate API returns `publicUrl`. You need `notionPageId` from your fragrance data (Supabase `fragrance_oils.notion_id` or similar). Map fragrance ID to Notion page ID in your workflow.
 
@@ -132,4 +132,4 @@ This document describes how to set up an n8n workflow that generates fragrance s
 ## Environment Variables (n8n)
 
 - `APP_URL`: Your Vercel app URL (e.g. `https://mood-mnky-lab.vercel.app`)
-- `CDN_API_KEY`: Set in Vercel, matching value in n8n credentials
+- `MEDIA_API_KEY`: Set in Vercel, matching value in n8n credentials (legacy: CDN_API_KEY)
