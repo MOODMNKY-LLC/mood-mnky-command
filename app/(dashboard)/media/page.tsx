@@ -55,6 +55,33 @@ function MimeIcon({ mime }: { mime: string | null }) {
   return <FileIcon className="h-4 w-4" />
 }
 
+/** Image that falls back to public_url when transform URL fails (e.g. Supabase Free tier has no image transforms). */
+function MediaImage({
+  src,
+  fallbackUrl,
+  alt,
+  className,
+}: {
+  src: string
+  fallbackUrl?: string | null
+  alt: string
+  className?: string
+}) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={(e) => {
+        const img = e.currentTarget
+        if (fallbackUrl && img.src !== fallbackUrl) {
+          img.src = fallbackUrl
+        }
+      }}
+    />
+  )
+}
+
 export default function MediaLibraryPage() {
   const [activeBucket, setActiveBucket] = useState<BucketId | "all">("all")
   const [activeCategory, setActiveCategory] = useState<string>("all")
@@ -328,8 +355,9 @@ export default function MediaLibraryPage() {
                   }`}
                 >
                   {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
-                    <img
+                    <MediaImage
                       src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
+                      fallbackUrl={asset.public_url}
                       alt={asset.alt_text || asset.file_name}
                       className="h-full w-full object-cover"
                     />
@@ -359,8 +387,9 @@ export default function MediaLibraryPage() {
                   }`}
                 >
                   {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
-                    <img
+                    <MediaImage
                       src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
+                      fallbackUrl={asset.public_url}
                       alt={asset.alt_text || asset.file_name}
                       className="h-10 w-10 shrink-0 rounded object-cover"
                     />
@@ -488,8 +517,9 @@ export default function MediaLibraryPage() {
                 {/* Preview */}
                 <div className="flex items-center justify-center rounded-lg bg-secondary/50 p-4">
                   {selectedAsset.mime_type?.startsWith("image/") && (selectedAsset.medium_url ?? selectedAsset.public_url) ? (
-                    <img
+                    <MediaImage
                       src={selectedAsset.medium_url ?? selectedAsset.public_url ?? "/placeholder.svg"}
+                      fallbackUrl={selectedAsset.public_url}
                       alt={selectedAsset.alt_text || selectedAsset.file_name}
                       className="max-h-[400px] rounded object-contain"
                     />
