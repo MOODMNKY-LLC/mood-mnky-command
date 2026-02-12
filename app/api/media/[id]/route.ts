@@ -1,6 +1,59 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { updateMediaAsset, deleteMediaAsset, type BucketId } from "@/lib/supabase/storage"
+import {
+  updateMediaAsset,
+  deleteMediaAsset,
+  getThumbnailUrl,
+  getMediumUrl,
+  type BucketId,
+} from "@/lib/supabase/storage"
+
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const { data: asset, error } = await supabase
+    .from("media_assets")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (error || !asset) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  if (asset.user_id !== user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  const enriched = { ...asset }
+  if (
+    asset.mime_type?.startsWith("image/") &&
+    asset.bucket_id &&
+    asset.storage_path
+  ) {
+    try {
+      enriched.thumbnail_url = getThumbnailUrl(
+        supabase,
+        asset.bucket_id as BucketId,
+        asset.storage_path
+      )
+      enriched.medium_url = getMediumUrl(
+        supabase,
+        asset.bucket_id as BucketId,
+        asset.storage_path
+      )
+    } catch {
+      // Fallback to public_url
+    }
+  }
+
+  return NextResponse.json({ asset: enriched })
+}
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

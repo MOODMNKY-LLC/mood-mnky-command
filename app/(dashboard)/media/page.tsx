@@ -17,6 +17,8 @@ import {
   Tag,
   Info,
   LayoutGrid,
+  Upload,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -91,6 +93,7 @@ export default function MediaLibraryPage() {
   const [copiedUrl, setCopiedUrl] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
+  const [pushing, setPushing] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
   const [editingTags, setEditingTags] = useState(false)
   const [tagInput, setTagInput] = useState("")
@@ -193,6 +196,35 @@ export default function MediaLibraryPage() {
     [mutate]
   )
 
+  const handlePushToShopify = useCallback(
+    async (asset: MediaAsset) => {
+      const productId = asset.shopify_product_id ?? (asset.linked_entity_type === "shopify_product" ? parseInt(asset.linked_entity_id ?? "", 10) : null)
+      if (!productId || !asset.public_url) return
+      setPushing(asset.id)
+      try {
+        const res = await fetch(`/api/shopify/products/${productId}/push-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assetId: asset.id,
+            replaceImageId: asset.shopify_image_id ?? undefined,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Push failed")
+        const productUrl = data.productUrl || `https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""}/admin/products/${productId}`
+        window.open(productUrl, "_blank")
+        mutate()
+      } catch (err) {
+        console.error("Push to Shopify error:", err)
+        alert(err instanceof Error ? err.message : "Push failed")
+      } finally {
+        setPushing(null)
+      }
+    },
+    [mutate]
+  )
+
   const handleSyncToNotion = useCallback(
     async (asset: MediaAsset) => {
       const fragranceId = asset.linked_entity_id
@@ -218,6 +250,7 @@ export default function MediaLibraryPage() {
   const CATEGORIES = [
     { value: "all", label: "All" },
     { value: "fragrance-scene", label: "Fragrance Scene" },
+    { value: "product-edit", label: "Product Edit" },
     { value: "product", label: "Product" },
     { value: "mascot", label: "Mascot" },
   ]
@@ -678,6 +711,35 @@ export default function MediaLibraryPage() {
                         {syncing === selectedAsset.id ? "Syncing..." : "Sync URL to Notion"}
                       </Button>
                     )}
+                </div>
+              )}
+
+              {/* Push to Shopify */}
+              {(selectedAsset.shopify_product_id != null ||
+                (selectedAsset.linked_entity_type === "shopify_product" && selectedAsset.linked_entity_id)) && (
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs bg-transparent w-full"
+                    disabled={pushing === selectedAsset.id || !selectedAsset.public_url}
+                    onClick={() => handlePushToShopify(selectedAsset)}
+                  >
+                    {pushing === selectedAsset.id ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                        Pushing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-1.5 h-3 w-3" />
+                        Push to Shopify
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground">
+                    Replace product image on Shopify with this asset
+                  </p>
                 </div>
               )}
 

@@ -30,7 +30,10 @@ import {
   ImagePlus,
   FolderArchive,
   Sparkles,
+  Video,
+  Mic,
   BookOpen,
+  MessageSquare,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -120,8 +123,14 @@ const storeItems: NavItemWithChildren[] = [
   { title: "Finance", href: "/store/finance", icon: Wallet },
 ]
 
+const mnkyChatItems: NavItem[] = [
+  { title: "AI Chat", href: "/chat", icon: MessageSquare },
+]
+
 const studioItems: NavItem[] = [
-  { title: "Studio", href: "/studio", icon: Sparkles },
+  { title: "Image Studio", href: "/studio", icon: Sparkles },
+  { title: "Audio Studio", href: "/studio/audio", icon: Mic },
+  { title: "Video Studio", href: "/studio/video", icon: Video },
   { title: "Media Library", href: "/media", icon: ImagePlus },
 ]
 
@@ -237,6 +246,31 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuAction>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* ======== MNKY Chat ======== */}
+        <SidebarGroup>
+          <SidebarGroupLabel>MNKY Chat</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {mnkyChatItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(pathname, item.href)}
+                    tooltip={item.title}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -150,6 +150,26 @@ export async function deleteProduct(id: number): Promise<void> {
   await shopifyAdminFetch(`/products/${id}.json`, { method: "DELETE" })
 }
 
+export async function createProductImage(
+  productId: number,
+  src: string,
+  position?: number
+): Promise<ShopifyImage> {
+  const body: { image: { src: string; position?: number } } = { image: { src } }
+  if (position != null) body.image.position = position
+  const data = await shopifyAdminFetch<{ image: ShopifyImage }>(
+    `/products/${productId}/images.json`,
+    { method: "POST", body }
+  )
+  return data.image
+}
+
+export async function deleteProductImage(productId: number, imageId: number): Promise<void> {
+  await shopifyAdminFetch(`/products/${productId}/images/${imageId}.json`, {
+    method: "DELETE",
+  })
+}
+
 // ---- Collections ----
 
 export interface ShopifyCollection {

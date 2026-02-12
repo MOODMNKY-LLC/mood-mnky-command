@@ -1,17 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import {
   Package,
   Search,
   ExternalLink,
-  Eye,
-  Loader2,
-  Archive,
-  FileEdit,
-  CheckCircle2,
   ImageIcon,
+  ImagePlus,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -33,6 +31,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -46,8 +50,34 @@ function statusBadge(status: string) {
 }
 
 export default function StoreProductsPage() {
+  const router = useRouter()
   const [statusFilter, setStatusFilter] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [importingFor, setImportingFor] = useState<{ productId: number; imageIndex: number } | null>(null)
+
+  async function handleImportAndEdit(productId: number, imageIndex: number, imageId?: number) {
+    setImportingFor({ productId, imageIndex })
+    try {
+      const res = await fetch(`/api/shopify/products/${productId}/import-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(imageId != null ? { imageId } : { imageIndex }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Import failed")
+      const params = new URLSearchParams({
+        refAssetId: data.assetId,
+        refUrl: data.publicUrl,
+        shopifyProductId: String(data.productId),
+        shopifyImageId: String(data.imageId),
+      })
+      router.push(`/studio?${params}`)
+    } catch (err) {
+      console.error("Import error:", err)
+      setImportingFor(null)
+      alert(err instanceof Error ? err.message : "Import failed")
+    }
+  }
 
   const apiUrl =
     statusFilter === "all"
@@ -166,7 +196,7 @@ export default function StoreProductsPage() {
                       price: string
                       inventory_quantity: number
                     }>
-                    images: Array<{ src: string; alt: string | null }>
+                    images: Array<{ id?: number; src: string; alt: string | null }>
                     handle: string
                     updated_at: string
                   }) => {
@@ -238,21 +268,81 @@ export default function StoreProductsPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="h-7 w-7 p-0"
-                          >
-                            <a
-                              href={`https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""}/admin/products/${product.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Edit in Shopify"
+                          <div className="flex items-center justify-end gap-0.5">
+                            {product.images?.length > 0 && (
+                              product.images.length === 1 ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  title="Import & Edit in Studio"
+                                  disabled={!!importingFor}
+                                  onClick={() =>
+                                    handleImportAndEdit(product.id, 0, product.images[0].id)
+                                  }
+                                >
+                                  {importingFor?.productId === product.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <ImagePlus className="h-3.5 w-3.5" />
+                                  )}
+                                </Button>
+                              ) : (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 w-7 p-0"
+                                      title="Import & Edit in Studio"
+                                      disabled={!!importingFor}
+                                    >
+                                      {importingFor?.productId === product.id ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <ImagePlus className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {product.images.map((img, idx) => (
+                                      <DropdownMenuItem
+                                        key={img.id ?? idx}
+                                        onClick={() =>
+                                          handleImportAndEdit(product.id, idx, img.id)
+                                        }
+                                        disabled={!!importingFor}
+                                      >
+                                        <span className="flex items-center gap-2">
+                                          <img
+                                            src={img.src}
+                                            alt={img.alt || ""}
+                                            className="h-6 w-6 rounded object-cover"
+                                          />
+                                          Image {idx + 1}
+                                        </span>
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              className="h-7 w-7 p-0"
                             >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
-                          </Button>
+                              <a
+                                href={`https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""}/admin/products/${product.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Edit in Shopify"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )

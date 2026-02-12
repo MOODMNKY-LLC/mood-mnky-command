@@ -11,14 +11,14 @@ This document describes how to set up an n8n workflow that generates fragrance s
 | **Media Library – Assign & Sync** | Assign an existing image to a fragrance in Media Library. Use "Sync to Notion" to push the image URL to the Notion fragrance page (one-way). | `PATCH /api/media/[id]`, `POST /api/notion/update-image` |
 | **Upload from URL** | Store an image from an external URL into Supabase. Used by n8n when the image source is external. Requires MEDIA_API_KEY. | `POST /api/images/upload-from-url` |
 
-**Model**: All AI generation uses `gpt-image-1.5` (latest OpenAI image model) by default.
+**Model**: Default is `gpt-image-1.5` (OpenAI).
 
 ## Prerequisites
 
 - n8n instance (self-hosted or cloud)
 - MOOD MNKY Lab app deployed (Vercel URL)
 - Environment variables configured:
-  - `OPENAI_API_KEY` - In app (Vercel)
+  - `OPENAI_API_KEY` - In app (Vercel), for generate API
   - `MEDIA_API_KEY` - In app (Vercel), for n8n API auth (legacy: CDN_API_KEY)
   - `NOTION_API_KEY` - In app (Vercel)
 

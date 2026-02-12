@@ -10,7 +10,6 @@ import {
   Check,
   ImageIcon,
   RefreshCw,
-  ChevronDown,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,8 +24,9 @@ import {
 } from "@/components/ui/select"
 import { FRAGRANCE_SCENE_PROMPTS, getPromptForFragrance } from "@/lib/prompts/fragrance-scenes"
 import { IMAGE_WORKFLOWS } from "@/lib/image-workflows"
+import { BrandAssetReferencePicker } from "@/components/studio/brand-asset-reference-picker"
+import { ImageGenerationProgress } from "@/components/studio/image-generation-progress"
 import type { MediaAsset } from "@/lib/supabase/storage"
-import { BUCKET_CONFIG, type BucketId } from "@/lib/supabase/storage"
 import type { FragranceOil } from "@/lib/types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -37,8 +37,10 @@ function StudioContent() {
   const searchParams = useSearchParams()
   const [selectedFragrance, setSelectedFragrance] = useState<string>("")
   const [prompt, setPrompt] = useState("")
-  const [referenceUrl, setReferenceUrl] = useState<string | null>(null)
+  const [referenceUrl1, setReferenceUrl1] = useState<string | null>(null)
+  const [referenceUrl2, setReferenceUrl2] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
+  const [partialImageDataUrl, setPartialImageDataUrl] = useState<string | null>(null)
   const [generatedAsset, setGeneratedAsset] = useState<MediaAsset | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState(false)
@@ -58,14 +60,14 @@ function StudioContent() {
   )
   const recentAssets = mediaData?.assets ?? []
 
-  const refParams = new URLSearchParams()
-  refParams.set("bucket", "brand-assets")
-  refParams.set("limit", "20")
-  const { data: refData } = useSWR<{ assets: MediaAsset[] }>(
-    `/api/media?${refParams.toString()}`,
-    fetcher
-  )
-  const referenceAssets = refData?.assets ?? []
+  const shopifyProductId = searchParams.get("shopifyProductId")
+  const shopifyImageId = searchParams.get("shopifyImageId")
+  const refUrl = searchParams.get("refUrl")
+  const refAssetId = searchParams.get("refAssetId")
+  const ref1Url = searchParams.get("ref1Url")
+  const ref1AssetId = searchParams.get("ref1AssetId")
+  const ref2Url = searchParams.get("ref2Url")
+  const ref2AssetId = searchParams.get("ref2AssetId")
 
   useEffect(() => {
     const fragranceId = searchParams.get("fragranceId")
@@ -82,6 +84,42 @@ function StudioContent() {
     }
   }, [searchParams, fragranceOils])
 
+  useEffect(() => {
+    const url1 = ref1Url ?? refUrl
+    const assetId1 = ref1AssetId ?? refAssetId
+    if (url1) {
+      setReferenceUrl1(url1)
+    } else if (assetId1) {
+      fetch(`/api/media/${assetId1}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.asset?.public_url) setReferenceUrl1(data.asset.public_url)
+        })
+        .catch(() => {})
+    }
+  }, [ref1Url, ref1AssetId, refUrl, refAssetId])
+
+  useEffect(() => {
+    if (ref2Url) {
+      setReferenceUrl2(ref2Url)
+    } else if (ref2AssetId) {
+      fetch(`/api/media/${ref2AssetId}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.asset?.public_url) setReferenceUrl2(data.asset.public_url)
+        })
+        .catch(() => {})
+    }
+  }, [ref2Url, ref2AssetId])
+
+  useEffect(() => {
+    if (shopifyProductId && shopifyImageId && (refUrl || refAssetId || ref1Url || ref1AssetId) && !prompt) {
+      setPrompt(
+        "Image 1: product photo. Maintain the product exactly, improve lighting and background. Keep the subject crisp with professional product photography style."
+      )
+    }
+  }, [shopifyProductId, shopifyImageId, refUrl, refAssetId, ref1Url, ref1AssetId])
+
   const handleFragranceChange = useCallback(
     (value: string) => {
       setSelectedFragrance(value)
@@ -96,31 +134,80 @@ function StudioContent() {
     setError(null)
     setGenerating(true)
     setGeneratedAsset(null)
+    setPartialImageDataUrl(null)
+    const referenceUrls = [referenceUrl1, referenceUrl2].filter(
+      (u): u is string => !!u
+    )
     try {
-      const res = await fetch("/api/images/generate", {
+      const res = await fetch("/api/images/generate-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: prompt || "The MOOD MNKY mascot in an elegant fragrance scene, warm lighting",
-          referenceImageUrl: referenceUrl || undefined,
+          referenceImageUrls: referenceUrls.length ? referenceUrls : undefined,
+          referenceImageUrl: referenceUrls.length === 1 ? referenceUrls[0] : undefined,
           fragranceId: fragranceOils.find((o) => o.name === selectedFragrance)?.id,
           fragranceName: selectedFragrance || undefined,
+          shopifyProductId: shopifyProductId ? parseInt(shopifyProductId, 10) : undefined,
+          shopifyImageId: shopifyImageId ? parseInt(shopifyImageId, 10) : undefined,
           model: "gpt-image-1.5",
           size: "1024x1024",
           quality: "high",
         }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Generation failed")
-      setGeneratedAsset(data.asset)
-      mutateMedia()
-      globalMutate("/api/media")
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Generation failed")
+      }
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error("No response body")
+      const decoder = new TextDecoder()
+      let buffer = ""
+      let currentEvent = ""
+      let currentData = ""
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split("\n")
+        buffer = lines.pop() ?? ""
+        for (const line of lines) {
+          if (line.startsWith("event:")) {
+            currentEvent = line.slice(6).trim()
+          } else if (line.startsWith("data:")) {
+            currentData = line.slice(5).trim()
+          } else if (line === "" && currentEvent && currentData) {
+            try {
+              const payload = JSON.parse(currentData) as Record<string, unknown>
+              if (currentEvent === "partial_image" && typeof payload.b64_json === "string") {
+                setPartialImageDataUrl(`data:image/png;base64,${payload.b64_json}`)
+              } else if (currentEvent === "asset_ready" && payload.asset) {
+                setGeneratedAsset(payload.asset as MediaAsset)
+                setPartialImageDataUrl(null)
+                mutateMedia()
+                globalMutate("/api/media")
+              } else if (currentEvent === "error" && payload.error) {
+                throw new Error(String(payload.error))
+              }
+            } catch (e) {
+              if (e instanceof SyntaxError) {
+                // Invalid JSON in data - skip
+              } else {
+                throw e
+              }
+            }
+            currentEvent = ""
+            currentData = ""
+          }
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed")
     } finally {
       setGenerating(false)
+      setPartialImageDataUrl(null)
     }
-  }, [prompt, referenceUrl, selectedFragrance, fragranceOils, mutateMedia])
+  }, [prompt, referenceUrl1, referenceUrl2, selectedFragrance, fragranceOils, shopifyProductId, shopifyImageId, mutateMedia])
 
   const handleCopyUrl = useCallback((url: string) => {
     navigator.clipboard.writeText(url)
@@ -131,7 +218,7 @@ function StudioContent() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Studio</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Image Studio</h1>
         <p className="text-sm text-muted-foreground">
           {IMAGE_WORKFLOWS.STUDIO_FRAGRANCE_SCENE.description}
         </p>
@@ -175,46 +262,37 @@ function StudioContent() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Reference Image (optional)</Label>
+                <Label>Image to edit (optional)</Label>
                 <p className="text-xs text-muted-foreground">
-                  Use a mascot or reference asset for consistent character placement
+                  Product photo or asset to edit. Use &quot;Product from Shopify&quot; when imported from Store.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {referenceAssets
-                    .filter((a) => (a.thumbnail_url ?? a.public_url) && a.mime_type?.startsWith("image/"))
-                    .slice(0, 6)
-                    .map((asset) => (
-                      <button
-                        key={asset.id}
-                        type="button"
-                        onClick={() =>
-                          setReferenceUrl((prev) =>
-                            prev === asset.public_url ? null : asset.public_url ?? null
-                          )
-                        }
-                        className={`relative h-16 w-16 overflow-hidden rounded-lg border-2 transition-all ${
-                          referenceUrl === asset.public_url
-                            ? "border-primary ring-2 ring-primary/30"
-                            : "border-border hover:border-muted-foreground"
-                        }`}
-                      >
-                        <img
-                          src={asset.thumbnail_url ?? asset.public_url!}
-                          alt={asset.alt_text || asset.file_name}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  {referenceAssets.length === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Upload mascot to brand-assets with tag &quot;mascot&quot;
-                    </p>
-                  )}
-                </div>
+                <BrandAssetReferencePicker
+                  value={referenceUrl1}
+                  onChange={setReferenceUrl1}
+                  sourceBuckets={["product-images", "brand-assets", "ai-generations"]}
+                  productImageUrl={refUrl ?? null}
+                  placeholder="Select product or asset to edit"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Style reference (optional)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Mascot, character, or brand asset to guide style. Use with the prompt to describe how images interact.
+                </p>
+                <BrandAssetReferencePicker
+                  value={referenceUrl2}
+                  onChange={setReferenceUrl2}
+                  sourceBuckets={["product-images", "brand-assets", "ai-generations"]}
+                  placeholder="Select style reference"
+                />
               </div>
 
               <div className="flex flex-col gap-2">
                 <Label>Prompt</Label>
+                <p className="text-xs text-muted-foreground">
+                  For multiple references, describe each: e.g. &quot;Image 1: product photo. Image 2: style reference. Apply Image 2&apos;s style to Image 1.&quot;
+                </p>
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -248,14 +326,27 @@ function StudioContent() {
                 )}
               </Button>
 
+              <ImageGenerationProgress
+                active={generating}
+                message="Creating your image. This usually takes 10–30 seconds..."
+                showSkeleton={true}
+                partialImageDataUrl={partialImageDataUrl}
+              />
+
               {generatedAsset?.public_url && (
                 <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-4">
                   <p className="text-sm font-medium">Generated</p>
                   <div className="flex items-center gap-2">
                     <img
-                      src={generatedAsset.medium_url ?? generatedAsset.public_url}
+                      src={generatedAsset.public_url ?? generatedAsset.medium_url}
                       alt="Generated"
                       className="h-24 w-24 rounded-lg object-cover"
+                      onError={(e) => {
+                        const img = e.currentTarget
+                        if (generatedAsset.public_url && img.src !== generatedAsset.public_url) {
+                          img.src = generatedAsset.public_url
+                        }
+                      }}
                     />
                     <div className="flex flex-col gap-1">
                       <Button
@@ -299,11 +390,17 @@ function StudioContent() {
                       key={asset.id}
                       className="group relative aspect-square overflow-hidden rounded-lg border border-border"
                     >
-                      {(asset.thumbnail_url ?? asset.public_url) && asset.mime_type?.startsWith("image/") ? (
+                      {(asset.public_url ?? asset.thumbnail_url) && asset.mime_type?.startsWith("image/") ? (
                         <img
-                          src={asset.thumbnail_url ?? asset.public_url!}
+                          src={asset.public_url ?? asset.thumbnail_url!}
                           alt={asset.alt_text || asset.file_name}
                           className="h-full w-full object-cover"
+                          onError={(e) => {
+                            const img = e.currentTarget
+                            if (asset.public_url && img.src !== asset.public_url) {
+                              img.src = asset.public_url
+                            }
+                          }}
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-secondary">

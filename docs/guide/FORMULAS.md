@@ -27,6 +27,26 @@ Each card shows:
 - Tags
 - Product type (e.g., candle, lotion)
 
+## Export to PDF
+
+Formulas can be exported as a PDF card (recipe + ingredients) via Adobe PDF Services.
+
+**Endpoint**: `POST /api/formulas/[id]/export-pdf`
+
+- **Path parameter**: Formula `id` (UUID) or `slug` (e.g. `body-butter-basic`)
+- **Auth**: Requires authenticated session (cookie or Authorization header)
+- **Response**: PDF file attachment (download)
+
+Example (with auth cookie):
+
+```bash
+curl -X POST https://your-app.com/api/formulas/abc123/export-pdf \
+  -H "Cookie: sb-xxx-auth-token=..." \
+  -o formula.pdf
+```
+
+Environment variables: `PDF_SERVICES_CLIENT_ID` and `PDF_SERVICES_CLIENT_SECRET` (or `ADOBE_CLIENT_ID` / `ADOBE_CLIENT_SECRET` if the same project has PDF Services). See [Adobe PDF Services](https://developer.adobe.com/document-services/docs/overview/pdf-services-api/).
+
 ## Tips
 
 - Use search to find formulas by wax type, wick type, or ingredient

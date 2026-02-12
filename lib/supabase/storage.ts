@@ -7,6 +7,8 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 export const BUCKETS = {
   productImages: "product-images",
   aiGenerations: "ai-generations",
+  aiVideos: "ai-videos",
+  aiAudio: "ai-audio",
   brandAssets: "brand-assets",
   userAvatars: "user-avatars",
   privateDocuments: "private-documents",
@@ -53,6 +55,24 @@ export interface MediaAsset {
   thumbnail_url?: string | null
   /** Medium URL (800px, WebP) - from API when transforms available */
   medium_url?: string | null
+  /** Shopify product ID when linked to a product image */
+  shopify_product_id?: number | null
+  /** Shopify image ID when replacing a specific product image */
+  shopify_image_id?: number | null
+  /** Duration in seconds (audio/video) */
+  duration_seconds?: number | null
+  /** Audio codec e.g. mp3, wav */
+  audio_codec?: string | null
+  /** Sample rate when known */
+  sample_rate?: number | null
+  /** TTS voice ID (built-in or custom) */
+  tts_voice_id?: string | null
+  /** TTS model used */
+  tts_model?: string | null
+  /** TTS style instructions */
+  tts_instructions?: string | null
+  /** TTS speed 0.25–4.0 */
+  tts_speed?: number | null
 }
 
 // ---------------------------------------------------------------------------
@@ -81,6 +101,23 @@ export const BUCKET_CONFIG: Record<
     description: "AI-generated images and artwork",
     maxSizeMB: 25,
     acceptedTypes: ["image/jpeg", "image/png", "image/webp"],
+    isPublic: true,
+  },
+  "ai-videos": {
+    label: "AI Videos",
+    description: "Sora-generated video clips",
+    maxSizeMB: 50,
+    acceptedTypes: ["video/mp4"],
+    isPublic: true,
+  },
+  "ai-audio": {
+    label: "AI Audio",
+    description: "TTS and transcription/translation audio assets",
+    maxSizeMB: 25,
+    acceptedTypes: [
+      "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/aac",
+      "audio/flac", "audio/webm", "audio/mp4",
+    ],
     isPublic: true,
   },
   "brand-assets": {
@@ -345,6 +382,15 @@ export async function saveMediaAsset(
     category?: string
     source_model?: string
     generation_prompt?: string
+    shopify_product_id?: number
+    shopify_image_id?: number
+    duration_seconds?: number
+    audio_codec?: string
+    sample_rate?: number
+    tts_voice_id?: string
+    tts_model?: string
+    tts_instructions?: string
+    tts_speed?: number
   },
 ): Promise<MediaAsset> {
   const { data, error } = await supabase
@@ -369,6 +415,7 @@ export async function getMediaAssets(
   supabase: SupabaseClient,
   filters?: {
     bucket_id?: BucketId
+    bucket_ids?: BucketId[]
     linked_entity_type?: string
     linked_entity_id?: string
     tags?: string[]
@@ -383,7 +430,9 @@ export async function getMediaAssets(
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
 
-  if (filters?.bucket_id) query = query.eq("bucket_id", filters.bucket_id)
+  if (filters?.bucket_ids?.length)
+    query = query.in("bucket_id", filters.bucket_ids)
+  else if (filters?.bucket_id) query = query.eq("bucket_id", filters.bucket_id)
   if (filters?.linked_entity_type)
     query = query.eq("linked_entity_type", filters.linked_entity_type)
   if (filters?.linked_entity_id)
@@ -430,6 +479,8 @@ export async function updateMediaAsset(
       | "category"
       | "source_model"
       | "generation_prompt"
+      | "shopify_product_id"
+      | "shopify_image_id"
     >
   >,
 ): Promise<MediaAsset> {

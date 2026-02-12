@@ -49,7 +49,7 @@ This guide explains how to use the MOOD MNKY Lab asset delivery system (Supabase
 | `/api/media/[id]/image?preset=thumbnail` | GET | Redirect to transformed image |
 | `/api/media/[id]/file` | GET | Redirect to signed URL (private files) |
 | `/api/assets?source=media\|fragrance\|all` | GET | Unified asset registry |
-| `/api/images/generate` | POST | Generate AI image |
+| `/api/images/generate` | POST | Generate AI image (OpenAI) |
 | `/api/images/upload-from-url` | POST | Store image from URL |
 | `/api/notion/update-image` | POST | Sync image URL to Notion |
 
@@ -61,6 +61,7 @@ This guide explains how to use the MOOD MNKY Lab asset delivery system (Supabase
 - **Environment variables**:
   - `NEXT_PUBLIC_SUPABASE_URL` – Supabase project URL
   - `MEDIA_API_KEY` – For n8n and server-side API auth (upload-from-url, update-image)
+  - `OPENAI_API_KEY` – For image generate
 - **Authenticated user** – Most operations require a Supabase session. API key auth is used only for server-to-server (n8n) workflows.
 
 ---

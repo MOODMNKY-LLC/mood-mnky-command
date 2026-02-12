@@ -10,19 +10,23 @@ import {
   BUCKETS,
   type BucketId,
 } from "@/lib/supabase/storage"
-import { generateImage, editImage } from "@/lib/openai/images"
-import type { ImageModel, ImageSize, ImageQuality } from "@/lib/openai/images"
+import { getImageProvider } from "@/lib/image-providers"
 
-export const maxDuration = 60
+export const maxDuration = 90
 
 interface GenerateBody {
   prompt: string
+  /** Multiple reference images. Order: [0] = subject to edit, [1] = style reference. */
+  referenceImageUrls?: string[]
+  /** Single reference (backward compat). Merged into referenceImageUrls when present. */
   referenceImageUrl?: string
   fragranceId?: string
   fragranceName?: string
-  model?: ImageModel
-  size?: ImageSize
-  quality?: ImageQuality
+  shopifyProductId?: number
+  shopifyImageId?: number
+  model?: string
+  size?: string
+  quality?: string
 }
 
 export async function POST(request: Request) {
@@ -39,28 +43,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
   }
 
-  const { prompt, referenceImageUrl, fragranceId, fragranceName, model, size, quality } = body
+  const { prompt, referenceImageUrls, referenceImageUrl, fragranceId, fragranceName, shopifyProductId, shopifyImageId, model, size, quality } = body
   if (!prompt || typeof prompt !== "string") {
     return NextResponse.json({ error: "prompt is required" }, { status: 400 })
   }
 
+  const referenceUrls = referenceImageUrls?.length
+    ? referenceImageUrls
+    : referenceImageUrl
+      ? [referenceImageUrl]
+      : []
+
+  const imageProvider = getImageProvider()
+  const sourceModel = model ?? "gpt-image-1.5"
+
   try {
     let b64: string
-    if (referenceImageUrl) {
-      b64 = await editImage({
+    if (referenceUrls.length > 0 && imageProvider.edit) {
+      b64 = await imageProvider.edit({
         prompt,
-        referenceImageUrl,
+        referenceImageUrls: referenceUrls,
         model,
         size,
         quality,
       })
+    } else if (referenceUrls.length > 0 && !imageProvider.edit) {
+      return NextResponse.json(
+        { error: `${imageProvider.name} does not support reference image edit; use openai provider` },
+        { status: 400 }
+      )
     } else {
-      b64 = await generateImage({
-        prompt,
-        model,
-        size,
-        quality,
-      })
+      b64 = await imageProvider.generate({ prompt, model, size, quality })
     }
 
     const buffer = Buffer.from(b64, "base64")
@@ -82,6 +95,7 @@ export async function POST(request: Request) {
 
     const tags = ["ai-generated"]
     if (fragranceName) tags.push(fragranceName.replace(/\s+/g, "-").toLowerCase())
+    if (shopifyProductId != null) tags.push("shopify-product")
 
     const asset = await saveMediaAsset(adminSupabase, {
       user_id: user.id,
@@ -92,11 +106,13 @@ export async function POST(request: Request) {
       file_size: buffer.length,
       tags,
       public_url: publicUrl,
-      linked_entity_type: fragranceId ? "fragrance" : undefined,
-      linked_entity_id: fragranceId,
-      category: "fragrance-scene",
-      source_model: model ?? "gpt-image-1.5",
+      linked_entity_type: shopifyProductId != null ? "shopify_product" : fragranceId ? "fragrance" : undefined,
+      linked_entity_id: shopifyProductId != null ? String(shopifyProductId) : fragranceId,
+      category: shopifyProductId != null ? "product-edit" : "fragrance-scene",
+      source_model: sourceModel,
       generation_prompt: prompt,
+      shopify_product_id: shopifyProductId,
+      shopify_image_id: shopifyImageId,
     })
 
     const thumbnailUrl = getThumbnailUrl(adminSupabase, BUCKETS.aiGenerations as BucketId, path)
