@@ -35,6 +35,8 @@ export default async function GuideDocPage({ params }: DocPageProps) {
   )
 }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return getDocSlugs("guide").map((slug) => ({ slug }))
 }

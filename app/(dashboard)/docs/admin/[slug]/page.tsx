@@ -35,6 +35,8 @@ export default async function AdminDocPage({ params }: DocPageProps) {
   )
 }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return getDocSlugs("admin").map((slug) => ({ slug }))
 }
