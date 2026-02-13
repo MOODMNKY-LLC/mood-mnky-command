@@ -12,7 +12,9 @@
     "seed:fragrance-notes": "tsx scripts/seed-fragrance-notes.ts",
     "glossary:fetch-and-seed": "tsx scripts/fetch-and-seed-glossary.ts",
     "glossary:seed-local": "tsx scripts/seed-glossary-local.ts",
-    "glossary:seed-production": "vercel env run -e production -- pnpm glossary:fetch-and-seed"
+    "glossary:seed-production": "vercel env run -e production -- pnpm glossary:fetch-and-seed",
+    "funnel:setup": "tsx scripts/setup-funnel.ts",
+    "webhook:url": "tsx scripts/ngrok-webhook-url.ts"
   },
   "dependencies": {
     "@adobe/pdfservices-node-sdk": "^4.1.0",

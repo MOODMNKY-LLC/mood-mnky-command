@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import {
@@ -15,6 +15,7 @@ import {
   Flame,
   WifiOff,
   Sparkles,
+  FileText,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,8 +29,69 @@ import { FRAGRANCE_OILS, FORMULAS, CONTAINERS, WICK_OPTIONS } from "@/lib/data"
 import { MediaPicker } from "@/components/media/media-picker"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
 import type { Formula, FragranceOil, ContainerOption } from "@/lib/types"
+import type { ProductType } from "@/lib/types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+/** Normalize JotForm product_type to ProductType */
+function normalizeProductType(v: unknown): ProductType | null {
+  if (typeof v !== "string") return null
+  const s = v.toLowerCase().replace(/\s+/g, "-").trim()
+  const valid: ProductType[] = ["candle", "soap", "lotion", "room-spray", "wax-melt", "perfume"]
+  return valid.includes(s as ProductType) ? (s as ProductType) : null
+}
+
+/** Fallback: extract productType and fragranceHint from raw answers via keyword matching */
+function extractIntakePrefillFromRaw(answers: Record<string, unknown>): {
+  productType: ProductType | null
+  fragranceHint: string | null
+} {
+  const values = Object.values(answers).filter((v) => typeof v === "string" && (v as string).trim().length > 0) as string[]
+  let productType: ProductType | null = null
+  let fragranceHint: string | null = null
+
+  const productKeywords = ["candle", "soap", "lotion", "room spray", "room-spray", "wax melt", "wax-melt", "perfume"]
+  const fragranceKeywords = ["leather", "vanilla", "citrus", "orange", "lavender", "wood", "floral", "spice", "amber", "musk", "rose", "bergamot"]
+
+  for (const v of values) {
+    const lower = v.toLowerCase()
+    if (!productType) {
+      for (const kw of productKeywords) {
+        if (lower.includes(kw)) {
+          productType = normalizeProductType(v) ?? normalizeProductType(kw)
+          break
+        }
+      }
+    }
+    if (!fragranceHint && v.length >= 5) {
+      if (fragranceKeywords.some((kw) => lower.includes(kw)) || (v.length > 15 && !productKeywords.some((kw) => lower.includes(kw)))) {
+        fragranceHint = v.trim()
+      }
+    }
+  }
+  return { productType, fragranceHint }
+}
+
+/** Extract productType and fragranceHint. Prefers mappedAnswers when available. */
+function extractIntakePrefill(
+  answers: Record<string, unknown>,
+  mappedAnswers?: Record<string, unknown>
+): { productType: ProductType | null; fragranceHint: string | null } {
+  if (mappedAnswers && Object.keys(mappedAnswers).length > 0) {
+    const productType = normalizeProductType(mappedAnswers.product_type)
+    const fragranceHint =
+      typeof mappedAnswers.fragrance_hints === "string"
+        ? mappedAnswers.fragrance_hints.trim() || null
+        : null
+    if (productType || fragranceHint) {
+      return {
+        productType: productType ?? null,
+        fragranceHint: fragranceHint ?? null,
+      }
+    }
+  }
+  return extractIntakePrefillFromRaw(answers)
+}
 
 const STEPS = [
   { id: 1, label: "Fragrance", icon: Droplets },
@@ -56,6 +118,26 @@ export function ProductBuilder() {
     handle?: string
     error?: string
   } | null>(null)
+  const [intakePrefill, setIntakePrefill] = useState<{
+    productType?: ProductType
+    fragranceHint?: string
+  } | null>(null)
+
+  const { data: latestSubmission } = useSWR<{
+    submission?: {
+      runId: string
+      submittedAt: string
+      answers: Record<string, unknown>
+      mappedAnswers?: Record<string, unknown>
+    }
+  }>("/api/funnels/submission/latest?withinHours=24", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  })
+
+  const hasRecentIntake = !!latestSubmission?.submission
+  const intakeAnswers = latestSubmission?.submission?.answers ?? {}
+  const mappedAnswers = latestSubmission?.submission?.mappedAnswers
 
   const canProceed = () => {
     switch (step) {
@@ -157,8 +239,44 @@ export function ProductBuilder() {
     }
   }
 
+  function handleBuildFromIntake() {
+    const { productType, fragranceHint } = extractIntakePrefill(intakeAnswers, mappedAnswers)
+    setIntakePrefill({
+      productType: productType ?? undefined,
+      fragranceHint: fragranceHint ?? undefined,
+    })
+    setStep(1)
+  }
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Build from Intake entrypoint */}
+      {hasRecentIntake && !intakePrefill && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Build from your intake
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Use your recent fragrance preferences to prefill your product
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={handleBuildFromIntake}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Build from Intake
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2">
         {STEPS.map((s, i) => (
@@ -191,6 +309,7 @@ export function ProductBuilder() {
         <StepFragrance
           selected={selectedFragrance}
           onSelect={setSelectedFragrance}
+          fragranceHint={intakePrefill?.fragranceHint}
         />
       )}
       {step === 2 && (
@@ -198,6 +317,7 @@ export function ProductBuilder() {
           selected={selectedFormula}
           onSelect={setSelectedFormula}
           fragrance={selectedFragrance}
+          productTypeFilter={intakePrefill?.productType}
         />
       )}
       {step === 3 && (
@@ -300,9 +420,11 @@ export function ProductBuilder() {
 function StepFragrance({
   selected,
   onSelect,
+  fragranceHint,
 }: {
   selected: FragranceOil | null
   onSelect: (oil: FragranceOil) => void
+  fragranceHint?: string
 }) {
   const { data: fragranceData, isLoading, error } = useSWR<{
     fragranceOils: FragranceOil[]
@@ -318,10 +440,42 @@ function StepFragrance({
     return FRAGRANCE_OILS
   }, [fragranceData])
 
+  const suggestedOil = useMemo(() => {
+    if (!fragranceHint || oils.length === 0) return null
+    const terms = fragranceHint.toLowerCase().split(/[\s+,]+/).map((t) => t.trim()).filter(Boolean)
+    if (terms.length === 0) return null
+    for (const oil of oils) {
+      const searchable = [
+        oil.name,
+        oil.family,
+        ...oil.topNotes,
+        ...oil.middleNotes,
+        ...oil.baseNotes,
+      ].join(" ").toLowerCase()
+      if (terms.some((t) => t.length >= 2 && searchable.includes(t))) return oil
+    }
+    return null
+  }, [oils, fragranceHint])
+
+  useEffect(() => {
+    if (fragranceHint && suggestedOil && !selected) {
+      onSelect(suggestedOil)
+    }
+  }, [fragranceHint, suggestedOil, selected, onSelect])
+
   const isLive = fragranceData?.fragranceOils && !error
 
   return (
     <div className="flex flex-col gap-4">
+      {suggestedOil && fragranceHint && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+          <FileText className="h-4 w-4 text-primary" />
+          <span>
+            Suggested from your intake:{" "}
+            <span className="font-medium text-foreground">{suggestedOil.name}</span>
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground">
           Select a Fragrance Oil
@@ -423,11 +577,39 @@ function StepFormula({
   selected,
   onSelect,
   fragrance,
+  productTypeFilter,
 }: {
   selected: Formula | null
   onSelect: (formula: Formula) => void
   fragrance: FragranceOil | null
+  productTypeFilter?: ProductType
 }) {
+  const filteredFormulas = useMemo(() => {
+    let list = FORMULAS.filter((f) => {
+      if (!fragrance) return true
+      if (f.productType === "candle" && !fragrance.candleSafe) return false
+      if (f.productType === "soap" && !fragrance.soapSafe) return false
+      if (f.productType === "lotion" && !fragrance.lotionSafe) return false
+      if (f.productType === "room-spray" && !fragrance.roomSpraySafe)
+        return false
+      if (f.productType === "wax-melt" && !fragrance.waxMeltSafe)
+        return false
+      if (f.productType === "perfume" && !fragrance.perfumeSafe)
+        return false
+      return true
+    })
+    if (productTypeFilter) {
+      list = list.filter((f) => f.productType === productTypeFilter)
+    }
+    return list
+  }, [fragrance, productTypeFilter])
+
+  useEffect(() => {
+    if (productTypeFilter && filteredFormulas.length > 0 && !selected) {
+      onSelect(filteredFormulas[0])
+    }
+  }, [productTypeFilter, filteredFormulas, selected, onSelect])
+
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold text-foreground">
@@ -441,19 +623,7 @@ function StepFormula({
         </p>
       )}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {FORMULAS.filter((f) => {
-          if (!fragrance) return true
-          if (f.productType === "candle" && !fragrance.candleSafe) return false
-          if (f.productType === "soap" && !fragrance.soapSafe) return false
-          if (f.productType === "lotion" && !fragrance.lotionSafe) return false
-          if (f.productType === "room-spray" && !fragrance.roomSpraySafe)
-            return false
-          if (f.productType === "wax-melt" && !fragrance.waxMeltSafe)
-            return false
-          if (f.productType === "perfume" && !fragrance.perfumeSafe)
-            return false
-          return true
-        }).map((formula) => (
+        {filteredFormulas.map((formula) => (
           <Card
             key={formula.id}
             className={`cursor-pointer border-border bg-card transition-all hover:border-primary/40 ${

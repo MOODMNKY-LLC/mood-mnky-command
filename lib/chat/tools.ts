@@ -325,6 +325,89 @@ export const getSavedBlendTool = tool({
   },
 })
 
+export const getLatestFunnelSubmissionTool = tool({
+  description:
+    "Get the user's latest fragrance intake funnel submission. Use when the user has completed a JotForm intake and you want to personalize recommendations (mood, product type, notes, blend style). Returns structured answers from their most recent submission.",
+  inputSchema: z.object({
+    funnelId: z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Funnel definition ID. If omitted, uses the most recent submitted run from any funnel."),
+  }),
+  execute: async ({ funnelId }) => {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: "Not authenticated", submission: null }
+    }
+
+    let runQuery = supabase
+      .from("funnel_runs")
+      .select("id, funnel_id, submitted_at")
+      .eq("user_id", user.id)
+      .eq("status", "submitted")
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+
+    if (funnelId) {
+      runQuery = runQuery.eq("funnel_id", funnelId)
+    }
+
+    const { data: run, error: runError } = await runQuery.maybeSingle()
+
+    if (runError || !run) {
+      return { submission: null, message: "No funnel submission found" }
+    }
+
+    const { data: answers, error: answersError } = await supabase
+      .from("funnel_answers")
+      .select("question_key, answer")
+      .eq("run_id", run.id)
+
+    if (answersError) {
+      return { error: answersError.message, submission: null }
+    }
+
+    const answersMap = (answers ?? []).reduce(
+      (acc, { question_key, answer }) => {
+        acc[question_key] = (answer as { text?: string })?.text ?? answer
+        return acc
+      },
+      {} as Record<string, unknown>
+    )
+
+    let mappedAnswers: Record<string, unknown> | undefined
+    const { data: funnel } = await supabase
+      .from("funnel_definitions")
+      .select("question_mapping")
+      .eq("id", run.funnel_id)
+      .single()
+
+    const mapping = (funnel?.question_mapping ?? {}) as Record<string, string>
+    if (Object.keys(mapping).length > 0) {
+      mappedAnswers = {}
+      for (const [semanticKey, qKey] of Object.entries(mapping)) {
+        const val = answersMap[qKey]
+        if (val !== undefined && val !== null && val !== "") {
+          mappedAnswers[semanticKey] = val
+        }
+      }
+    }
+
+    return {
+      submission: {
+        runId: run.id,
+        submittedAt: run.submitted_at,
+        answers: answersMap,
+        mappedAnswers,
+      },
+    }
+  },
+})
+
 export const chatTools = {
   search_formulas: searchFormulasTool,
   search_fragrance_oils: searchFragranceOilsTool,
@@ -336,4 +419,5 @@ export const chatTools = {
   save_custom_blend: saveCustomBlendTool,
   list_saved_blends: listSavedBlendsTool,
   get_saved_blend: getSavedBlendTool,
+  get_latest_funnel_submission: getLatestFunnelSubmissionTool,
 }

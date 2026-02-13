@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -23,6 +24,7 @@ import {
   Tags,
   Megaphone,
   FileText,
+  ListFilter,
   Wallet,
   BarChart3,
   ChevronRight,
@@ -134,10 +136,12 @@ const studioItems: NavItem[] = [
   { title: "Media Library", href: "/media", icon: ImagePlus },
 ]
 
-const platformItems: NavItem[] = [
+const platformItemsBase: NavItem[] = [
   { title: "Overview", href: "/platform", icon: Server },
+  { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
   { title: "Table Editor", href: "/platform/tables", icon: Table2 },
   { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
+  { title: "Members", href: "/members", icon: Users },
 ]
 
 // ---------------------------------------------------------------------------
@@ -161,6 +165,10 @@ function isGroupActive(pathname: string, item: NavItemWithChildren) {
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+
+  useEffect(() => {
+    fetch("/api/me", { credentials: "include" }).catch(() => null)
+  }, [])
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -406,7 +414,7 @@ export function AppSidebar() {
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {platformItems.map((item) => (
+                  {platformItemsBase.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild

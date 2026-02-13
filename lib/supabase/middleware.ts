@@ -40,5 +40,26 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // If authenticated, check role and redirect pending users
+  if (user) {
+    const pathname = request.nextUrl.pathname
+    const isAuthRoute = pathname.startsWith("/auth")
+    const isApiRoute = pathname.startsWith("/api")
+
+    if (!isAuthRoute && !isApiRoute) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (profile?.role === "pending") {
+        const url = request.nextUrl.clone()
+        url.pathname = "/auth/pending-approval"
+        return NextResponse.redirect(url)
+      }
+    }
+  }
+
   return supabaseResponse
 }
