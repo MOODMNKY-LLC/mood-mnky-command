@@ -88,9 +88,9 @@ Two common paths:
 
 1. Apply migrations so `fragrance_notes` exists (Step 1).
 2. Run the glossary fetch and seed:
-   ```bash
-   pnpm glossary:fetch-and-seed
-   ```
+   - **Production:** `pnpm glossary:seed-production` (uses Vercel production env vars; requires `vercel` CLI linked)
+   - **Local:** `pnpm glossary:fetch-and-seed` (uses `.env`; requires `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+
    This populates Supabase from the CandleScience glossary (232 notes).
 3. Run sync **Supabase → Notion** (Step 8) so Notion is populated from Supabase.
 

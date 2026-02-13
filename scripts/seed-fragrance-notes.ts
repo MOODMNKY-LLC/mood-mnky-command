@@ -9,16 +9,20 @@
  * For full glossary: fetch https://www.candlescience.com/fragrance-note-glossary/
  * and save to scripts/data/fragrance-glossary-raw.txt, then run with --file.
  *
- * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env.local
+ * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env
+ *
+ * For production: use `pnpm glossary:seed-production` which runs with Vercel
+ * production env vars (no secrets written to disk).
  */
 
 import { config } from "dotenv"
 import { readFileSync, existsSync } from "fs"
 import { join } from "path"
 
-// Load .env.local for Supabase credentials when running outside Next.js
-const envLocal = join(process.cwd(), ".env.local")
-config({ path: existsSync(envLocal) ? envLocal : ".env" })
+// When GLOSSARY_USE_LOCAL=1, env was set by seed-glossary-local from supabase status; skip .env
+if (!process.env.GLOSSARY_USE_LOCAL) {
+  config({ path: join(process.cwd(), ".env"), override: true })
+}
 
 import { createAdminClient } from "../lib/supabase/admin"
 
@@ -46,7 +50,7 @@ function slugify(name: string): string {
  * #### Facts:
  * content
  */
-function parseGlossaryMarkdown(content: string): ParsedNote[] {
+export function parseGlossaryMarkdown(content: string): ParsedNote[] {
   const notes: ParsedNote[] = []
   const blocks = content.split(/\n### /)
   for (const block of blocks) {
@@ -94,12 +98,8 @@ const EMBEDDED_NOTES: ParsedNote[] = [
   { name: "Musk", descriptionShort: "animalic, clean, comfortable, long-lasting, powdery, round, sexy, soft", olfactiveProfile: "Musky notes are animalic, skin-like, and sensual. This popular note adds depth and longevity to fragrances.", facts: "Professor Leopold Ruzicka was the first to synthesize musk molecules, making it possible to create musk fragrances without animals." },
 ]
 
-async function main() {
-  const fileArg = process.argv.find((a) => a.startsWith("--file="))
-  const filePath = fileArg
-    ? fileArg.replace("--file=", "")
-    : join(process.cwd(), "scripts", "data", "fragrance-glossary-raw.txt")
-
+/** Seed Supabase from a file path. Callable from other scripts (same process = inherits env). */
+export async function seedFromFile(filePath: string): Promise<void> {
   let notes: ParsedNote[]
   if (existsSync(filePath)) {
     const content = readFileSync(filePath, "utf-8")
@@ -152,6 +152,15 @@ async function main() {
   }
 
   console.log(`Done: ${inserted} inserted, ${updated} updated`)
+}
+
+async function main() {
+  const fileArg = process.argv.find((a) => a.startsWith("--file="))
+  const filePath = fileArg
+    ? fileArg.replace("--file=", "")
+    : join(process.cwd(), "scripts", "data", "fragrance-glossary-raw.txt")
+
+  await seedFromFile(filePath)
 }
 
 main().catch((err) => {

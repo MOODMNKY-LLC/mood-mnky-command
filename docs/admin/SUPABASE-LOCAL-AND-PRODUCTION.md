@@ -54,8 +54,10 @@ This:
 Then run any extra seeds (e.g. fragrance notes):
 
 ```bash
-pnpm glossary:fetch-and-seed
+pnpm glossary:seed-local
 ```
+
+This uses `supabase status -o env` to get local URL and keys (no manual .env setup needed). Alternatively, set `.env` with local values and run `pnpm glossary:fetch-and-seed`.
 
 ### 4. Run the app
 

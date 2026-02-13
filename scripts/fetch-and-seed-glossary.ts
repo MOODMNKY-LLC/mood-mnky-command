@@ -12,16 +12,22 @@
  *
  * Legal: CandleScience content is proprietary. For production use, paraphrase/rewrite or obtain permission.
  *
- * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env.local
+ * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env
+ *
+ * For production: use `pnpm glossary:seed-production` which runs with Vercel
+ * production env vars (no secrets written to disk).
  */
 
 import { config } from "dotenv"
 import { existsSync, mkdirSync, writeFileSync } from "fs"
 import { join } from "path"
-import { execSync } from "child_process"
 
-const envLocal = join(process.cwd(), ".env.local")
-config({ path: existsSync(envLocal) ? envLocal : ".env" })
+import { seedFromFile } from "./seed-fragrance-notes"
+
+// When GLOSSARY_USE_LOCAL=1, env was set by seed-glossary-local from supabase status; skip .env
+if (!process.env.GLOSSARY_USE_LOCAL) {
+  config({ path: join(process.cwd(), ".env"), override: true })
+}
 
 const GLOSSARY_URL = "https://www.candlescience.com/fragrance-note-glossary/"
 const DATA_DIR = join(process.cwd(), "scripts", "data")
@@ -91,14 +97,16 @@ async function main() {
   console.log("Wrote", RAW_FILE)
 
   console.log("Seeding Supabase from file...")
-  execSync(`pnpm tsx scripts/seed-fragrance-notes.ts --file=${RAW_FILE}`, {
-    stdio: "inherit",
-    cwd: process.cwd(),
-  })
+  await seedFromFile(RAW_FILE)
   console.log("Done.")
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+export { main }
+
+// Run when executed directly (not when imported by seed-glossary-local)
+if (!process.env.GLOSSARY_USE_LOCAL) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

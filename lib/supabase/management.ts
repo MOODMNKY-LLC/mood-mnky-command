@@ -86,14 +86,114 @@ export interface TableInfo {
   }>
 }
 
+/**
+ * List tables via POST /database/query (the GET /database/tables endpoint does not exist).
+ */
 export async function listTables(schema = "public"): Promise<TableInfo[]> {
-  const ref = getProjectRef()
-  const res = await fetch(
-    `${MANAGEMENT_API_URL}/v1/projects/${ref}/database/tables?schema=${schema}`,
-    { headers: getHeaders() }
-  )
-  if (!res.ok) throw new Error(`Failed to list tables: ${res.status} ${await res.text()}`)
-  return res.json()
+  const schemaParam = schema.replace(/'/g, "''") // escape for SQL
+  const result = await executeSql(`
+    WITH tables AS (
+      SELECT
+        c.oid::int AS id,
+        n.nspname AS schema,
+        c.relname AS name,
+        obj_description(c.oid, 'pg_class') AS comment,
+        COALESCE(c.relrowsecurity, false) AS rls_enabled
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = '${schemaParam}'
+        AND c.relkind = 'r'
+        AND NOT c.relispartition
+      ORDER BY c.relname
+    ),
+    cols AS (
+      SELECT
+        c.relname AS table_name,
+        json_agg(
+          json_build_object(
+            'name', a.attname,
+            'type', pg_catalog.format_type(a.atttypid, a.atttypmod),
+            'default_value', CASE WHEN d.adbin IS NOT NULL THEN pg_get_expr(d.adbin, d.adrelid) ELSE NULL END,
+            'is_nullable', a.attnotnull = false,
+            'is_identity', a.attidentity != '',
+            'is_unique', false,
+            'comment', col_description(a.attrelid, a.attnum)
+          ) ORDER BY a.attnum
+        ) AS columns
+      FROM pg_attribute a
+      JOIN pg_class c ON c.oid = a.attrelid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+      WHERE n.nspname = '${schemaParam}'
+        AND c.relkind = 'r'
+        AND a.attnum > 0
+        AND NOT a.attisdropped
+      GROUP BY c.relname
+    ),
+    pks AS (
+      SELECT
+        tc.table_name,
+        json_agg(json_build_object('name', kcu.column_name)) AS primary_keys
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+      WHERE tc.table_schema = '${schemaParam}'
+        AND tc.constraint_type = 'PRIMARY KEY'
+      GROUP BY tc.table_name
+    ),
+    fks AS (
+      SELECT
+        tc.table_name AS source_table,
+        json_agg(
+          json_build_object(
+            'source_schema', tc.table_schema,
+            'source_table_name', tc.table_name,
+            'source_column_name', kcu.column_name,
+            'target_table_schema', ccu.table_schema,
+            'target_table_name', ccu.table_name,
+            'target_column_name', ccu.column_name
+          )
+        ) AS relationships
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+      JOIN information_schema.constraint_column_usage ccu
+        ON tc.constraint_name = ccu.constraint_name
+      WHERE tc.table_schema = '${schemaParam}'
+        AND tc.constraint_type = 'FOREIGN KEY'
+      GROUP BY tc.table_name
+    )
+    SELECT
+      t.id,
+      t.schema,
+      t.name,
+      t.comment,
+      COALESCE(cols.columns, '[]'::json) AS columns,
+      t.rls_enabled,
+      COALESCE(pks.primary_keys, '[]'::json) AS primary_keys,
+      COALESCE(fks.relationships, '[]'::json) AS relationships
+    FROM tables t
+    LEFT JOIN cols ON cols.table_name = t.name
+    LEFT JOIN pks ON pks.table_name = t.name
+    LEFT JOIN fks ON fks.source_table = t.name
+    ORDER BY t.name
+  `)
+
+  if (result.error || !result.rows.length) {
+    return []
+  }
+
+  return result.rows.map((row) => ({
+    id: Number(row.id),
+    schema: String(row.schema),
+    name: String(row.name),
+    comment: row.comment != null ? String(row.comment) : null,
+    columns: Array.isArray(row.columns) ? row.columns : JSON.parse(String(row.columns || "[]")),
+    rls_enabled: Boolean(row.rls_enabled),
+    primary_keys: Array.isArray(row.primary_keys) ? row.primary_keys : JSON.parse(String(row.primary_keys || "[]")),
+    relationships: Array.isArray(row.relationships) ? row.relationships : JSON.parse(String(row.relationships || "[]")),
+  })) as TableInfo[]
 }
 
 // ---- SQL Execution ----

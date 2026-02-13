@@ -12,7 +12,9 @@ pnpm glossary:fetch-and-seed
 
 This fetches the [CandleScience Fragrance Note Glossary](https://www.candlescience.com/fragrance-note-glossary/), writes `fragrance-glossary-raw.txt`, and runs the seed script to upsert into Supabase.
 
-- **Requires:** `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`
+- **Requires:** `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` in `.env`
+- **Local:** Run `pnpm glossary:seed-local` (uses `supabase status -o env`; requires `supabase start`)
+- **Production:** Run `pnpm glossary:seed-production` (uses Vercel production env; requires `SUPABASE_SERVICE_ROLE_KEY` in Vercel. If missing, add to `.env` and run `pnpm glossary:fetch-and-seed` instead)
 - **Legal:** CandleScience content is proprietary. For production, paraphrase/rewrite or obtain permission.
 
 ### Option 2: Seed from an existing file
