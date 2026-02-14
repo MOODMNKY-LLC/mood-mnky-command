@@ -38,7 +38,11 @@ from auth.users u
 where u.id = p.id;
 
 -- ========== 3. Trigger to sync last_sign_in_at on auth.users update ==========
-create or replace function public.sync_profile_from_auth_user()
+-- Drop first to avoid "must be owner of function" when replacing a function created by another role.
+-- CASCADE drops the trigger that depends on this function.
+drop function if exists public.sync_profile_from_auth_user() cascade;
+
+create function public.sync_profile_from_auth_user()
 returns trigger
 language plpgsql
 security definer

@@ -23,7 +23,18 @@ function isReasoningModel(model: string): boolean {
 }
 
 const BLENDING_MODE_SUFFIX = `
-[Blending mode active] The user is in a fragrance blending workflow. Follow the Full Lab-Style Blending Flow. Use search_fragrance_oils, get_fragrance_oil_by_id, calculate_blend_proportions, save_custom_blend, list_containers, calculate_wax_for_vessel, and list_saved_blends as needed. Be conversational, ask clarifying questions, and always end with 1–2 follow-up options.`
+[Blending mode active] The user is in a fragrance blending workflow. Follow the Full Lab-Style Blending Flow.
+
+CRITICAL—DO NOT VIOLATE:
+1. Use exactly ONE search_fragrance_oils call with a combined query (e.g. "leather blood orange cinnamon vanilla"). Never make 4 separate searches—it wastes steps and causes the response to stall.
+2. After search_fragrance_oils returns, you MUST NOT stop. You MUST immediately: (a) call calculate_blend_proportions with the oil IDs from the search results, (b) call show_blend_suggestions with those oils and proportions, and (c) write at least one sentence to the user. NEVER end your turn with only search results and no card.
+3. Required sequence for blend requests: search_fragrance_oils (once) -> calculate_blend_proportions -> show_blend_suggestions -> text response. Do not stop midway.
+4. When the user confirms they like a blend and want to save, call show_personalization_form first—unless they already gave a name (e.g. "Save as Cozy Vanilla").
+5. When the user is starting a blend and you need preferences: prefer show_intake_form directly when they ask to be guided (e.g. "guide me through it"); otherwise call get_latest_funnel_submission (omit funnelId), and if submission is null, call show_intake_form.
+6. Use show_product_picker when the user confirms their blend.
+7. When you decide to call a tool, you MUST emit the tool call in the same response. Do not stop after reasoning—execute the call.
+
+Tools: get_latest_funnel_submission, show_intake_form, search_fragrance_oils, get_fragrance_oil_by_id, calculate_blend_proportions, show_blend_suggestions, show_product_picker, show_personalization_form, save_custom_blend, list_containers, calculate_wax_for_vessel, list_saved_blends. Be conversational and always end with 1–2 follow-up options.`
 
 interface ChatBody {
   messages: UIMessage[]
@@ -83,7 +94,7 @@ export async function POST(request: Request) {
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
     tools,
-    maxSteps: 5,
+    maxSteps: 10,
     providerOptions: isReasoningModel(model)
       ? {
           openai: {

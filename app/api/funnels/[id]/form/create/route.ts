@@ -112,11 +112,22 @@ export async function POST(
       }
     })
 
+    const formSchema = questions.map((q) => ({
+      type: q.type,
+      text: q.text,
+      order: q.order ?? 0,
+      name: q.name,
+      required: q.required,
+      options: q.options,
+      semanticKey: q.semanticKey,
+    }))
+
     const { error: updateError } = await auth.supabase
       .from("funnel_definitions")
       .update({
         provider_form_id: formId,
         question_mapping: questionMapping,
+        form_schema: formSchema,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)

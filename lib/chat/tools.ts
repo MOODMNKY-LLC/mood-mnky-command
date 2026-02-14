@@ -2,6 +2,8 @@ import { tool } from "ai"
 import { z } from "zod"
 import { headers } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
+import { getProducts, isConfigured } from "@/lib/shopify"
+import { getQuestions } from "@/lib/jotform/client"
 import {
   calculateBlendProportions,
   calculateWaxForVessel,
@@ -36,7 +38,7 @@ export const searchFormulasTool = tool({
 
 export const searchFragranceOilsTool = tool({
   description:
-    "Search fragrance oils by name, family, or notes. Use when the user asks about specific fragrances, scent families, or oil recommendations.",
+    "Search fragrance oils by name, family, or notes. When the user names multiple oils (e.g. leather, vanilla, blood orange), use ONE call with a combined query like 'leather vanilla blood orange'—do not call separately for each oil. After this returns, you must call calculate_blend_proportions and show_blend_suggestions.",
   inputSchema: z.object({
     query: z.string().describe("Search term for fragrance name, family, or notes"),
     limit: z.number().min(1).max(20).default(5).optional(),
@@ -325,15 +327,293 @@ export const getSavedBlendTool = tool({
   },
 })
 
-export const getLatestFunnelSubmissionTool = tool({
+export const showProductPickerTool = tool({
   description:
-    "Get the user's latest fragrance intake funnel submission. Use when the user has completed a JotForm intake and you want to personalize recommendations (mood, product type, notes, blend style). Returns structured answers from their most recent submission.",
+    "Show product picker with Shopify products (candles, soaps, room sprays). Use after the user confirms their blend to suggest where to make it.",
+  inputSchema: z.object({
+    blendName: z.string().optional().describe("Name of the blend for context"),
+    productType: z
+      .string()
+      .default("Candle")
+      .describe("Product type: Candle, Soap, Room Spray, etc."),
+    limit: z.number().min(1).max(12).default(6).optional(),
+  }),
+  execute: async ({ blendName, productType, limit = 6 }) => {
+    if (!isConfigured()) {
+      return {
+        products: [],
+        blendName,
+        message: "Shopify is not configured. Browse our store for options.",
+      }
+    }
+
+    try {
+      const products = await getProducts({
+        limit,
+        status: "active",
+        product_type: productType,
+      })
+
+      const items = products.map((p) => ({
+        id: String(p.id),
+        title: p.title,
+        handle: p.handle,
+        imageUrl: p.images?.[0]?.src ?? null,
+        productType: p.product_type,
+      }))
+
+      return { products: items, blendName }
+    } catch (err) {
+      return {
+        products: [],
+        blendName,
+        error: err instanceof Error ? err.message : "Failed to load products",
+      }
+    }
+  },
+})
+
+export const showPersonalizationFormTool = tool({
+  description:
+    "Show a personalization form to collect blend name and optional signature. Prefer this over save_custom_blend when the user has confirmed their blend but has NOT yet provided a name (e.g. they said 'I like it' or 'let's save it'). Only call save_custom_blend directly when they explicitly gave a name (e.g. 'Save as Cozy Vanilla').",
+  inputSchema: z.object({
+    blendSummary: z.object({
+      productType: z.string().describe("Product type: candle, soap, etc."),
+      fragrances: z
+        .array(
+          z.object({
+            oilId: z.string(),
+            oilName: z.string(),
+            proportionPct: z.number().min(0).max(100),
+          })
+        )
+        .min(1)
+        .max(4)
+        .describe("Oils and proportions"),
+      batchWeightG: z.number().min(50).max(5000).optional(),
+      fragranceLoadPct: z.number().min(5).max(15).default(10).optional(),
+      notes: z.string().optional(),
+    }),
+    promptForImage: z
+      .string()
+      .optional()
+      .describe("Optional prompt for AI image generation based on the blend"),
+  }),
+  execute: async ({ blendSummary, promptForImage }) => {
+    return {
+      needsInput: true,
+      blendSummary,
+      promptForImage,
+    }
+  },
+})
+
+export const showBlendSuggestionsTool = tool({
+  description:
+    "REQUIRED after calculate_blend_proportions. Present a blend suggestion card with oils and proportions. Do not merely describe the blend in text—call this tool so the user sees the visual card with Refine/Proceed affordances.",
+  inputSchema: z.object({
+    oils: z
+      .array(
+        z.object({
+          oilId: z.string().describe("Fragrance oil ID"),
+          oilName: z.string().describe("Fragrance oil name"),
+        })
+      )
+      .min(1)
+      .max(4)
+      .describe("Oils in the blend"),
+    proportions: z
+      .array(
+        z.object({
+          oilId: z.string(),
+          oilName: z.string(),
+          proportionPct: z.number().min(0).max(100),
+        })
+      )
+      .min(1)
+      .max(4)
+      .describe("Proportions per oil"),
+    explanation: z.string().optional().describe("Short explanation of why this blend works"),
+  }),
+  execute: async ({ oils, proportions, explanation }) => {
+    return { oils, proportions, explanation }
+  },
+})
+
+export const showIntakeFormTool = tool({
+  description:
+    "Show an inline intake form to collect mood, product type, fragrance hints. Call when the user is starting a blend and get_latest_funnel_submission returned no submission or null. If they have recent intake data, you may skip this. Returns funnelId, runId, formSchema for the chat to render the form.",
   inputSchema: z.object({
     funnelId: z
       .string()
       .uuid()
       .optional()
-      .describe("Funnel definition ID. If omitted, uses the most recent submitted run from any funnel."),
+      .describe("Funnel definition ID. If omitted, uses the first active funnel with form_schema."),
+  }),
+  execute: async ({ funnelId }) => {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { error: "Not authenticated", funnelId: null, runId: null, formSchema: [] }
+    }
+
+    let funnel: {
+      id: string
+      form_schema: unknown
+      question_mapping: unknown
+      provider_form_id: string | null
+    } | null
+
+    if (funnelId) {
+      const { data, error } = await supabase
+        .from("funnel_definitions")
+        .select("id, form_schema, question_mapping, provider_form_id")
+        .eq("id", funnelId)
+        .eq("status", "active")
+        .single()
+
+      if (error || !data) {
+        return {
+          error: "Funnel not found or inactive",
+          funnelId: null,
+          runId: null,
+          formSchema: [],
+        }
+      }
+      funnel = data
+    } else {
+      let res = await supabase
+        .from("funnel_definitions")
+        .select("id, form_schema, question_mapping, provider_form_id")
+        .eq("status", "active")
+        .not("form_schema", "is", null)
+        .limit(1)
+        .maybeSingle()
+
+      if (res.error || !res.data) {
+        res = await supabase
+          .from("funnel_definitions")
+          .select("id, form_schema, question_mapping, provider_form_id")
+          .eq("status", "active")
+          .not("provider_form_id", "is", null)
+          .limit(1)
+          .maybeSingle()
+      }
+
+      if (res.error || !res.data) {
+        return {
+          error: "No active funnel with form schema or JotForm form found",
+          funnelId: null,
+          runId: null,
+          formSchema: [],
+        }
+      }
+      funnel = res.data
+    }
+
+    let formSchema = (funnel.form_schema ?? []) as Array<{
+      type: string
+      text: string
+      order: number
+      name?: string
+      required?: boolean
+      options?: string[]
+      semanticKey?: string
+    }>
+
+    if (formSchema.length === 0 && funnel.provider_form_id) {
+      try {
+        const questions = await getQuestions(funnel.provider_form_id)
+        const qMapping = (funnel.question_mapping ?? {}) as Record<string, string>
+        const qIdToKey: Record<string, string> = {}
+        for (const [key, qId] of Object.entries(qMapping)) {
+          qIdToKey[qId] = key
+        }
+        const jotformTypeToSchema: Record<string, string> = {
+          control_textbox: "text",
+          control_textarea: "textarea",
+          control_dropdown: "dropdown",
+          control_radio: "radio",
+          control_checkbox: "checkbox",
+          control_hidden: "hidden",
+          control_head: "header",
+        }
+        formSchema = Object.entries(questions)
+          .filter(([, q]) => q.type !== "control_hidden" && q.type !== "control_head")
+          .map(([qId, q]) => {
+            let options: string[] | undefined
+            if (Array.isArray(q.options)) {
+              options = q.options
+            } else if (q.options && typeof q.options === "object") {
+              options = Object.values(q.options) as string[]
+            }
+            return {
+              type: jotformTypeToSchema[q.type] ?? "text",
+              text: q.text ?? "",
+              order: parseInt(q.order ?? "0", 10),
+              name: q.name,
+              semanticKey: qIdToKey[qId],
+              options,
+            }
+          })
+          .sort((a, b) => a.order - b.order)
+      } catch {
+        formSchema = []
+      }
+    }
+
+    if (formSchema.length === 0) {
+      return {
+        error:
+          "Funnel has no form schema. Create form via Form Builder or ensure JotForm form exists.",
+        funnelId: funnel.id,
+        runId: null,
+        formSchema: [],
+      }
+    }
+
+    const { data: run, error: runError } = await supabase
+      .from("funnel_runs")
+      .insert({
+        funnel_id: funnel.id,
+        user_id: user.id,
+        status: "started",
+        context: { source: "chat_intake" },
+      })
+      .select("id")
+      .single()
+
+    if (runError || !run) {
+      return {
+        error: runError?.message ?? "Failed to create run",
+        funnelId: funnel.id,
+        runId: null,
+        formSchema: [],
+      }
+    }
+
+    return {
+      needsForm: true,
+      funnelId: funnel.id,
+      runId: run.id,
+      formSchema: formSchema.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+      questionMapping: (funnel.question_mapping ?? {}) as Record<string, string>,
+    }
+  },
+})
+
+export const getLatestFunnelSubmissionTool = tool({
+  description:
+    "Get the user's latest fragrance intake funnel submission. Use when the user has completed a JotForm intake and you want to personalize recommendations (mood, product type, notes, blend style). Returns structured answers from their most recent submission.",
+  inputSchema: z.object({
+    funnelId: z
+      .union([z.string().uuid(), z.literal("")])
+      .optional()
+      .transform((v) => (v === "" ? undefined : v))
+      .describe("Funnel definition ID. Omit entirely or leave blank to fetch from any funnel. Do not pass empty string explicitly."),
   }),
   execute: async ({ funnelId }) => {
     const supabase = await createClient()
@@ -416,8 +696,12 @@ export const chatTools = {
   calculate_blend_proportions: calculateBlendProportionsTool,
   calculate_wax_for_vessel: calculateWaxForVesselTool,
   list_containers: listContainersTool,
+  show_blend_suggestions: showBlendSuggestionsTool,
+  show_product_picker: showProductPickerTool,
+  show_personalization_form: showPersonalizationFormTool,
   save_custom_blend: saveCustomBlendTool,
   list_saved_blends: listSavedBlendsTool,
   get_saved_blend: getSavedBlendTool,
+  show_intake_form: showIntakeFormTool,
   get_latest_funnel_submission: getLatestFunnelSubmissionTool,
 }

@@ -36,6 +36,19 @@ import {
 } from "@/components/ai-elements/tool"
 import { SavedBlendCard } from "@/components/ai-elements/saved-blend-card"
 import {
+  BlendSuggestionsCard,
+  type BlendSuggestionsInput,
+} from "@/components/ai-elements/blend-suggestions-card"
+import {
+  ProductPickerCard,
+  type ProductPickerInput,
+} from "@/components/ai-elements/product-picker-card"
+import { PersonalizationFormCard } from "@/components/ai-elements/personalization-form-card"
+import {
+  InlineIntakeForm,
+  type InlineIntakeFormInput,
+} from "@/components/ai-elements/inline-intake-form"
+import {
   PromptInput,
   PromptInputActionAddAttachments,
   PromptInputActionMenu,
@@ -67,7 +80,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Spinner } from "@/components/ui/spinner"
-import { FlaskConical, GlobeIcon, MessageSquareIcon, ThumbsDown, ThumbsUp } from "lucide-react"
+import { FlaskConical, GlobeIcon, MessageSquareIcon, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react"
 
 const models = [
   { id: "gpt-5", name: "GPT-5" },
@@ -127,7 +140,7 @@ export default function ChatPage() {
   const [webSearch, setWebSearch] = useState(false)
   const [text, setText] = useState("")
   const [blendingMode, setBlendingMode] = useState(false)
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
     body: { model, webSearch, ...(blendingMode ? { mode: "blending" as const } : {}) },
   })
@@ -151,20 +164,45 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col size-full min-h-0">
-      <div className="border-b px-4 py-3">
-        <h1 className="font-semibold text-lg flex items-center gap-2 flex-wrap">
-          <MessageSquareIcon className="size-5" />
-          AI Chat
-          {blendingMode && (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              <FlaskConical className="size-3" />
-              Blending
-            </Badge>
-          )}
-        </h1>
-        <p className="text-muted-foreground text-sm mt-0.5">
-          Ask about formulas, fragrances, products, or generate images.
-        </p>
+      <div className="border-b px-4 py-3 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-semibold text-lg flex items-center gap-2 flex-wrap">
+            <MessageSquareIcon className="size-5" />
+            AI Chat
+            {blendingMode && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                <FlaskConical className="size-3" />
+                Blending
+              </Badge>
+            )}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Ask about formulas, fragrances, products, or generate images.
+          </p>
+        </div>
+        {messages.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0 gap-1.5"
+                  onClick={() => setMessages([])}
+                  disabled={isStreaming}
+                  aria-label="Start new chat"
+                >
+                  <RotateCcw className="size-4" />
+                  New chat
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear messages and start a new conversation</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col min-h-0 p-4">
@@ -275,8 +313,51 @@ export default function ChatPage() {
                           toolPart.output !== null &&
                           "success" in toolPart.output &&
                           (toolPart.output as { success?: boolean }).success === true
+                        const isBlendSuggestions =
+                          toolPart.type === "dynamic-tool" &&
+                          toolName === "show_blend_suggestions" &&
+                          toolPart.state === "output-available"
+                        const isProductPicker =
+                          toolPart.type === "dynamic-tool" &&
+                          toolName === "show_product_picker" &&
+                          toolPart.state === "output-available"
+                        const isPersonalizationForm =
+                          toolPart.type === "dynamic-tool" &&
+                          toolName === "show_personalization_form" &&
+                          toolPart.state === "output-available" &&
+                          (toolPart.output as { needsInput?: boolean })?.needsInput === true
+                        const isIntakeForm =
+                          toolPart.type === "dynamic-tool" &&
+                          toolName === "show_intake_form" &&
+                          toolPart.state === "output-available" &&
+                          ((toolPart.output as { needsForm?: boolean })?.needsForm === true ||
+                            ((toolPart.output as { formSchema?: unknown[] })?.formSchema?.length ?? 0) > 0)
                         return (
                           <div key={`${message.id}-${i}`} className="space-y-3">
+                            {isBlendSuggestions && (
+                              <BlendSuggestionsCard
+                                input={(toolPart.input || {}) as BlendSuggestionsInput}
+                                output={(toolPart.output || {}) as BlendSuggestionsInput}
+                              />
+                            )}
+                            {isProductPicker && (
+                              <ProductPickerCard
+                                input={(toolPart.input || {}) as ProductPickerInput}
+                                output={(toolPart.output || {}) as ProductPickerInput}
+                              />
+                            )}
+                            {isPersonalizationForm && (
+                              <PersonalizationFormCard
+                                input={(toolPart.input || {}) as import("@/components/ai-elements/personalization-form-card").PersonalizationFormInput}
+                                output={(toolPart.output || {}) as import("@/components/ai-elements/personalization-form-card").PersonalizationFormInput}
+                              />
+                            )}
+                            {isIntakeForm && (
+                              <InlineIntakeForm
+                                input={(toolPart.input || {}) as InlineIntakeFormInput}
+                                output={(toolPart.output || {}) as InlineIntakeFormInput}
+                              />
+                            )}
                             {saveBlendSuccess && (
                               <SavedBlendCard
                                 input={(toolPart.input || {}) as { name?: string; productType?: string; fragrances?: Array<{ oilId?: string; oilName?: string; proportionPct?: number }>; notes?: string }}
