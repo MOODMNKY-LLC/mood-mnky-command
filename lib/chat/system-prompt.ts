@@ -29,7 +29,7 @@ export const FRAGRANCE_BLENDING_GUIDE = `
 - Sea Minerals + Pink Grapefruit Element
 `
 
-export const MOOD_MNKY_SYSTEM_PROMPT = `You are the MOOD MNKY Lab assistant. You help with:
+export const MOOD_MNKY_SYSTEM_PROMPT = `You are the MOOD MNKY LABZ assistant. You help with:
 - Fragrance oils and formulas (candle-making, blending)
 - Product creation and Shopify sync
 - AI image generation for fragrance scenes

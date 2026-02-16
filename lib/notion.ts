@@ -13,6 +13,7 @@ export const NOTION_DATABASE_IDS = {
   productCopy: "998270c2-30c4-4767-a884-e57d28c1adb2",
   customOrders: "120e6471-74a5-4430-abee-2dabfb5ab106",
   docs: "ab8ea6f8-2542-4d45-afc2-bfd9ba31d70e",
+  blog: "d5436f86-b687-486e-939f-7223da83cc1d",
 } as const
 
 // ---- Types ----

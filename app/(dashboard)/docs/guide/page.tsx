@@ -19,7 +19,7 @@ export default function GuideDocsPage() {
         App Guide
       </h1>
       <p className="mb-8 text-muted-foreground">
-        How to use MOOD MNKY Lab – step-by-step guides for every feature.
+        How to use MOOD MNKY LABZ – step-by-step guides for every feature.
       </p>
       <ul className="space-y-4">
         {items.map((item) => (

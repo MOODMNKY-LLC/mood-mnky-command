@@ -1,0 +1,9 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "MOOD MNKY Theme"
+handle = "mood-mnky-theme"
+
+uid = "3aa36bbc-13d3-6afd-0ae9-f4a92f8a3bc1b9e9a289"
+
+type = "theme"

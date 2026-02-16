@@ -1,38 +1,113 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { LoginForm } from "@/components/auth/login-form"
+"use client"
+
+import React, { useState } from "react"
+import Image from "next/image"
+import { useTheme } from "next-themes"
+import { DualAuthTabs, type AuthTab } from "@/components/auth/dual-auth-tabs"
+import { AuthVerseLogoBlock } from "@/components/auth/auth-verse-logo-block"
+import { AuthLabzLogoBlock } from "@/components/auth/auth-labz-logo-block"
+import { BlurFade } from "@/components/ui/blur-fade"
+import { DottedMap } from "@/components/ui/dotted-map"
+
+const VERSE_BG_DARK = "/auth/mnky-verse-bg-dark.png"
+const VERSE_BG_LIGHT = "/auth/mnky-verse-bg-light.png"
+const MASCOT_VERSE = "/verse/mood_mnky.png"
+const MASCOT_LABZ = "/auth/code_mnky.png"
 
 export default function LoginPage() {
+  const [activeTab, setActiveTab] = useState<AuthTab>("verse")
+  const { resolvedTheme } = useTheme()
+
+  const isDark = (resolvedTheme ?? "dark") === "dark"
+  const verseBg = isDark ? VERSE_BG_DARK : VERSE_BG_LIGHT
+
   return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center gap-6">
-          <div className="flex flex-col items-center gap-1">
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              MOOD MNKY Lab
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Sign in to manage your product lab
-            </p>
+    <div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      {/* Dynamic background - both tabs use branded bg; LABZ adds Dotted Map overlay */}
+      {activeTab === "verse" ? (
+        <div className="fixed inset-0 -z-10">
+          <Image
+            src={verseBg}
+            alt=""
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-background/30" />
+          {/* Mascot - centered in right half */}
+          <div className="absolute right-0 top-0 bottom-0 left-1/2 flex items-center justify-center">
+            <Image
+              src={MASCOT_VERSE}
+              alt="MOOD MNKY mascot"
+              width={360}
+              height={400}
+              className="h-[80vh] min-h-[420px] w-auto max-w-full object-contain"
+              style={
+                isDark
+                  ? { filter: "drop-shadow(0 0 56px rgba(0,0,0,0.45))" }
+                  : { filter: "drop-shadow(0 0 56px rgba(255,255,255,0.25))" }
+              }
+              sizes="45vw"
+              priority
+            />
           </div>
-          <Card className="w-full border-border bg-card">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Sign in</CardTitle>
-              <CardDescription>
-                Enter your credentials to continue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LoginForm />
-            </CardContent>
-          </Card>
         </div>
-      </div>
+      ) : (
+        <div className="fixed inset-0 -z-10">
+          <Image
+            src={VERSE_BG_LIGHT}
+            alt=""
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-white/20" />
+          {/* Dotted Map overlay - subtle light-gray dots, tech-forward aesthetic */}
+          <div className="absolute inset-0 pointer-events-none opacity-30">
+            <DottedMap
+              className="h-full w-full text-gray-500"
+              dotRadius={0.15}
+              markers={[]}
+            />
+          </div>
+          {/* Mascot - centered in right half */}
+          <div className="absolute right-0 top-0 bottom-0 left-1/2 flex items-center justify-center">
+            <Image
+              src={MASCOT_LABZ}
+              alt="CODE MNKY mascot"
+              width={360}
+              height={400}
+              className="h-[80vh] min-h-[420px] w-auto max-w-full object-contain"
+              style={
+                isDark
+                  ? { filter: "drop-shadow(0 0 56px rgba(0,0,0,0.45))" }
+                  : { filter: "drop-shadow(0 0 56px rgba(255,255,255,0.25))" }
+              }
+              sizes="45vw"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Content - center aligned */}
+      <BlurFade delay={0.1} inView>
+        <div className="flex w-full max-w-lg flex-col items-center gap-8 px-4">
+          {activeTab === "verse" ? (
+            <AuthVerseLogoBlock />
+          ) : (
+            <AuthLabzLogoBlock />
+          )}
+          <DualAuthTabs
+            value={activeTab}
+            defaultTab="verse"
+            onTabChange={setActiveTab}
+            appearance={activeTab === "labz" ? "light" : "default"}
+          />
+        </div>
+      </BlurFade>
     </div>
   )
 }

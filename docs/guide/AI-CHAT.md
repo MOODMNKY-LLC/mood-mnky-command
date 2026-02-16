@@ -1,6 +1,6 @@
 # AI Chat
 
-The MOOD MNKY Lab AI Chat provides a conversational interface for fragrance oils, formulas, products, and AI image generation.
+The MOOD MNKY LABZ AI Chat provides a conversational interface for fragrance oils, formulas, products, and AI image generation.
 
 **Location:** Access via the **MNKY Chat** section in the sidebar (between Data Sources and Studio).
 

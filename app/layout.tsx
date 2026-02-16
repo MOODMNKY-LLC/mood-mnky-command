@@ -1,8 +1,10 @@
 import React from "react"
 import type { Metadata, Viewport } from "next"
+import { headers } from "next/headers"
 import { Inter, Source_Code_Pro } from "next/font/google"
 
 import { PwaRegister } from "@/components/pwa-register"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 const inter = Inter({
@@ -17,10 +19,10 @@ const sourceCodePro = Source_Code_Pro({
 })
 
 export const metadata: Metadata = {
-  title: "MOOD MNKY Lab",
+  title: "MOOD MNKY LABZ",
   description:
     "Formula calculator, fragrance oil catalog, and product builder for MOOD MNKY",
-  applicationName: "MOOD MNKY Lab",
+  applicationName: "MOOD MNKY LABZ",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -32,43 +34,49 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "MOOD MNKY Lab",
+    title: "MOOD MNKY LABZ",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "MOOD MNKY Lab",
-    title: "MOOD MNKY Lab",
+    siteName: "MOOD MNKY LABZ",
+    title: "MOOD MNKY LABZ",
     description:
       "Formula calculator, fragrance oil catalog, and product builder for MOOD MNKY",
   },
   twitter: {
     card: "summary",
-    title: "MOOD MNKY Lab",
+    title: "MOOD MNKY LABZ",
     description:
       "Formula calculator, fragrance oil catalog, and product builder for MOOD MNKY",
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#f1f5f9",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const host = headersList.get("host") ?? ""
+  const isNgrok = host.includes("ngrok")
+
   return (
-    <html lang="en" className={`dark ${inter.variable} ${sourceCodePro.variable}`}>
-      <body className="font-sans antialiased">
-        <PwaRegister>{children}</PwaRegister>
+    <html lang="en" className={`${inter.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
+        <ThemeProvider defaultTheme="light" attribute="class" enableSystem>
+          <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
+        </ThemeProvider>
       </body>
     </html>
   )

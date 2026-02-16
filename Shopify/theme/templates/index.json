@@ -1,0 +1,611 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow": {
+      "type": "slideshow",
+      "blocks": {
+        "slide-0": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/1200x628-Social-Sharing-Image-_1_0c5da239-fb27-4b7d-bff4-49501637251d.jpg",
+            "heading": "Extreme personalization. The Experience.",
+            "heading_size": "h2",
+            "subheading": "Bespoke fragrance and self-care that transforms everyday rituals into sensory journeys. Always scentsing the MOOD.",
+            "button_label": "Read more about us...",
+            "link": "shopify://pages/who-we-are",
+            "button_style_secondary": true,
+            "box_align": "bottom-left",
+            "show_text_box": false,
+            "text_alignment": "left",
+            "image_overlay_opacity": 0,
+            "color_scheme": "background-1",
+            "text_alignment_mobile": "center"
+          }
+        },
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/IMG_6641_2.jpg",
+            "heading": "The Experience",
+            "heading_size": "h1",
+            "subheading": "Craft truly bespoke fragrance experiences tailored to your preferences, story, and needs. Tell us your story—we'll hand craft a blend just for you.",
+            "button_label": "Customize your MOOD",
+            "link": "shopify://products/custom-candle-fragrance",
+            "button_style_secondary": false,
+            "box_align": "bottom-center",
+            "show_text_box": true,
+            "text_alignment": "left",
+            "image_overlay_opacity": 10,
+            "color_scheme": "background-2",
+            "text_alignment_mobile": "left"
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/pexels-pixabay-262508.jpg",
+            "heading": "The Dojo",
+            "heading_size": "h1",
+            "subheading": "Customers, friends, family? It’s all the same to us! Community-centered wellness where you learn, connect, and grow. Join MOOD chasin candle connoisseurs in the MNKY VERSE.",
+            "button_label": "Come hang out!",
+            "link": "shopify://blogs/hello-welcome-to-mood-mnky",
+            "button_style_secondary": false,
+            "box_align": "bottom-center",
+            "show_text_box": true,
+            "text_alignment": "center",
+            "image_overlay_opacity": 10,
+            "color_scheme": "background-2",
+            "text_alignment_mobile": "left"
+          }
+        },
+        "72a99abd-f56f-4e63-81e3-9ce37a0efadb": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/25A08994-7608-4B24-B336-8704C3A7965B.jpg",
+            "heading": "Flame Free? No problem!",
+            "heading_size": "h1",
+            "subheading": "Our signature wax-melts are a perfect option for those needing a flame free solution for enjoying the MOOD.",
+            "button_label": "Shop Now",
+            "link": "shopify://products/wax-melts-1-piece",
+            "button_style_secondary": false,
+            "box_align": "bottom-left",
+            "show_text_box": true,
+            "text_alignment": "center",
+            "image_overlay_opacity": 0,
+            "color_scheme": "background-1",
+            "text_alignment_mobile": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide-0",
+        "slide-1",
+        "slide-2",
+        "72a99abd-f56f-4e63-81e3-9ce37a0efadb"
+      ],
+      "settings": {
+        "layout": "full_bleed",
+        "slide_height": "adapt_image",
+        "slider_visual": "counter",
+        "auto_rotate": true,
+        "change_slides_speed": 9,
+        "image_behavior": "none",
+        "show_text_below": true,
+        "accessibility_info": "Featured MOOD MNKY collections: Who we are, Custom candles, Community blog, Wax melts"
+      }
+    },
+    "featured-collection-0": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Sensory Journeys: Our Starting Lineup",
+        "heading_size": "h2",
+        "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience. Candles and wax-melts.</p>",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "available-moods",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "outline",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "a4b1732b-b660-4e99-b471-f681ff417699": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Subscribe to the Vibe!",
+        "heading_size": "h1",
+        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "subscriptions",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "multicolumn-0": {
+      "type": "multicolumn",
+      "blocks": {
+        "column-0": {
+          "type": "column",
+          "settings": {
+            "title": "Extreme Personalization",
+            "text": "<p>MOOD MNKY crafts truly bespoke fragrance experiences tailored to your preferences, story, and needs. Every candle tells your story.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-1": {
+          "type": "column",
+          "settings": {
+            "title": "Sensory Journeys",
+            "text": "<p>Transform everyday rituals into meaningful moments. Our traveled blends—from the Eiffel Tower to the streets of Marrakesh—transport you.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-2": {
+          "type": "column",
+          "settings": {
+            "title": "Handcrafted for You",
+            "text": "<p>Tell us your story and we'll hand craft a special fragrance blend just for you. Like having your own personal tailor, for candles.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-3": {
+          "type": "column",
+          "settings": {
+            "title": "The Dojo — Engaged Community",
+            "text": "<p>Join the MNKY VERSE. Connect, share, and grow with candle connoisseurs who are always scentsing the MOOD. Community-centered wellness.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "column-0",
+        "column-1",
+        "column-2",
+        "column-3"
+      ],
+      "settings": {
+        "title": "Why MOOD MNKY",
+        "heading_size": "h2",
+        "image_width": "half",
+        "image_ratio": "adapt",
+        "columns_desktop": 4,
+        "column_alignment": "center",
+        "background_style": "none",
+        "button_label": "",
+        "button_link": "",
+        "color_scheme": "background-1",
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "padding_top": 32,
+        "padding_bottom": 92
+      }
+    },
+    "image-with-text-0": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Image with text",
+            "heading_size": "h0"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Introduce one of your collections. Describe some of its benefits to encourage your customers to explore more. </p>",
+            "text_style": "body"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop now",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "disabled": true,
+      "settings": {
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "text_first",
+        "desktop_content_position": "middle",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-2",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "image-with-text-1": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Image with text",
+            "heading_size": "h0"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Introduce another one of your collections. Describe some of its benefits to encourage your customers to explore more. </p>",
+            "text_style": "body"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop now",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "disabled": true,
+      "settings": {
+        "height": "adapt",
+        "desktop_image_width": "small",
+        "layout": "image_first",
+        "desktop_content_position": "middle",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-2",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "image-with-text-2": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Image with text",
+            "heading_size": "h0"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Introduce another one of your collections. Describe some of its benefits to encourage your customers to explore more. </p>",
+            "text_style": "body"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop now",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "disabled": true,
+      "settings": {
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "text_first",
+        "desktop_content_position": "middle",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-2",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "image-with-text-3": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Image with text",
+            "heading_size": "h0"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Introduce another one of your collections. Describe some of its benefits to encourage your customers to explore more. </p>",
+            "text_style": "body"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop now",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "disabled": true,
+      "settings": {
+        "height": "adapt",
+        "desktop_image_width": "small",
+        "layout": "image_first",
+        "desktop_content_position": "middle",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-2",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "featured-collection-1": {
+      "type": "featured-collection",
+      "disabled": true,
+      "settings": {
+        "title": "",
+        "heading_size": "h2",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "all",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "full_width": false,
+        "show_view_all": false,
+        "view_all_style": "solid",
+        "enable_desktop_slider": false,
+        "color_scheme": "background-1",
+        "image_ratio": "portrait",
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_rating": false,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "rich-text": {
+      "type": "rich-text",
+      "blocks": {
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>INTRODUCE YOUR BRAND</p>"
+          }
+        },
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Describe what sets your brand apart from your competitors.",
+            "heading_size": "h1"
+          }
+        }
+      },
+      "block_order": [
+        "text",
+        "heading"
+      ],
+      "disabled": true,
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "accent-2",
+        "full_width": true,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "multicolumn-1": {
+      "type": "multicolumn",
+      "blocks": {
+        "column-0": {
+          "type": "column",
+          "settings": {
+            "title": "Multicolumn",
+            "text": "<p>Use a combination of images and text to share your brand values. </p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-1": {
+          "type": "column",
+          "settings": {
+            "title": "Multicolumn",
+            "text": "<p>Use a combination of images and text to share your brand values. </p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-2": {
+          "type": "column",
+          "settings": {
+            "title": "Multicolumn",
+            "text": "<p>Use a combination of images and text to share your brand values. </p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column-3": {
+          "type": "column",
+          "settings": {
+            "title": "Multicolumn",
+            "text": "<p>Use a combination of images and text to share your brand values. </p>",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "column-0",
+        "column-1",
+        "column-2",
+        "column-3"
+      ],
+      "disabled": true,
+      "settings": {
+        "title": "",
+        "heading_size": "h1",
+        "image_width": "third",
+        "image_ratio": "adapt",
+        "columns_desktop": 4,
+        "column_alignment": "center",
+        "background_style": "none",
+        "button_label": "",
+        "button_link": "",
+        "color_scheme": "accent-2",
+        "columns_mobile": "1",
+        "swipe_on_mobile": false,
+        "padding_top": 0,
+        "padding_bottom": 60
+      }
+    },
+    "app-cta-0": {
+      "type": "app-cta",
+      "settings": {
+        "app_base_url": "http://localhost:3000",
+        "cta_path": "/blending",
+        "heading": "The Foundation — Create your custom fragrance blend",
+        "heading_size": "h2",
+        "subheading": "<p>Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.</p>",
+        "cta_label": "Go to Blending Lab",
+        "cta_aria_label": "",
+        "button_style_secondary": false,
+        "desktop_content_position": "middle",
+        "content_alignment": "center",
+        "full_width": true,
+        "color_scheme": "background-1",
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "featured-blog": {
+      "type": "featured-blog",
+      "settings": {
+        "heading": "MOOD|MNKY Community Blog",
+        "heading_size": "h2",
+        "blog": "hello-welcome-to-mood-mnky",
+        "post_limit": 3,
+        "columns_desktop": 3,
+        "color_scheme": "background-1",
+        "show_image": true,
+        "show_date": true,
+        "show_author": true,
+        "show_view_all": true,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Subscribe to the Vibe — Join the MNKY VERSE",
+            "heading_size": "h1"
+          }
+        },
+        "paragraph": {
+          "type": "paragraph",
+          "settings": {
+            "text": "<p>Be the first to know about new MOOD blends, exclusive offers, and MNKY VERSE community updates. Always scentsing the MOOD.</p>"
+          }
+        },
+        "email-form": {
+          "type": "email_form",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "heading",
+        "paragraph",
+        "email-form"
+      ],
+      "settings": {
+        "color_scheme": "accent-2",
+        "full_width": true,
+        "padding_top": 60,
+        "padding_bottom": 0
+      }
+    }
+  },
+  "order": [
+    "slideshow",
+    "featured-collection-0",
+    "a4b1732b-b660-4e99-b471-f681ff417699",
+    "multicolumn-0",
+    "app-cta-0",
+    "image-with-text-0",
+    "image-with-text-1",
+    "image-with-text-2",
+    "image-with-text-3",
+    "featured-collection-1",
+    "rich-text",
+    "multicolumn-1",
+    "featured-blog",
+    "newsletter"
+  ]
+}

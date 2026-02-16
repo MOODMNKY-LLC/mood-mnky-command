@@ -14,18 +14,18 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
         mono: ['var(--font-source-code-pro)', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
-      },
-      fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0' }],
-        'sm': ['0.8125rem', { lineHeight: '1.25rem', letterSpacing: '0' }],
-        'base': ['0.875rem', { lineHeight: '1.5rem', letterSpacing: '0' }],
-        'lg': ['1rem', { lineHeight: '1.5rem', letterSpacing: '-0.01em' }],
-        'xl': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }],
-        '2xl': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.02em' }],
-        '3xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.025em' }],
-        '4xl': ['2rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em' }],
+        'verse-heading': ['var(--font-oswald)', 'Oswald', 'sans-serif'],
+        'verse-body': ['var(--font-roboto)', 'Roboto', 'sans-serif'],
+        'verse-logo': ['var(--font-montserrat)', 'Montserrat', 'sans-serif'],
       },
       colors: {
+        verse: {
+          bg: 'var(--verse-bg)',
+          text: 'var(--verse-text)',
+          'text-muted': 'var(--verse-text-muted)',
+          button: 'var(--verse-button)',
+          'button-text': 'var(--verse-button-text)',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -85,6 +85,16 @@ const config: Config = {
           ring: 'hsl(var(--sidebar-ring))',
         },
       },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0' }],
+        'sm': ['0.8125rem', { lineHeight: '1.25rem', letterSpacing: '0' }],
+        'base': ['0.875rem', { lineHeight: '1.5rem', letterSpacing: '0' }],
+        'lg': ['1rem', { lineHeight: '1.5rem', letterSpacing: '-0.01em' }],
+        'xl': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }],
+        '2xl': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.02em' }],
+        '3xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.025em' }],
+        '4xl': ['2rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em' }],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
@@ -111,11 +121,22 @@ const config: Config = {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(400%)' },
         },
+        orbit: {
+          '0%': {
+            transform:
+              'rotate(0deg) translateY(calc(var(--radius) * 1px)) rotate(0deg)',
+          },
+          '100%': {
+            transform:
+              'rotate(360deg) translateY(calc(var(--radius) * 1px)) rotate(-360deg)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'progress-indeterminate': 'progress-indeterminate 1.5s ease-in-out infinite',
+        orbit: 'orbit calc(var(--duration) * 1s) linear infinite',
       },
     },
   },

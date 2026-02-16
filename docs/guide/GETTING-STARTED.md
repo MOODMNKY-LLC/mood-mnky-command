@@ -1,12 +1,12 @@
-# Getting Started with MOOD MNKY Lab
+# Getting Started with MOOD MNKY LABZ
 
-MOOD MNKY Lab is a product lab for fragrance oils, formulas, and candle-making. This guide walks you through the basics.
+MOOD MNKY LABZ is a product lab for fragrance oils, formulas, and candle-making. This guide walks you through the basics.
 
 ## Overview
 
 The app is organized into these areas:
 
-- **MNKY Lab** – Formulas, Fragrance Oils, Glossary, Blending Lab, Wicks & Wax, Product Builder
+- **MNKY LABZ** – Formulas, Fragrance Oils, Glossary, Blending Lab, Wicks & Wax, Product Builder
 - **Data Sources** – Notion Sync (fragrance oils, collections)
 - **Studio** – AI image generation for fragrance scenes
 - **Shopify Store** – Products, orders, customers, analytics

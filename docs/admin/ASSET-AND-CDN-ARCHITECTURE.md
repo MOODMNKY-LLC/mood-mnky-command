@@ -1,6 +1,6 @@
 # Asset and CDN Architecture
 
-This document describes how digital assets flow through MOOD MNKY Lab: sources, storage, delivery, and optimization.
+This document describes how digital assets flow through MOOD MNKY LABZ: sources, storage, delivery, and optimization.
 
 ## Overview
 

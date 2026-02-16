@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -40,22 +41,50 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If authenticated, check role and redirect pending users
+  // If authenticated, check role and redirect pending users; non-admins to /verse
   if (user) {
     const pathname = request.nextUrl.pathname
     const isAuthRoute = pathname.startsWith("/auth")
     const isApiRoute = pathname.startsWith("/api")
+    const isVerseRoute = pathname.startsWith("/verse")
 
     if (!isAuthRoute && !isApiRoute) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
+      // Use admin client for reliable profile lookup (bypasses RLS/Edge quirks).
+      // Fall back to session client if service role isn't configured.
+      let profile: { role?: string; is_admin?: boolean } | null = null
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const admin = createAdminClient()
+          const { data } = await admin
+            .from("profiles")
+            .select("role, is_admin")
+            .eq("id", user.id)
+            .single()
+          profile = data
+        } catch {
+          // Fall through to session-based fetch
+        }
+      }
+      if (profile == null) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("role, is_admin")
+          .eq("id", user.id)
+          .single()
+        profile = data
+      }
 
       if (profile?.role === "pending") {
         const url = request.nextUrl.clone()
         url.pathname = "/auth/pending-approval"
+        return NextResponse.redirect(url)
+      }
+
+      // Non-admin users: redirect dashboard paths to /verse
+      const isAdmin = profile?.role === "admin" || profile?.is_admin === true
+      if (!isAdmin && !isVerseRoute) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/verse"
         return NextResponse.redirect(url)
       }
     }

@@ -1,0 +1,108 @@
+{% comment %}
+  MOOD MNKY - Subscription CTA block
+  Links to subscription or discovery experiences in the mood-mnky-command app.
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign path = block.settings.cta_path | default: '/blending'
+  assign full_url = app_url | append: path
+  assign is_valid = false
+  if app_url != '' and app_url != blank
+    assign is_valid = true
+  endif
+-%}
+<div
+  class="mood-mnky-app-block mood-mnky-subscription-cta"
+  {{ block.shopify_attributes }}
+>
+  {%- if block.settings.heading != blank -%}
+    <h3 class="mood-mnky-block-heading">{{ block.settings.heading | escape }}</h3>
+  {%- endif -%}
+  {%- if block.settings.subheading != blank -%}
+    <p class="mood-mnky-block-subheading">{{ block.settings.subheading | escape }}</p>
+  {%- endif -%}
+  {%- if block.settings.cta_label != blank -%}
+    {%- if is_valid -%}
+      <a
+        href="{{ full_url }}"
+        class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+        {% if block.settings.cta_aria_label != blank %}aria-label="{{ block.settings.cta_aria_label | escape }}"{% endif %}
+      >
+        {{ block.settings.cta_label | escape }}
+      </a>
+    {%- else -%}
+      <span
+        class="button button--disabled"
+        role="button"
+        aria-disabled="true"
+        aria-label="Configure App base URL in block settings to enable this link"
+      >
+        {{ block.settings.cta_label | escape }}
+      </span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Subscription CTA",
+  "target": "section",
+  "stylesheet": "app-blocks.css",
+  "enabled_on": {
+    "templates": ["index", "product", "collection", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command app. Leave blank to show disabled state.",
+      "placeholder": "https://app.moodmnky.com"
+    },
+    {
+      "type": "text",
+      "id": "cta_path",
+      "label": "App path",
+      "default": "/blending",
+      "info": "Path appended to App base URL"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Subscribe to the Vibe — Accessible premium"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Engagement-based alternatives to traditional payment. Subscribe and save on refills. Always scentsing the MOOD."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "Explore subscriptions"
+    },
+    {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "Button accessibility label"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

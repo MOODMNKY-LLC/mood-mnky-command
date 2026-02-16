@@ -1,6 +1,6 @@
-# MOOD MNKY Lab – CDN Usage Guide
+# MOOD MNKY LABZ – CDN Usage Guide
 
-This guide explains how to use the MOOD MNKY Lab asset delivery system (Supabase Storage + image transforms) for uploading, displaying, and managing digital assets. For architecture details, see [ASSET-AND-CDN-ARCHITECTURE.md](./ASSET-AND-CDN-ARCHITECTURE.md).
+This guide explains how to use the MOOD MNKY LABZ asset delivery system (Supabase Storage + image transforms) for uploading, displaying, and managing digital assets. For architecture details, see [ASSET-AND-CDN-ARCHITECTURE.md](./ASSET-AND-CDN-ARCHITECTURE.md).
 
 ---
 

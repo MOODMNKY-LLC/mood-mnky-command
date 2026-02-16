@@ -1,0 +1,155 @@
+/* Announcement bar: light frosted glass for better visibility on dark schemes */
+.utility-bar.utility-bar--light-glass.glass-panel {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.utility-bar.utility-bar--light-glass.glass-panel .announcement-bar__message,
+.utility-bar.utility-bar--light-glass.glass-panel .announcement-bar__link,
+.utility-bar.utility-bar--light-glass.glass-panel .list-social__link {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+.utility-bar.utility-bar--light-glass.glass-panel .localization-form__select,
+.utility-bar.utility-bar--light-glass.glass-panel .disclosure__link {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .utility-bar.utility-bar--light-glass.glass-panel {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+/* Announcement bar: stack on top of header when overlapping */
+.announcement-bar-section.shopify-section-group-header-group,
+.shopify-section-group-header-group.announcement-bar-section {
+  position: relative;
+  z-index: 10 !important;
+}
+
+/* Keep header below announcement bar */
+.shopify-section-group-header-group.section-header {
+  z-index: 2;
+}
+
+/* Product cards: smaller size (more per row) */
+@media screen and (min-width: 990px) {
+  .product-grid.grid--4-col-desktop .grid__item {
+    width: calc(20% - var(--grid-desktop-horizontal-spacing) * 4 / 5) !important;
+    max-width: calc(20% - var(--grid-desktop-horizontal-spacing) * 4 / 5) !important;
+  }
+  .product-grid.grid--5-col-desktop .grid__item {
+    width: calc(16.66% - var(--grid-desktop-horizontal-spacing) * 5 / 6) !important;
+    max-width: calc(16.66% - var(--grid-desktop-horizontal-spacing) * 5 / 6) !important;
+  }
+  .product-grid.grid--3-col-desktop .grid__item {
+    width: calc(25% - var(--grid-desktop-horizontal-spacing) * 3 / 4) !important;
+    max-width: calc(25% - var(--grid-desktop-horizontal-spacing) * 3 / 4) !important;
+  }
+}
+
+
+/* Glassmorphic panel - Supabase-style frosted glass effect */
+.glass-panel {
+  background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-panel {
+    background: rgba(var(--color-background), 0.92);
+  }
+}
+
+/* Sticky header: glass effect when scrolled */
+.section-header.shopify-section-header-sticky .header-wrapper {
+  background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border-bottom: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+  transition: background, backdrop-filter, box-shadow 0.3s ease;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .section-header.shopify-section-header-sticky .header-wrapper {
+    background: rgba(var(--color-background), 0.92);
+  }
+}
+
+/* Slideshow and image banner: glass effect on text boxes when not transparent */
+@media screen and (min-width: 750px) {
+  .banner:not(.banner--desktop-transparent) .banner__content:not(.banner--desktop-transparent) .banner__box.content-container {
+    background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+    border: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+    box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+  }
+
+  .banner:not(.banner--desktop-transparent) .banner__content:not(.banner--desktop-transparent) .banner__box.content-container::after {
+    display: none;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  @media screen and (min-width: 750px) {
+    .banner:not(.banner--desktop-transparent) .banner__content:not(.banner--desktop-transparent) .banner__box.content-container {
+      background: rgba(var(--color-background), 0.92);
+    }
+  }
+}
+
+/* Product and collection cards: glass variant */
+.card--glass .card__inner {
+  background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .card--glass .card__inner {
+    background: rgba(var(--color-background), 0.92);
+  }
+}
+
+/* Cart drawer: glass effect on panel */
+.cart-drawer .drawer__inner,
+.drawer .drawer__inner {
+  background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .cart-drawer .drawer__inner,
+  .drawer .drawer__inner {
+    background: rgba(var(--color-background), 0.92);
+  }
+}
+
+/* Menu drawer: glass effect on panel and submenu */
+.menu-drawer,
+.js .menu-drawer__submenu {
+  background: rgba(var(--color-background), var(--glass-bg-alpha, 0.15));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  border: 1px solid rgba(var(--color-foreground), var(--glass-border-alpha, 0.18));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.1));
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .menu-drawer,
+  .js .menu-drawer__submenu {
+    background: rgba(var(--color-background), 0.92);
+  }
+}

@@ -28,6 +28,7 @@ export async function GET() {
       { key: "customOrders", id: NOTION_DATABASE_IDS.customOrders, fallbackTitle: "MNKY Custom Orders" },
       { key: "fragranceNotes", id: NOTION_DATABASE_IDS.fragranceNotes, fallbackTitle: "MNKY Note Glossary" },
       { key: "docs", id: NOTION_DATABASE_IDS.docs, fallbackTitle: "MNKY Command Docs" },
+      { key: "blog", id: NOTION_DATABASE_IDS.blog, fallbackTitle: "MNKY VERSE Blog" },
     ]
 
     const databases = await Promise.all(

@@ -27,6 +27,7 @@ import {
   FolderOpen,
   BookOpen,
   FileText,
+  Newspaper,
   ArrowDownToLine,
   ArrowUpToLine,
 } from "lucide-react"
@@ -641,7 +642,7 @@ export function NotionSyncPanel() {
 
       {/* Sync Tabs */}
       <Tabs defaultValue="fragrance-oils" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="fragrance-oils" className="text-xs">
             <Droplets className="mr-1 h-3 w-3" />
             Fragrance Oils
@@ -657,6 +658,10 @@ export function NotionSyncPanel() {
           <TabsTrigger value="docs" className="text-xs">
             <FileText className="mr-1 h-3 w-3" />
             Command Docs
+          </TabsTrigger>
+          <TabsTrigger value="blog" className="text-xs">
+            <Newspaper className="mr-1 h-3 w-3" />
+            VERSE Blog
           </TabsTrigger>
         </TabsList>
 
@@ -700,6 +705,23 @@ export function NotionSyncPanel() {
         </TabsContent>
         <TabsContent value="docs" className="mt-4">
           <DocsCommandCard title="MNKY Command Docs" icon={FileText} />
+        </TabsContent>
+        <TabsContent value="blog" className="mt-4">
+          <DatabaseCard
+            title="MNKY VERSE Blog"
+            icon={Newspaper}
+            endpoint="/api/notion/sync/blog"
+            itemKey="posts"
+            syncMethod="POST"
+            postSyncItemsEndpoint="/api/notion/sync/blog"
+            rowKeyProp="notionId"
+            columns={[
+              { key: "title", label: "Title" },
+              { key: "slug", label: "Slug" },
+              { key: "status", label: "Status" },
+              { key: "publishedAt", label: "Published" },
+            ]}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,0 +1,33 @@
+{% comment %}
+  App CTA snippet - Links storefront to mood-mnky-command app.
+  Requires: app_base_url, cta_label, cta_path, button_style_secondary
+{% endcomment %}
+{%- liquid
+  assign app_url = app_base_url | default: '' | strip
+  assign path = cta_path | default: '/blending'
+  assign full_url = app_url | append: path
+  assign is_valid = false
+  if app_url != '' and app_url != blank
+    assign is_valid = true
+  endif
+-%}
+{%- if cta_label != blank -%}
+  {%- if is_valid -%}
+    <a
+      href="{{ full_url }}"
+      class="button{% if button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+      {% if cta_aria_label != blank %}aria-label="{{ cta_aria_label }}"{% endif %}
+    >
+      {{ cta_label | escape }}
+    </a>
+  {%- else -%}
+    <span
+      class="button button--disabled"
+      role="button"
+      aria-disabled="true"
+      aria-label="Configure App base URL in section settings to enable this link"
+    >
+      {{ cta_label | escape }}
+    </span>
+  {%- endif -%}
+{%- endif -%}

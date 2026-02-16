@@ -1,0 +1,184 @@
+{{ 'section-rich-text.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="isolate{% unless section.settings.full_width %} page-width{% endunless %}">
+  <div class="rich-text content-container color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width content-container--full-width{% endif %} section-{{ section.id }}-padding">
+    <div class="rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} page-width{% endif %}">
+      <div class="rich-text__blocks {{ section.settings.content_alignment }}">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="rich-text__heading rte inline-richtext {{ section.settings.heading_size }}">
+            {{ section.settings.heading }}
+          </h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <div class="rich-text__text rte">
+            {{ section.settings.subheading }}
+          </div>
+        {%- endif -%}
+        {%- if section.settings.cta_label != blank -%}
+          <div class="rich-text__buttons">
+            {% render 'app-cta',
+              app_base_url: section.settings.app_base_url,
+              cta_label: section.settings.cta_label,
+              cta_path: section.settings.cta_path,
+              button_style_secondary: section.settings.button_style_secondary,
+              cta_aria_label: section.settings.cta_aria_label
+            %}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "App CTA",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command app (e.g. https://app.moodmnky.com or http://localhost:3000 for dev). Leave blank to disable the link.",
+      "placeholder": "https://app.moodmnky.com"
+    },
+    {
+      "type": "text",
+      "id": "cta_path",
+      "label": "App path",
+      "default": "/blending",
+      "info": "Path appended to App base URL (e.g. /blending, /craft, /studio)"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Foundation — Create your custom fragrance blend"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "h0", "label": "Extra large" },
+        { "value": "h1", "label": "Large" },
+        { "value": "h2", "label": "Medium" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.</p>"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "Go to Blending Lab"
+    },
+    {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "Button accessibility label",
+      "info": "Optional. Describes the button for screen readers."
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "label": "Desktop content position",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "middle", "label": "Middle" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "middle"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    }
+  ],
+  "presets": [
+    {
+      "name": "App CTA"
+    }
+  ]
+}
+{% endschema %}

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -36,6 +35,7 @@ import {
   Mic,
   BookOpen,
   MessageSquare,
+  Globe,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/sidebar"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 // ---------------------------------------------------------------------------
 // Navigation data
@@ -136,6 +137,13 @@ const studioItems: NavItem[] = [
   { title: "Media Library", href: "/media", icon: ImagePlus },
 ]
 
+const verseItems: NavItem[] = [
+  { title: "MNKY VERSE", href: "/verse", icon: Globe },
+  { title: "Products", href: "/verse/products", icon: Package },
+  { title: "Collections", href: "/verse/collections", icon: Tags },
+  { title: "Cart", href: "/verse/cart", icon: ShoppingCart },
+]
+
 const platformItemsBase: NavItem[] = [
   { title: "Overview", href: "/platform", icon: Server },
   { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
@@ -166,10 +174,6 @@ export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  useEffect(() => {
-    fetch("/api/me", { credentials: "include" }).catch(() => null)
-  }, [])
-
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -180,8 +184,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* ---- Header ---- */}
-      <SidebarHeader className="border-b border-sidebar-border">
-        <Link href="/" className="flex items-center gap-2 px-2 py-3">
+      <SidebarHeader className="flex flex-row items-center justify-between gap-2 border-b border-sidebar-border px-2 py-3">
+        <Link href="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary p-1">
             <img
               src="/mood-mnky-icon.svg"
@@ -196,17 +200,21 @@ export function AppSidebar() {
               MOOD MNKY
             </span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Lab
+              LABZ
             </span>
           </div>
         </Link>
+        <ThemeToggle
+          className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
+          aria-label="Toggle theme"
+        />
       </SidebarHeader>
 
       {/* ---- Scrollable content ---- */}
       <SidebarContent>
-        {/* ======== MNKY Lab ======== */}
+        {/* ======== MNKY LABZ ======== */}
         <SidebarGroup>
-          <SidebarGroupLabel>MNKY Lab</SidebarGroupLabel>
+          <SidebarGroupLabel>MNKY LABZ</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {labItems.map((item) => (
@@ -308,6 +316,43 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator />
+
+        {/* ======== MNKY VERSE (dashboard is admin-only; no client check needed) ======== */}
+        <Collapsible defaultOpen className="group/verse">
+              <SidebarGroup>
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger className="flex w-full items-center">
+                    MNKY VERSE
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/verse:rotate-90" />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {verseItems.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive(
+                              pathname,
+                              item.href,
+                              item.href === "/verse"
+                            )}
+                            tooltip={item.title}
+                          >
+                            <Link href={item.href}>
+                              <item.icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+        </Collapsible>
         <SidebarSeparator />
 
         {/* ======== Shopify Store (collapsible) ======== */}

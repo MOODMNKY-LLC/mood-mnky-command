@@ -1,0 +1,196 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "81df01dd-54af-413e-af8a-2a8a281f1018": {
+      "type": "image-with-text",
+      "blocks": {
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-0": {
+          "type": "heading",
+          "settings": {
+            "heading": "Our Story...",
+            "heading_size": "h1"
+          }
+        },
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-1": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Lit Law Candles was co-founded by brother and sister duo Esther and Simeon Bowman (of MOODMNKY). Inspired by her many adventures in Law School, Lit Law Candles is the brain child of Esther Bowman. Motivated by her desire to provide stress-melting and familiar fragrances, with a luxurious flair fit for any lawyer, Ms. Bowman has produced a candle line sure to have you relaxing on the luxurious wings of your favorite fragrance, all the way to the BAR.</p>",
+            "text_style": "body"
+          }
+        },
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-2": {
+          "type": "button",
+          "settings": {
+            "button_label": "Shop the collection",
+            "button_link": "shopify://collections/lit-law-candles"
+          }
+        }
+      },
+      "block_order": [
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-0",
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-1",
+        "template--17868507119890__81df01dd-54af-413e-af8a-2a8a281f1018-1676097006687411e3-2"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/1.jpg",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-1",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "84d2e6cd-b838-4b60-bf71-d1e8e85b2093": {
+      "type": "featured-collection",
+      "disabled": true,
+      "settings": {
+        "title": "Lit Law Candle Premier Line",
+        "heading_size": "h1",
+        "description": "",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "lit-law-candles",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "1672885356d7087dce": {
+      "type": "apps",
+      "disabled": true,
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "53e49be9-a85f-46a4-8336-dc4d3e7c4fbf": {
+      "type": "image-with-text",
+      "blocks": {
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-0": {
+          "type": "heading",
+          "settings": {
+            "heading": "Meet the founder...",
+            "heading_size": "h1"
+          }
+        },
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-1": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Esther, this is  where you might talk a little bit more about yourself and your personal connection to making candles themed for law school. The button below can be either removed, renamed, linked to an outside source like a blog, or of course a product/collection etc. </p>",
+            "text_style": "body"
+          }
+        },
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-2": {
+          "type": "button",
+          "settings": {
+            "button_label": "Follow me on social media!",
+            "button_link": "shopify://pages/esther-bowman-s-nccu-candle-shop"
+          }
+        }
+      },
+      "block_order": [
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-0",
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-1",
+        "template--17868507119890__53e49be9-a85f-46a4-8336-dc4d3e7c4fbf-1676103317f5827b93-2"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/IMG_7045.jpg",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "text_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-1",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2": {
+      "type": "image-with-text",
+      "blocks": {
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-0": {
+          "type": "heading",
+          "settings": {
+            "heading": "We'd  love to hear from you!",
+            "heading_size": "h1"
+          }
+        },
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-1": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Here you can maybe include a section about discounts, subscriptions, student club discounts, giftcards, etc. </p>",
+            "text_style": "body"
+          }
+        },
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-2": {
+          "type": "button",
+          "settings": {
+            "button_label": "Sign-up for our emails...",
+            "button_link": "shopify://pages/esther-bowman-s-nccu-candle-shop"
+          }
+        }
+      },
+      "block_order": [
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-0",
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-1",
+        "template--17868507119890__1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2-1676103317f5827b93-2"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/2.jpg",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "background-1",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "81df01dd-54af-413e-af8a-2a8a281f1018",
+    "main",
+    "84d2e6cd-b838-4b60-bf71-d1e8e85b2093",
+    "1672885356d7087dce",
+    "53e49be9-a85f-46a4-8336-dc4d3e7c4fbf",
+    "1e65ac3e-33b6-49c9-8ab8-3f3f6db8fca2"
+  ]
+}

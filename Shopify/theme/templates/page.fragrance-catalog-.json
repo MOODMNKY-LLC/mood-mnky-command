@@ -1,0 +1,138 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5": {
+      "type": "collapsible-content",
+      "blocks": {
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-0": {
+          "type": "collapsible_row",
+          "disabled": true,
+          "settings": {
+            "heading": "Collapsible row",
+            "icon": "check_mark",
+            "row_content": "",
+            "page": "fragrance-catalog-1"
+          }
+        },
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-1": {
+          "type": "collapsible_row",
+          "disabled": true,
+          "settings": {
+            "heading": "Collapsible row",
+            "icon": "check_mark",
+            "row_content": "",
+            "page": "fragrance-list-form"
+          }
+        },
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-2": {
+          "type": "collapsible_row",
+          "disabled": true,
+          "settings": {
+            "heading": "Collapsible row",
+            "icon": "check_mark",
+            "row_content": "",
+            "page": "store"
+          }
+        },
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-3": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "MOOD MNKY Fragrance Catalog (google.sheets)",
+            "icon": "banana",
+            "row_content": "<p><a href=\"https://docs.google.com/spreadsheets/d/1-8Jy8aFa9ZzjWohN4iQ5QURnrFtK7UWl5vrMadiNbxg/edit\" title=\"MOOD MNKY Fragrance Catalog \">https://docs.google.com/spreadsheets/d/1-8Jy8aFa9ZzjWohN4iQ5QURnrFtK7UWl5vrMadiNbxg/edit</a></p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": [
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-0",
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-1",
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-2",
+        "template--17876550418706__47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5-1676166893848249a3-3"
+      ],
+      "disabled": true,
+      "settings": {
+        "caption": "",
+        "heading": "",
+        "heading_size": "h1",
+        "heading_alignment": "center",
+        "layout": "none",
+        "color_scheme": "background-1",
+        "container_color_scheme": "background-2",
+        "open_first_collapsible_row": false,
+        "image": "shopify://shop_images/BDF342F4-40FA-4217-8A95-A1958C6895BA.jpg",
+        "image_ratio": "adapt",
+        "desktop_layout": "image_first",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "1672885356d7087dce": {
+      "type": "apps",
+      "disabled": true,
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "acerill_custom_forms": {
+      "type": "apps",
+      "blocks": {
+        "acerill_custom_forms_block": {
+          "type": "shopify://apps/acerill-form-builder/blocks/custom-form/830f910d-3579-44cb-9d18-92197bb5bd98",
+          "disabled": true,
+          "settings": {
+            "formId": "b99bd552-69eb-4f64-a5ad-895f5d4e630d",
+            "behavior": "standard"
+          }
+        }
+      },
+      "block_order": [
+        "acerill_custom_forms_block"
+      ],
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "175a1deb-37e2-43a1-b53a-0fa23ecab6d1": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<script src=\"https://static.elfsight.com/platform/platform.js\" data-use-service-core defer></script>\n<div class=\"elfsight-app-2228daf0-0296-48cd-8fa7-5e10ab2c1101\"></div>",
+        "color_scheme": "background-1",
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    },
+    "c9d3ea07-d067-4a5d-ba0a-14422c5a7dd1": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<iframe src=\"https://docs.google.com/spreadsheets/d/e/2PACX-1vQTadqFlUIg6wTB9igKh_wo9NShevccLEV7PbS-WULKZ0xikjOCpYHeKPpkz6IzkZSPWehLEyF6eiVa/pubhtml?gid=891834841&amp;single=true&amp;widget=true&amp;headers=false\"></iframe>",
+        "color_scheme": "background-1",
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    }
+  },
+  "order": [
+    "main",
+    "47e8f9b5-c651-4a83-b4cf-b8b6f1830fd5",
+    "1672885356d7087dce",
+    "acerill_custom_forms",
+    "175a1deb-37e2-43a1-b53a-0fa23ecab6d1",
+    "c9d3ea07-d067-4a5d-ba0a-14422c5a7dd1"
+  ]
+}

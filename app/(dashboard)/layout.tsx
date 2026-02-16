@@ -23,7 +23,7 @@ export default function DashboardLayout({
               <SidebarTrigger className="-ml-1 min-h-[44px] min-w-[44px]" />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <span className="text-sm font-medium text-muted-foreground">
-                MOOD MNKY Lab
+                MOOD MNKY LABZ
               </span>
             </div>
             <DocsButton />

@@ -1,5 +1,5 @@
 /**
- * Unified asset URL builder for MOOD MNKY Lab.
+ * Unified asset URL builder for MOOD MNKY LABZ.
  * Provides consistent access to thumbnail, medium, and full asset URLs.
  */
 

@@ -9,7 +9,7 @@ export default function DocsPage() {
         Documentation
       </h1>
       <p className="mb-8 text-muted-foreground">
-        Guides and references for MOOD MNKY Lab.
+        Guides and references for MOOD MNKY LABZ.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">

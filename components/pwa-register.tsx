@@ -2,9 +2,15 @@
 
 import { SerwistProvider } from "@serwist/next/react"
 
-export function PwaRegister({ children }: { children: React.ReactNode }) {
+export function PwaRegister({
+  children,
+  registerSw = true,
+}: {
+  children: React.ReactNode
+  registerSw?: boolean
+}) {
   return (
-    <SerwistProvider swUrl="/sw.js" register>
+    <SerwistProvider swUrl="/sw.js" register={registerSw}>
       {children}
     </SerwistProvider>
   )

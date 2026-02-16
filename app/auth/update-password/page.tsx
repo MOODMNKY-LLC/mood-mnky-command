@@ -14,7 +14,7 @@ export default function UpdatePasswordPage() {
         <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              MOOD MNKY Lab
+              MOOD MNKY LABZ
             </h1>
             <p className="text-sm text-muted-foreground">
               Set a new password

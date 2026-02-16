@@ -1,6 +1,6 @@
 # Shopify Store
 
-Manage your Shopify store from MOOD MNKY Lab. View products, orders, customers, and more.
+Manage your Shopify store from MOOD MNKY LABZ. View products, orders, customers, and more.
 
 ## Store Overview
 

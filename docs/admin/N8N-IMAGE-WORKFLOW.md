@@ -16,7 +16,7 @@ This document describes how to set up an n8n workflow that generates fragrance s
 ## Prerequisites
 
 - n8n instance (self-hosted or cloud)
-- MOOD MNKY Lab app deployed (Vercel URL)
+- MOOD MNKY LABZ app deployed (Vercel URL)
 - Environment variables configured:
   - `OPENAI_API_KEY` - In app (Vercel), for generate API
   - `MEDIA_API_KEY` - In app (Vercel), for n8n API auth (legacy: CDN_API_KEY)

@@ -19,7 +19,7 @@ export default function SignUpSuccessPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {"You've successfully signed up for MOOD MNKY Lab. Please check your email to confirm your account before signing in."}
+              {"You've successfully signed up for MOOD MNKY LABZ. Please check your email to confirm your account before signing in."}
             </p>
           </CardContent>
         </Card>

@@ -1,0 +1,86 @@
+{
+  "blending_cta": {
+    "name": "Blending Lab CTA",
+    "settings": {
+      "app_base_url": {
+        "label": "App base URL",
+        "info": "Base URL of mood-mnky-command app (e.g. https://app.moodmnky.com). Leave blank to show disabled state."
+      },
+      "cta_path": {
+        "label": "App path",
+        "info": "Path appended to App base URL"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "subheading": {
+        "label": "Subheading"
+      },
+      "cta_label": {
+        "label": "Button label"
+      },
+      "cta_aria_label": {
+        "label": "Button accessibility label"
+      },
+      "button_style_secondary": {
+        "label": "Use secondary button style"
+      }
+    }
+  },
+  "fragrance_finder_cta": {
+    "name": "Match My Mood CTA",
+    "settings": {
+      "app_base_url": {
+        "label": "App base URL",
+        "info": "Base URL of mood-mnky-command app. Leave blank to show disabled state."
+      },
+      "cta_path": {
+        "label": "App path",
+        "info": "Path appended to App base URL (e.g. /craft for Match My Mood)"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "subheading": {
+        "label": "Subheading"
+      },
+      "cta_label": {
+        "label": "Button label"
+      },
+      "cta_aria_label": {
+        "label": "Button accessibility label"
+      },
+      "button_style_secondary": {
+        "label": "Use secondary button style"
+      }
+    }
+  },
+  "subscription_cta": {
+    "name": "Subscription CTA",
+    "settings": {
+      "app_base_url": {
+        "label": "App base URL",
+        "info": "Base URL of mood-mnky-command app. Leave blank to show disabled state."
+      },
+      "cta_path": {
+        "label": "App path",
+        "info": "Path appended to App base URL"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "subheading": {
+        "label": "Subheading"
+      },
+      "cta_label": {
+        "label": "Button label"
+      },
+      "cta_aria_label": {
+        "label": "Button accessibility label"
+      },
+      "button_style_secondary": {
+        "label": "Use secondary button style"
+      }
+    }
+  }
+}
