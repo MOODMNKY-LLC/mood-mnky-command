@@ -34,6 +34,20 @@ function normalizeAuthorAgent(value: string | null): string | null {
   return ["mood_mnky", "sage_mnky", "code_mnky"].includes(slug) ? slug : null
 }
 
+/** Resolve cover URL from page properties. Notion API may key the property as "Cover URL" or "cover_url"; fallback to first url-type property. */
+function getCoverUrlFromPage(properties: NotionPage["properties"]): string | null {
+  const cover =
+    getUrl(properties["Cover URL"]) ??
+    getUrl(properties["cover_url"]) ??
+    null
+  if (cover) return cover
+  for (const key of Object.keys(properties)) {
+    const prop = properties[key]
+    if (prop?.type === "url" && prop.url) return prop.url
+  }
+  return null
+}
+
 function mapBlogPage(page: NotionPage) {
   const p = page.properties
   const title = getTitle(p["Title"])
@@ -51,7 +65,7 @@ function mapBlogPage(page: NotionPage) {
     excerpt: getRichText(p["Excerpt"]) ?? "",
     status,
     publishedAt: getDate(p["Published Date"]) ?? null,
-    coverUrl: getUrl(p["Cover URL"]) ?? null,
+    coverUrl: getCoverUrlFromPage(p),
     authorAgent,
     sortOrder: getNumber(p["Order"]) ?? 0,
   }
