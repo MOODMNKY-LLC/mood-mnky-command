@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT_SLUG, isAgentSlug } from "@/lib/agents";
 
 export const maxDuration = 30;
+const REALTIME_FETCH_TIMEOUT_MS = (Number(process.env.REALTIME_FETCH_TIMEOUT_MS) || maxDuration) * 1000;
 
 /**
  * POST /api/realtime/session
@@ -108,6 +109,9 @@ You're in a live voice conversation. Be responsive: listen to what the user says
   };
 
   try {
+    // Create client secret with timeout/abort support
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), REALTIME_FETCH_TIMEOUT_MS);
     const res = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
       method: "POST",
       headers: {
@@ -115,7 +119,8 @@ You're in a live voice conversation. Be responsive: listen to what the user says
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ session: sessionConfig }),
-    });
+      signal: ac.signal,
+    }).finally(() => clearTimeout(timeout));
 
     if (!res.ok) {
       const errText = await res.text();
@@ -163,4 +168,68 @@ You're in a live voice conversation. Be responsive: listen to what the user says
       { status: 500 }
     );
   }
+}
+
+/**
+ * DELETE /api/realtime/session
+ * Optional body: { callId?: string, responseId?: string }
+ * Server-side cancellation/hangup support for realtime calls/responses.
+ */
+export async function DELETE(request: NextRequest) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 503 });
+  }
+
+  let body: Record<string, unknown> = {};
+  try {
+    body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  } catch {
+    // ignore
+  }
+
+  const callId = typeof body.callId === "string" ? body.callId : undefined;
+  const responseId = typeof body.responseId === "string" ? body.responseId : undefined;
+
+  if (!callId && !responseId) {
+    return NextResponse.json({ error: "Missing callId or responseId" }, { status: 400 });
+  }
+
+  try {
+    if (callId) {
+      const hangupRes = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const text = await hangupRes.text().catch(() => "");
+      if (!hangupRes.ok) {
+        console.error("Realtime hangup error:", hangupRes.status, text);
+        return NextResponse.json({ error: "Failed to hangup call", details: text }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, callId });
+    }
+
+    if (responseId) {
+      const cancelRes = await fetch(`https://api.openai.com/v1/responses/${encodeURIComponent(responseId)}/cancel`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const json = await cancelRes.json().catch(() => ({}));
+      if (!cancelRes.ok) {
+        console.error("Response cancel error:", cancelRes.status, json);
+        return NextResponse.json({ error: "Failed to cancel response", details: json }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, responseId, result: json });
+    }
+  } catch (err) {
+    console.error("Realtime cancellation error:", err);
+    return NextResponse.json({ error: "Cancellation failed" }, { status: 500 });
+  }
+  return NextResponse.json({ error: "Unknown" }, { status: 500 });
 }

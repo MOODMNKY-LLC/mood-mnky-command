@@ -60,6 +60,10 @@ export function VerseRealtimeVoiceCard({
   onClose,
 }: VerseRealtimeVoiceCardProps) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const voiceStateRef = useRef<VoiceState>(voiceState);
+  useEffect(() => {
+    voiceStateRef.current = voiceState;
+  }, [voiceState]);
   const [error, setError] = useState<string | null>(null);
   const [isAuthError, setIsAuthError] = useState(false);
   const [isPttHeld, setIsPttHeld] = useState(false);
@@ -72,6 +76,8 @@ export function VerseRealtimeVoiceCard({
   const [agent, setAgent] = useState<AgentInfo>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
+  const callIdRef = useRef<string | null>(null);
+  const [vadConfig, setVadConfig] = useState(() => ({ ...DEFAULT_SERVER_VAD }));
   const isPttHeldRef = useRef(isPttHeld);
   const transcriptIdRef = useRef(0);
   const pendingAssistantRef = useRef("");
@@ -137,7 +143,7 @@ export function VerseRealtimeVoiceCard({
   useEffect(() => {
     if (dcReady) {
       updateSession({
-        turn_detection: isPttHeld ? null : DEFAULT_SERVER_VAD,
+        turn_detection: isPttHeld ? null : vadConfig,
         ...SESSION_INPUT_CONFIG,
       });
     }
@@ -157,6 +163,23 @@ export function VerseRealtimeVoiceCard({
     streamRef.current = null;
     if (audioRef.current) {
       audioRef.current.srcObject = null;
+    }
+    // best-effort server-side hangup if we know the call id
+    if (callIdRef.current) {
+      try {
+        fetch("/api/realtime/session", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ callId: callIdRef.current }),
+        }).catch(() => {});
+      } catch {}
+      try {
+        // unregister callId from registry
+        fetch("/api/realtime/calls/register", {
+          method: "DELETE",
+        }).catch(() => {});
+      } catch {}
+      callIdRef.current = null;
     }
     setVoiceState("idle");
     setError(null);
@@ -199,16 +222,23 @@ export function VerseRealtimeVoiceCard({
         throw new Error("No client secret in response");
       }
 
+      // Build progressive constraints with graceful fallback
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-        });
+        const supported = navigator.mediaDevices.getSupportedConstraints
+          ? navigator.mediaDevices.getSupportedConstraints()
+          : {};
+        const audioConstraints: any = {};
+        if (supported.echoCancellation !== false) audioConstraints.echoCancellation = true;
+        if (supported.noiseSuppression !== false) audioConstraints.noiseSuppression = true;
+        if (supported.autoGainControl !== false) audioConstraints.autoGainControl = true;
+        // prefer mono and standard sample rate when supported
+        if (supported.channelCount !== false) audioConstraints.channelCount = 1;
+        if (supported.sampleRate !== false) audioConstraints.sampleRate = 48000;
+
+        stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       } catch {
+        // Fallback to generic audio
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
       streamRef.current = stream;
@@ -246,13 +276,38 @@ export function VerseRealtimeVoiceCard({
           if (DEBUG && /input_audio_buffer\.(speech_started|speech_stopped)|input_audio_transcription\.(delta|added|completed)/.test(type)) {
             console.log("[Realtime]", type, type.includes("transcription") ? (event as { item?: { transcription?: string } }).item?.transcription : "");
           }
-          if (type === "input_audio_buffer.speech_started") {
-            if (!isPttHeldRef.current) setVoiceState("listening");
-            pendingUserRef.current = "";
-            setPendingUserText("");
-          } else if (type === "input_audio_buffer.speech_stopped") {
-            if (!isPttHeldRef.current) setVoiceState("thinking");
-          } else if (
+      if (type === "input_audio_buffer.speech_started") {
+        // Barge-in: if assistant is speaking, cancel output and switch to listening
+        if (voiceStateRef.current === "speaking") {
+          try {
+            sendEvent({ type: "response.cancel" });
+            // stop playback immediately
+            if (audioRef.current) {
+              try {
+                audioRef.current.pause();
+                audioRef.current.srcObject = null;
+                audioRef.current.src = "";
+              } catch {}
+            }
+          } catch {}
+          // fallback: request server-side hangup for the active call (best-effort)
+          if (callIdRef.current) {
+            try {
+              fetch("/api/realtime/session", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ callId: callIdRef.current }),
+              }).catch(() => {});
+            } catch {}
+            // keep callId for potential later cleanup until disconnect
+          }
+        }
+        if (!isPttHeldRef.current) setVoiceState("listening");
+        pendingUserRef.current = "";
+        setPendingUserText("");
+      } else if (type === "input_audio_buffer.speech_stopped") {
+        if (!isPttHeldRef.current) setVoiceState("thinking");
+      } else if (
             type.startsWith("response.output_audio") ||
             type.startsWith("response.output_audio_transcript")
           ) {
@@ -352,6 +407,24 @@ export function VerseRealtimeVoiceCard({
         throw new Error(`SDP negotiation failed: ${text.slice(0, 200)}`);
       }
 
+      // Try to extract the call id from Location header for server-side controls (hangup)
+      try {
+        const location = sdpRes.headers.get("location") ?? sdpRes.headers.get("Location");
+        if (location) {
+          const parts = location.split("/");
+          callIdRef.current = parts[parts.length - 1] || null;
+          // register callId server-side for user-scoped control
+          if (callIdRef.current) {
+            try {
+              fetch("/api/realtime/calls/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ callId: callIdRef.current }),
+              }).catch(() => {});
+            } catch {}
+          }
+        }
+      } catch {}
       const answerSdp = await sdpRes.text();
       await pc.setRemoteDescription({
         type: "answer",
@@ -392,6 +465,20 @@ export function VerseRealtimeVoiceCard({
     sendEvent({ type: "response.create" });
   }, [dcReady, sendEvent]);
 
+  // VAD settings UI handlers
+  const handleVadChange = useCallback((patch: Partial<typeof DEFAULT_SERVER_VAD>) => {
+    setVadConfig((prev) => {
+      const next = { ...prev, ...patch };
+      if (dcReady) {
+        updateSession({
+          turn_detection: isPttHeld ? null : next,
+          ...SESSION_INPUT_CONFIG,
+        });
+      }
+      return next;
+    });
+  }, [dcReady, isPttHeld, updateSession]);
+
   useEffect(() => {
     return () => disconnect();
   }, [disconnect]);
@@ -409,6 +496,34 @@ export function VerseRealtimeVoiceCard({
         className
       )}
     >
+      {/* Small VAD settings: allow quick tuning */}
+      <div className="mt-1 flex w-full items-center justify-center">
+        <details className="w-full max-w-xl">
+          <summary className="cursor-pointer text-xs text-muted-foreground">VAD settings</summary>
+          <div className="mt-2 flex flex-col gap-2 p-2">
+            <label className="text-xs text-[var(--verse-text-muted)]">Threshold: {vadConfig.threshold}</label>
+            <input
+              aria-label="VAD threshold"
+              type="range"
+              min={0.01}
+              max={1}
+              step={0.01}
+              value={vadConfig.threshold}
+              onChange={(e) => handleVadChange({ threshold: Number(e.target.value) })}
+            />
+            <label className="text-xs text-[var(--verse-text-muted)]">Silence (ms): {vadConfig.silence_duration_ms}</label>
+            <input
+              aria-label="VAD silence duration"
+              type="range"
+              min={100}
+              max={2000}
+              step={50}
+              value={vadConfig.silence_duration_ms}
+              onChange={(e) => handleVadChange({ silence_duration_ms: Number(e.target.value) })}
+            />
+          </div>
+        </details>
+      </div>
       {/* Header: Agent image + display name */}
       <div className="flex flex-col items-center gap-2">
         <div
