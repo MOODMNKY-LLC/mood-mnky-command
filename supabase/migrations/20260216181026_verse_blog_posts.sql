@@ -23,6 +23,7 @@ create index if not exists verse_blog_posts_status_idx on public.verse_blog_post
 alter table public.verse_blog_posts enable row level security;
 
 -- Allow anyone (including anon) to read published posts for the storefront blog.
+drop policy if exists "verse_blog_posts_select_published" on public.verse_blog_posts;
 create policy "verse_blog_posts_select_published"
   on public.verse_blog_posts
   for select

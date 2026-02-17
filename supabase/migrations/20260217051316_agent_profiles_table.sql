@@ -1,0 +1,13 @@
+-- Baseline placeholder (history alignment)
+--
+-- Production has migration version 20260217051316 recorded as `agent_profiles_table`,
+-- but this repository originally introduced the agent_profiles table at:
+--   - 20260217150000_agent_profiles_table.sql
+--
+-- To allow `supabase db push` to reconcile local ↔ production migration history,
+-- we keep this file as a no-op placeholder with the production version number.
+--
+-- NOTE: The canonical DDL for `public.agent_profiles` in this repo is
+-- `20260217150000_agent_profiles_table.sql`.
+
+-- no-op
