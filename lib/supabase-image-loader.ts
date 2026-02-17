@@ -41,6 +41,18 @@ export default function supabaseLoader({
   }
 
   // For remote URLs (Shopify, etc.), use Next.js image optimization
+  // Bypass Next.js optimizer for Shopify CDN and myshopify hosts when Node fetch may be blocked
+  try {
+    const parsed = new URL(src)
+    const host = parsed.hostname
+    if (host === "cdn.shopify.com" || host.endsWith(".myshopify.com")) {
+      // return original src directly to avoid server-side proxying issues (TLS/enterprise networks)
+      return src
+    }
+  } catch {
+    // fall back to optimizer
+  }
+
   const q = quality ?? 75
   return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${q}`
 }
