@@ -13,7 +13,8 @@ import {
   Ban,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { BUCKET_CONFIG, type MediaAsset } from "@/lib/supabase/storage"
+import { BUCKET_CONFIG, getPublicUrl, uploadFile, type MediaAsset } from "@/lib/supabase/storage"
+import { createClient } from "@/lib/supabase/client"
 
 const BUCKET = "mnky-verse-tracks" as const
 const MAX_SIZE_BYTES = 50 * 1024 * 1024 // 50 MB per file
@@ -33,6 +34,7 @@ interface FileEntry {
   /** Client-extracted metadata for display */
   audioTitle?: string | null
   audioArtist?: string | null
+  audioAlbum?: string | null
   /** Duplicate: file_name already exists in library */
   isDuplicate?: boolean
   existingAssetId?: string
@@ -124,6 +126,7 @@ export function AudioDropzone({
           const picture = Array.isArray(raw) ? raw[0] : raw
           const audioTitle = tag.tags?.title
           const audioArtist = tag.tags?.artist
+          const audioAlbum = tag.tags?.album
           setFiles((prev) =>
             prev.map((f) => {
               if (f.file !== entry.file) return f
@@ -131,6 +134,7 @@ export function AudioDropzone({
               if (picture?.data) updates.coverPreviewUrl = pictureToDataUrl(picture)
               if (audioTitle) updates.audioTitle = audioTitle
               if (audioArtist) updates.audioArtist = audioArtist
+              if (audioAlbum) updates.audioAlbum = audioAlbum
               return { ...f, ...updates }
             })
           )
@@ -202,6 +206,19 @@ export function AudioDropzone({
 
     setIsUploading(true)
     const allUploadedAssets: MediaAsset[] = []
+    const supabase = createClient()
+    const { data: userData } = await supabase.auth.getUser()
+    const user = userData.user
+    if (!user) {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.status === "pending" ? { ...f, status: "error", error: "Unauthorized" } : f
+        )
+      )
+      setUploadProgress(null)
+      setIsUploading(false)
+      return
+    }
 
     for (let i = 0; i < toUpload.length; i++) {
       const entry = toUpload[i]
@@ -217,19 +234,65 @@ export function AudioDropzone({
           await fetch(`/api/media/${entry.existingAssetId}`, { method: "DELETE" })
         }
 
-        const formData = new FormData()
-        formData.append("file", entry.file)
+        // Upload directly to Supabase Storage to avoid Vercel request body limits in production.
+        const safeName = entry.file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200) || "audio"
+        const uniqueId = crypto.randomUUID()
+        const storageFileName = `${uniqueId}-${safeName}`
 
-        const res = await fetch("/api/audio/upload", {
-          method: "POST",
-          body: formData,
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error ?? "Upload failed")
+        const { path } = await uploadFile(
+          supabase,
+          BUCKET,
+          user.id,
+          storageFileName,
+          entry.file,
+          { contentType: entry.file.type }
+        )
+        const publicUrl = getPublicUrl(supabase, BUCKET, path)
+
+        let coverArtPath: string | null = null
+        let coverArtUrl: string | null = null
+        if (entry.coverPreviewUrl?.startsWith("data:")) {
+          const coverBlob = await fetch(entry.coverPreviewUrl).then((r) => r.blob())
+          const mime = coverBlob.type || "image/jpeg"
+          const ext =
+            mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg"
+          const cover = await uploadFile(
+            supabase,
+            BUCKET,
+            user.id,
+            `covers/${uniqueId}-cover.${ext}`,
+            coverBlob,
+            { contentType: mime }
+          )
+          coverArtPath = cover.path
+          coverArtUrl = getPublicUrl(supabase, BUCKET, cover.path)
         }
-        const data = await res.json()
-        const asset = data.asset as MediaAsset
+
+        // Register metadata row via API (small JSON payload, keeps RLS enforcement)
+        const registerRes = await fetch("/api/audio/register-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bucket_id: BUCKET,
+            storage_path: path,
+            file_name: entry.file.name,
+            mime_type: entry.file.type,
+            file_size: entry.file.size,
+            public_url: publicUrl,
+            category: "verse-track",
+            audio_title: entry.audioTitle ?? null,
+            audio_artist: entry.audioArtist ?? null,
+            audio_album: entry.audioAlbum ?? null,
+            cover_art_path: coverArtPath,
+            cover_art_url: coverArtUrl,
+          }),
+        })
+        if (!registerRes.ok) {
+          const data = await registerRes.json().catch(() => ({}))
+          throw new Error(data.error ?? "Failed to register upload")
+        }
+        const regData = (await registerRes.json()) as { asset: MediaAsset }
+        const asset = regData.asset
         allUploadedAssets.push(asset)
 
         setFiles((prev) =>
