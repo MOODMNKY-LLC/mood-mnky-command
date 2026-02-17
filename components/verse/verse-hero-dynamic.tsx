@@ -13,6 +13,15 @@ import type { COBEOptions } from "cobe";
 
 const MOBILE_BREAKPOINT = 768;
 
+/** Skip WebGL Globe on iOS/iPadOS (iPhone + iPad) to avoid Safari context/cobe failures. */
+function isIosOrIpad(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+  if (ua.includes("Mac") && navigator.maxTouchPoints > 1) return true;
+  return false;
+}
+
 const Globe = dynamic(
   () => import("@/components/ui/globe").then((m) => ({ default: m.Globe })),
   {
@@ -61,10 +70,10 @@ export function VerseHeroDynamic() {
   const isMobile = useIsMobile();
   const [showGlobe, setShowGlobe] = useState(false);
   useEffect(() => {
-    const isNarrow =
-      typeof window !== "undefined" &&
-      window.innerWidth >= MOBILE_BREAKPOINT;
-    setShowGlobe(isNarrow);
+    if (typeof window === "undefined") return;
+    const wideEnough = window.innerWidth >= MOBILE_BREAKPOINT;
+    const notIos = !isIosOrIpad();
+    setShowGlobe(wideEnough && notIos);
   }, []);
   const globeConfig = useMemo(
     () => (theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT),
