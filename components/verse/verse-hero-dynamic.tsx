@@ -2,12 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { VerseButton } from "@/components/verse/ui/button";
-import { Globe } from "@/components/ui/globe";
 import { DottedMap } from "@/components/ui/dotted-map";
 import { useVerseTheme } from "./verse-theme-provider";
 import { useVerseUser } from "./verse-user-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { COBEOptions } from "cobe";
+
+const Globe = dynamic(
+  () => import("@/components/ui/globe").then((m) => ({ default: m.Globe })),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="size-full rounded-full bg-verse-text/5"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 const GLOBE_CONFIG_LIGHT: COBEOptions = {
   width: 800,
@@ -40,9 +54,11 @@ const WELCOME_BACK_COPY = `Your gateway to the universe of scents—curated frag
 export function VerseHeroDynamic() {
   const { theme } = useVerseTheme();
   const user = useVerseUser();
+  const isMobile = useIsMobile();
   const globeConfig = theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT;
   const name = user?.displayName || user?.email?.split("@")[0] || null;
   const isLoggedIn = Boolean(name);
+  const mapSamples = isMobile ? 1500 : 4000;
 
   return (
     <section className="verse-hero-split mx-auto grid w-full max-w-[var(--verse-page-width)] grid-cols-1 grid-rows-1 items-end gap-6 overflow-hidden rounded-b-2xl px-4 pt-10 pb-6 md:grid-cols-[1fr_1fr] md:gap-12 md:px-6 md:pt-14 md:pb-10 lg:min-h-[548px]">
@@ -80,7 +96,7 @@ export function VerseHeroDynamic() {
             <DottedMap
               width={200}
               height={100}
-              mapSamples={4000}
+              mapSamples={mapSamples}
               dotRadius={0.15}
               dotColor="currentColor"
               className="h-full w-full text-verse-text"

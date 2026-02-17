@@ -7,6 +7,7 @@ import {
 } from "@/lib/shopify/storefront-queries";
 import { VerseProductCard } from "@/components/verse/product-card";
 import { VerseBrandBand } from "@/components/verse/verse-brand-band";
+import { VerseHeroErrorBoundary } from "@/components/verse/verse-error-boundary";
 import { VerseHeroDynamic } from "@/components/verse/verse-hero-dynamic";
 import { PortalWelcome } from "@/components/verse/portal-welcome";
 import { PortalPillarCards } from "@/components/verse/portal-pillar-cards";
@@ -51,7 +52,9 @@ export default async function VerseHomePage() {
     <>
       <VerseBrandBand />
       <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-10 px-4 pb-8 md:px-6 md:pb-10">
-        <VerseHeroDynamic />
+        <VerseHeroErrorBoundary>
+          <VerseHeroDynamic />
+        </VerseHeroErrorBoundary>
 
       {/* MNKY PORTAL: welcome, then cards in order Dojo → Agent Chat → MNKY Shop → Fragrance Wheel → Blending Guide → Profile */}
       <section className="space-y-6">

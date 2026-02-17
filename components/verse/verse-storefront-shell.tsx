@@ -58,9 +58,11 @@ export function VerseStorefrontShell({
           <div className="relative z-10 flex min-h-screen flex-col overflow-x-hidden">
             <VerseAnnouncementBar />
             <VerseHeader isAdmin={isAdmin} user={user} />
-            <main className="flex-1">
-              <VerseUserProvider user={user}>{children}</VerseUserProvider>
-            </main>
+            <VerseErrorBoundary sectionLabel="content">
+              <main className="flex-1">
+                <VerseUserProvider user={user}>{children}</VerseUserProvider>
+              </main>
+            </VerseErrorBoundary>
             <VerseFooter />
             <VerseAdminDock isAdmin={isAdmin} user={user} />
             <VerseFixedPersona />

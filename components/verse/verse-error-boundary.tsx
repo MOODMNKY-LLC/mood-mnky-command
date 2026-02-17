@@ -5,6 +5,8 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 interface VerseErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
+  /** Optional label for granular boundaries (e.g. "content", "hero") */
+  sectionLabel?: string;
 }
 
 interface VerseErrorBoundaryState {
@@ -12,11 +14,45 @@ interface VerseErrorBoundaryState {
   error: Error | null;
 }
 
+function reportClientError(
+  error: Error,
+  errorInfo: ErrorInfo,
+  sectionLabel?: string
+): void {
+  console.error(
+    "[VerseErrorBoundary]",
+    sectionLabel ?? "root",
+    error.message,
+    error.stack,
+    errorInfo.componentStack
+  );
+  const url =
+    typeof window !== "undefined" ? window.location.href : "";
+  const userAgent =
+    typeof navigator !== "undefined" ? navigator.userAgent : "";
+  const viewport =
+    typeof window !== "undefined"
+      ? `${window.innerWidth}x${window.innerHeight}`
+      : "";
+  fetch("/api/log-client-error", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: error.message,
+      stack: error.stack ?? "",
+      componentStack: errorInfo.componentStack ?? "",
+      userAgent,
+      url,
+      viewport,
+      section: sectionLabel ?? "verse",
+    }),
+  }).catch(() => {});
+}
+
 /**
  * Client error boundary for the verse storefront.
- * Catches client-side exceptions (e.g. Globe zero-dimension, Rive/WebGL on mobile),
- * logs the real error for debugging, and renders a minimal fallback so the app
- * doesn't show the generic Next.js "Application error" page.
+ * Catches client-side exceptions, reports to API for debugging, and renders
+ * a minimal fallback. With ?verse_debug=1 shows error details in the UI.
  */
 export class VerseErrorBoundary extends Component<
   VerseErrorBoundaryProps,
@@ -32,8 +68,7 @@ export class VerseErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log so it's visible in console when debugging on mobile (e.g. chrome://inspect, Safari Web Inspector)
-    console.error("[VerseErrorBoundary]", error.message, error.stack, errorInfo.componentStack);
+    reportClientError(error, errorInfo, this.props.sectionLabel);
   }
 
   render(): ReactNode {
@@ -44,14 +79,26 @@ export class VerseErrorBoundary extends Component<
       const isDev =
         typeof process !== "undefined" &&
         process.env.NODE_ENV === "development";
+      const showDebug =
+        isDev ||
+        (typeof window !== "undefined" &&
+          typeof URLSearchParams !== "undefined" &&
+          new URLSearchParams(window.location.search).get("verse_debug") ===
+            "1");
+      const err = this.state.error;
       return (
         <div className="verse-error-fallback flex min-h-[200px] flex-col items-center justify-center gap-4 px-4 py-8 text-center">
           <p className="text-sm font-medium text-verse-text">
-            Something went wrong loading this section.
+            {this.props.sectionLabel === "content"
+              ? "Content failed to load."
+              : this.props.sectionLabel === "hero"
+                ? "Hero section failed to load."
+                : "Something went wrong loading this section."}
           </p>
-          {isDev && (
-            <pre className="max-h-32 overflow-auto rounded bg-verse-text/10 p-2 text-left text-xs text-verse-text">
-              {this.state.error.message}
+          {showDebug && (
+            <pre className="max-h-40 overflow-auto rounded bg-verse-text/10 p-2 text-left text-xs text-verse-text">
+              {err.message}
+              {err.stack ? `\n\n${err.stack.slice(0, 800)}` : ""}
             </pre>
           )}
           <button
@@ -88,6 +135,17 @@ interface VersePersonaErrorBoundaryProps {
 
 interface VersePersonaErrorBoundaryState {
   hasError: boolean;
+}
+
+/** Wrapper to isolate hero (Globe/DottedMap) failures so the rest of the page still loads. */
+export function VerseHeroErrorBoundary({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <VerseErrorBoundary sectionLabel="hero">{children}</VerseErrorBoundary>
+  );
 }
 
 /**
