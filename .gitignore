@@ -14,6 +14,7 @@ node_modules/
 .DS_Store
 .pnpm-store/
 temp/
+voice-previews/
 
 # Serwist
 public/sw*

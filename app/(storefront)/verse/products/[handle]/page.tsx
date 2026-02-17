@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { storefrontFetch } from "@/lib/shopify/storefront-client";
 import { PRODUCT_BY_HANDLE_QUERY } from "@/lib/shopify/storefront-queries";
@@ -11,10 +12,11 @@ export default async function VerseProductPage({
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
+  const h = await headers();
 
   let data: { productByHandle?: unknown } = {};
   try {
-    data = await storefrontFetch<typeof data>(PRODUCT_BY_HANDLE_QUERY, { handle });
+    data = await storefrontFetch<typeof data>(PRODUCT_BY_HANDLE_QUERY, { handle }, { headers: h });
   } catch (e) {
     console.error("Verse product fetch error:", e);
   }

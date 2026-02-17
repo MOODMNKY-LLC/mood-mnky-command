@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { storefrontFetch } from "@/lib/shopify/storefront-client";
 import {
   FEATURED_PRODUCTS_QUERY,
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { BlurFade } from "@/components/ui/blur-fade";
 
 export default async function VerseHomePage() {
+  const h = await headers();
   let featuredProducts: { products?: { edges: Array<{ node: unknown }> } } = {};
   let collections: {
     collections?: {
@@ -33,8 +35,8 @@ export default async function VerseHomePage() {
     [featuredProducts, collections] = await Promise.all([
       storefrontFetch<typeof featuredProducts>(FEATURED_PRODUCTS_QUERY, {
         first: 8,
-      }),
-      storefrontFetch<typeof collections>(COLLECTIONS_QUERY, { first: 6 }),
+      }, { headers: h }),
+      storefrontFetch<typeof collections>(COLLECTIONS_QUERY, { first: 6 }, { headers: h }),
     ]);
   } catch (e) {
     console.error("Verse home fetch error:", e);

@@ -12,11 +12,11 @@ export default async function VerseProfilePage() {
     redirect("/auth/login");
   }
 
-  let profile: { display_name?: string } | null = null;
+  let profile: { display_name?: string; preferences?: Record<string, unknown> } | null = null;
   try {
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, preferences")
       .eq("id", user.id)
       .single();
     profile = data;
@@ -24,11 +24,14 @@ export default async function VerseProfilePage() {
     // ignore
   }
 
+  const defaultAgentSlug = (profile?.preferences?.default_agent_slug as string) ?? "mood_mnky";
+
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-8 md:px-6">
       <VerseProfileClient
         email={user.email ?? ""}
         displayName={profile?.display_name ?? undefined}
+        defaultAgentSlug={defaultAgentSlug}
       />
     </div>
   );

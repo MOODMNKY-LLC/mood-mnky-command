@@ -20,12 +20,43 @@ export const storefrontClient: StorefrontClientReturn = createStorefrontClient({
 });
 
 /**
- * Server-side: fetch from Storefront API with private token.
+ * Extract buyer IP from request headers for Storefront API analytics.
+ * Uses x-forwarded-for (client is first) or x-real-ip.
  */
-export async function storefrontFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+function getBuyerIpFromHeaders(
+  headers: Headers | { get: (name: string) => string | null }
+): string | undefined {
+  const forwarded = headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim() || undefined;
+  }
+  const realIp = headers.get("x-real-ip");
+  return realIp || undefined;
+}
+
+export type StorefrontFetchOptions = {
+  /** Request headers; used to extract buyerIp for Storefront API analytics */
+  headers?: Headers | { get: (name: string) => string | null };
+};
+
+/**
+ * Server-side: fetch from Storefront API with private token.
+ * Pass headers() from next/headers to include buyerIp for analytics.
+ */
+export async function storefrontFetch<T>(
+  query: string,
+  variables?: Record<string, unknown>,
+  options?: StorefrontFetchOptions
+): Promise<T> {
+  const buyerIp = options?.headers
+    ? getBuyerIpFromHeaders(options.headers)
+    : undefined;
+
   const response = await fetch(storefrontClient.getStorefrontApiUrl(), {
     method: "POST",
-    headers: storefrontClient.getPrivateTokenHeaders(),
+    headers: storefrontClient.getPrivateTokenHeaders(
+      buyerIp ? { buyerIp } : undefined
+    ),
     body: JSON.stringify({ query, variables }),
   });
 

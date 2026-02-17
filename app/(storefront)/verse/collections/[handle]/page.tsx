@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { storefrontFetch } from "@/lib/shopify/storefront-client";
 import { COLLECTION_BY_HANDLE_QUERY } from "@/lib/shopify/storefront-queries";
@@ -11,6 +12,7 @@ export default async function VerseCollectionPage({
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
+  const h = await headers();
 
   let data: {
     collectionByHandle?: {
@@ -30,7 +32,7 @@ export default async function VerseCollectionPage({
     data = await storefrontFetch<typeof data>(COLLECTION_BY_HANDLE_QUERY, {
       handle,
       first: 24,
-    });
+    }, { headers: h });
   } catch (e) {
     console.error("Verse collection fetch error:", e);
   }

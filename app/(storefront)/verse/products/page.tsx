@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { storefrontFetch } from "@/lib/shopify/storefront-client";
 import { PRODUCTS_QUERY } from "@/lib/shopify/storefront-queries";
 import { VerseProductCard } from "@/components/verse/product-card";
 import { Button } from "@/components/ui/button";
 
 export default async function VerseProductsPage() {
+  const h = await headers();
   let data: {
     products?: {
       pageInfo?: { hasNextPage?: boolean; endCursor?: string };
@@ -13,7 +15,7 @@ export default async function VerseProductsPage() {
   } = {};
 
   try {
-    data = await storefrontFetch<typeof data>(PRODUCTS_QUERY, { first: 24 });
+    data = await storefrontFetch<typeof data>(PRODUCTS_QUERY, { first: 24 }, { headers: h });
   } catch (e) {
     console.error("Verse products fetch error:", e);
   }

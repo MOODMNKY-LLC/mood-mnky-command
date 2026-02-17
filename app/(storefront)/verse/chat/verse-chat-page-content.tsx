@@ -53,6 +53,7 @@ import { SpeechInput } from "@/components/ai-elements/speech-input";
 import { uploadVerseAttachments } from "@/lib/verse/upload-attachments";
 import type { FileUIPart } from "ai";
 import { VerseButton } from "@/components/verse/ui/button";
+import { DEFAULT_AGENT_SLUG } from "@/lib/agents";
 import {
   Select,
   SelectContent,
@@ -80,6 +81,8 @@ export function VerseChatPageContent() {
   const [text, setText] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [model, setModel] = useState<string>(VERSE_CHAT_MODELS[0].value);
+  const [agents, setAgents] = useState<{ slug: string; display_name: string }[]>([]);
+  const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT_SLUG);
 
   useEffect(() => {
     fetch("/api/chat/eleven-labs-config")
@@ -87,6 +90,23 @@ export function VerseChatPageContent() {
       .then((d: { agentId?: string | null }) => setVoiceAgentId(d.agentId ?? null))
       .catch(() => setVoiceAgentId(null));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([
+      fetch("/api/verse/agents").then((r) => r.json()),
+      fetch("/api/verse/profile").then((r) => r.json()).catch(() => ({})),
+    ]).then(([agentsRes, profileRes]) => {
+      const agentsData = (agentsRes as { agents?: { slug: string; display_name: string }[] })?.agents ?? [];
+      setAgents(agentsData);
+      const prefs = (profileRes as { preferences?: Record<string, unknown> })?.preferences ?? {};
+      const defaultSlug = prefs.default_agent_slug as string | undefined;
+      if (defaultSlug && agentsData.some((a) => a.slug === defaultSlug)) {
+        setAgentSlug(defaultSlug);
+      }
+    });
+  }, [user]);
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -102,7 +122,7 @@ export function VerseChatPageContent() {
   );
   const { messages, sendMessage, status, error } = useChat({
     transport,
-    body: { sessionId: sessionId ?? undefined, model },
+    body: { sessionId: sessionId ?? undefined, model, agentSlug: agentSlug || undefined },
   });
 
   const handleSubmit = useCallback(
@@ -193,6 +213,23 @@ export function VerseChatPageContent() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {mode === "chat" && agents.length > 0 && (
+              <Select value={agentSlug} onValueChange={setAgentSlug} disabled={isStreaming}>
+                <SelectTrigger
+                  className="h-8 w-[130px] border-[var(--verse-border)] bg-[var(--verse-bg)] text-verse-text"
+                  aria-label="Agent"
+                >
+                  <SelectValue placeholder="Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.map((a) => (
+                    <SelectItem key={a.slug} value={a.slug}>
+                      {a.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {mode === "chat" && (
             <Select
               value={model}

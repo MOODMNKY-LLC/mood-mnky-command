@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
+  Bot,
   Droplets,
   LayoutDashboard,
   Package,
@@ -128,6 +129,7 @@ const storeItems: NavItemWithChildren[] = [
 
 const mnkyChatItems: NavItem[] = [
   { title: "AI Chat", href: "/chat", icon: MessageSquare },
+  { title: "Agents", href: "/chat/agents", icon: Bot },
   { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
 ]
 

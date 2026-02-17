@@ -63,6 +63,14 @@ import { SpeechInput } from "@/components/ai-elements/speech-input";
 import { uploadVerseAttachments } from "@/lib/verse/upload-attachments";
 import type { FileUIPart } from "ai";
 import { VerseVoiceChat } from "@/components/verse/verse-voice-chat";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DEFAULT_AGENT_SLUG } from "@/lib/agents";
 import { MessageSquare, Mic } from "lucide-react";
 
 export function VerseChatPopup({
@@ -77,6 +85,8 @@ export function VerseChatPopup({
   const [voiceAgentId, setVoiceAgentId] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [agents, setAgents] = useState<{ slug: string; display_name: string }[]>([]);
+  const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT_SLUG);
 
   useEffect(() => {
     if (!open) return;
@@ -85,6 +95,23 @@ export function VerseChatPopup({
       .then((d: { agentId?: string | null }) => setVoiceAgentId(d.agentId ?? null))
       .catch(() => setVoiceAgentId(null));
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    Promise.all([
+      fetch("/api/verse/agents").then((r) => r.json()),
+      fetch("/api/verse/profile").then((r) => r.json()).catch(() => ({})),
+    ]).then(([agentsRes, profileRes]) => {
+      const agentsData = (agentsRes as { agents?: { slug: string; display_name: string }[] })?.agents ?? [];
+      setAgents(agentsData);
+      const prefs = (profileRes as { preferences?: Record<string, unknown> })?.preferences ?? {};
+      const defaultSlug = prefs.default_agent_slug as string | undefined;
+      if (defaultSlug && agentsData.some((a) => a.slug === defaultSlug)) {
+        setAgentSlug(defaultSlug);
+      }
+    });
+  }, [open, user]);
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -100,7 +127,7 @@ export function VerseChatPopup({
   );
   const { messages, sendMessage, status, error } = useChat({
     transport,
-    body: { sessionId: sessionId ?? undefined },
+    body: { sessionId: sessionId ?? undefined, agentSlug: agentSlug || undefined },
   });
 
   const handleSubmit = useCallback(
@@ -170,7 +197,21 @@ export function VerseChatPopup({
               />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {agents.length > 0 && (
+              <Select value={agentSlug} onValueChange={setAgentSlug}>
+                <SelectTrigger className="h-8 w-[130px] border-[var(--verse-border)] text-verse-text">
+                  <SelectValue placeholder="Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.map((a) => (
+                    <SelectItem key={a.slug} value={a.slug}>
+                      {a.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <div className="flex rounded-lg border border-[var(--verse-border)] p-0.5">
               <button
                 type="button"

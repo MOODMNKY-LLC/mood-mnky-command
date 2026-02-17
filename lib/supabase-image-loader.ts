@@ -1,9 +1,11 @@
 /**
- * Next.js custom image loader for Supabase Storage.
- * Converts object/public URLs to render/image URLs for on-the-fly transforms.
- * Requires Supabase Pro plan for image transformations.
+ * Next.js custom image loader.
+ * - Supabase Storage: converts object/public to render/image URLs (width, quality).
+ * - Other URLs (local, Shopify CDN, etc.): routes through Next.js image optimization
+ *   so width is included and images are properly resized.
  *
  * @see https://supabase.com/docs/guides/storage/serving/image-transformations#nextjs-loader
+ * @see https://nextjs.org/docs/messages/next-image-missing-loader-width
  */
 export default function supabaseLoader({
   src,
@@ -14,10 +16,8 @@ export default function supabaseLoader({
   width: number
   quality?: number
 }) {
-  // Supabase storage URL: .../storage/v1/object/public/bucket/path
-  // Transform URL: .../storage/v1/render/image/public/bucket/path?width=X&quality=Y
   try {
-    const url = new URL(src)
+    const url = new URL(src, "http://n")
     const isSupabaseStorage = url.pathname.includes("/storage/v1/object/public/")
 
     if (isSupabaseStorage) {
@@ -31,7 +31,11 @@ export default function supabaseLoader({
       return `${url.origin}${renderPath}?${params.toString()}`
     }
   } catch {
-    // Invalid URL, return as-is
+    // Invalid URL, fall through
   }
-  return src
+
+  // For local and remote URLs (Shopify, etc.), use Next.js image optimization
+  // so width is included in the URL and the loader implements resize correctly.
+  const q = quality ?? 75
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${q}`
 }

@@ -6,15 +6,28 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
+import { isAgentSlug } from "@/lib/agents";
+
+const DISPLAY_NAMES: Record<string, string> = {
+  mood_mnky: "MOOD MNKY",
+  sage_mnky: "SAGE MNKY",
+  code_mnky: "CODE MNKY",
+};
 
 export function VerseProfileClient({
   email,
   displayName,
+  defaultAgentSlug = "mood_mnky",
 }: {
   email: string;
   displayName?: string;
+  defaultAgentSlug?: string;
 }) {
   const router = useRouter();
+  const defaultAgentName = isAgentSlug(defaultAgentSlug)
+    ? AGENT_DISPLAY_NAME[defaultAgentSlug]
+    : DISPLAY_NAMES[defaultAgentSlug] ?? "MOOD MNKY";
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -30,9 +43,22 @@ export function VerseProfileClient({
           Profile
         </h1>
         <p className="mt-1 text-sm text-verse-text-muted">
-          Account settings and scent preferences (coming soon).
+          Account settings and preferences.
         </p>
       </div>
+      <Card className="border-verse-text/15 bg-verse-bg/60">
+        <CardHeader>
+          <h2 className="font-verse-heading text-lg font-medium text-verse-text">
+            Default Agent
+          </h2>
+        </CardHeader>
+        <CardContent>
+          <p className="text-verse-text">{defaultAgentName}</p>
+          <Button variant="outline" size="sm" asChild className="mt-2">
+            <Link href="/verse/dojo">Change in Dojo</Link>
+          </Button>
+        </CardContent>
+      </Card>
       <Card className="border-verse-text/15 bg-verse-bg/60">
         <CardHeader>
           <h2 className="font-verse-heading text-lg font-medium text-verse-text">

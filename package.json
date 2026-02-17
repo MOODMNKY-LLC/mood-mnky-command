@@ -20,7 +20,8 @@
     "notion:sync-hydrogen-credentials": "tsx scripts/update-notion-hydrogen-credentials.ts",
     "verse:seed-blog": "tsx scripts/seed-verse-blog-posts.ts",
     "vercel:env-check": "node scripts/vercel-env-check.mjs",
-    "dev:tunnel": "node scripts/ngrok-tunnel.mjs"
+    "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
+    "voice:preview": "node scripts/preview-voices.mjs"
   },
   "dependencies": {
     "@adobe/pdfservices-node-sdk": "^4.1.0",

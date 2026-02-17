@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   FlaskConical,
@@ -12,8 +13,15 @@ import {
 import { Persona } from "@/components/ai-elements/persona";
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon";
 import { Dock, DockIcon } from "@/components/ui/dock";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useVersePersonaState } from "@/components/verse/verse-persona-state-context";
 import { VerseChatPopup } from "@/components/verse/verse-chat-popup";
+import { VerseRealtimeVoiceCard } from "@/components/verse/verse-realtime-voice-card";
+import { DEFAULT_AGENT_SLUG } from "@/lib/agents";
 import type { VerseUser } from "./verse-storefront-shell";
 
 export function VerseAdminDock({
@@ -24,6 +32,7 @@ export function VerseAdminDock({
   user?: VerseUser;
 }) {
   const { personaState } = useVersePersonaState();
+  const [realtimeOpen, setRealtimeOpen] = useState(false);
 
   return (
     <div className="verse-dock pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center pb-4 pt-8">
@@ -76,20 +85,38 @@ export function VerseAdminDock({
               </DockIcon>
             </>
           )}
-          <div
-            className="relative flex min-w-24 min-h-24 w-24 h-24 items-center justify-center rounded-full"
-            aria-hidden
-          >
-            <Persona
-              state={personaState}
-              variant="halo"
-              className="size-24 shrink-0"
-              themeColorVariable="--verse-text-rgb"
-            />
-            <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <VerseLogoHairIcon size="md" className="text-verse-text" />
-            </span>
-          </div>
+          <DockIcon>
+            <button
+              type="button"
+              onClick={() => setRealtimeOpen(true)}
+              className="relative flex min-w-24 min-h-24 w-24 h-24 items-center justify-center rounded-full border-0 bg-transparent cursor-pointer"
+              aria-label="Open voice chat"
+            >
+              <Persona
+                state={personaState}
+                variant="halo"
+                className="size-24 shrink-0 pointer-events-none"
+                themeColorVariable="--verse-text-rgb"
+              />
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <VerseLogoHairIcon size="md" className="text-verse-text" />
+              </span>
+            </button>
+          </DockIcon>
+          <Dialog open={realtimeOpen} onOpenChange={setRealtimeOpen}>
+            <DialogContent
+              className="max-w-md gap-0 overflow-hidden border-[var(--verse-border)] bg-[var(--verse-bg)] p-0 sm:rounded-xl"
+              aria-describedby={undefined}
+            >
+              <DialogTitle className="sr-only">Voice chat with MNKY</DialogTitle>
+              <div className="p-4 pt-12">
+                <VerseRealtimeVoiceCard
+                  agentSlug={DEFAULT_AGENT_SLUG}
+                  onClose={() => setRealtimeOpen(false)}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
           {isAdmin ? (
             <>
               <DockIcon>

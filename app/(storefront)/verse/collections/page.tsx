@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { storefrontFetch } from "@/lib/shopify/storefront-client";
 import { COLLECTIONS_QUERY } from "@/lib/shopify/storefront-queries";
 import { Card, CardHeader } from "@/components/ui/card";
 
 export default async function VerseCollectionsPage() {
+  const h = await headers();
   let data: {
     collections?: {
       edges?: Array<{
@@ -18,7 +20,7 @@ export default async function VerseCollectionsPage() {
   } = {};
 
   try {
-    data = await storefrontFetch<typeof data>(COLLECTIONS_QUERY, { first: 50 });
+    data = await storefrontFetch<typeof data>(COLLECTIONS_QUERY, { first: 50 }, { headers: h });
   } catch (e) {
     console.error("Verse collections fetch error:", e);
   }

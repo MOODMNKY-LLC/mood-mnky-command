@@ -1,6 +1,8 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { DEFAULT_AGENT_SLUG, isAgentSlug } from "@/lib/agents"
 import { VERSE_SYSTEM_PROMPT } from "@/lib/chat/verse-system-prompt"
 
 export const maxDuration = 30
@@ -14,6 +16,7 @@ interface VerseChatBody {
   messages: UIMessage[]
   model?: string
   sessionId?: string
+  agentSlug?: string
 }
 
 function getTextFromUIMessage(message: UIMessage): string {
@@ -51,10 +54,37 @@ export async function POST(request: Request) {
     return new Response("Invalid JSON body", { status: 400 })
   }
 
-  const { messages, sessionId: requestedSessionId, model: requestedModel } = body
+  const { messages, sessionId: requestedSessionId, model: requestedModel, agentSlug: bodyAgentSlug } = body
   if (!messages || !Array.isArray(messages)) {
     return new Response("messages is required", { status: 400 })
   }
+
+  let agentSlug = DEFAULT_AGENT_SLUG
+  if (bodyAgentSlug && isAgentSlug(bodyAgentSlug)) {
+    agentSlug = bodyAgentSlug
+  } else {
+    const admin = createAdminClient()
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("preferences")
+      .eq("id", user.id)
+      .single()
+    const prefs = (profile?.preferences as Record<string, unknown>) ?? {}
+    const slug = prefs.default_agent_slug as string | undefined
+    if (slug && isAgentSlug(slug)) agentSlug = slug
+  }
+
+  const admin = createAdminClient()
+  const { data: agent } = await admin
+    .from("agent_profiles")
+    .select("system_instructions")
+    .eq("slug", agentSlug)
+    .eq("is_active", true)
+    .single()
+
+  const systemPromptBase =
+    agent?.system_instructions?.trim() ||
+    VERSE_SYSTEM_PROMPT
 
   const model =
     requestedModel && VERSE_ALLOWED_MODELS.includes(requestedModel as (typeof VERSE_ALLOWED_MODELS)[number])
@@ -71,11 +101,14 @@ export async function POST(request: Request) {
       .single()
     if (session) {
       sessionId = session.id
-      await supabase.from("chat_sessions").update({ updated_at: new Date().toISOString() }).eq("id", sessionId)
+      await supabase
+        .from("chat_sessions")
+        .update({ updated_at: new Date().toISOString(), agent_slug: agentSlug })
+        .eq("id", sessionId)
     } else {
       const { data: newSession, error } = await supabase
         .from("chat_sessions")
-        .insert({ user_id: user.id })
+        .insert({ user_id: user.id, agent_slug: agentSlug })
         .select("id")
         .single()
       if (error) return new Response("Failed to create session", { status: 500 })
@@ -84,7 +117,7 @@ export async function POST(request: Request) {
   } else {
     const { data: newSession, error } = await supabase
       .from("chat_sessions")
-      .insert({ user_id: user.id })
+      .insert({ user_id: user.id, agent_slug: agentSlug })
       .select("id")
       .single()
     if (error) return new Response("Failed to create session", { status: 500 })
@@ -110,13 +143,13 @@ export async function POST(request: Request) {
     .order("created_at", { ascending: true })
     .limit(LAST_N_MESSAGES)
 
-  let systemPrompt = VERSE_SYSTEM_PROMPT
+  let systemPrompt = systemPromptBase
   if (recentRows?.length) {
     const recentContext = recentRows
       .map((m) => (m.role === "user" ? `User: ${m.content}` : m.role === "assistant" ? `Assistant: ${m.content}` : null))
       .filter(Boolean)
       .join("\n")
-    systemPrompt = `${VERSE_SYSTEM_PROMPT}\n\nRecent conversation context (for continuity):\n${recentContext}`
+    systemPrompt = `${systemPromptBase}\n\nRecent conversation context (for continuity):\n${recentContext}`
   }
 
   const result = streamText({
