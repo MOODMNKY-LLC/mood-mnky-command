@@ -43,9 +43,10 @@ export function Globe({
   className?: string
   config?: COBEOptions
 }) {
-  let phi = 0
-  let width = 0
+  const phiRef = useRef(0)
+  const widthRef = useRef(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const globeRef = useRef<ReturnType<typeof createGlobe> | null>(null)
   const pointerInteracting = useRef<number | null>(null)
   const pointerInteractionMovement = useRef(0)
 
@@ -72,31 +73,63 @@ export function Globe({
   }
 
   useEffect(() => {
-    const onResize = () => {
-      if (canvasRef.current) {
-        width = canvasRef.current.offsetWidth
-      }
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const initGlobe = (width: number) => {
+      if (width <= 0) return
+      widthRef.current = width
+      const size = width * 2
+      const globe = createGlobe(canvas, {
+        ...config,
+        width: size,
+        height: size,
+        onRender: (state) => {
+          if (!pointerInteracting.current) phiRef.current += 0.005
+          state.phi = phiRef.current + rs.get()
+          const w = widthRef.current * 2
+          state.width = w
+          state.height = w
+        },
+      })
+      globeRef.current = globe
+      canvas.style.opacity = "1"
     }
 
-    window.addEventListener("resize", onResize)
-    onResize()
+    const cleanupGlobe = () => {
+      if (globeRef.current) {
+        globeRef.current.destroy()
+        globeRef.current = null
+      }
+      canvas.style.opacity = "0"
+    }
 
-    const globe = createGlobe(canvasRef.current!, {
-      ...config,
-      width: width * 2,
-      height: width * 2,
-      onRender: (state) => {
-        if (!pointerInteracting.current) phi += 0.005
-        state.phi = phi + rs.get()
-        state.width = width * 2
-        state.height = width * 2
-      },
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      const width = entry.contentRect.width
+      if (width > 0) {
+        if (globeRef.current) {
+          globeRef.current.destroy()
+          globeRef.current = null
+        }
+        initGlobe(width)
+      } else {
+        cleanupGlobe()
+      }
     })
 
-    setTimeout(() => (canvasRef.current!.style.opacity = "1"), 0)
+    ro.observe(canvas)
+
+    // Initial size in case ResizeObserver fires with 0 (e.g. mobile before layout)
+    const initialWidth = canvas.offsetWidth
+    if (initialWidth > 0) {
+      initGlobe(initialWidth)
+    }
+
     return () => {
-      globe.destroy()
-      window.removeEventListener("resize", onResize)
+      ro.disconnect()
+      cleanupGlobe()
     }
   }, [rs, config])
 

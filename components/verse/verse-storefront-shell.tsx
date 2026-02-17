@@ -8,6 +8,7 @@ import { VerseAdminDock } from "./verse-admin-dock";
 import { VerseUserProvider } from "./verse-user-context";
 import { VersePersonaStateProvider, useVersePersonaState } from "./verse-persona-state-context";
 import { useVerseTheme } from "./verse-theme-provider";
+import { VerseErrorBoundary, VersePersonaErrorBoundary } from "./verse-error-boundary";
 
 export type VerseUser = {
   id: string;
@@ -23,12 +24,14 @@ function VerseFixedPersona() {
       style={{ bottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
       aria-hidden
     >
-      <Persona
-        state={personaState}
-        variant="halo"
-        className="size-14 shrink-0"
-        themeColorVariable="--verse-text-rgb"
-      />
+      <VersePersonaErrorBoundary>
+        <Persona
+          state={personaState}
+          variant="halo"
+          className="size-14 shrink-0"
+          themeColorVariable="--verse-text-rgb"
+        />
+      </VersePersonaErrorBoundary>
     </div>
   );
 }
@@ -51,16 +54,18 @@ export function VerseStorefrontShell({
       data-verse-theme={theme}
     >
       <VersePersonaStateProvider>
-        <div className="relative z-10 flex min-h-screen flex-col overflow-x-hidden">
-          <VerseAnnouncementBar />
-          <VerseHeader isAdmin={isAdmin} user={user} />
-          <main className="flex-1">
-            <VerseUserProvider user={user}>{children}</VerseUserProvider>
-          </main>
-          <VerseFooter />
-          <VerseAdminDock isAdmin={isAdmin} user={user} />
-          <VerseFixedPersona />
-        </div>
+        <VerseErrorBoundary>
+          <div className="relative z-10 flex min-h-screen flex-col overflow-x-hidden">
+            <VerseAnnouncementBar />
+            <VerseHeader isAdmin={isAdmin} user={user} />
+            <main className="flex-1">
+              <VerseUserProvider user={user}>{children}</VerseUserProvider>
+            </main>
+            <VerseFooter />
+            <VerseAdminDock isAdmin={isAdmin} user={user} />
+            <VerseFixedPersona />
+          </div>
+        </VerseErrorBoundary>
       </VersePersonaStateProvider>
     </div>
   );
