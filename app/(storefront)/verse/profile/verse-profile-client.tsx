@@ -34,7 +34,7 @@ export function VerseProfileClient({
 
   const verseTracksParams = new URLSearchParams();
   verseTracksParams.set("bucket", "mnky-verse-tracks");
-  verseTracksParams.set("limit", "24");
+  verseTracksParams.set("limit", "200");
   const { data: verseTracksData, mutate: mutateVerseTracks } = useSWR<{
     assets: MediaAsset[];
     count: number;
@@ -105,7 +105,7 @@ export function VerseProfileClient({
         </CardHeader>
         <CardContent className="space-y-4">
           <VerseAudioDropzone
-            maxFiles={10}
+            maxFiles={100}
             compact
             onUploadComplete={() => {
               mutateVerseTracks();
@@ -115,10 +115,13 @@ export function VerseProfileClient({
           {myTracks.length > 0 && (
             <div className="flex flex-col gap-2 pt-2 border-t border-verse-text/10">
               <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
-                Your tracks
+                Your tracks ({myTracks.length})
               </span>
-              <div className="flex flex-col gap-2">
-                {myTracks.slice(0, 8).map((asset) => (
+              <div
+                className="flex flex-col gap-2 overflow-y-auto pr-1"
+                style={{ maxHeight: "min(50vh, 400px)" }}
+              >
+                {myTracks.map((asset) => (
                   <div
                     key={asset.id}
                     className="flex flex-col gap-1 rounded-lg border border-verse-text/15 bg-verse-bg/40 p-2"

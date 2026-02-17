@@ -9,16 +9,19 @@ import {
   AlertCircle,
   Loader2,
   FileAudio,
+  RefreshCw,
+  Ban,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BUCKET_CONFIG, type MediaAsset } from "@/lib/supabase/storage"
 
 const BUCKET = "mnky-verse-tracks" as const
 const MAX_SIZE_BYTES = 50 * 1024 * 1024 // 50 MB per file
-const MAX_BATCH_BYTES = 55 * 1024 * 1024 // 55 MB per request (under 60MB middleware limit)
 const ACCEPT = "audio/*,video/mp4"
 
 type FileStatus = "pending" | "uploading" | "success" | "error"
+
+type DuplicateAction = "replace" | "skip"
 
 interface FileEntry {
   file: File
@@ -30,6 +33,10 @@ interface FileEntry {
   /** Client-extracted metadata for display */
   audioTitle?: string | null
   audioArtist?: string | null
+  /** Duplicate: file_name already exists in library */
+  isDuplicate?: boolean
+  existingAssetId?: string
+  duplicateAction?: DuplicateAction
 }
 
 function pictureToDataUrl(picture: { data: number[] | Uint8Array; format?: string }): string {
@@ -67,7 +74,7 @@ export interface AudioDropzoneProps {
 }
 
 export function AudioDropzone({
-  maxFiles = 10,
+  maxFiles = 100,
   onUploadComplete,
   compact = false,
 }: AudioDropzoneProps) {
@@ -77,6 +84,7 @@ export function AudioDropzone({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [hasCheckedDuplicates, setHasCheckedDuplicates] = useState(false)
 
   const addFiles = useCallback(
     (incoming: FileList | File[]) => {
@@ -92,6 +100,7 @@ export function AudioDropzone({
         })
       }
       if (newEntries.length > 0) {
+        setHasCheckedDuplicates(false)
         setFiles((prev) => [...prev, ...newEntries])
       }
     },
@@ -137,49 +146,79 @@ export function AudioDropzone({
 
   const clearAll = useCallback(() => {
     extractingRef.current.clear()
+    setHasCheckedDuplicates(false)
     setFiles([])
+  }, [])
+
+  const setDuplicateAction = useCallback((index: number, action: DuplicateAction) => {
+    setFiles((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, duplicateAction: action } : f))
+    )
   }, [])
 
   const upload = useCallback(async () => {
     const pending = files.filter((f) => f.status === "pending")
     if (pending.length === 0) return
 
-    setIsUploading(true)
-
-    // Group into batches so each stays under MAX_BATCH_BYTES
-    const batches: FileEntry[][] = []
-    let currentBatch: FileEntry[] = []
-    let currentSize = 0
-    for (const f of pending) {
-      if (currentSize + f.file.size > MAX_BATCH_BYTES && currentBatch.length > 0) {
-        batches.push(currentBatch)
-        currentBatch = []
-        currentSize = 0
+    // Phase 1: Check duplicates if not yet done
+    if (!hasCheckedDuplicates) {
+      setHasCheckedDuplicates(true)
+      try {
+        const res = await fetch("/api/media/check-duplicates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bucket: BUCKET,
+            fileNames: pending.map((f) => f.file.name),
+          }),
+        })
+        if (!res.ok) throw new Error("Duplicate check failed")
+        const { existing } = (await res.json()) as { existing: { id: string; file_name: string }[] }
+        const byName = new Map(existing.map((e) => [e.file_name, e.id]))
+        setFiles((prev) =>
+          prev.map((f) => {
+            if (f.status !== "pending") return f
+            const exId = byName.get(f.file.name)
+            return exId
+              ? { ...f, isDuplicate: true, existingAssetId: exId, duplicateAction: "skip" as const }
+              : f
+          })
+        )
+        const duplicateCount = byName.size
+        if (duplicateCount > 0) return // Show UI; user will click Upload again after choosing
+      } catch {
+        setFiles((prev) => prev) // Proceed without duplicate info
       }
-      currentBatch.push(f)
-      currentSize += f.file.size
     }
-    if (currentBatch.length > 0) batches.push(currentBatch)
 
+    // Phase 2: Build queue and upload sequentially (one file per request)
+    const toUpload: FileEntry[] = []
+    for (const f of pending) {
+      if (f.isDuplicate && f.duplicateAction === "skip") continue
+      toUpload.push(f)
+    }
+
+    if (toUpload.length === 0) return
+
+    setIsUploading(true)
     const allUploadedAssets: MediaAsset[] = []
 
-    for (let b = 0; b < batches.length; b++) {
-      const batch = batches[b]
-      setUploadProgress({ current: b + 1, total: batches.length })
+    for (let i = 0; i < toUpload.length; i++) {
+      const entry = toUpload[i]
+      setUploadProgress({ current: i + 1, total: toUpload.length })
       setFiles((prev) =>
-        prev.map((f, i) => {
-          const inBatch = batch.some((bf) => bf.file === f.file)
-          return inBatch ? { ...f, status: "uploading" as FileStatus } : f
-        })
+        prev.map((f) =>
+          f.file === entry.file ? { ...f, status: "uploading" as FileStatus } : f
+        )
       )
 
       try {
-        const formData = new FormData()
-        if (batch.length === 1) {
-          formData.append("file", batch[0].file)
-        } else {
-          batch.forEach((p) => formData.append("files", p.file))
+        if (entry.isDuplicate && entry.duplicateAction === "replace" && entry.existingAssetId) {
+          await fetch(`/api/media/${entry.existingAssetId}`, { method: "DELETE" })
         }
+
+        const formData = new FormData()
+        formData.append("file", entry.file)
 
         const res = await fetch("/api/audio/upload", {
           method: "POST",
@@ -190,39 +229,35 @@ export function AudioDropzone({
           throw new Error(data.error ?? "Upload failed")
         }
         const data = await res.json()
-        const uploadedAssets: MediaAsset[] = data.asset ? [data.asset] : data.assets ?? []
-        allUploadedAssets.push(...uploadedAssets)
+        const asset = data.asset as MediaAsset
+        allUploadedAssets.push(asset)
 
-        setFiles((prev) => {
-          const assetsByBatch = [...uploadedAssets]
-          let idx = 0
-          return prev.map((f) => {
-            const inBatch = batch.some((bf) => bf.file === f.file)
-            if (inBatch && f.status === "uploading") {
-              const asset = assetsByBatch[idx++]
-              return { ...f, status: "success" as FileStatus, asset }
-            }
-            return f
-          })
-        })
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.file === entry.file
+              ? { ...f, status: "success" as FileStatus, asset }
+              : f
+          )
+        )
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Upload failed"
         setFiles((prev) =>
-          prev.map((f) => {
-            const inBatch = batch.some((bf) => bf.file === f.file)
-            return inBatch ? { ...f, status: "error" as FileStatus, error: msg } : f
-          })
+          prev.map((f) =>
+            f.file === entry.file
+              ? { ...f, status: "error" as FileStatus, error: msg }
+              : f
+          )
         )
-        break
       }
     }
 
     if (allUploadedAssets.length > 0) onUploadComplete?.(allUploadedAssets)
     setUploadProgress(null)
     setIsUploading(false)
-  }, [files, onUploadComplete])
+  }, [files, hasCheckedDuplicates, onUploadComplete])
 
   const pendingCount = files.filter((f) => f.status === "pending").length
+  const duplicateCount = files.filter((f) => f.status === "pending" && f.isDuplicate).length
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -286,6 +321,11 @@ export function AudioDropzone({
 
       {files.length > 0 && (
         <div className="flex flex-col gap-2">
+          {duplicateCount > 0 && hasCheckedDuplicates && (
+            <p className="rounded-md border border-amber-500/50 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+              {duplicateCount} duplicate{duplicateCount !== 1 ? "s" : ""} — choose Replace or Skip, then click Upload
+            </p>
+          )}
           {files.map((f, i) => (
             <div
               key={`${f.file.name}-${i}`}
@@ -311,9 +351,38 @@ export function AudioDropzone({
                     {f.audioArtist ?? f.asset?.audio_artist}
                   </span>
                 )}
-                <span className="text-[10px] text-muted-foreground">
-                  {formatSize(f.file.size)}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    {formatSize(f.file.size)}
+                  </span>
+                  {f.isDuplicate && f.status === "pending" && (
+                    <span className="rounded bg-amber-500/20 px-1 text-[10px] text-amber-600 dark:text-amber-400">
+                      Duplicate
+                    </span>
+                  )}
+                </div>
+                {f.isDuplicate && f.status === "pending" && (
+                  <div className="mt-0.5 flex gap-1">
+                    <Button
+                      variant={f.duplicateAction === "replace" ? "default" : "outline"}
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px]"
+                      onClick={() => setDuplicateAction(i, "replace")}
+                    >
+                      <RefreshCw className="mr-0.5 h-3 w-3" />
+                      Replace
+                    </Button>
+                    <Button
+                      variant={f.duplicateAction === "skip" ? "default" : "outline"}
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px]"
+                      onClick={() => setDuplicateAction(i, "skip")}
+                    >
+                      <Ban className="mr-0.5 h-3 w-3" />
+                      Skip
+                    </Button>
+                  </div>
+                )}
                 {f.status === "error" && f.error && (
                   <span className="text-[10px] text-destructive">{f.error}</span>
                 )}
@@ -364,7 +433,7 @@ export function AudioDropzone({
                   <>
                     <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
                     {uploadProgress
-                      ? `Uploading batch ${uploadProgress.current} of ${uploadProgress.total}...`
+                      ? `Uploading ${uploadProgress.current} of ${uploadProgress.total}...`
                       : "Uploading..."}
                   </>
                 ) : (

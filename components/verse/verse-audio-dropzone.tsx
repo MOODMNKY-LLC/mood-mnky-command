@@ -17,7 +17,7 @@ export interface VerseAudioDropzoneProps {
  * when rendered inside .verse-storefront.
  */
 export function VerseAudioDropzone({
-  maxFiles = 10,
+  maxFiles = 100,
   onUploadComplete,
   compact = false,
   className,

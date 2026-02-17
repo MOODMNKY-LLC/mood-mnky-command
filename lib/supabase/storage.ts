@@ -463,6 +463,7 @@ export async function getMediaAssets(
     tags?: string[]
     category?: string
     search?: string
+    file_names?: string[]
     limit?: number
     offset?: number
   },
@@ -482,6 +483,8 @@ export async function getMediaAssets(
   if (filters?.category) query = query.eq("category", filters.category)
   if (filters?.tags?.length) query = query.overlaps("tags", filters.tags)
   if (filters?.search) query = query.ilike("file_name", `%${filters.search}%`)
+  if (filters?.file_names?.length)
+    query = query.in("file_name", filters.file_names)
   if (filters?.limit) query = query.limit(filters.limit)
   if (filters?.offset) query = query.range(filters.offset, filters.offset + (filters.limit ?? 50) - 1)
 

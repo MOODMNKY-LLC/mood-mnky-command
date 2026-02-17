@@ -16,8 +16,6 @@ import {
   Disc3,
   Music2,
   Trash2,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -35,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OPENAI_VOICES } from "@/lib/voice-preview"
 import type { MediaAsset } from "@/lib/supabase/storage"
 import { AudioDropzone } from "@/components/studio/audio-dropzone"
+import { VerseMusicPlaylistBuilder } from "@/components/studio/verse-music-playlist-builder"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -94,7 +93,6 @@ function AudioStudioContent() {
   const [consentError, setConsentError] = useState<string | null>(null)
   const consentInputRef = useRef<HTMLInputElement>(null)
 
-  const [verseMusicAddValue, setVerseMusicAddValue] = useState("")
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null)
   const [voiceName, setVoiceName] = useState("")
   const [voiceConsentId, setVoiceConsentId] = useState<string>("")
@@ -114,7 +112,7 @@ function AudioStudioContent() {
 
   const verseTracksParams = new URLSearchParams()
   verseTracksParams.set("bucket", "mnky-verse-tracks")
-  verseTracksParams.set("limit", "24")
+  verseTracksParams.set("limit", "200")
   const { data: verseTracksData, mutate: mutateVerseTracks } = useSWR<{ assets: MediaAsset[]; count: number }>(
     `/api/media?${verseTracksParams.toString()}`,
     fetcher
@@ -277,42 +275,32 @@ function AudioStudioContent() {
 
   const handleVerseMusicAdd = useCallback(
     async (mediaAssetId: string) => {
-      try {
-        const res = await fetch("/api/labz/verse-music", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ media_asset_id: mediaAssetId }),
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || "Failed to add track")
-        }
-        mutateVerseMusic()
-      } catch (err) {
-        console.error(err)
-        alert(err instanceof Error ? err.message : "Failed to add track")
+      const res = await fetch("/api/labz/verse-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ media_asset_id: mediaAssetId }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to add track")
       }
+      mutateVerseMusic()
     },
     [mutateVerseMusic]
   )
 
   const handleVerseMusicRemove = useCallback(
     async (mediaAssetId: string) => {
-      try {
-        const res = await fetch("/api/labz/verse-music", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ media_asset_id: mediaAssetId }),
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || "Failed to remove track")
-        }
-        mutateVerseMusic()
-      } catch (err) {
-        console.error(err)
-        alert(err instanceof Error ? err.message : "Failed to remove track")
+      const res = await fetch("/api/labz/verse-music", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ media_asset_id: mediaAssetId }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to remove track")
       }
+      mutateVerseMusic()
     },
     [mutateVerseMusic]
   )
@@ -322,25 +310,20 @@ function AudioStudioContent() {
       if (idx <= 0) return
       const curr = versePlaylist[idx]
       const prev = versePlaylist[idx - 1]
-      try {
-        const [resA, resB] = await Promise.all([
-          fetch("/api/labz/verse-music", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: prev.sort_order }),
-          }),
-          fetch("/api/labz/verse-music", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ media_asset_id: prev.media_asset_id, sort_order: curr.sort_order }),
-          }),
-        ])
-        if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
-        mutateVerseMusic()
-      } catch (err) {
-        console.error(err)
-        alert(err instanceof Error ? err.message : "Failed to reorder")
-      }
+      const [resA, resB] = await Promise.all([
+        fetch("/api/labz/verse-music", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: prev.sort_order }),
+        }),
+        fetch("/api/labz/verse-music", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: prev.media_asset_id, sort_order: curr.sort_order }),
+        }),
+      ])
+      if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
+      mutateVerseMusic()
     },
     [versePlaylist, mutateVerseMusic]
   )
@@ -372,25 +355,20 @@ function AudioStudioContent() {
       if (idx >= versePlaylist.length - 1) return
       const curr = versePlaylist[idx]
       const next = versePlaylist[idx + 1]
-      try {
-        const [resA, resB] = await Promise.all([
-          fetch("/api/labz/verse-music", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: next.sort_order }),
-          }),
-          fetch("/api/labz/verse-music", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ media_asset_id: next.media_asset_id, sort_order: curr.sort_order }),
-          }),
-        ])
-        if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
-        mutateVerseMusic()
-      } catch (err) {
-        console.error(err)
-        alert(err instanceof Error ? err.message : "Failed to reorder")
-      }
+      const [resA, resB] = await Promise.all([
+        fetch("/api/labz/verse-music", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: next.sort_order }),
+        }),
+        fetch("/api/labz/verse-music", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: next.media_asset_id, sort_order: curr.sort_order }),
+        }),
+      ])
+      if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
+      mutateVerseMusic()
     },
     [versePlaylist, mutateVerseMusic]
   )
@@ -794,7 +772,7 @@ function AudioStudioContent() {
                 </CardHeader>
                 <CardContent>
                   <AudioDropzone
-                    maxFiles={10}
+                    maxFiles={100}
                     onUploadComplete={() => {
                       mutateVerseTracks()
                       globalMutate("/api/media")
@@ -807,13 +785,21 @@ function AudioStudioContent() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Uploaded Tracks</CardTitle>
+                  {uploadedTracks.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {uploadedTracks.length} track{uploadedTracks.length !== 1 ? "s" : ""}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {uploadedTracks.length === 0 ? (
                     <p className="text-xs text-muted-foreground">No tracks yet. Upload above.</p>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {uploadedTracks.slice(0, 8).map((asset) => (
+                    <div
+                      className="flex flex-col gap-2 overflow-y-auto pr-1"
+                      style={{ maxHeight: "min(60vh, 480px)" }}
+                    >
+                      {uploadedTracks.map((asset) => (
                         <div
                           key={asset.id}
                           className="flex flex-col gap-1 rounded-lg border border-border p-2"
@@ -876,130 +862,18 @@ function AudioStudioContent() {
                   Verse Music Playlist
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  Configure the tracks shown in Verse music player. Add from uploaded tracks, reorder, or remove.
+                  Toggle tracks on or off to build the playlist. Use ↑↓ to reorder.
                 </p>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs">Add track</Label>
-                  <Select
-                    value={verseMusicAddValue}
-                    onValueChange={(id) => {
-                      if (id && id !== "__none__") {
-                        handleVerseMusicAdd(id)
-                        setVerseMusicAddValue("")
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-full max-w-xs">
-                      <SelectValue placeholder="Select from uploaded tracks..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(() => {
-                        const available = uploadedTracks.filter(
-                          (a) => !versePlaylist.some((p) => p.media_asset_id === a.id)
-                        )
-                        if (available.length > 0) {
-                          return available.map((asset) => (
-                            <SelectItem key={asset.id} value={asset.id}>
-                              {asset.audio_title || asset.file_name || asset.id.slice(0, 8)}
-                            </SelectItem>
-                          ))
-                        }
-                        return (
-                          <SelectItem value="__none__" disabled>
-                            {uploadedTracks.length === 0
-                              ? "No tracks uploaded yet"
-                              : "All tracks in playlist"}
-                          </SelectItem>
-                        )
-                      })()}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label className="text-xs">Playlist order</Label>
-                  {versePlaylist.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No tracks yet. Add above.</p>
-                  ) : (
-                    <div className="flex flex-col gap-1">
-                      {versePlaylist.map((entry, idx) => {
-                        const a = entry.asset
-                        return (
-                          <div
-                            key={entry.id}
-                            className="flex items-center gap-2 rounded-lg border border-border p-2"
-                          >
-                            <div className="flex shrink-0 items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => handleVerseMusicMoveUp(idx)}
-                                disabled={idx === 0}
-                              >
-                                <ChevronUp className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => handleVerseMusicMoveDown(idx)}
-                                disabled={idx === versePlaylist.length - 1}
-                              >
-                                <ChevronDown className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            {a?.cover_art_url ? (
-                              <img
-                                src={a.cover_art_url}
-                                alt=""
-                                className="h-10 w-10 shrink-0 rounded object-cover"
-                              />
-                            ) : (
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted">
-                                <FileAudio className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium">
-                                {a?.audio_title || a?.file_name || "Track"}
-                              </p>
-                              {a?.audio_artist && (
-                                <p className="truncate text-xs text-muted-foreground">{a.audio_artist}</p>
-                              )}
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-                              onClick={() => handleVerseMusicRemove(entry.media_asset_id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Preview</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Tracks in this playlist appear on the Verse /music page.
-                </p>
-              </CardHeader>
-              <CardContent>
-                {versePlaylist.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Add tracks to see preview.</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {versePlaylist.length} track{versePlaylist.length !== 1 ? "s" : ""} in playlist.
-                  </p>
-                )}
+                <VerseMusicPlaylistBuilder
+                  uploadedTracks={uploadedTracks}
+                  versePlaylist={versePlaylist}
+                  onAdd={handleVerseMusicAdd}
+                  onRemove={handleVerseMusicRemove}
+                  onMoveUp={handleVerseMusicMoveUp}
+                  onMoveDown={handleVerseMusicMoveDown}
+                />
               </CardContent>
             </Card>
           </div>
