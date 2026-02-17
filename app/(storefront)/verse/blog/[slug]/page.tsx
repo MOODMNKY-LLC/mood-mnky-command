@@ -2,14 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeSlug from "rehype-slug";
 import "highlight.js/styles/github-dark.min.css";
 import { createClient } from "@/lib/supabase/server";
 import { getBlogCoverUrl } from "@/lib/verse-blog";
 import { BlogAuthorCard } from "@/components/verse/blog-author-card";
+import { BlogMarkdownContent } from "@/components/verse/blog-markdown-content";
 
 export default async function VerseBlogPostPage({
   params,
@@ -26,6 +23,17 @@ export default async function VerseBlogPostPage({
     .single();
 
   if (error || !post) notFound();
+
+  let agentProfile: { display_name: string | null; blurb: string | null; image_path: string | null } | null = null;
+  if (post.author_agent) {
+    const { data: profile } = await supabase
+      .from("agent_profiles")
+      .select("display_name, blurb, image_path")
+      .eq("slug", post.author_agent)
+      .eq("is_active", true)
+      .maybeSingle();
+    agentProfile = profile ?? null;
+  }
 
   const dateStr = post.published_at ?? post.created_at;
 
@@ -69,16 +77,17 @@ export default async function VerseBlogPostPage({
         </h1>
         {post.author_agent && (
           <div className="mt-4">
-            <BlogAuthorCard agent={post.author_agent} tagline="MNKY VERSE" />
+            <BlogAuthorCard
+              agent={post.author_agent}
+              name={agentProfile?.display_name ?? undefined}
+              tagline="MNKY VERSE"
+              blurb={agentProfile?.blurb}
+              imagePath={agentProfile?.image_path}
+            />
           </div>
         )}
-        <div className="prose prose-sm prose-verse mt-6 max-w-none prose-p:text-verse-text-muted prose-headings:font-verse-heading prose-headings:text-verse-text prose-strong:text-verse-text prose-a:text-verse-button prose-pre:bg-verse-text/10 prose-pre:border prose-pre:border-verse-text/20 prose-blockquote:border-verse-button prose-blockquote:bg-verse-text/5 prose-blockquote:py-0.5 prose-blockquote:not-italic">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSlug, rehypeHighlight]}
-          >
-            {post.content || ""}
-          </ReactMarkdown>
+        <div className="prose prose-sm prose-verse mt-6 max-w-none prose-p:text-verse-text-muted prose-headings:font-verse-heading prose-headings:text-verse-text prose-strong:text-verse-text prose-a:text-verse-button prose-pre:bg-verse-text/10 prose-pre:border prose-pre:border-verse-text/20 prose-blockquote:border-verse-button prose-blockquote:bg-verse-text/5 prose-blockquote:py-0.5 prose-blockquote:not-italic prose-img:max-w-full prose-img:h-auto prose-img:rounded-lg prose-img:object-contain">
+          <BlogMarkdownContent content={post.content || ""} />
         </div>
       </article>
     </div>

@@ -9,10 +9,14 @@ import {
 export interface BlogAuthorCardProps {
   /** Agent id from verse_blog_posts.author_agent */
   agent: VerseBlogAgent | string | null;
-  /** Override display name; defaults to AGENT_DISPLAY_NAME */
+  /** Override display name; from agent_profiles or AGENT_DISPLAY_NAME */
   name?: string;
   /** Optional tagline below name */
   tagline?: string;
+  /** Optional blurb from agent_profiles (shown on post page, non-compact) */
+  blurb?: string | null;
+  /** Optional avatar image path from agent_profiles; falls back to AGENT_IMAGE_PATH */
+  imagePath?: string | null;
   /** Compact layout for list cards */
   compact?: boolean;
 }
@@ -21,12 +25,14 @@ export function BlogAuthorCard({
   agent,
   name,
   tagline,
+  blurb,
+  imagePath,
   compact = false,
 }: BlogAuthorCardProps) {
   if (!agent || !isVerseBlogAgent(agent)) return null;
 
   const displayName = name ?? AGENT_DISPLAY_NAME[agent];
-  const src = AGENT_IMAGE_PATH[agent];
+  const src = imagePath?.trim() || AGENT_IMAGE_PATH[agent];
 
   if (compact) {
     return (
@@ -58,10 +64,13 @@ export function BlogAuthorCard({
           sizes="48px"
         />
       </div>
-      <div>
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-verse-text">By {displayName}</p>
         {tagline && (
           <p className="mt-0.5 text-xs text-verse-text-muted">{tagline}</p>
+        )}
+        {blurb && (
+          <p className="mt-2 text-sm text-verse-text-muted">{blurb}</p>
         )}
       </div>
     </div>

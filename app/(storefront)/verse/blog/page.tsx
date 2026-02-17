@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { ArrowRight, Calendar } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -52,25 +53,27 @@ export default async function VerseBlogPage() {
           No posts yet. Check back soon for stories and guides.
         </p>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {displayPosts.map((post, i) => (
             <BlurFade key={post.id} delay={0.05 * i} inView inViewMargin="-20px">
               <Link href={`/verse/blog/${post.slug}`} className="group block">
                 <Card className="glass-panel h-full overflow-hidden transition-all hover:border-verse-text/30 hover:shadow-lg">
                   {getBlogCoverUrl(post.cover_url, post.author_agent) ? (
-                    <div className="relative aspect-video w-full shrink-0 bg-verse-text/5">
-                      <Image
-                        src={getBlogCoverUrl(post.cover_url, post.author_agent)!}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, 50vw"
-                      />
-                    </div>
+                    <AspectRatio ratio={16 / 9} className="w-full shrink-0 bg-verse-text/5">
+                      <div className="relative h-full w-full overflow-hidden">
+                        <Image
+                          src={getBlogCoverUrl(post.cover_url, post.author_agent)!}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                        />
+                      </div>
+                    </AspectRatio>
                   ) : (
-                    <div className="flex aspect-video w-full shrink-0 items-center justify-center bg-verse-text/10 text-2xl font-semibold uppercase text-verse-text/50">
+                    <AspectRatio ratio={16 / 9} className="flex w-full shrink-0 items-center justify-center bg-verse-text/10 text-2xl font-semibold uppercase text-verse-text/50">
                       {post.title?.[0] ?? "?"}
-                    </div>
+                    </AspectRatio>
                   )}
                   <CardHeader className="pb-2">
                     <div className="flex flex-wrap items-center gap-2 text-sm text-verse-text-muted">

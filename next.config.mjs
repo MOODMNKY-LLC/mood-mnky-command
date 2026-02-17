@@ -38,6 +38,21 @@ const nextConfig = {
         hostname: "**.myshopify.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "s3.us-west-2.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.notion.so",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.notion.site",
+        pathname: "/**",
+      },
     ],
   },
 }
