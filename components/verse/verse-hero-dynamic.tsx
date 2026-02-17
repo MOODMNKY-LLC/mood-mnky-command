@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 import { VerseButton } from "@/components/verse/ui/button";
 import { DottedMap } from "@/components/ui/dotted-map";
 import { useVerseTheme } from "./verse-theme-provider";
@@ -10,17 +11,20 @@ import { useVerseUser } from "./verse-user-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { COBEOptions } from "cobe";
 
+const MOBILE_BREAKPOINT = 768;
+
 const Globe = dynamic(
   () => import("@/components/ui/globe").then((m) => ({ default: m.Globe })),
   {
     ssr: false,
     loading: () => (
-      <div
-        className="size-full rounded-full bg-verse-text/5"
-        aria-hidden
-      />
+      <div className="size-full rounded-full bg-verse-text/5" aria-hidden />
     ),
   }
+);
+
+const GLOBE_PLACEHOLDER = (
+  <div className="size-full rounded-full bg-verse-text/5" aria-hidden />
 );
 
 const GLOBE_CONFIG_LIGHT: COBEOptions = {
@@ -55,7 +59,17 @@ export function VerseHeroDynamic() {
   const { theme } = useVerseTheme();
   const user = useVerseUser();
   const isMobile = useIsMobile();
-  const globeConfig = theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT;
+  const [showGlobe, setShowGlobe] = useState(false);
+  useEffect(() => {
+    const isNarrow =
+      typeof window !== "undefined" &&
+      window.innerWidth >= MOBILE_BREAKPOINT;
+    setShowGlobe(isNarrow);
+  }, []);
+  const globeConfig = useMemo(
+    () => (theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT),
+    [theme]
+  );
   const name = user?.displayName || user?.email?.split("@")[0] || null;
   const isLoggedIn = Boolean(name);
   const mapSamples = isMobile ? 1500 : 4000;
@@ -103,14 +117,18 @@ export function VerseHeroDynamic() {
             />
           </div>
         </div>
-        {/* Globe container */}
+        {/* Globe container: skip WebGL Globe on mobile to avoid iOS Safari context/cobe failures */}
         <div className="absolute inset-0 z-0 flex items-end justify-center">
           <div className="relative h-[448px] w-[448px] shrink-0 md:h-[496px] md:w-[496px] lg:h-[548px] lg:w-[548px]">
             <div className="absolute inset-0 overflow-hidden rounded-full">
-              <Globe
-                config={globeConfig}
-                className="size-full max-h-none max-w-none opacity-40 md:opacity-50 [contain:layout_paint]"
-              />
+              {showGlobe ? (
+                <Globe
+                  config={globeConfig}
+                  className="size-full max-h-none max-w-none opacity-40 md:opacity-50 [contain:layout_paint]"
+                />
+              ) : (
+                GLOBE_PLACEHOLDER
+              )}
             </div>
           </div>
         </div>
