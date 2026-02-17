@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useVersePersonaState } from "@/components/verse/verse-persona-state-context";
+import { useVerseTheme } from "@/components/verse/verse-theme-provider";
 import { VerseChatPopup } from "@/components/verse/verse-chat-popup";
 import { VerseRealtimeVoiceCard } from "@/components/verse/verse-realtime-voice-card";
 import { DEFAULT_AGENT_SLUG } from "@/lib/agents";
@@ -32,13 +33,18 @@ export function VerseAdminDock({
   user?: VerseUser;
 }) {
   const { personaState } = useVersePersonaState();
+  const { theme } = useVerseTheme();
   const [realtimeOpen, setRealtimeOpen] = useState(false);
 
   return (
     <div className="verse-dock pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center pb-4 pt-8">
       <div className="pointer-events-auto">
         <Dock
-          className="border-verse-text/20 bg-slate-200/90 dark:bg-neutral-800/90 shadow-lg shadow-verse-text/10 backdrop-blur-md"
+          className={
+            theme === "dark"
+              ? "border-verse-text/20 bg-neutral-800/90 shadow-lg shadow-verse-text/10 backdrop-blur-md"
+              : "border-verse-text/20 bg-slate-200/90 shadow-lg shadow-verse-text/10 backdrop-blur-md"
+          }
           iconSize={36}
           iconMagnification={48}
         >
@@ -105,7 +111,8 @@ export function VerseAdminDock({
           </DockIcon>
           <Dialog open={realtimeOpen} onOpenChange={setRealtimeOpen}>
             <DialogContent
-              className="max-w-md gap-0 overflow-hidden border-[var(--verse-border)] bg-[var(--verse-bg)] p-0 sm:rounded-xl"
+              className="verse-storefront verse-voice-dialog max-w-md gap-0 overflow-hidden border-[var(--verse-border)] bg-[var(--verse-bg)] p-0 shadow-2xl [&>button]:text-[var(--verse-text)] [&>button]:opacity-90 [&>button:hover]:opacity-100 sm:rounded-xl"
+              data-verse-theme={theme}
               aria-describedby={undefined}
             >
               <DialogTitle className="sr-only">Voice chat with MNKY</DialogTitle>

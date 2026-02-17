@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { MagicCard } from "@/components/ui/magic-card";
-import { VerseButton } from "@/components/verse/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { VerseButton } from "@/components/verse/ui/button";
+import { VerseAgentCard } from "@/components/verse/verse-agent-card";
 import {
   getFallbackAgentProfile,
   isAgentSlug,
@@ -22,6 +21,24 @@ interface AgentSummary {
   openai_voice: string;
   tools: unknown[];
 }
+
+const VALUE_PILLARS = [
+  {
+    name: "MOOD MNKY",
+    desc: "Your personal guide through the world of custom fragrances and self-care",
+    href: "/verse/agents/mood_mnky",
+  },
+  {
+    name: "SAGE MNKY",
+    desc: "Your mentor and guide through personalized learning experiences",
+    href: "/verse/agents/sage_mnky",
+  },
+  {
+    name: "CODE MNKY",
+    desc: "Your technical companion for development and infrastructure",
+    href: "/verse/agents/code_mnky",
+  },
+];
 
 export function AgentsPageClient() {
   const [agents, setAgents] = useState<AgentSummary[]>([]);
@@ -90,58 +107,77 @@ export function AgentsPageClient() {
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-10 md:px-6">
-      <div className="space-y-8">
-        <div>
-          <h1 className="font-verse-heading text-3xl font-semibold tracking-tight text-verse-text md:text-4xl">
-            Agents
-          </h1>
-          <p className="mt-2 text-verse-text-muted">
-            Meet MOOD MNKY, SAGE MNKY, and CODE MNKY—your guides across the verse.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {agents.map((agent) => (
-            <MagicCard
-              key={agent.slug}
-              className="overflow-hidden rounded-lg border border-[var(--verse-border)] bg-[var(--verse-bg)]"
-              gradientFrom="var(--verse-button)"
-              gradientTo="var(--verse-text-muted)"
-            >
-              <Link href={`/verse/agents/${agent.slug}`} className="block">
-                <div className="relative aspect-square w-full overflow-hidden bg-verse-text/5">
-                  <Image
-                    src={agent.image_path ?? "/verse/mood-mnky-3d.png"}
-                    alt={agent.display_name}
-                    fill
-                    className="object-contain object-center p-4"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-                <div className="flex flex-col gap-2 p-5 pt-0">
-                  <h2 className="font-verse-heading text-xl font-semibold text-verse-text">
-                    {agent.display_name}
-                  </h2>
-                  <p className="text-sm text-verse-text-muted">
-                    {agent.blurb ?? ""}
+      <div className="space-y-12">
+        {/* Hero */}
+        <BlurFade delay={0.05} inView inViewMargin="-20px">
+          <section className="space-y-4 text-center">
+            <h1 className="font-verse-heading text-3xl font-semibold tracking-tight text-verse-text md:text-4xl lg:text-5xl">
+              Meet Your AI Guides
+            </h1>
+            <p className="mx-auto max-w-2xl text-base text-verse-text-muted md:text-lg">
+              The MNKY VERSE is brought to life by specialized AI companions
+              that enhance different aspects of your experience.
+            </p>
+            <div className="pt-2">
+              <VerseButton asChild size="lg">
+                <a href="#agent-cards">Explore agents</a>
+              </VerseButton>
+            </div>
+          </section>
+        </BlurFade>
+
+        {/* Value section */}
+        <BlurFade delay={0.1} inView inViewMargin="-20px">
+          <section className="space-y-6">
+            <div className="text-center">
+              <h2 className="font-verse-heading text-xl font-semibold text-verse-text md:text-2xl">
+                Our AI Companions
+              </h2>
+              <p className="mt-2 max-w-xl mx-auto text-sm text-verse-text-muted">
+                Each companion brings expertise and personality to help you
+                explore fragrances, learning, and technical creation.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {VALUE_PILLARS.map((pillar) => (
+                <Link
+                  key={pillar.name}
+                  href={pillar.href}
+                  className="rounded-lg border border-[var(--verse-border)] p-4 transition-colors hover:bg-verse-text/[0.03]"
+                >
+                  <h3 className="font-verse-heading font-semibold text-verse-text">
+                    {pillar.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-verse-text-muted">
+                    {pillar.desc}
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="secondary" className="text-xs">
-                      {agent.openai_model}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {agent.openai_voice}
-                    </Badge>
-                  </div>
-                  <span className="mt-2 inline-flex">
-                    <span className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--verse-border)] bg-transparent px-4 py-2 text-sm font-medium text-verse-text hover:bg-verse-button/10">
-                      View profile
-                    </span>
-                  </span>
-                </div>
-              </Link>
-            </MagicCard>
-          ))}
-        </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </BlurFade>
+
+        {/* Agent cards grid */}
+        <BlurFade delay={0.15} inView inViewMargin="-20px">
+          <section id="agent-cards" className="space-y-6">
+            <h2 className="font-verse-heading text-xl font-semibold text-verse-text">
+              Your Guides
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {agents.map((agent) => (
+                <VerseAgentCard
+                  key={agent.slug}
+                  slug={agent.slug}
+                  displayName={agent.display_name}
+                  blurb={agent.blurb}
+                  imagePath={agent.image_path}
+                  openaiModel={agent.openai_model}
+                  openaiVoice={agent.openai_voice}
+                />
+              ))}
+            </div>
+          </section>
+        </BlurFade>
       </div>
     </div>
   );

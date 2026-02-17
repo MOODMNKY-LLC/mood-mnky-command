@@ -13,6 +13,7 @@ export const BUCKETS = {
   userAvatars: "user-avatars",
   privateDocuments: "private-documents",
   chatAttachments: "chat-attachments",
+  mnkyVerseTracks: "mnky-verse-tracks",
 } as const
 
 export type BucketId = (typeof BUCKETS)[keyof typeof BUCKETS]
@@ -74,6 +75,16 @@ export interface MediaAsset {
   tts_instructions?: string | null
   /** TTS speed 0.25–4.0 */
   tts_speed?: number | null
+  /** Audio metadata: title from ID3/Vorbis/MP4 */
+  audio_title?: string | null
+  /** Audio metadata: artist */
+  audio_artist?: string | null
+  /** Audio metadata: album */
+  audio_album?: string | null
+  /** Storage path for extracted cover art */
+  cover_art_path?: string | null
+  /** Public URL for cover art */
+  cover_art_url?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +167,17 @@ export const BUCKET_CONFIG: Record<
       "image/gif",
       "application/pdf",
       "text/plain",
+    ],
+    isPublic: true,
+  },
+  "mnky-verse-tracks": {
+    label: "MNKY Verse Tracks",
+    description: "Uploaded audio tracks (Suno, etc.)",
+    maxSizeMB: 50,
+    acceptedTypes: [
+      "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav", "audio/ogg",
+      "audio/aac", "audio/flac", "audio/webm", "audio/mp4", "audio/x-m4a",
+      "video/mp4",
     ],
     isPublic: true,
   },
@@ -406,6 +428,11 @@ export async function saveMediaAsset(
     tts_model?: string
     tts_instructions?: string
     tts_speed?: number
+    audio_title?: string
+    audio_artist?: string
+    audio_album?: string
+    cover_art_path?: string
+    cover_art_url?: string
   },
 ): Promise<MediaAsset> {
   const { data, error } = await supabase
@@ -464,15 +491,20 @@ export async function getMediaAssets(
 }
 
 /**
- * Delete a media asset (both storage file and metadata row).
+ * Delete a media asset (storage file(s) and metadata row).
+ * For verse tracks: also deletes cover art if cover_art_path is set.
+ * verse_music_playlist rows cascade on media_assets delete.
  */
 export async function deleteMediaAsset(
   supabase: SupabaseClient,
-  asset: Pick<MediaAsset, "id" | "bucket_id" | "storage_path">,
+  asset: Pick<MediaAsset, "id" | "bucket_id" | "storage_path"> & {
+    cover_art_path?: string | null
+  },
 ) {
-  // Delete from storage
-  await deleteFile(supabase, asset.bucket_id as BucketId, asset.storage_path)
-  // Delete metadata
+  const bucket = asset.bucket_id as BucketId
+  const pathsToDelete: string[] = [asset.storage_path]
+  if (asset.cover_art_path) pathsToDelete.push(asset.cover_art_path)
+  await deleteFiles(supabase, bucket, pathsToDelete)
   const { error } = await supabase.from("media_assets").delete().eq("id", asset.id)
   if (error) throw error
 }

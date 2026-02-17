@@ -1,15 +1,13 @@
 import OpenAI from "openai"
 
 export type TTSModel = "gpt-4o-mini-tts" | "tts-1" | "tts-1-hd"
+/** Realtime-supported voices only (align with Realtime API) */
 export type TTSVoice =
   | "alloy"
   | "ash"
   | "ballad"
   | "coral"
   | "echo"
-  | "fable"
-  | "nova"
-  | "onyx"
   | "sage"
   | "shimmer"
   | "verse"

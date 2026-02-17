@@ -11,7 +11,6 @@ import {
   type TranscriptEntry,
 } from "@/components/verse/realtime-voice-transcript";
 import { RealtimeVoiceToolbar } from "@/components/verse/realtime-voice-toolbar";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { Phone, PhoneOff, Loader2 } from "lucide-react";
 import { useVersePersonaState } from "@/components/verse/verse-persona-state-context";
@@ -23,11 +22,20 @@ type VoiceState = "idle" | "connecting" | "listening" | "thinking" | "speaking" 
 
 const DEFAULT_SERVER_VAD = {
   type: "server_vad" as const,
-  threshold: 0.5,
+  threshold: 0.3,
   prefix_padding_ms: 300,
-  silence_duration_ms: 500,
+  silence_duration_ms: 600,
   create_response: true,
   interrupt_response: true,
+};
+
+// far_field = laptop/room mics; near_field = headphones. Default far_field for web.
+const SESSION_INPUT_CONFIG = {
+  input_audio_transcription: {
+    model: "gpt-4o-mini-transcribe" as const,
+    language: "en" as const,
+  },
+  input_audio_noise_reduction: { type: "far_field" as const },
 };
 
 type AgentInfo = {
@@ -54,21 +62,23 @@ export function VerseRealtimeVoiceCard({
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isAuthError, setIsAuthError] = useState(false);
-  const [pttMode, setPttMode] = useState(false);
   const [isPttHeld, setIsPttHeld] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [dcReady, setDcReady] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [pendingAssistantText, setPendingAssistantText] = useState("");
+  const [pendingUserText, setPendingUserText] = useState("");
   const [agent, setAgent] = useState<AgentInfo>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
-  const pttModeRef = useRef(pttMode);
+  const isPttHeldRef = useRef(isPttHeld);
   const transcriptIdRef = useRef(0);
   const pendingAssistantRef = useRef("");
+  const pendingUserRef = useRef("");
   const audioMutedRef = useRef(audioMuted);
   audioMutedRef.current = audioMuted;
-  pttModeRef.current = pttMode;
+  isPttHeldRef.current = isPttHeld;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const { setPersonaState } = useVersePersonaState();
@@ -78,7 +88,12 @@ export function VerseRealtimeVoiceCard({
       .then((r) => r.json())
       .then((data: { agents?: AgentInfo[] }) => {
         const a = data.agents?.find((x) => x && x.slug === agentSlug);
-        if (a) setAgent(a);
+        if (a) {
+          setAgent(a);
+          setImageError(false);
+        } else {
+          setAgent(null);
+        }
       })
       .catch(() => setAgent(null));
   }, [agentSlug]);
@@ -106,21 +121,27 @@ export function VerseRealtimeVoiceCard({
     }
   }, []);
 
-  const updateTurnDetection = useCallback(
-    (turnDetection: typeof DEFAULT_SERVER_VAD | null) => {
-      sendEvent({
-        type: "session.update",
-        session: { turn_detection: turnDetection },
-      });
+  const updateSession = useCallback(
+    (
+      updates: {
+        turn_detection?: typeof DEFAULT_SERVER_VAD | null;
+        input_audio_transcription?: object;
+        input_audio_noise_reduction?: object;
+      }
+    ) => {
+      sendEvent({ type: "session.update", session: updates });
     },
     [sendEvent]
   );
 
   useEffect(() => {
     if (dcReady) {
-      updateTurnDetection(pttMode ? null : DEFAULT_SERVER_VAD);
+      updateSession({
+        turn_detection: isPttHeld ? null : DEFAULT_SERVER_VAD,
+        ...SESSION_INPUT_CONFIG,
+      });
     }
-  }, [pttMode, dcReady, updateTurnDetection]);
+  }, [isPttHeld, dcReady, updateSession]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -142,8 +163,10 @@ export function VerseRealtimeVoiceCard({
     setIsAuthError(false);
     setIsPttHeld(false);
     setDcReady(false);
+    setImageError(false);
     setTranscript([]);
     setPendingAssistantText("");
+    setPendingUserText("");
   }, []);
 
   const connect = useCallback(async () => {
@@ -156,15 +179,19 @@ export function VerseRealtimeVoiceCard({
         body: JSON.stringify({ agentSlug: agentSlug ?? undefined }),
       });
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        const msg = (d as { error?: string }).error ?? "Failed to get session";
+        const d = await res.json().catch(() => ({})) as {
+          error?: string;
+          details?: string;
+        };
+        const msg = d.error ?? "Failed to get session";
+        const details = d.details;
         if (res.status === 401) {
           setIsAuthError(true);
           setError("Sign in to use voice chat");
           setVoiceState("error");
           return;
         }
-        throw new Error(msg);
+        throw new Error(details ? `${msg}: ${details}` : msg);
       }
       const data = (await res.json()) as { clientSecret?: string };
       const clientSecret = data.clientSecret;
@@ -172,7 +199,18 @@ export function VerseRealtimeVoiceCard({
         throw new Error("No client secret in response");
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
       streamRef.current = stream;
 
       const audioEl = document.createElement("audio");
@@ -194,6 +232,8 @@ export function VerseRealtimeVoiceCard({
       const dc = pc.createDataChannel("oai-events");
       dcRef.current = dc;
 
+      const DEBUG = process.env.NEXT_PUBLIC_DEBUG_REALTIME === "true";
+
       dc.onmessage = (e) => {
         try {
           const event = JSON.parse(e.data) as {
@@ -203,10 +243,15 @@ export function VerseRealtimeVoiceCard({
             item?: { content_index?: number; transcription?: string };
           };
           const type = event.type ?? "";
+          if (DEBUG && /input_audio_buffer\.(speech_started|speech_stopped)|input_audio_transcription\.(delta|added|completed)/.test(type)) {
+            console.log("[Realtime]", type, type.includes("transcription") ? (event as { item?: { transcription?: string } }).item?.transcription : "");
+          }
           if (type === "input_audio_buffer.speech_started") {
-            if (!pttModeRef.current) setVoiceState("listening");
+            if (!isPttHeldRef.current) setVoiceState("listening");
+            pendingUserRef.current = "";
+            setPendingUserText("");
           } else if (type === "input_audio_buffer.speech_stopped") {
-            if (!pttModeRef.current) setVoiceState("thinking");
+            if (!isPttHeldRef.current) setVoiceState("thinking");
           } else if (
             type.startsWith("response.output_audio") ||
             type.startsWith("response.output_audio_transcript")
@@ -239,18 +284,31 @@ export function VerseRealtimeVoiceCard({
             setPendingAssistantText("");
           } else if (type === "session.created") {
             setVoiceState("listening");
-            sendEvent({
-              type: "conversation.item.create",
-              item: { type: "input_text", text: "hi" },
-            });
-            sendEvent({ type: "response.create" });
           } else if (type === "response.cancelled") {
             setVoiceState("listening");
             pendingAssistantRef.current = "";
             setPendingAssistantText("");
-          } else if (type === "item.input_audio_transcription.added") {
-            const ev = event as { item?: { transcription?: string } };
-            const transcription = ev.item?.transcription;
+          } else if (
+            type === "item.input_audio_transcription.delta" ||
+            type === "conversation.item.input_audio_transcription.delta"
+          ) {
+            const delta = (event as { delta?: string }).delta;
+            if (delta) {
+              pendingUserRef.current += delta;
+              setPendingUserText(pendingUserRef.current);
+            }
+          } else if (
+            type === "item.input_audio_transcription.added" ||
+            type === "conversation.item.input_audio_transcription.completed"
+          ) {
+            const ev = event as {
+              item?: { transcription?: string };
+              transcript?: string;
+            };
+            const transcription =
+              ev.item?.transcription ?? ev.transcript ?? pendingUserRef.current;
+            pendingUserRef.current = "";
+            setPendingUserText("");
             if (transcription?.trim()) {
               transcriptIdRef.current += 1;
               const id = `u-${transcriptIdRef.current}`;
@@ -266,6 +324,13 @@ export function VerseRealtimeVoiceCard({
       };
 
       dc.onopen = () => {
+        sendEvent({
+          type: "session.update",
+          session: {
+            turn_detection: DEFAULT_SERVER_VAD,
+            ...SESSION_INPUT_CONFIG,
+          },
+        });
         setVoiceState("listening");
         setDcReady(true);
       };
@@ -311,19 +376,21 @@ export function VerseRealtimeVoiceCard({
   }, [voiceState, connect, disconnect]);
 
   const handlePttDown = useCallback(() => {
-    if (!pttMode || !dcReady) return;
+    if (!dcReady) return;
     setIsPttHeld(true);
+    setVoiceState("listening");
     sendEvent({ type: "input_audio_buffer.clear" });
     sendEvent({ type: "response.cancel" });
     sendEvent({ type: "output_audio_buffer.clear" });
-  }, [pttMode, dcReady, sendEvent]);
+  }, [dcReady, sendEvent]);
 
   const handlePttUp = useCallback(() => {
-    if (!pttMode || !dcReady) return;
+    if (!dcReady) return;
     setIsPttHeld(false);
+    setVoiceState("thinking");
     sendEvent({ type: "input_audio_buffer.commit" });
     sendEvent({ type: "response.create" });
-  }, [pttMode, dcReady, sendEvent]);
+  }, [dcReady, sendEvent]);
 
   useEffect(() => {
     return () => disconnect();
@@ -338,7 +405,7 @@ export function VerseRealtimeVoiceCard({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-xl border border-[var(--verse-border)] bg-[var(--verse-bg)] p-4",
+        "flex max-h-[85vh] min-h-0 flex-col gap-4 overflow-hidden rounded-xl border border-[var(--verse-border)] bg-[var(--verse-bg)] p-4 shadow-inner",
         className
       )}
     >
@@ -353,7 +420,7 @@ export function VerseRealtimeVoiceCard({
             !isConnected && "border-[var(--verse-border)]"
           )}
         >
-          {agent ? (
+          {agent && !imageError ? (
             <Image
               src={imageSrc}
               alt={assistantLabel}
@@ -361,6 +428,7 @@ export function VerseRealtimeVoiceCard({
               height={80}
               loader={supabaseLoader}
               className="h-full w-full object-cover"
+              onError={() => setImageError(true)}
             />
           ) : (
             <Persona
@@ -372,29 +440,39 @@ export function VerseRealtimeVoiceCard({
           )}
         </div>
         {agent?.display_name && (
-          <span className="text-sm font-medium text-[var(--verse-text-muted)]">
+          <span className="text-sm font-semibold text-[var(--verse-text)]">
             {agent.display_name}
           </span>
         )}
       </div>
 
-      {/* Transcript */}
-      {isConnected && (transcript.length > 0 || pendingAssistantText) && (
-        <RealtimeVoiceTranscript
-          entries={
-            pendingAssistantText
-              ? [
-                  ...transcript,
+      {/* Transcript: always show when connected, fixed height, scrollable */}
+      {isConnected && (
+        <div className="min-h-0 shrink-0">
+          <RealtimeVoiceTranscript
+            entries={(() => {
+              let out: TranscriptEntry[] = [...transcript];
+              if (pendingUserText) {
+                out = [
+                  ...out,
+                  { id: "pending-user", role: "user" as const, text: pendingUserText },
+                ];
+              }
+              if (pendingAssistantText) {
+                out = [
+                  ...out,
                   {
                     id: "pending",
                     role: "assistant" as const,
                     text: pendingAssistantText,
                   },
-                ]
-              : transcript
-          }
-          assistantLabel={assistantLabel}
-        />
+                ];
+              }
+              return out;
+            })()}
+            assistantLabel={assistantLabel}
+          />
+        </div>
       )}
 
       {error && (
@@ -413,7 +491,7 @@ export function VerseRealtimeVoiceCard({
         <BlurFade inView={false} duration={0.3}>
           <ShimmeringText
             text="Connecting…"
-            className="text-center text-verse-text-muted text-sm"
+            className="text-center text-[var(--verse-text)] text-sm font-medium"
             startOnView={false}
             once={false}
           />
@@ -423,7 +501,7 @@ export function VerseRealtimeVoiceCard({
         <BlurFade inView={false} duration={0.3}>
           <ShimmeringText
             text="Listening…"
-            className="text-center text-verse-text-muted text-sm"
+            className="text-center text-[var(--verse-text)] text-sm font-medium"
             startOnView={false}
             once={false}
           />
@@ -433,7 +511,7 @@ export function VerseRealtimeVoiceCard({
         <BlurFade inView={false} duration={0.3}>
           <ShimmeringText
             text="Thinking…"
-            className="text-center text-verse-text-muted text-sm"
+            className="text-center text-[var(--verse-text)] text-sm font-medium"
             startOnView={false}
             once={false}
           />
@@ -443,34 +521,35 @@ export function VerseRealtimeVoiceCard({
         <BlurFade inView={false} duration={0.3}>
           <ShimmeringText
             text="Speaking…"
-            className="text-center text-verse-text text-sm"
+            className="text-center text-[var(--verse-text)] text-sm font-semibold"
             startOnView={false}
             once={false}
           />
         </BlurFade>
       )}
 
-      {/* Toolbar */}
+      {/* Toolbar: centered, full-width unified control */}
       {isConnected && (
-        <RealtimeVoiceToolbar
-          pttMode={pttMode}
-          onPttModeChange={setPttMode}
-          isPttHeld={isPttHeld}
-          onPttDown={handlePttDown}
-          onPttUp={handlePttUp}
-          audioMuted={audioMuted}
-          onAudioMutedChange={setAudioMuted}
-          className="py-2"
-        />
+        <div className="flex w-full flex-shrink-0 justify-center">
+          <RealtimeVoiceToolbar
+            isPttHeld={isPttHeld}
+            onPttDown={handlePttDown}
+            onPttUp={handlePttUp}
+            audioMuted={audioMuted}
+            onAudioMutedChange={setAudioMuted}
+            className="w-full py-2"
+          />
+        </div>
       )}
 
       {/* Actions */}
       {!isConnected ? (
-        <ShimmerButton
+        <VerseButton
           onClick={handleToggle}
           disabled={isConnecting}
-          className="gap-2 bg-[var(--verse-button)] text-[var(--verse-button-text)] hover:bg-[var(--verse-button)]/90"
-          shimmerColor="rgba(255,255,255,0.4)"
+          variant="default"
+          size="lg"
+          className="w-full rounded-full gap-2.5 py-6 text-base font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
         >
           {isConnecting ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -478,14 +557,14 @@ export function VerseRealtimeVoiceCard({
             <Phone className="h-5 w-5" />
           )}
           Talk to {assistantLabel}
-        </ShimmerButton>
+        </VerseButton>
       ) : (
         <VerseButton
           onClick={handleToggle}
           disabled={isConnecting}
-          variant="destructive"
+          variant="outline"
           size="lg"
-          className="gap-2"
+          className="w-full gap-2.5 rounded-full border-[var(--verse-border)] py-6 text-base font-medium"
         >
           {isConnecting ? (
             <Loader2 className="h-5 w-5 animate-spin" />

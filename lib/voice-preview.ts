@@ -1,8 +1,11 @@
 /**
- * OpenAI TTS voices for Realtime and gpt-4o-mini-tts.
+ * OpenAI voices supported by Realtime API (and gpt-4o-mini-tts).
  * Use in Labz agent config, Verse voice preview, and batch preview scripts.
+ * Restricted to Realtime-supported set: alloy, ash, ballad, coral, echo,
+ * sage, shimmer, verse, marin, cedar (no fable/nova/onyx).
  *
  * @see https://platform.openai.com/docs/guides/text-to-speech
+ * @see https://platform.openai.com/docs/api-reference/realtime
  */
 export const OPENAI_VOICES = [
   "alloy",
@@ -10,13 +13,10 @@ export const OPENAI_VOICES = [
   "ballad",
   "coral",
   "echo",
-  "fable",
-  "marin",
-  "nova",
-  "onyx",
   "sage",
   "shimmer",
   "verse",
+  "marin",
   "cedar",
 ] as const;
 
@@ -28,8 +28,9 @@ export const VOICE_PREVIEW_PHRASE =
 
 /** MNKY persona voice recommendations per the guide */
 export const VOICE_PERSONA_HINTS: Partial<Record<OpenAIVoice, string>> = {
-  nova: "Energetic digital assistant",
   sage: "Reflective, guidance tone",
-  onyx: "Strong, executive feel",
   ash: "Smooth conversational",
+  ballad: "Narrative, storytelling",
+  coral: "Warm, friendly",
+  marin: "Calm, reassuring",
 };

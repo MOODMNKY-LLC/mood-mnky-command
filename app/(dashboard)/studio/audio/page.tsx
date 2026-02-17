@@ -13,6 +13,11 @@ import {
   Volume2,
   Languages,
   UserPlus,
+  Disc3,
+  Music2,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,25 +32,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { OPENAI_VOICES } from "@/lib/voice-preview"
 import type { MediaAsset } from "@/lib/supabase/storage"
+import { AudioDropzone } from "@/components/studio/audio-dropzone"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const TTS_VOICES = [
-  { value: "alloy", label: "Alloy" },
-  { value: "ash", label: "Ash" },
-  { value: "ballad", label: "Ballad" },
-  { value: "coral", label: "Coral" },
-  { value: "echo", label: "Echo" },
-  { value: "fable", label: "Fable" },
-  { value: "nova", label: "Nova" },
-  { value: "onyx", label: "Onyx" },
-  { value: "sage", label: "Sage" },
-  { value: "shimmer", label: "Shimmer" },
-  { value: "verse", label: "Verse" },
-  { value: "marin", label: "Marin" },
-  { value: "cedar", label: "Cedar" },
-] as const
+/** Realtime-supported voices only (from labz config) */
+const TTS_VOICES = OPENAI_VOICES.map((v) => ({
+  value: v,
+  label: v.charAt(0).toUpperCase() + v.slice(1),
+})) as { value: (typeof OPENAI_VOICES)[number]; label: string }[]
 
 const TTS_FORMATS = [
   { value: "mp3", label: "MP3" },
@@ -97,6 +94,8 @@ function AudioStudioContent() {
   const [consentError, setConsentError] = useState<string | null>(null)
   const consentInputRef = useRef<HTMLInputElement>(null)
 
+  const [verseMusicAddValue, setVerseMusicAddValue] = useState("")
+  const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null)
   const [voiceName, setVoiceName] = useState("")
   const [voiceConsentId, setVoiceConsentId] = useState<string>("")
   const [voiceSampleFile, setVoiceSampleFile] = useState<File | null>(null)
@@ -112,6 +111,20 @@ function AudioStudioContent() {
     fetcher
   )
   const recentAssets = mediaData?.assets ?? []
+
+  const verseTracksParams = new URLSearchParams()
+  verseTracksParams.set("bucket", "mnky-verse-tracks")
+  verseTracksParams.set("limit", "24")
+  const { data: verseTracksData, mutate: mutateVerseTracks } = useSWR<{ assets: MediaAsset[]; count: number }>(
+    `/api/media?${verseTracksParams.toString()}`,
+    fetcher
+  )
+  const uploadedTracks = verseTracksData?.assets ?? []
+
+  const { data: verseMusicData, mutate: mutateVerseMusic } = useSWR<{
+    playlist: Array<{ id: string; media_asset_id: string; sort_order: number; asset?: MediaAsset }>;
+  }>("/api/labz/verse-music", fetcher)
+  const versePlaylist = verseMusicData?.playlist ?? []
 
   const { data: consentsData, mutate: mutateConsents } = useSWR<{ consents: Array<{ id: string; openai_consent_id: string; name: string | null; language: string | null }> }>(
     "/api/audio/consents",
@@ -262,6 +275,126 @@ function AudioStudioContent() {
     }
   }, [voiceSampleFile, voiceConsentId, voiceName, mutateVoices])
 
+  const handleVerseMusicAdd = useCallback(
+    async (mediaAssetId: string) => {
+      try {
+        const res = await fetch("/api/labz/verse-music", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: mediaAssetId }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || "Failed to add track")
+        }
+        mutateVerseMusic()
+      } catch (err) {
+        console.error(err)
+        alert(err instanceof Error ? err.message : "Failed to add track")
+      }
+    },
+    [mutateVerseMusic]
+  )
+
+  const handleVerseMusicRemove = useCallback(
+    async (mediaAssetId: string) => {
+      try {
+        const res = await fetch("/api/labz/verse-music", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_asset_id: mediaAssetId }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || "Failed to remove track")
+        }
+        mutateVerseMusic()
+      } catch (err) {
+        console.error(err)
+        alert(err instanceof Error ? err.message : "Failed to remove track")
+      }
+    },
+    [mutateVerseMusic]
+  )
+
+  const handleVerseMusicMoveUp = useCallback(
+    async (idx: number) => {
+      if (idx <= 0) return
+      const curr = versePlaylist[idx]
+      const prev = versePlaylist[idx - 1]
+      try {
+        const [resA, resB] = await Promise.all([
+          fetch("/api/labz/verse-music", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: prev.sort_order }),
+          }),
+          fetch("/api/labz/verse-music", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ media_asset_id: prev.media_asset_id, sort_order: curr.sort_order }),
+          }),
+        ])
+        if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
+        mutateVerseMusic()
+      } catch (err) {
+        console.error(err)
+        alert(err instanceof Error ? err.message : "Failed to reorder")
+      }
+    },
+    [versePlaylist, mutateVerseMusic]
+  )
+
+  const handleDeleteTrack = useCallback(
+    async (assetId: string) => {
+      setDeletingAssetId(assetId)
+      try {
+        const res = await fetch(`/api/media/${assetId}`, { method: "DELETE" })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || "Failed to delete")
+        }
+        mutateVerseTracks()
+        mutateVerseMusic()
+        globalMutate("/api/media")
+      } catch (err) {
+        console.error(err)
+        alert(err instanceof Error ? err.message : "Failed to delete track")
+      } finally {
+        setDeletingAssetId(null)
+      }
+    },
+    [mutateVerseTracks, mutateVerseMusic]
+  )
+
+  const handleVerseMusicMoveDown = useCallback(
+    async (idx: number) => {
+      if (idx >= versePlaylist.length - 1) return
+      const curr = versePlaylist[idx]
+      const next = versePlaylist[idx + 1]
+      try {
+        const [resA, resB] = await Promise.all([
+          fetch("/api/labz/verse-music", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ media_asset_id: curr.media_asset_id, sort_order: next.sort_order }),
+          }),
+          fetch("/api/labz/verse-music", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ media_asset_id: next.media_asset_id, sort_order: curr.sort_order }),
+          }),
+        ])
+        if (!resA.ok || !resB.ok) throw new Error("Failed to reorder")
+        mutateVerseMusic()
+      } catch (err) {
+        console.error(err)
+        alert(err instanceof Error ? err.message : "Failed to reorder")
+      }
+    },
+    [versePlaylist, mutateVerseMusic]
+  )
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
@@ -275,7 +408,7 @@ function AudioStudioContent() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-4xl grid-cols-5">
           <TabsTrigger value="tts" className="gap-2">
             <Volume2 className="h-4 w-4" />
             Text to Speech
@@ -283,6 +416,14 @@ function AudioStudioContent() {
           <TabsTrigger value="stt" className="gap-2">
             <Mic className="h-4 w-4" />
             Speech to Text
+          </TabsTrigger>
+          <TabsTrigger value="upload" className="gap-2">
+            <Disc3 className="h-4 w-4" />
+            Upload Tracks
+          </TabsTrigger>
+          <TabsTrigger value="verse-music" className="gap-2">
+            <Music2 className="h-4 w-4" />
+            Verse Music
           </TabsTrigger>
           <TabsTrigger value="voicelab" className="gap-2">
             <UserPlus className="h-4 w-4" />
@@ -471,8 +612,26 @@ function AudioStudioContent() {
                           className="flex flex-col gap-1 rounded-lg border border-border p-2"
                         >
                           <div className="flex items-center gap-2">
-                            <FileAudio className="h-4 w-4 text-muted-foreground" />
-                            <span className="truncate text-xs">{asset.file_name}</span>
+                            {asset.cover_art_url ? (
+                              <img
+                                src={asset.cover_art_url}
+                                alt=""
+                                className="h-10 w-10 shrink-0 rounded object-cover"
+                              />
+                            ) : (
+                              <FileAudio className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="truncate text-xs font-medium">
+                                {asset.audio_title || asset.file_name}
+                              </span>
+                              {asset.audio_artist && (
+                                <p className="truncate text-[10px] text-muted-foreground">
+                                  {asset.audio_artist}
+                                  {asset.audio_album ? ` · ${asset.audio_album}` : ""}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           {asset.public_url && (
                             <audio controls src={asset.public_url} className="h-8 w-full" />
@@ -617,6 +776,232 @@ function AudioStudioContent() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="upload" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="flex flex-col gap-4 lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Disc3 className="h-4 w-4" />
+                    Upload Tracks
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Upload MP3, WAV, FLAC, or MP4 audio (Suno exports, etc.). Max 50 MB per file. Saved to Media Library.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <AudioDropzone
+                    maxFiles={10}
+                    onUploadComplete={() => {
+                      mutateVerseTracks()
+                      globalMutate("/api/media")
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            <div className="flex flex-col gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Uploaded Tracks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {uploadedTracks.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No tracks yet. Upload above.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {uploadedTracks.slice(0, 8).map((asset) => (
+                        <div
+                          key={asset.id}
+                          className="flex flex-col gap-1 rounded-lg border border-border p-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            {asset.cover_art_url ? (
+                              <img
+                                src={asset.cover_art_url}
+                                alt=""
+                                className="h-10 w-10 shrink-0 rounded object-cover"
+                              />
+                            ) : (
+                              <FileAudio className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="truncate text-xs font-medium">
+                                {asset.audio_title || asset.file_name}
+                              </span>
+                              {asset.audio_artist && (
+                                <p className="truncate text-[10px] text-muted-foreground">
+                                  {asset.audio_artist}
+                                  {asset.audio_album ? ` · ${asset.audio_album}` : ""}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteTrack(asset.id)}
+                              disabled={deletingAssetId === asset.id}
+                              title="Delete track"
+                            >
+                              {deletingAssetId === asset.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                          {asset.public_url && (
+                            <audio controls src={asset.public_url} className="h-8 w-full" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="verse-music" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Music2 className="h-4 w-4" />
+                  Verse Music Playlist
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Configure the tracks shown in Verse music player. Add from uploaded tracks, reorder, or remove.
+                </p>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs">Add track</Label>
+                  <Select
+                    value={verseMusicAddValue}
+                    onValueChange={(id) => {
+                      if (id && id !== "__none__") {
+                        handleVerseMusicAdd(id)
+                        setVerseMusicAddValue("")
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full max-w-xs">
+                      <SelectValue placeholder="Select from uploaded tracks..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(() => {
+                        const available = uploadedTracks.filter(
+                          (a) => !versePlaylist.some((p) => p.media_asset_id === a.id)
+                        )
+                        if (available.length > 0) {
+                          return available.map((asset) => (
+                            <SelectItem key={asset.id} value={asset.id}>
+                              {asset.audio_title || asset.file_name || asset.id.slice(0, 8)}
+                            </SelectItem>
+                          ))
+                        }
+                        return (
+                          <SelectItem value="__none__" disabled>
+                            {uploadedTracks.length === 0
+                              ? "No tracks uploaded yet"
+                              : "All tracks in playlist"}
+                          </SelectItem>
+                        )
+                      })()}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs">Playlist order</Label>
+                  {versePlaylist.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No tracks yet. Add above.</p>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      {versePlaylist.map((entry, idx) => {
+                        const a = entry.asset
+                        return (
+                          <div
+                            key={entry.id}
+                            className="flex items-center gap-2 rounded-lg border border-border p-2"
+                          >
+                            <div className="flex shrink-0 items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleVerseMusicMoveUp(idx)}
+                                disabled={idx === 0}
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleVerseMusicMoveDown(idx)}
+                                disabled={idx === versePlaylist.length - 1}
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            {a?.cover_art_url ? (
+                              <img
+                                src={a.cover_art_url}
+                                alt=""
+                                className="h-10 w-10 shrink-0 rounded object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted">
+                                <FileAudio className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">
+                                {a?.audio_title || a?.file_name || "Track"}
+                              </p>
+                              {a?.audio_artist && (
+                                <p className="truncate text-xs text-muted-foreground">{a.audio_artist}</p>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                              onClick={() => handleVerseMusicRemove(entry.media_asset_id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Preview</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Tracks in this playlist appear on the Verse /music page.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {versePlaylist.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Add tracks to see preview.</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    {versePlaylist.length} track{versePlaylist.length !== 1 ? "s" : ""} in playlist.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 

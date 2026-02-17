@@ -9,13 +9,12 @@ import {
 } from "@/lib/supabase/storage"
 import { createSpeech } from "@/lib/openai/audio"
 import type { TTSVoice, TTSFormat, TTSModel } from "@/lib/openai/audio"
+import { OPENAI_VOICES } from "@/lib/voice-preview"
 
 export const maxDuration = 60
 
-const VOICE_NAMES: TTSVoice[] = [
-  "alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx",
-  "sage", "shimmer", "verse", "marin", "cedar",
-]
+/** Realtime-supported voices (align with labz config) */
+const VOICE_NAMES: TTSVoice[] = [...OPENAI_VOICES]
 
 export async function POST(request: Request) {
   const supabase = await createClient()

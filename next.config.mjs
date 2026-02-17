@@ -3,6 +3,13 @@ import withSerwistInit from "@serwist/next"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config) => {
+    config.resolve.fallback = { ...config.resolve.fallback, "react-native-fs": false }
+    return config
+  },
+  experimental: {
+    middlewareClientMaxBodySize: "60mb",
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

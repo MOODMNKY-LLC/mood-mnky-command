@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 import { DualAuthTabs, type AuthTab } from "@/components/auth/dual-auth-tabs"
@@ -12,13 +12,16 @@ import { DottedMap } from "@/components/ui/dotted-map"
 const VERSE_BG_DARK = "/auth/mnky-verse-bg-dark.png"
 const VERSE_BG_LIGHT = "/auth/mnky-verse-bg-light.png"
 const MASCOT_VERSE = "/verse/mood-mnky-3d.png"
-const MASCOT_LABZ = "/auth/code_mnky.png"
+const MASCOT_LABZ = "/verse/code-mnky-3d.png"
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<AuthTab>("verse")
+  const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
 
-  const isDark = (resolvedTheme ?? "dark") === "dark"
+  useEffect(() => setMounted(true), [])
+
+  const isDark = !mounted ? true : (resolvedTheme ?? "dark") === "dark"
   const verseBg = isDark ? VERSE_BG_DARK : VERSE_BG_LIGHT
 
   return (

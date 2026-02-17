@@ -95,16 +95,18 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const { data: asset } = await supabase
       .from("media_assets")
-      .select("id, bucket_id, storage_path")
+      .select("id, user_id, bucket_id, storage_path, cover_art_path")
       .eq("id", id)
       .single()
 
     if (!asset) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    if (asset.user_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
     await deleteMediaAsset(supabase, {
       id: asset.id,
       bucket_id: asset.bucket_id as BucketId,
       storage_path: asset.storage_path,
+      cover_art_path: asset.cover_art_path,
     })
     return NextResponse.json({ success: true })
   } catch (err) {

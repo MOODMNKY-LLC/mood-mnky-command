@@ -8,12 +8,11 @@ export const maxDuration = 30;
 /**
  * POST /api/realtime/session
  * Mints an ephemeral OpenAI Realtime client secret for the authenticated user.
- * Body: {
- *   agentSlug?: string;
- *   turn_detection?: null | { threshold?, prefix_padding_ms?, silence_duration_ms?, create_response?, interrupt_response? };
- *   input_audio_transcription?: { model: string; language?: string; prompt?: string };
- * }
+ * Body: { agentSlug?: string }
  * Returns: { clientSecret: string, expiresAt: number, agentSlug?: string }
+ *
+ * Note: turn_detection and input_audio_transcription are configured client-side
+ * via session.update after the WebRTC connection is established.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -67,62 +66,36 @@ export async function POST(request: NextRequest) {
     .eq("is_active", true)
     .single();
 
-  const model = agent?.openai_model ?? "gpt-realtime";
-  const voice = agent?.openai_voice ?? "marin";
-  const instructions =
+  // Realtime API only supports gpt-realtime (and optionally dated variants)
+  const REALTIME_MODELS = new Set(["gpt-realtime", "gpt-realtime-2025-08-28"]);
+  const rawModel = agent?.openai_model ?? "gpt-realtime";
+  const model = REALTIME_MODELS.has(rawModel) ? rawModel : "gpt-realtime";
+
+  // Realtime supports only: alloy, ash, ballad, coral, echo, sage, shimmer, verse, marin, cedar (no fable/nova/onyx)
+  const REALTIME_VOICES = new Set([
+    "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar",
+  ]);
+  const rawVoice = agent?.openai_voice ?? "marin";
+  const voice = REALTIME_VOICES.has(rawVoice) ? rawVoice : "marin";
+
+  const base =
     agent?.system_instructions?.trim() ??
-    "You are a friendly assistant for the MNKY VERSE.";
+    `You are a friendly assistant for the MNKY VERSE.
 
-  // Parse optional session overrides from request body
-  let turnDetection:
-    | null
-    | {
-        type: "server_vad";
-        threshold?: number;
-        prefix_padding_ms?: number;
-        silence_duration_ms?: number;
-        create_response?: boolean;
-        interrupt_response?: boolean;
-      } = {
-    type: "server_vad",
-    threshold: 0.5,
-    prefix_padding_ms: 300,
-    silence_duration_ms: 500,
-    create_response: true,
-    interrupt_response: true,
-  };
-  let inputAudioTranscription:
-    | null
-    | {
-        model: string;
-        language?: string;
-        prompt?: string;
-      } = null;
+## Language
+- The conversation will be only in English.
+- Do not respond in any other language, even if the user asks.
+- If the user speaks another language, politely explain that support is limited to English.`;
 
-  if (body?.turn_detection === null) {
-    turnDetection = null;
-  } else if (body?.turn_detection && typeof body.turn_detection === "object") {
-    const td = body.turn_detection as Record<string, unknown>;
-    turnDetection = {
-      type: "server_vad",
-      threshold: (td.threshold as number) ?? 0.5,
-      prefix_padding_ms: (td.prefix_padding_ms as number) ?? 300,
-      silence_duration_ms: (td.silence_duration_ms as number) ?? 500,
-      create_response: (td.create_response as boolean) ?? true,
-      interrupt_response: (td.interrupt_response as boolean) ?? true,
-    };
-  }
-  if (body?.input_audio_transcription && typeof body.input_audio_transcription === "object") {
-    const t = body.input_audio_transcription as Record<string, unknown>;
-    if (t.model) {
-      inputAudioTranscription = {
-        model: t.model as string,
-        language: (t.language as string) ?? "en",
-        prompt: t.prompt as string | undefined,
-      };
-    }
-  }
+  const voiceModeSuffix = `
 
+## Voice call
+You're in a live voice conversation. Be responsive: listen to what the user says and reply naturally. Keep answers brief (1–3 sentences) unless they ask for more. Let the user lead the conversation.`;
+
+  const instructions = base + voiceModeSuffix;
+
+  // Session config for client_secrets. Note: turn_detection and input_audio_transcription
+  // are NOT supported here - they are sent via session.update after WebRTC connect.
   const sessionConfig: Record<string, unknown> = {
     type: "realtime" as const,
     model,
@@ -132,12 +105,7 @@ export async function POST(request: NextRequest) {
         voice,
       },
     },
-    turn_detection: turnDetection,
   };
-
-  if (inputAudioTranscription) {
-    sessionConfig.input_audio_transcription = inputAudioTranscription;
-  }
 
   try {
     const res = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
@@ -150,10 +118,21 @@ export async function POST(request: NextRequest) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("OpenAI realtime client_secrets error:", res.status, err);
+      const errText = await res.text();
+      console.error("OpenAI realtime client_secrets error:", res.status, errText);
+      let openAiMessage = "Unknown error";
+      try {
+        const errJson = JSON.parse(errText) as { error?: { message?: string }; message?: string };
+        openAiMessage =
+          errJson?.error?.message ?? errJson?.message ?? errText.slice(0, 200);
+      } catch {
+        openAiMessage = errText.slice(0, 200) || "Unknown error";
+      }
       return NextResponse.json(
-        { error: "Failed to create realtime session" },
+        {
+          error: "Failed to create realtime session",
+          details: openAiMessage,
+        },
         { status: 502 }
       );
     }

@@ -1,8 +1,8 @@
 /**
  * Next.js custom image loader.
  * - Supabase Storage: converts object/public to render/image URLs (width, quality).
- * - Other URLs (local, Shopify CDN, etc.): routes through Next.js image optimization
- *   so width is included and images are properly resized.
+ * - Local /verse/ paths: return as-is to bypass optimizer (avoids 404 for public assets).
+ * - Other URLs (Shopify CDN, etc.): routes through Next.js image optimization.
  *
  * @see https://supabase.com/docs/guides/storage/serving/image-transformations#nextjs-loader
  * @see https://nextjs.org/docs/messages/next-image-missing-loader-width
@@ -30,12 +30,17 @@ export default function supabaseLoader({
       params.set("quality", String(quality ?? 80))
       return `${url.origin}${renderPath}?${params.toString()}`
     }
+
+    // Local paths like /verse/mood-mnky-3d.png: serve directly from public/ to avoid
+    // Image Optimization fetching issues in dev/production.
+    if (src.startsWith("/") && !src.startsWith("//")) {
+      return src
+    }
   } catch {
     // Invalid URL, fall through
   }
 
-  // For local and remote URLs (Shopify, etc.), use Next.js image optimization
-  // so width is included in the URL and the loader implements resize correctly.
+  // For remote URLs (Shopify, etc.), use Next.js image optimization
   const q = quality ?? 75
   return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${q}`
 }

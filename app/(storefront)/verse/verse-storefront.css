@@ -65,3 +65,10 @@
 .verse-brand-band {
   width: 100%;
 }
+
+/* Voice chat dialog - fully opaque, no glass transparency */
+.verse-voice-dialog {
+  background-color: var(--verse-bg) !important;
+  color: var(--verse-text);
+  isolation: isolate;
+}

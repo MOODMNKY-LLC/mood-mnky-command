@@ -1,13 +1,19 @@
-"use client";
+"use client"
 
-import Link from "next/link";
+import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation";
+import useSWR, { mutate as globalMutate } from "swr";
 import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { LogOut, FileAudio, Trash2, Loader2 } from "lucide-react";
 import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
 import { isAgentSlug } from "@/lib/agents";
+import { VerseAudioDropzone } from "@/components/verse/verse-audio-dropzone";
+import type { MediaAsset } from "@/lib/supabase/storage";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const DISPLAY_NAMES: Record<string, string> = {
   mood_mnky: "MOOD MNKY",
@@ -25,9 +31,38 @@ export function VerseProfileClient({
   defaultAgentSlug?: string;
 }) {
   const router = useRouter();
+
+  const verseTracksParams = new URLSearchParams();
+  verseTracksParams.set("bucket", "mnky-verse-tracks");
+  verseTracksParams.set("limit", "24");
+  const { data: verseTracksData, mutate: mutateVerseTracks } = useSWR<{
+    assets: MediaAsset[];
+    count: number;
+  }>(`/api/media?${verseTracksParams.toString()}`, fetcher);
+  const myTracks = verseTracksData?.assets ?? []
+  const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null)
+
   const defaultAgentName = isAgentSlug(defaultAgentSlug)
     ? AGENT_DISPLAY_NAME[defaultAgentSlug]
     : DISPLAY_NAMES[defaultAgentSlug] ?? "MOOD MNKY";
+
+  const handleDeleteTrack = async (assetId: string) => {
+    setDeletingAssetId(assetId)
+    try {
+      const res = await fetch(`/api/media/${assetId}`, { method: "DELETE" })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to delete")
+      }
+      mutateVerseTracks()
+      globalMutate("/api/media")
+    } catch (err) {
+      console.error(err)
+      alert(err instanceof Error ? err.message : "Failed to delete track")
+    } finally {
+      setDeletingAssetId(null)
+    }
+  }
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -57,6 +92,85 @@ export function VerseProfileClient({
           <Button variant="outline" size="sm" asChild className="mt-2">
             <Link href="/verse/dojo">Change in Dojo</Link>
           </Button>
+        </CardContent>
+      </Card>
+      <Card className="border-verse-text/15 bg-verse-bg/60">
+        <CardHeader>
+          <h2 className="font-verse-heading text-lg font-medium text-verse-text">
+            My Tracks
+          </h2>
+          <p className="text-sm text-verse-text-muted">
+            Upload and manage your audio tracks (Suno, etc.). Max 50 MB per file.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <VerseAudioDropzone
+            maxFiles={10}
+            compact
+            onUploadComplete={() => {
+              mutateVerseTracks();
+              globalMutate("/api/media");
+            }}
+          />
+          {myTracks.length > 0 && (
+            <div className="flex flex-col gap-2 pt-2 border-t border-verse-text/10">
+              <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
+                Your tracks
+              </span>
+              <div className="flex flex-col gap-2">
+                {myTracks.slice(0, 8).map((asset) => (
+                  <div
+                    key={asset.id}
+                    className="flex flex-col gap-1 rounded-lg border border-verse-text/15 bg-verse-bg/40 p-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      {asset.cover_art_url ? (
+                        <img
+                          src={asset.cover_art_url}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded object-cover"
+                        />
+                      ) : (
+                        <FileAudio className="h-4 w-4 shrink-0 text-verse-text-muted" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className="truncate text-sm font-medium text-verse-text">
+                          {asset.audio_title || asset.file_name}
+                        </span>
+                        {asset.audio_artist && (
+                          <p className="truncate text-xs text-verse-text-muted">
+                            {asset.audio_artist}
+                            {asset.audio_album ? ` · ${asset.audio_album}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteTrack(asset.id)}
+                        disabled={deletingAssetId === asset.id}
+                        title="Delete track"
+                      >
+                        {deletingAssetId === asset.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {asset.public_url && (
+                      <audio
+                        controls
+                        src={asset.public_url}
+                        className="h-8 w-full text-verse-text"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       <Card className="border-verse-text/15 bg-verse-bg/60">

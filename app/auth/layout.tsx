@@ -1,5 +1,7 @@
 import { Montserrat } from "next/font/google";
 
+import { AuthModeToggle } from "@/components/auth/auth-mode-toggle"
+
 const montserrat = Montserrat({
   weight: ["500", "900"],
   subsets: ["latin"],
@@ -14,6 +16,9 @@ export default function AuthLayout({
 }) {
   return (
     <div className={montserrat.variable}>
+      <div className="fixed right-4 top-4 z-50">
+        <AuthModeToggle />
+      </div>
       {children}
     </div>
   );

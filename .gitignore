@@ -6,6 +6,7 @@ instrumentation-client.js
 instrumentation-client.ts
 
 # Common ignores
+remote_only_versions.txt
 node_modules/
 .cursor/
 .next/

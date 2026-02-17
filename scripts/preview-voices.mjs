@@ -14,19 +14,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/** Realtime-supported voices only (align with lib/voice-preview.ts) */
 const VOICES = [
   "alloy",
   "ash",
   "ballad",
   "coral",
   "echo",
-  "fable",
-  "marin",
-  "nova",
-  "onyx",
   "sage",
   "shimmer",
   "verse",
+  "marin",
   "cedar",
 ];
 
