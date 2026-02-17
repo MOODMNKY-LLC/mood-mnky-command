@@ -22,6 +22,8 @@ function isReasoningModel(model: string): boolean {
   )
 }
 
+const LAST_N_MESSAGES = 20
+
 const BLENDING_MODE_SUFFIX = `
 [Blending mode active] The user is in a fragrance blending workflow. Follow the Full Lab-Style Blending Flow.
 
@@ -41,6 +43,15 @@ interface ChatBody {
   model?: string
   webSearch?: boolean
   mode?: "blending"
+  sessionId?: string
+}
+
+function getTextFromUIMessage(message: UIMessage): string {
+  if (!message.parts?.length) return ""
+  return message.parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text" && "text" in p)
+    .map((p) => p.text)
+    .join("")
 }
 
 export async function POST(request: Request) {
@@ -68,10 +79,60 @@ export async function POST(request: Request) {
     model: modelParam = "gpt-5-mini",
     webSearch = false,
     mode,
+    sessionId: requestedSessionId,
   } = body
   if (!messages || !Array.isArray(messages)) {
     return new Response("messages is required", { status: 400 })
   }
+
+  let sessionId: string
+  if (requestedSessionId) {
+    const { data: session } = await supabase
+      .from("chat_sessions")
+      .select("id")
+      .eq("id", requestedSessionId)
+      .eq("user_id", user.id)
+      .single()
+    if (session) {
+      sessionId = session.id
+      await supabase.from("chat_sessions").update({ updated_at: new Date().toISOString() }).eq("id", sessionId)
+    } else {
+      const { data: newSession, error } = await supabase
+        .from("chat_sessions")
+        .insert({ user_id: user.id })
+        .select("id")
+        .single()
+      if (error) return new Response("Failed to create session", { status: 500 })
+      sessionId = newSession.id
+    }
+  } else {
+    const { data: newSession, error } = await supabase
+      .from("chat_sessions")
+      .insert({ user_id: user.id })
+      .select("id")
+      .single()
+    if (error) return new Response("Failed to create session", { status: 500 })
+    sessionId = newSession.id
+  }
+
+  const lastMessage = messages[messages.length - 1]
+  if (lastMessage?.role === "user") {
+    const content = getTextFromUIMessage(lastMessage)
+    if (content) {
+      await supabase.from("chat_messages").insert({
+        session_id: sessionId,
+        role: "user",
+        content,
+      })
+    }
+  }
+
+  const { data: recentRows } = await supabase
+    .from("chat_messages")
+    .select("role, content")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true })
+    .limit(LAST_N_MESSAGES)
 
   const model = ALLOWED_MODELS.includes(modelParam as (typeof ALLOWED_MODELS)[number])
     ? modelParam
@@ -84,10 +145,18 @@ export async function POST(request: Request) {
       }
     : chatTools
 
-  const systemPrompt =
+  let systemPrompt =
     mode === "blending"
       ? MOOD_MNKY_SYSTEM_PROMPT + BLENDING_MODE_SUFFIX
       : MOOD_MNKY_SYSTEM_PROMPT
+
+  if (recentRows?.length) {
+    const recentContext = recentRows
+      .map((m) => (m.role === "user" ? `User: ${m.content}` : m.role === "assistant" ? `Assistant: ${m.content}` : null))
+      .filter(Boolean)
+      .join("\n")
+    systemPrompt = `${systemPrompt}\n\nRecent conversation context (for continuity):\n${recentContext}`
+  }
 
   const result = streamText({
     model: openai(model),
@@ -105,5 +174,27 @@ export async function POST(request: Request) {
       : undefined,
   })
 
-  return result.toUIMessageStreamResponse()
+  const response = result.toUIMessageStreamResponse({
+    onFinish: async ({ responseMessage }) => {
+      if (responseMessage?.role === "assistant") {
+        const content = getTextFromUIMessage(responseMessage)
+        if (content) {
+          const client = await createClient()
+          await client.from("chat_messages").insert({
+            session_id: sessionId,
+            role: "assistant",
+            content,
+          })
+        }
+      }
+    },
+  })
+
+  const newHeaders = new Headers(response.headers)
+  newHeaders.set("x-chat-session-id", sessionId)
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: newHeaders,
+  })
 }

@@ -68,11 +68,12 @@ export function VerseHero() {
         </div>
         <div className="relative z-10 flex h-full items-center justify-center">
           <Image
-            src="/verse/mood_mnky.png"
+            src="/verse/mood-mnky-3d.png"
             alt="MOOD MNKY - Your gateway to the universe"
             width={360}
             height={400}
             className="h-auto w-[70%] max-w-[220px] object-contain md:max-w-[340px] lg:max-w-[420px]"
+            unoptimized
             style={
               theme === "dark"
                 ? {

@@ -9,7 +9,8 @@ export function PortalWelcome() {
 
   const content = name ? (
     <p className="text-lg text-verse-text">
-      Welcome back, <span className="font-medium">{name}</span>
+      Your space for bespoke fragrances, self-care rituals, and community
+      wellness.
     </p>
   ) : (
     <p className="text-lg text-verse-text">

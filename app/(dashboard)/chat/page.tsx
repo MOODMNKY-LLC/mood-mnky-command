@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import {
@@ -15,6 +15,7 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
 import {
+  BlurFadeBlock,
   Message,
   MessageAction,
   MessageActions,
@@ -68,6 +69,7 @@ import {
   PromptInputTools,
   usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input"
+import { Persona, type PersonaState } from "@/components/ai-elements/persona"
 import { SpeechInput } from "@/components/ai-elements/speech-input"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { DotPattern } from "@/components/ui/dot-pattern"
@@ -140,9 +142,28 @@ export default function ChatPage() {
   const [webSearch, setWebSearch] = useState(false)
   const [text, setText] = useState("")
   const [blendingMode, setBlendingMode] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        fetch: async (url, init) => {
+          const res = await fetch(url, init)
+          const sid = res.headers.get("x-chat-session-id")
+          if (sid) setSessionId(sid)
+          return res
+        },
+      }),
+    []
+  )
   const { messages, sendMessage, status, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-    body: { model, webSearch, ...(blendingMode ? { mode: "blending" as const } : {}) },
+    transport,
+    body: {
+      model,
+      webSearch,
+      ...(blendingMode ? { mode: "blending" as const } : {}),
+      sessionId: sessionId ?? undefined,
+    },
   })
 
   const handleSubmit = useCallback(
@@ -161,6 +182,7 @@ export default function ChatPage() {
   )
 
   const isStreaming = status === "streaming" || status === "submitted"
+  const personaState: PersonaState = isStreaming ? "thinking" : "idle"
 
   return (
     <div className="flex flex-col size-full min-h-0">
@@ -169,6 +191,7 @@ export default function ChatPage() {
           <h1 className="font-semibold text-lg flex items-center gap-2 flex-wrap">
             <MessageSquareIcon className="size-5" />
             AI Chat
+            <Persona state={personaState} variant="halo" className="size-10 shrink-0" />
             {blendingMode && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 <FlaskConical className="size-3" />
@@ -189,7 +212,10 @@ export default function ChatPage() {
                   variant="ghost"
                   size="sm"
                   className="shrink-0 gap-1.5"
-                  onClick={() => setMessages([])}
+                  onClick={() => {
+                    setSessionId(null)
+                    setMessages([])
+                  }}
                   disabled={isStreaming}
                   aria-label="Start new chat"
                 >
@@ -238,7 +264,7 @@ export default function ChatPage() {
                 </BlurFade>
                 </div>
               )}
-              {messages.map((message) => (
+              {messages.map((message, msgIndex) => (
                 <Message key={message.id} from={message.role}>
                   <MessageContent>
                     {message.parts.map((part, i) => {
@@ -278,8 +304,19 @@ export default function ChatPage() {
                         )
                       }
                       if (part.type === "text") {
+                        const isLastAssistantMessage =
+                          msgIndex === messages.length - 1 &&
+                          message.role === "assistant"
                         return (
-                          <MessageResponse key={`${message.id}-${i}`}>
+                          <MessageResponse
+                            key={`${message.id}-${i}`}
+                            {...(isStreaming &&
+                              isLastAssistantMessage && {
+                                mode: "streaming" as const,
+                                parseIncompleteMarkdown: true,
+                                BlockComponent: BlurFadeBlock,
+                              })}
+                          >
                             {part.text}
                           </MessageResponse>
                         )

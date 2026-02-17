@@ -11,7 +11,7 @@ import { DottedMap } from "@/components/ui/dotted-map"
 
 const VERSE_BG_DARK = "/auth/mnky-verse-bg-dark.png"
 const VERSE_BG_LIGHT = "/auth/mnky-verse-bg-light.png"
-const MASCOT_VERSE = "/verse/mood_mnky.png"
+const MASCOT_VERSE = "/verse/mood-mnky-3d.png"
 const MASCOT_LABZ = "/auth/code_mnky.png"
 
 export default function LoginPage() {
@@ -33,6 +33,7 @@ export default function LoginPage() {
             className="object-cover"
             priority
             sizes="100vw"
+            unoptimized
           />
           <div className="absolute inset-0 bg-background/30" />
           {/* Mascot - centered in right half */}
@@ -43,6 +44,7 @@ export default function LoginPage() {
               width={360}
               height={400}
               className="h-[80vh] min-h-[420px] w-auto max-w-full object-contain"
+              unoptimized
               style={
                 isDark
                   ? { filter: "drop-shadow(0 0 56px rgba(0,0,0,0.45))" }
@@ -62,6 +64,7 @@ export default function LoginPage() {
             className="object-cover"
             priority
             sizes="100vw"
+            unoptimized
           />
           <div className="absolute inset-0 bg-white/20" />
           {/* Dotted Map overlay - subtle light-gray dots, tech-forward aesthetic */}
@@ -80,6 +83,7 @@ export default function LoginPage() {
               width={360}
               height={400}
               className="h-[80vh] min-h-[420px] w-auto max-w-full object-contain"
+              unoptimized
               style={
                 isDark
                   ? { filter: "drop-shadow(0 0 56px rgba(0,0,0,0.45))" }

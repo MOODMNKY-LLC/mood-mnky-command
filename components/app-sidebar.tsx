@@ -128,6 +128,7 @@ const storeItems: NavItemWithChildren[] = [
 
 const mnkyChatItems: NavItem[] = [
   { title: "AI Chat", href: "/chat", icon: MessageSquare },
+  { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
 ]
 
 const studioItems: NavItem[] = [

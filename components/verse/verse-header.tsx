@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, FlaskConical, Sun, Moon, User, LogOut, Home, MessageCircle, BookOpen } from "lucide-react";
-import { useCart } from "@shopify/hydrogen-react";
+import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { createClient } from "@/lib/supabase/client";
 import { useVerseTheme } from "./verse-theme-provider";
 import { VerseButton } from "@/components/verse/ui/button";
@@ -22,7 +22,6 @@ export function VerseHeader({
   isAdmin?: boolean;
   user?: VerseUser;
 }) {
-  const { totalQuantity } = useCart();
   const router = useRouter();
   const { theme, toggleTheme } = useVerseTheme();
 
@@ -47,16 +46,19 @@ export function VerseHeader({
         >
           MNKY VERSE
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-6 md:gap-8">
           {isAdmin && (
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-              title="MOOD MNKY LABZ"
-            >
-              <FlaskConical className="h-4 w-4" />
-              Lab
-            </Link>
+            <>
+              <Link
+                href="/"
+                className="flex items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+                title="MOOD MNKY LABZ"
+              >
+                <FlaskConical className="h-4 w-4" />
+                Lab
+              </Link>
+              <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
+            </>
           )}
           <Link
             href="/verse"
@@ -79,30 +81,20 @@ export function VerseHeader({
             Blog
           </Link>
           <Link
+            href="/verse/agents"
+            className="flex items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+          >
+            <Bot className="h-4 w-4" />
+            Agents
+          </Link>
+          <Link
             href="/verse/products"
             className="text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             Shop
           </Link>
-          <Link
-            href="/verse/chat"
-            className="hidden items-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Chat
-          </Link>
-          <Link
-            href="/verse/cart"
-            className="relative flex items-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            <span className="hidden sm:inline">Cart</span>
-            {totalQuantity != null && totalQuantity > 0 && (
-              <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-verse-button px-1 text-xs font-medium text-verse-button-text">
-                {totalQuantity}
-              </span>
-            )}
-          </Link>
+          <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
+          <VerseHeaderCartLink />
           <VerseButton
             variant="ghost"
             size="icon"

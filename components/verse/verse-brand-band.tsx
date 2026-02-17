@@ -12,7 +12,7 @@ export function VerseBrandBand() {
   return (
     <section
       className={cn(
-        "verse-brand-band flex w-full items-center justify-center py-4 md:py-6",
+        "verse-brand-band flex w-full items-center justify-center py-2 md:py-3",
         isDark
           ? "border-y border-slate-400/20 bg-slate-100 text-slate-900"
           : "border-y border-white/10 bg-slate-900 text-slate-100"

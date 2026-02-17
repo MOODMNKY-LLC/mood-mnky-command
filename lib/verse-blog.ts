@@ -7,9 +7,9 @@ export const VERSE_BLOG_AGENTS = ["mood_mnky", "sage_mnky", "code_mnky"] as cons
 export type VerseBlogAgent = (typeof VERSE_BLOG_AGENTS)[number]
 
 export const AGENT_IMAGE_PATH: Record<VerseBlogAgent, string> = {
-  mood_mnky: "/verse/mood_mnky.png",
-  sage_mnky: "/verse/sage_mnky.png",
-  code_mnky: "/verse/code_mnky.png",
+  mood_mnky: "/verse/mood-mnky-3d.png",
+  sage_mnky: "/verse/sage-mnky-3d.png",
+  code_mnky: "/verse/code-mnky-3d.png",
 }
 
 export const AGENT_DISPLAY_NAME: Record<VerseBlogAgent, string> = {

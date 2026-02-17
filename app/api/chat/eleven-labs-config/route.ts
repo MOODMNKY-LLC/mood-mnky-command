@@ -1,0 +1,131 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+const CONFIG_ID = "default";
+
+export type ElevenLabsConfigGet = {
+  agentId: string | null;
+  hasApiKeyOverride?: boolean;
+  connectionType?: string;
+};
+
+/**
+ * GET: Returns agent ID (for Verse/client). If authenticated admin, also returns hasApiKeyOverride and connectionType.
+ */
+export async function GET() {
+  const admin = createAdminClient();
+  const { data: row, error } = await admin
+    .from("eleven_labs_config")
+    .select("agent_id, api_key_override, connection_type")
+    .eq("id", CONFIG_ID)
+    .maybeSingle();
+
+  if (error) {
+    console.error("ElevenLabs config GET error:", error);
+    return NextResponse.json(
+      { error: "Failed to load config" },
+      { status: 500 }
+    );
+  }
+
+  const agentId =
+    row?.agent_id ?? process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? null;
+
+  const response: ElevenLabsConfigGet = { agentId };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("role, is_admin")
+      .eq("id", user.id)
+      .single();
+    const isAdmin = profile?.role === "admin" || profile?.is_admin === true;
+    if (isAdmin) {
+      response.hasApiKeyOverride = Boolean(row?.api_key_override);
+      response.connectionType = row?.connection_type ?? "webrtc";
+    }
+  }
+
+  return NextResponse.json(response);
+}
+
+/**
+ * PATCH: Update config (admin only). Body: { agentId?, apiKeyOverride?, connectionType? }
+ */
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("role, is_admin")
+    .eq("id", user.id)
+    .single();
+
+  const isAdmin = profile?.role === "admin" || profile?.is_admin === true;
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  let body: {
+    agentId?: string;
+    apiKeyOverride?: string | null;
+    connectionType?: string;
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 }
+    );
+  }
+
+  const updates: {
+    agent_id?: string;
+    api_key_override?: string | null;
+    connection_type?: string;
+    updated_at?: string;
+  } = { updated_at: new Date().toISOString() };
+
+  if (body.agentId !== undefined) updates.agent_id = body.agentId || null;
+  // Only update api_key_override when explicitly provided (empty string = clear).
+  if (Object.prototype.hasOwnProperty.call(body, "apiKeyOverride"))
+    updates.api_key_override = body.apiKeyOverride || null;
+  if (body.connectionType !== undefined)
+    updates.connection_type = body.connectionType || "webrtc";
+
+  const { data, error } = await admin
+    .from("eleven_labs_config")
+    .upsert(
+      { id: CONFIG_ID, ...updates },
+      { onConflict: "id" }
+    )
+    .select("agent_id, connection_type")
+    .single();
+
+  if (error) {
+    console.error("ElevenLabs config PATCH error:", error);
+    return NextResponse.json(
+      { error: "Failed to save config" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    agentId: data?.agent_id ?? null,
+    connectionType: data?.connection_type ?? "webrtc",
+  });
+}

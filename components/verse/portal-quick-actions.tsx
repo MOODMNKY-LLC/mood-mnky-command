@@ -1,43 +1,12 @@
 "use client";
 
-import {
-  ShoppingBag,
-  Sparkles,
-  MessageCircle,
-  User,
-  CircleDot,
-  BookOpen,
-} from "lucide-react";
+import { User, CircleDot, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VersePortalCard } from "./verse-portal-card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import type { VerseUser } from "./verse-storefront-shell";
 
 const ACTIONS = [
-  {
-    name: "Shop Products",
-    description: "Discover bespoke fragrances and self-care rituals from MOOD MNKY.",
-    href: "/verse/products",
-    cta: "Browse",
-    Icon: ShoppingBag,
-    className: "col-span-3 lg:col-span-1",
-  },
-  {
-    name: "Explore Fragrances",
-    description: "Glossary, fragrance notes, and educational content.",
-    href: "/verse/explore",
-    cta: "Explore",
-    Icon: Sparkles,
-    className: "col-span-3 lg:col-span-1",
-  },
-  {
-    name: "AI Chat",
-    description: "Meet MOOD MNKY, SAGE MNKY—AI assistants for discovery.",
-    href: "/verse/chat",
-    cta: "Chat",
-    Icon: MessageCircle,
-    className: "col-span-3 lg:col-span-1",
-  },
   {
     name: "Fragrance Wheel",
     description: "Discover scent families and find your favorites.",

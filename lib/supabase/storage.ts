@@ -12,6 +12,7 @@ export const BUCKETS = {
   brandAssets: "brand-assets",
   userAvatars: "user-avatars",
   privateDocuments: "private-documents",
+  chatAttachments: "chat-attachments",
 } as const
 
 export type BucketId = (typeof BUCKETS)[keyof typeof BUCKETS]
@@ -143,6 +144,20 @@ export const BUCKET_CONFIG: Record<
     maxSizeMB: 50,
     acceptedTypes: [],
     isPublic: false,
+  },
+  "chat-attachments": {
+    label: "Chat Attachments",
+    description: "Verse chat uploaded images and files",
+    maxSizeMB: 10,
+    acceptedTypes: [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "application/pdf",
+      "text/plain",
+    ],
+    isPublic: true,
   },
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { VerseCard, VerseCardContent } from "@/components/verse/ui/card";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
@@ -11,7 +12,7 @@ interface VersePortalCardProps {
   description: string;
   href: string;
   cta: string;
-  Icon: LucideIcon;
+  Icon: LucideIcon | ComponentType<{ className?: string }>;
   className?: string;
 }
 

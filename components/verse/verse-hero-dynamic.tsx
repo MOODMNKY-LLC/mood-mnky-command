@@ -2,21 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Sparkles,
-  BookOpen,
-  MessageCircle,
-  ShoppingBag,
-  Gift,
-  FlaskConical,
-} from "lucide-react";
 import { VerseButton } from "@/components/verse/ui/button";
 import { Globe } from "@/components/ui/globe";
-import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import { DottedMap } from "@/components/ui/dotted-map";
 import { useVerseTheme } from "./verse-theme-provider";
+import { useVerseUser } from "./verse-user-context";
 import type { COBEOptions } from "cobe";
-import { cn } from "@/lib/utils";
 
 const GLOBE_CONFIG_LIGHT: COBEOptions = {
   width: 800,
@@ -44,23 +35,31 @@ const GLOBE_CONFIG_DARK: COBEOptions = {
 
 const INTRO_COPY = `MNKY VERSE is your gateway to the universe of scents. Discover curated fragrances and collections designed to elevate mood and intention.`;
 
-const ORBIT_ICON_STYLE =
-  "flex size-full items-center justify-center rounded-full bg-verse-button/80 p-2 text-verse-button-text transition-opacity hover:opacity-100 hover:bg-verse-button";
+const WELCOME_BACK_COPY = `Your gateway to the universe of scents—curated fragrances, self-care rituals, and discovery await.`;
 
 export function VerseHeroDynamic() {
   const { theme } = useVerseTheme();
+  const user = useVerseUser();
   const globeConfig = theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT;
+  const name = user?.displayName || user?.email?.split("@")[0] || null;
+  const isLoggedIn = Boolean(name);
 
   return (
-    <section className="verse-hero-split mx-auto grid w-full max-w-[var(--verse-page-width)] grid-cols-1 grid-rows-1 items-end gap-6 overflow-hidden rounded-b-2xl px-4 py-6 md:grid-cols-[1fr_1fr] md:gap-12 md:px-6 md:py-10 lg:min-h-[480px]">
-      {/* Left: Intro copy + CTAs - bottom-aligned, floor position with mascot */}
+    <section className="verse-hero-split mx-auto grid w-full max-w-[var(--verse-page-width)] grid-cols-1 grid-rows-1 items-end gap-6 overflow-hidden rounded-b-2xl px-4 pt-10 pb-6 md:grid-cols-[1fr_1fr] md:gap-12 md:px-6 md:pt-14 md:pb-10 lg:min-h-[548px]">
+      {/* Left: Intro copy + CTAs - bottom-aligned; when logged in show welcome back + custom copy */}
       <div className="flex min-h-0 flex-col justify-end gap-4 md:gap-6">
         <div className="space-y-4">
           <h1 className="font-verse-heading text-2xl font-semibold tracking-tight text-verse-text md:text-3xl lg:text-4xl">
-            Welcome to MNKY VERSE
+            {isLoggedIn ? (
+              <>
+                Welcome back, <span className="font-semibold">{name}</span>
+              </>
+            ) : (
+              "Welcome to MNKY VERSE"
+            )}
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-verse-text-muted md:text-lg">
-            {INTRO_COPY}
+            {isLoggedIn ? WELCOME_BACK_COPY : INTRO_COPY}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -73,8 +72,8 @@ export function VerseHeroDynamic() {
         </div>
       </div>
 
-      {/* Right: Dotted map background + Globe + mascot + orbiting circles */}
-      <div className="relative flex min-h-[280px] md:min-h-[360px] lg:min-h-[420px]">
+      {/* Right: Dotted map background + Globe + mascot — min-height matches globe so top is not clipped */}
+      <div className="relative flex min-h-[448px] md:min-h-[496px] lg:min-h-[548px]">
         {/* Layer 0: Dotted map - subtle background suggesting global reach */}
         <div className="absolute inset-0 z-0 flex items-end justify-center overflow-hidden opacity-[0.12] md:opacity-[0.15]">
           <div className="relative h-full w-full min-h-[280px] min-w-[320px]">
@@ -88,93 +87,27 @@ export function VerseHeroDynamic() {
             />
           </div>
         </div>
-        {/* Shared container: globe and orbit use SAME frame for perfect concentric alignment */}
+        {/* Globe container */}
         <div className="absolute inset-0 z-0 flex items-end justify-center">
-          <div className="relative h-[360px] w-[360px] shrink-0 md:h-[400px] md:w-[400px] lg:h-[440px] lg:w-[440px]">
-            {/* Layer 1: Globe - fills container */}
+          <div className="relative h-[448px] w-[448px] shrink-0 md:h-[496px] md:w-[496px] lg:h-[548px] lg:w-[548px]">
             <div className="absolute inset-0 overflow-hidden rounded-full">
               <Globe
                 config={globeConfig}
                 className="size-full max-h-none max-w-none opacity-40 md:opacity-50 [contain:layout_paint]"
               />
             </div>
-            {/* Layer 2: Orbit - same container, radius = half for circumference match */}
-            <div className="absolute inset-0 motion-reduce:[&_[class*='animate-orbit']]:animate-none [&>div]:pointer-events-auto">
-              <OrbitingCircles
-                radius={180}
-                iconSize={36}
-                speed={1.2}
-                duration={20}
-                path={true}
-                className="[&_circle]:stroke-verse-text/10"
-              >
-              <Link
-                href="/verse/fragrance-wheel"
-                className={ORBIT_ICON_STYLE}
-                aria-label="Discover scent families"
-              >
-                <Sparkles className="size-5" />
-              </Link>
-              <Link
-                href="/verse/explore"
-                className={ORBIT_ICON_STYLE}
-                aria-label="Explore fragrances"
-              >
-                <BookOpen className="size-5" />
-              </Link>
-              <Link
-                href="/verse/chat"
-                className={ORBIT_ICON_STYLE}
-                aria-label="Chat with AI"
-              >
-                <MessageCircle className="size-5" />
-              </Link>
-              <Link
-                href="/verse/products"
-                className={ORBIT_ICON_STYLE}
-                aria-label="Shop products"
-              >
-                <ShoppingBag className="size-5" />
-              </Link>
-            </OrbitingCircles>
-            </div>
-            {/* Inner orbit - reverse, proportional */}
-            <div className="absolute inset-0 motion-reduce:[&_[class*='animate-orbit']]:animate-none [&>div]:pointer-events-auto">
-              <OrbitingCircles
-                radius={105}
-                iconSize={32}
-                speed={2}
-                duration={15}
-                reverse
-                path={false}
-              >
-                <Link
-                  href="/verse/blending-guide"
-                  className={ORBIT_ICON_STYLE}
-                  aria-label="Blending guide"
-                >
-                  <FlaskConical className="size-4" />
-                </Link>
-                <Link
-                  href="/verse/collections"
-                  className={ORBIT_ICON_STYLE}
-                  aria-label="Collections"
-                >
-                  <Gift className="size-4" />
-                </Link>
-              </OrbitingCircles>
-            </div>
           </div>
         </div>
 
-        {/* Layer 3: Mascot - bottom-left of globe, overlapping left flank (foreground) */}
+        {/* Mascot - bottom-left of globe, overlapping left flank (foreground) */}
         <div className="absolute bottom-0 left-0 z-20 flex items-end pl-1 md:pl-2">
           <Image
-            src="/verse/mood_mnky.png"
+            src="/verse/mood-mnky-3d.png"
             alt="MOOD MNKY - Your gateway to the universe"
             width={720}
             height={810}
-            className="h-auto w-full max-w-[380px] object-contain object-bottom md:max-w-[460px] lg:max-w-[540px]"
+            className="h-auto w-full max-w-[304px] object-contain object-bottom md:max-w-[368px] lg:max-w-[432px]"
+            unoptimized
             style={
               theme === "dark"
                 ? {
@@ -184,7 +117,7 @@ export function VerseHeroDynamic() {
                     filter: "drop-shadow(0 0 64px rgba(255,255,255,0.35))",
                   }
             }
-            sizes="(max-width: 768px) 380px, (max-width: 1024px) 460px, 540px"
+            sizes="(max-width: 768px) 304px, (max-width: 1024px) 368px, 432px"
             priority
           />
         </div>

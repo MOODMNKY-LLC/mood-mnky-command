@@ -29,7 +29,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Streamdown } from "streamdown";
+import { Block, Streamdown } from "streamdown";
+import { motion, useReducedMotion } from "motion/react";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
@@ -324,14 +325,53 @@ export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
+/** Render <p> as <div> to avoid hydration errors when link-safety modals or other UI render block elements inside paragraphs. */
+const streamdownComponents = { p: "div" as const };
+
+/** Wraps each Streamdown block in a soft blur-fade on mount for streaming. Respects prefers-reduced-motion. */
+export function BlurFadeBlock(
+  props: ComponentProps<typeof Block>
+) {
+  const reduceMotion = useReducedMotion();
+  const duration = reduceMotion ? 0 : 0.3;
+  return (
+    <motion.div
+      initial={{
+        opacity: 0,
+        filter: reduceMotion ? undefined : "blur(6px)",
+      }}
+      animate={{
+        opacity: 1,
+        filter: reduceMotion ? undefined : "blur(0px)",
+      }}
+      transition={{ duration, ease: "easeOut" }}
+    >
+      <Block {...props} />
+    </motion.div>
+  );
+}
+
 export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
+  ({
+    className,
+    components,
+    mode,
+    parseIncompleteMarkdown,
+    BlockComponent,
+    ...props
+  }: MessageResponseProps) => (
     <Streamdown
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
         className
       )}
+      components={{ ...streamdownComponents, ...components }}
       plugins={streamdownPlugins}
+      {...(mode !== undefined && { mode })}
+      {...(parseIncompleteMarkdown !== undefined && {
+        parseIncompleteMarkdown,
+      })}
+      {...(BlockComponent !== undefined && { BlockComponent })}
       {...props}
     />
   ),

@@ -8,6 +8,7 @@ import { VerseProductCard } from "@/components/verse/product-card";
 import { VerseBrandBand } from "@/components/verse/verse-brand-band";
 import { VerseHeroDynamic } from "@/components/verse/verse-hero-dynamic";
 import { PortalWelcome } from "@/components/verse/portal-welcome";
+import { PortalPillarCards } from "@/components/verse/portal-pillar-cards";
 import { PortalQuickActions } from "@/components/verse/portal-quick-actions";
 import { PortalPillars } from "@/components/verse/portal-pillars";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -50,14 +51,15 @@ export default async function VerseHomePage() {
       <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-10 px-4 pb-8 md:px-6 md:pb-10">
         <VerseHeroDynamic />
 
-      {/* Welcome + Quick Actions */}
+      {/* MNKY PORTAL: welcome, then cards in order Dojo → Agent Chat → MNKY Shop → Fragrance Wheel → Blending Guide → Profile */}
       <section className="space-y-6">
         <div>
           <h2 className="font-verse-heading mb-2 text-2xl font-semibold text-verse-text">
-            Portal Home
+            MNKY PORTAL
           </h2>
           <PortalWelcome />
         </div>
+        <PortalPillarCards />
         <PortalQuickActions />
       </section>
 

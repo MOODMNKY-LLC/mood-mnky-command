@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { VerseChatPageContent } from "./verse-chat-page-content";
 
 export default function VerseChatPage() {
-  redirect("/chat");
+  return <VerseChatPageContent />;
 }
