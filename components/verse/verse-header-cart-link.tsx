@@ -10,7 +10,7 @@ function CartLinkWithQuantity() {
   return (
     <Link
       href="/verse/cart"
-      className="relative flex items-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+      className="relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
     >
       <ShoppingCart className="h-5 w-5" />
       <span className="hidden sm:inline">Cart</span>
@@ -27,7 +27,7 @@ function CartLinkFallback() {
   return (
     <Link
       href="/verse/cart"
-      className="relative flex items-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+      className="relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
     >
       <ShoppingCart className="h-5 w-5" />
       <span className="hidden sm:inline">Cart</span>

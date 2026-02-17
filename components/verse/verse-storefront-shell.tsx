@@ -19,7 +19,8 @@ function VerseFixedPersona() {
   const { personaState } = useVersePersonaState();
   return (
     <div
-      className="pointer-events-none fixed bottom-4 right-4 z-[99]"
+      className="pointer-events-none fixed right-4 z-[99]"
+      style={{ bottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
       aria-hidden
     >
       <Persona
@@ -50,7 +51,7 @@ export function VerseStorefrontShell({
       data-verse-theme={theme}
     >
       <VersePersonaStateProvider>
-        <div className="relative z-10 flex min-h-screen flex-col">
+        <div className="relative z-10 flex min-h-screen flex-col overflow-x-hidden">
           <VerseAnnouncementBar />
           <VerseHeader isAdmin={isAdmin} user={user} />
           <main className="flex-1">

@@ -47,7 +47,10 @@ const revision =
   crypto.randomUUID()
 
 const withSerwist = withSerwistInit({
-  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+  additionalPrecacheEntries: [
+    { url: "/~offline", revision },
+    { url: "/verse", revision },
+  ],
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
 })

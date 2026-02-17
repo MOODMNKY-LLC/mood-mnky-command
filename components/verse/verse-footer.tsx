@@ -9,25 +9,34 @@ export function VerseFooter() {
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <Link
             href="/verse"
-            className="font-verse-heading text-sm font-medium text-verse-text-muted"
+            className="font-verse-heading flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text-muted"
           >
             MNKY VERSE
           </Link>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-verse-text-muted">
-            <Link href="/verse/products" className="hover:text-verse-text">
+            <Link
+              href="/verse/products"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
+            >
               Shop
             </Link>
-            <Link href="/verse/explore" className="hover:text-verse-text">
+            <Link
+              href="/verse/explore"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
+            >
               Explore
             </Link>
-            <Link href="/verse/community" className="hover:text-verse-text">
+            <Link
+              href="/verse/community"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
+            >
               Community
             </Link>
             <a
               href="https://docs.moodmnky.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-verse-text"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
             >
               Docs
             </a>

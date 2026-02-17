@@ -37,7 +37,10 @@ export function VerseAdminDock({
   const [realtimeOpen, setRealtimeOpen] = useState(false);
 
   return (
-    <div className="verse-dock pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center pb-4 pt-8">
+    <div
+      className="verse-dock pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center pt-8"
+      style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
+    >
       <div className="pointer-events-auto">
         <Dock
           className={

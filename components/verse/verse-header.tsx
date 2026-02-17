@@ -39,67 +39,72 @@ export function VerseHeader({
 
   return (
     <header className="sticky top-0 z-50 verse-header glass-panel">
-      <div className="mx-auto flex h-16 max-w-[var(--verse-page-width,1600px)] items-center justify-between gap-4 px-4 md:px-6">
+      <div className="mx-auto grid h-16 max-w-[var(--verse-page-width,1600px)] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6">
+        {/* Left: Logo */}
         <Link
           href="/verse"
           className="font-verse-heading text-xl font-semibold tracking-tight text-verse-text"
         >
           MNKY VERSE
         </Link>
-        <nav className="flex items-center gap-6 md:gap-8">
+        {/* Center: Nav links (Lab, Home, Explore, Blog, Agents, Shop, Cart) */}
+        <nav className="flex min-w-0 shrink items-center justify-center gap-2 md:gap-6">
           {isAdmin && (
             <>
               <Link
                 href="/"
-                className="flex items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
                 title="MOOD MNKY LABZ"
               >
                 <FlaskConical className="h-4 w-4" />
-                Lab
+                <span className="hidden sm:inline">Lab</span>
               </Link>
               <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
             </>
           )}
           <Link
             href="/verse"
-            className="hidden items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
+            className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
           >
             <Home className="h-4 w-4" />
             Home
           </Link>
           <Link
             href="/verse/explore"
-            className="text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             Explore
           </Link>
           <Link
             href="/verse/blog"
-            className="hidden items-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
+            className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
           >
             <BookOpen className="h-4 w-4" />
             Blog
           </Link>
           <Link
             href="/verse/agents"
-            className="flex items-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             <Bot className="h-4 w-4" />
             Agents
           </Link>
           <Link
             href="/verse/products"
-            className="text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             Shop
           </Link>
           <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
           <VerseHeaderCartLink />
+        </nav>
+        {/* Right: Theme + Auth */}
+        <div className="flex items-center justify-end gap-2">
           <VerseButton
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="h-9 w-9"
+            className="h-11 w-11 min-h-[44px] min-w-[44px]"
             title={theme === "light" ? "Switch to dark" : "Switch to light"}
           >
             {theme === "light" ? (
@@ -111,7 +116,7 @@ export function VerseHeader({
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <VerseButton variant="ghost" size="sm" className="gap-2">
+                <VerseButton variant="ghost" size="sm" className="min-h-[44px] gap-2 px-3">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">
                     {user.displayName || user.email?.split("@")[0] || "Account"}
@@ -137,11 +142,11 @@ export function VerseHeader({
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <VerseButton variant="outline" size="sm" asChild>
+            <VerseButton variant="outline" size="sm" className="min-h-[44px]" asChild>
               <Link href="/auth/login">Sign in</Link>
             </VerseButton>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -20,6 +20,8 @@
     "notion:sync-hydrogen-credentials": "tsx scripts/update-notion-hydrogen-credentials.ts",
     "verse:seed-blog": "tsx scripts/seed-verse-blog-posts.ts",
     "vercel:env-check": "node scripts/vercel-env-check.mjs",
+    "vercel:env-sync": "node scripts/vercel-env-sync.mjs",
+    "vercel:env-sync:dry": "node scripts/vercel-env-sync.mjs --dry-run",
     "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
     "voice:preview": "node scripts/preview-voices.mjs"
   },
