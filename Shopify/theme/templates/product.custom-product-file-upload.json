@@ -66,13 +66,6 @@
           "settings": {
             "share_label": "Share"
           }
-        },
-        "acerill_custom_forms_block": {
-          "type": "shopify://apps/acerill-form-builder/blocks/custom-form/830f910d-3579-44cb-9d18-92197bb5bd98",
-          "settings": {
-            "formId": "b99bd552-69eb-4f64-a5ad-895f5d4e630d",
-            "behavior": "set-line-item-properties"
-          }
         }
       },
       "block_order": [
@@ -84,7 +77,6 @@
         "variant_picker",
         "quantity_selector",
         "price",
-        "acerill_custom_forms_block",
         "buy_buttons",
         "share"
       ],

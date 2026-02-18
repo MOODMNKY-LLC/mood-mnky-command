@@ -15,7 +15,7 @@
         "slide-0": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/1200x628-Social-Sharing-Image-_1_0c5da239-fb27-4b7d-bff4-49501637251d.jpg",
+            "image": "shopify://shop_images/mnky-shopify-hero_upscaled_b96062bf-6651-4923-a92f-853f0f809f18.png",
             "heading": "Extreme personalization. The Experience.",
             "heading_size": "h2",
             "subheading": "Bespoke fragrance and self-care that transforms everyday rituals into sensory journeys. Always scentsing the MOOD.",
@@ -33,7 +33,7 @@
         "slide-1": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/IMG_6641_2.jpg",
+            "image": "shopify://shop_images/custom-candle-mnky-light_ae92538b-dd2a-4d6e-8d89-147a75f59554.png",
             "heading": "The Experience",
             "heading_size": "h1",
             "subheading": "Craft truly bespoke fragrance experiences tailored to your preferences, story, and needs. Tell us your story—we'll hand craft a blend just for you.",
@@ -51,7 +51,7 @@
         "slide-2": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/pexels-pixabay-262508.jpg",
+            "image": "shopify://shop_images/mnky-verse-blog_upscaled.png",
             "heading": "The Dojo",
             "heading_size": "h1",
             "subheading": "Your private corner in the MNKY VERSE. Preferences, your default agent, and your connection to the ecosystem—all in one place. Enter through the MNKY VERSE app.",
@@ -69,7 +69,7 @@
         "72a99abd-f56f-4e63-81e3-9ce37a0efadb": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/25A08994-7608-4B24-B336-8704C3A7965B.jpg",
+            "image": "shopify://shop_images/mnky-wax-melts.png",
             "heading": "Flame Free? No problem!",
             "heading_size": "h1",
             "subheading": "Our signature wax-melts are a perfect option for those needing a flame free solution for enjoying the MOOD.",
@@ -110,7 +110,7 @@
         "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience in the MNKY VERSE. Candles and wax-melts.</p>",
         "show_description": true,
         "description_style": "body",
-        "collection": "available-moods",
+        "collection": "mnky-moods",
         "products_to_show": 12,
         "columns_desktop": 5,
         "full_width": true,
@@ -119,6 +119,7 @@
         "enable_desktop_slider": true,
         "color_scheme": "background-1",
         "image_ratio": "adapt",
+        "image_shape": "default",
         "show_secondary_image": true,
         "show_vendor": true,
         "show_rating": true,
@@ -127,33 +128,6 @@
         "swipe_on_mobile": true,
         "padding_top": 0,
         "padding_bottom": 0
-      }
-    },
-    "a4b1732b-b660-4e99-b471-f681ff417699": {
-      "type": "featured-collection",
-      "settings": {
-        "title": "Subscribe to the Vibe!",
-        "heading_size": "h1",
-        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood in the MNKY VERSE. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
-        "show_description": true,
-        "description_style": "body",
-        "collection": "subscriptions",
-        "products_to_show": 12,
-        "columns_desktop": 5,
-        "full_width": true,
-        "show_view_all": true,
-        "view_all_style": "solid",
-        "enable_desktop_slider": true,
-        "color_scheme": "background-1",
-        "image_ratio": "adapt",
-        "show_secondary_image": true,
-        "show_vendor": true,
-        "show_rating": true,
-        "enable_quick_add": true,
-        "columns_mobile": "2",
-        "swipe_on_mobile": true,
-        "padding_top": 36,
-        "padding_bottom": 36
       }
     },
     "multicolumn-0": {
@@ -219,6 +193,53 @@
         "padding_bottom": 92
       }
     },
+    "a4b1732b-b660-4e99-b471-f681ff417699": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Subscribe to the Vibe!",
+        "heading_size": "h1",
+        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood in the MNKY VERSE. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "subscriptions",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "app-cta-0": {
+      "type": "app-cta",
+      "settings": {
+        "app_base_url": "https://app.moodmnky.com",
+        "cta_path": "/blending",
+        "heading": "The Foundation — Create your custom fragrance blend",
+        "heading_size": "h2",
+        "subheading": "<p>Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.</p>",
+        "cta_label": "Go to Blending Lab",
+        "cta_aria_label": "",
+        "button_style_secondary": false,
+        "desktop_content_position": "middle",
+        "content_alignment": "center",
+        "full_width": true,
+        "color_scheme": "background-1",
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
     "image-with-text-0": {
       "type": "image-with-text",
       "blocks": {
@@ -240,7 +261,8 @@
           "type": "button",
           "settings": {
             "button_label": "Shop now",
-            "button_link": ""
+            "button_link": "",
+            "button_style_secondary": false
           }
         }
       },
@@ -257,6 +279,7 @@
         "desktop_content_position": "middle",
         "desktop_content_alignment": "left",
         "content_layout": "no-overlap",
+        "section_color_scheme": "",
         "color_scheme": "background-2",
         "image_behavior": "none",
         "mobile_content_alignment": "left",
@@ -285,7 +308,8 @@
           "type": "button",
           "settings": {
             "button_label": "Shop now",
-            "button_link": ""
+            "button_link": "",
+            "button_style_secondary": false
           }
         }
       },
@@ -302,6 +326,7 @@
         "desktop_content_position": "middle",
         "desktop_content_alignment": "left",
         "content_layout": "no-overlap",
+        "section_color_scheme": "",
         "color_scheme": "background-2",
         "image_behavior": "none",
         "mobile_content_alignment": "left",
@@ -330,7 +355,8 @@
           "type": "button",
           "settings": {
             "button_label": "Shop now",
-            "button_link": ""
+            "button_link": "",
+            "button_style_secondary": false
           }
         }
       },
@@ -347,6 +373,7 @@
         "desktop_content_position": "middle",
         "desktop_content_alignment": "left",
         "content_layout": "no-overlap",
+        "section_color_scheme": "",
         "color_scheme": "background-2",
         "image_behavior": "none",
         "mobile_content_alignment": "left",
@@ -375,7 +402,8 @@
           "type": "button",
           "settings": {
             "button_label": "Shop now",
-            "button_link": ""
+            "button_link": "",
+            "button_style_secondary": false
           }
         }
       },
@@ -392,6 +420,7 @@
         "desktop_content_position": "middle",
         "desktop_content_alignment": "left",
         "content_layout": "no-overlap",
+        "section_color_scheme": "",
         "color_scheme": "background-2",
         "image_behavior": "none",
         "mobile_content_alignment": "left",
@@ -417,6 +446,7 @@
         "enable_desktop_slider": false,
         "color_scheme": "background-1",
         "image_ratio": "portrait",
+        "image_shape": "default",
         "show_secondary_image": false,
         "show_vendor": false,
         "show_rating": false,
@@ -519,25 +549,6 @@
         "columns_mobile": "1",
         "swipe_on_mobile": false,
         "padding_top": 0,
-        "padding_bottom": 60
-      }
-    },
-    "app-cta-0": {
-      "type": "app-cta",
-      "settings": {
-        "app_base_url": "https://app.moodmnky.com",
-        "cta_path": "/blending",
-        "heading": "The Foundation — Create your custom fragrance blend",
-        "heading_size": "h2",
-        "subheading": "<p>Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.</p>",
-        "cta_label": "Go to Blending Lab",
-        "cta_aria_label": "",
-        "button_style_secondary": false,
-        "desktop_content_position": "middle",
-        "content_alignment": "center",
-        "full_width": true,
-        "color_scheme": "background-1",
-        "padding_top": 60,
         "padding_bottom": 60
       }
     },

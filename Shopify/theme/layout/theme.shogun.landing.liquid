@@ -221,6 +221,18 @@ This file can be re-written at any time.
         --variant-pills-shadow-horizontal-offset: {{ settings.variant_pills_shadow_horizontal_offset }}px;
         --variant-pills-shadow-vertical-offset: {{ settings.variant_pills_shadow_vertical_offset }}px;
         --variant-pills-shadow-blur-radius: {{ settings.variant_pills_shadow_blur }}px;
+
+        {% if settings.glass_style_enabled %}
+        --glass-bg-alpha: {{ settings.glass_opacity }};
+        --glass-blur: {{ settings.glass_blur }}px;
+        --glass-border-alpha: 0.18;
+        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        {% else %}
+        --glass-bg-alpha: 0.98;
+        --glass-blur: 0px;
+        --glass-border-alpha: 0.08;
+        --glass-shadow: none;
+        {% endif %}
       }
 
       *,
@@ -257,6 +269,8 @@ This file can be re-written at any time.
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'component-glass.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-app-bridge.css' | asset_url | stylesheet_tag }}
 
     {%- unless settings.type_body_font.system? -%}
       <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
@@ -288,7 +302,7 @@ This file can be re-written at any time.
   
   {% render 'shogun-head' %}
 </head>
-  <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+  <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}" data-theme="dark">
     {% include 'shogun-content-handler' %}
 
     
@@ -296,6 +310,14 @@ This file can be re-written at any time.
     {{ content_for_layout }}
     
     <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('theme');
+          if (stored === 'light') document.body.setAttribute('data-theme', 'light');
+        } catch (e) {}
+      })();
+    </script>
+<script>
       window.shopUrl = '{{ request.origin }}';
       window.routes = {
         cart_add_url: '{{ routes.cart_add_url }}',
@@ -336,6 +358,33 @@ This file can be re-written at any time.
       };
     </script>
 <script src="{{ 'predictive-search.js' | asset_url }}" defer></script>
+<script>
+      (function() {
+        function updateThemeUI() {
+          var isLight = document.body.getAttribute('data-theme') === 'light';
+          var toggles = document.querySelectorAll('[data-theme-toggle]');
+          toggles.forEach(function(btn) {
+            var iconDark = btn.querySelector('.theme-toggle__icon--dark');
+            var iconLight = btn.querySelector('.theme-toggle__icon--light');
+            if (iconDark && iconLight) {
+              iconDark.hidden = !isLight;
+              iconLight.hidden = isLight;
+            }
+          });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          updateThemeUI();
+          document.body.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-theme-toggle]');
+            if (!btn) return;
+            var next = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (err) {}
+            updateThemeUI();
+          });
+        });
+      })();
+    </script>
     <style type="text/css">
       body, html {
         width: 100% !important;

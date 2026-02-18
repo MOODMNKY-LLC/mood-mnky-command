@@ -27,6 +27,63 @@
     "checkout_header_image": "shopify://shop_images/492582A5-728E-46FA-9CE5-020731EC06F8.png",
     "checkout_logo_image": "shopify://shop_images/Asset_2_c4d0a44a-2189-4f01-b156-355dfcc61039.png",
     "checkout_logo_size": "small",
+    "color_schemes": {
+      "background-1": {
+        "settings": {
+          "background": "#0a0a0a",
+          "background_gradient": "",
+          "text": "#fafafa",
+          "button": "#404040",
+          "button_label": "#fafafa",
+          "secondary_button_label": "#fafafa",
+          "shadow": "#171717"
+        }
+      },
+      "background-2": {
+        "settings": {
+          "background": "#262626",
+          "background_gradient": "",
+          "text": "#fafafa",
+          "button": "#525252",
+          "button_label": "#fafafa",
+          "secondary_button_label": "#fafafa",
+          "shadow": "#171717"
+        }
+      },
+      "inverse": {
+        "settings": {
+          "background": "#fafafa",
+          "background_gradient": "",
+          "text": "#171717",
+          "button": "#404040",
+          "button_label": "#fafafa",
+          "secondary_button_label": "#171717",
+          "shadow": "#171717"
+        }
+      },
+      "accent-1": {
+        "settings": {
+          "background": "#1a1a1a",
+          "background_gradient": "",
+          "text": "#fafafa",
+          "button": "#404040",
+          "button_label": "#fafafa",
+          "secondary_button_label": "#fafafa",
+          "shadow": "#171717"
+        }
+      },
+      "accent-2": {
+        "settings": {
+          "background": "#333333",
+          "background_gradient": "",
+          "text": "#fafafa",
+          "button": "#404040",
+          "button_label": "#fafafa",
+          "secondary_button_label": "#fafafa",
+          "shadow": "#171717"
+        }
+      }
+    },
     "sections": {
       "announcement-bar": {
         "type": "announcement-bar",
@@ -125,11 +182,6 @@
         "disabled": false,
         "settings": {}
       },
-      "10910373243780877952": {
-        "type": "shopify://apps/preorder-beat/blocks/vpo/31d2b224-c33f-4240-a430-fc08fef2ef98",
-        "disabled": false,
-        "settings": {}
-      },
       "3720565183479497137": {
         "type": "shopify://apps/globo-product-options-variant/blocks/app-embed-block/fdc9fad5-1a0f-4bd4-9c8a-1af6a6eef6b8",
         "disabled": false,
@@ -181,63 +233,6 @@
         "type": "shopify://apps/rivo-loyalty-referrals/blocks/app-embed/580e9665-b2cd-4dbc-b6ba-6445ac9e6871",
         "disabled": false,
         "settings": {}
-      }
-    },
-    "color_schemes": {
-      "background-1": {
-        "settings": {
-          "background": "#0a0a0a",
-          "background_gradient": "",
-          "text": "#fafafa",
-          "button": "#404040",
-          "button_label": "#fafafa",
-          "secondary_button_label": "#fafafa",
-          "shadow": "#171717"
-        }
-      },
-      "background-2": {
-        "settings": {
-          "background": "#262626",
-          "background_gradient": "",
-          "text": "#fafafa",
-          "button": "#525252",
-          "button_label": "#fafafa",
-          "secondary_button_label": "#fafafa",
-          "shadow": "#171717"
-        }
-      },
-      "inverse": {
-        "settings": {
-          "background": "#fafafa",
-          "background_gradient": "",
-          "text": "#171717",
-          "button": "#404040",
-          "button_label": "#fafafa",
-          "secondary_button_label": "#171717",
-          "shadow": "#171717"
-        }
-      },
-      "accent-1": {
-        "settings": {
-          "background": "#1a1a1a",
-          "background_gradient": "",
-          "text": "#fafafa",
-          "button": "#404040",
-          "button_label": "#fafafa",
-          "secondary_button_label": "#fafafa",
-          "shadow": "#171717"
-        }
-      },
-      "accent-2": {
-        "settings": {
-          "background": "#333333",
-          "background_gradient": "",
-          "text": "#fafafa",
-          "button": "#404040",
-          "button_label": "#fafafa",
-          "secondary_button_label": "#fafafa",
-          "shadow": "#171717"
-        }
       }
     }
   },
