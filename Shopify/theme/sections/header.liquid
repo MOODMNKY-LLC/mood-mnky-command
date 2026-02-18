@@ -107,6 +107,12 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  /* Ensure dropdown menu items are clickable: submenu must sit above header/content (override global-settings-popup z-index: -1) */
+  header-menu details[open] .header__submenu.global-settings-popup,
+  details[open] > .header__submenu.global-settings-popup {
+    z-index: 10;
+  }
 {%- endstyle -%}
 
 <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
