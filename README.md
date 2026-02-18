@@ -1,0 +1,125 @@
+# MOOD MNKY Command (mood-mnky-command)
+
+Bespoke fragrance in the MNKY VERSE: storefront, Blending Lab, and MNKY LABZ in one codebase.
+
+![MOOD MNKY](public/mood-mnky-icon.svg)
+
+---
+
+## What This Repo Is
+
+This repository is a **monorepo** containing:
+
+- **Next.js app** — MNKY VERSE storefront (catalog, cart, blog, Dojo, community), LABZ dashboard, and Blending Lab; deployed on Vercel.
+- **Shopify theme** — Liquid theme in `Shopify/theme/` (Dawn-derived) for the store; links to the app for Verse, Dojo, and Community.
+- **Theme app extension** — `extensions/mood-mnky-theme/` for app blocks (Blending CTA, Fragrance Finder, Subscription CTA) and app embed.
+- **Supabase** — Backend for Verse blog, auth, and other data; optional Edge Functions in `supabase/functions/`.
+
+The store (Shopify theme) and the app (Next.js) share the same Shopify catalog via the Storefront API. The Dojo is the user’s **private** portal (preferences, default agent) inside the app; **Community** is the public touchpoints (Discord, store blog, Verse blog).
+
+---
+
+## Ecosystem (High Level)
+
+```mermaid
+flowchart LR
+  subgraph Store [Shopify Store]
+    Theme[Liquid Theme]
+    Nav[main-menu]
+    Footer[Footer]
+    BlogShop[Store Blog]
+  end
+  subgraph App [MNKY VERSE App]
+    Verse[Verse Storefront]
+    Dojo[The Dojo - Private]
+    VerseBlog[Verse Blog]
+  end
+  subgraph Community [Public Community]
+    Discord[Discord Server]
+    BlogShop
+    VerseBlog
+  end
+  Theme --> Nav
+  Nav -->|"My Dojo"| Dojo
+  Nav -->|"Community" page| Community
+  Footer -->|Discord, Store Blog, Verse Blog| Community
+  Verse --> Dojo
+  Verse --> VerseBlog
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** (LTS) and **pnpm**
+- **Shopify CLI** (for theme development and app extension)
+- **Supabase** (account and project for Verse blog and backend)
+
+### Setup
+
+1. Clone the repo and install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Copy environment variables and set values (see `.env.example` or project docs). Key vars include:
+   - Next.js: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, Shopify Storefront API keys.
+   - Supabase: `SUPABASE_SERVICE_ROLE_KEY` for server-side operations.
+   - Optional: Notion, OpenAI, Vercel, etc., per feature.
+
+3. Run the Next.js app:
+
+   ```bash
+   pnpm dev
+   ```
+
+   App runs at `http://localhost:3000`. Verse routes: `/verse`, `/verse/dojo`, `/verse/blog`, `/verse/community`, etc.
+
+4. **Theme (Shopify):** Use Shopify CLI to push/pull the theme from `Shopify/theme/` and preview. See [Shopify/docs/NAVIGATION-MENU-SETUP.md](Shopify/docs/NAVIGATION-MENU-SETUP.md) for nav and footer setup.
+
+5. **App extension:** Develop and deploy via Shopify CLI from the repo root; extension lives in `extensions/mood-mnky-theme/`.
+
+Further setup (Supabase migrations, Verse blog sync, LABZ): see [docs/](docs/) and [docs/SUPABASE-VERSE-BLOG-PRODUCTION.md](docs/SUPABASE-VERSE-BLOG-PRODUCTION.md) where applicable.
+
+---
+
+## Key Directories
+
+| Path | Purpose |
+|------|---------|
+| `app/` | Next.js App Router pages and layouts (Verse, LABZ, Blending, API routes) |
+| `components/` | Shared and Verse UI components |
+| `lib/` | Shopify client, Supabase, Verse blog, utilities |
+| `Shopify/theme/` | Liquid theme (sections, templates, assets) |
+| `extensions/mood-mnky-theme/` | Theme app extension (blocks, embed) |
+| `supabase/` | Migrations, Edge Functions, config |
+| `docs/` | Design system, integration report, runbooks |
+
+---
+
+## Roadmap
+
+- **Phase 1 — Store–Verse alignment:** Theme copy, nav, and CTAs aligned with MNKY VERSE; app base URL and featured blog link to Verse blog. (Done.)
+- **Phase 2 — Dojo and Community clarity:** Dojo framed as private portal (in-app); Community as Discord + store blog + Verse blog; theme slideshow and multicolumn updated; footer Community block and nav/docs updated. (Done.)
+- **Phase 3 — Verse blog and theme:** Optional public read-only API for Verse blog so theme or app blocks can show “Latest from MNKY VERSE”; cross-linking and optional cross-posting between store blog and Verse blog.
+- **Phase 4 — LABZ enhancements:** Dashboard and backstage tools; Notion/sync and operational workflows as needed.
+- **Phase 5 — Ongoing:** Performance, accessibility, and conversion flows per [Shopify/theme-ui-ux-baseline-links.md](Shopify/theme-ui-ux-baseline-links.md) and design system.
+
+---
+
+## Contributing and Docs
+
+- **Design system:** [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)
+- **Shopify nav and footer:** [Shopify/docs/NAVIGATION-MENU-SETUP.md](Shopify/docs/NAVIGATION-MENU-SETUP.md)
+- **Store–Verse integration:** [docs/SHOPIFY-MNKY-VERSE-INTEGRATION-REPORT.md](docs/SHOPIFY-MNKY-VERSE-INTEGRATION-REPORT.md)
+
+See `docs/` for more runbooks and references.
+
+---
+
+## License and Brand
+
+MOOD MNKY — bespoke fragrance and the MNKY VERSE. For more on the brand and ecosystem, see [docs.moodmnky.com](https://docs.moodmnky.com) (when available).

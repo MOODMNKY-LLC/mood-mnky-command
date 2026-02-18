@@ -89,6 +89,31 @@ When you want production to have the same schema (and optional data) as your mig
 
 ---
 
+## Seeding production formulas
+
+`supabase db push` only runs migrations. It does **not** run seed files (`seed.sql`, `seed_formulas.sql`). So the production database has the formulas tables but no formula rows until you seed them.
+
+### One-off (Supabase Dashboard)
+
+1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your production project → **SQL Editor**.
+2. Paste the contents of `supabase/seed_formulas.sql` and run it. If the editor has a size limit, run in chunks (e.g. one formula block at a time).
+3. Verify: open production `/formulas` or `GET /api/formulas` and confirm the formula count.
+
+### Repeatable (script)
+
+1. **Database connection** — In Supabase Dashboard → **Project Settings** → **Database**, copy the **Connection string** (URI). Add it to Vercel (or `.env`) as `SUPABASE_DB_URL`. Do not commit this value.
+2. **Run the seed**:
+   ```bash
+   pnpm formulas:seed-production
+   ```
+   This uses Vercel production env (no secrets written to disk). Alternatively, set `SUPABASE_DB_URL` in `.env` and run:
+   ```bash
+   tsx scripts/seed-formulas-production.ts
+   ```
+3. Re-run anytime you want to sync production with the repo's formula seed (e.g. after adding formulas to `seed_formulas.sql`).
+
+---
+
 ## Summary
 
 | Target   | Apply migrations with   | App / scripts use env        |

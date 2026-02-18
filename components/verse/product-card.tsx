@@ -21,6 +21,14 @@ type ProductCardProduct = {
     width?: number;
     height?: number;
   } | null;
+  images?: {
+    nodes: Array<{
+      url: string;
+      altText?: string | null;
+      width?: number;
+      height?: number;
+    }>;
+  } | null;
   priceRange?: {
     minVariantPrice?: {
       amount: string;
@@ -36,19 +44,35 @@ export function VerseProductCard({ product }: { product: ProductCardProduct }) {
   const variantId = product.variants?.nodes?.[0]?.id ?? null;
   const price = product.priceRange?.minVariantPrice;
 
+  const secondImage = product.images?.nodes?.[1];
+  const imageSizes =
+    "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw";
+
   return (
-    <VerseCard className="overflow-hidden transition-opacity hover:opacity-95">
-      <Link href={`/verse/products/${product.handle}`}>
+    <VerseCard className="group/card overflow-hidden transition-opacity hover:opacity-95">
+      <Link href={`/verse/products/${product.handle}`} className="block">
         <VerseCardHeader className="p-0">
-          <div className="relative aspect-square w-full overflow-hidden bg-verse-text/5">
+          <div className="relative aspect-video w-full overflow-hidden bg-verse-text/5">
             {product.featuredImage?.url ? (
-              <Image
-                src={product.featuredImage.url}
-                alt={product.featuredImage.altText || product.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
+              <>
+                <Image
+                  src={product.featuredImage.url}
+                  alt={product.featuredImage.altText || product.title}
+                  fill
+                  className="object-contain transition-opacity duration-300 ease-out group-hover/card:opacity-0"
+                  sizes={imageSizes}
+                />
+                {secondImage?.url && (
+                  <Image
+                    src={secondImage.url}
+                    alt={secondImage.altText || product.title}
+                    fill
+                    className="absolute inset-0 object-contain opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover/card:scale-[1.03] group-hover/card:opacity-100"
+                    sizes={imageSizes}
+                    priority={false}
+                  />
+                )}
+              </>
             ) : (
               <div className="flex h-full items-center justify-center text-verse-text-muted">
                 No image

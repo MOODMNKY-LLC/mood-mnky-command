@@ -183,6 +183,23 @@
         </a>
       </div>
     {%- endif -%}
+    {%- if section.settings.verse_blog_url != blank -%}
+      <div
+        class="blog__view-all center{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        {% if settings.animations_reveal_on_scroll %}
+          data-cascade
+        {% endif %}
+      >
+        <a
+          href="{{ section.settings.verse_blog_url }}"
+          id="VerseBlog-{{ section.id }}"
+          class="link underlined-link"
+          aria-labelledby="VerseBlog-{{ section.id }} SectionHeading-{{ section.id }}"
+        >
+          {{ section.settings.verse_blog_label | default: 'View all in the MNKY VERSE' }}
+        </a>
+      </div>
+    {%- endif -%}
   </div>
 </div>
 
@@ -274,6 +291,22 @@
       "id": "show_view_all",
       "default": true,
       "label": "t:sections.featured-blog.settings.show_view_all.label"
+    },
+    {
+      "type": "header",
+      "content": "MNKY VERSE blog"
+    },
+    {
+      "type": "url",
+      "id": "verse_blog_url",
+      "label": "Verse blog URL",
+      "info": "Link to the full blog in the MNKY VERSE app (e.g. https://app.moodmnky.com/verse/blog)"
+    },
+    {
+      "type": "text",
+      "id": "verse_blog_label",
+      "label": "Verse blog link label",
+      "default": "View all in the MNKY VERSE"
     },
     {
       "type": "header",

@@ -54,9 +54,9 @@
             "image": "shopify://shop_images/pexels-pixabay-262508.jpg",
             "heading": "The Dojo",
             "heading_size": "h1",
-            "subheading": "Customers, friends, family? It’s all the same to us! Community-centered wellness where you learn, connect, and grow. Join MOOD chasin candle connoisseurs in the MNKY VERSE.",
-            "button_label": "Come hang out!",
-            "link": "shopify://blogs/hello-welcome-to-mood-mnky",
+            "subheading": "Your private corner in the MNKY VERSE. Preferences, your default agent, and your connection to the ecosystem—all in one place. Enter through the MNKY VERSE app.",
+            "button_label": "Enter the MNKY VERSE",
+            "link": "https://app.moodmnky.com/verse",
             "button_style_secondary": false,
             "box_align": "bottom-center",
             "show_text_box": true,
@@ -99,7 +99,7 @@
         "change_slides_speed": 9,
         "image_behavior": "none",
         "show_text_below": true,
-        "accessibility_info": "Featured MOOD MNKY collections: Who we are, Custom candles, Community blog, Wax melts"
+        "accessibility_info": "Featured MOOD MNKY: Who we are, Custom candles, Blog, Wax melts, The Dojo"
       }
     },
     "featured-collection-0": {
@@ -107,7 +107,7 @@
       "settings": {
         "title": "Sensory Journeys: Our Starting Lineup",
         "heading_size": "h2",
-        "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience. Candles and wax-melts.</p>",
+        "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience in the MNKY VERSE. Candles and wax-melts.</p>",
         "show_description": true,
         "description_style": "body",
         "collection": "available-moods",
@@ -134,8 +134,8 @@
       "settings": {
         "title": "Subscribe to the Vibe!",
         "heading_size": "h1",
-        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
-        "show_description": false,
+        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood in the MNKY VERSE. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
+        "show_description": true,
         "description_style": "body",
         "collection": "subscriptions",
         "products_to_show": 12,
@@ -163,7 +163,7 @@
           "type": "column",
           "settings": {
             "title": "Extreme Personalization",
-            "text": "<p>MOOD MNKY crafts truly bespoke fragrance experiences tailored to your preferences, story, and needs. Every candle tells your story.</p>",
+            "text": "<p>MOOD MNKY crafts truly bespoke fragrance experiences tailored to your preferences, story, and needs. Every candle tells your story. Always scentsing the MOOD in the Verse.</p>",
             "link_label": "",
             "link": ""
           }
@@ -172,7 +172,7 @@
           "type": "column",
           "settings": {
             "title": "Sensory Journeys",
-            "text": "<p>Transform everyday rituals into meaningful moments. Our traveled blends—from the Eiffel Tower to the streets of Marrakesh—transport you.</p>",
+            "text": "<p>Transform everyday rituals into meaningful moments in the MNKY VERSE. Our traveled blends—from the Eiffel Tower to the streets of Marrakesh—transport you.</p>",
             "link_label": "",
             "link": ""
           }
@@ -181,7 +181,7 @@
           "type": "column",
           "settings": {
             "title": "Handcrafted for You",
-            "text": "<p>Tell us your story and we'll hand craft a special fragrance blend just for you. Like having your own personal tailor, for candles.</p>",
+            "text": "<p>Tell us your story and we'll hand craft a special fragrance blend just for you. Like having your own personal tailor, for candles. Scentsing the MOOD.</p>",
             "link_label": "",
             "link": ""
           }
@@ -189,8 +189,8 @@
         "column-3": {
           "type": "column",
           "settings": {
-            "title": "The Dojo — Engaged Community",
-            "text": "<p>Join the MNKY VERSE. Connect, share, and grow with candle connoisseurs who are always scentsing the MOOD. Community-centered wellness.</p>",
+            "title": "The Dojo — Your Private Portal",
+            "text": "<p>Your personal corner in the MNKY VERSE. Set your preferences, choose your default agent, and stay connected. Enter via the MNKY VERSE app.</p>",
             "link_label": "",
             "link": ""
           }
@@ -525,7 +525,7 @@
     "app-cta-0": {
       "type": "app-cta",
       "settings": {
-        "app_base_url": "http://localhost:3000",
+        "app_base_url": "https://app.moodmnky.com",
         "cta_path": "/blending",
         "heading": "The Foundation — Create your custom fragrance blend",
         "heading_size": "h2",
@@ -544,7 +544,7 @@
     "featured-blog": {
       "type": "featured-blog",
       "settings": {
-        "heading": "MOOD|MNKY Community Blog",
+        "heading": "Stories from the MNKY VERSE",
         "heading_size": "h2",
         "blog": "hello-welcome-to-mood-mnky",
         "post_limit": 3,
@@ -554,6 +554,8 @@
         "show_date": true,
         "show_author": true,
         "show_view_all": true,
+        "verse_blog_url": "https://app.moodmnky.com/verse/blog",
+        "verse_blog_label": "View all in the MNKY VERSE",
         "padding_top": 60,
         "padding_bottom": 60
       }
@@ -595,8 +597,8 @@
   "order": [
     "slideshow",
     "featured-collection-0",
-    "a4b1732b-b660-4e99-b471-f681ff417699",
     "multicolumn-0",
+    "a4b1732b-b660-4e99-b471-f681ff417699",
     "app-cta-0",
     "image-with-text-0",
     "image-with-text-1",

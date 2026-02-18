@@ -266,6 +266,7 @@
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {{ 'component-glass.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-app-bridge.css' | asset_url | stylesheet_tag }}
 
     {%- unless settings.type_body_font.system? -%}
       <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
@@ -298,7 +299,15 @@
   {% render 'shogun-head' %}
 </head>
 
-  <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+  <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}" data-theme="dark">
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('theme');
+          if (stored === 'light') document.body.setAttribute('data-theme', 'light');
+        } catch (e) {}
+      })();
+    </script>
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>
@@ -364,6 +373,34 @@
     {%- if settings.predictive_search_enabled -%}
       <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+
+    <script>
+      (function() {
+        function updateThemeUI() {
+          var isLight = document.body.getAttribute('data-theme') === 'light';
+          var toggles = document.querySelectorAll('[data-theme-toggle]');
+          toggles.forEach(function(btn) {
+            var iconDark = btn.querySelector('.theme-toggle__icon--dark');
+            var iconLight = btn.querySelector('.theme-toggle__icon--light');
+            if (iconDark && iconLight) {
+              iconDark.hidden = !isLight;
+              iconLight.hidden = isLight;
+            }
+          });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          updateThemeUI();
+          document.body.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-theme-toggle]');
+            if (!btn) return;
+            var next = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (err) {}
+            updateThemeUI();
+          });
+        });
+      })();
+    </script>
   {% render 'preorder-now' %}
   </body>
 </html>

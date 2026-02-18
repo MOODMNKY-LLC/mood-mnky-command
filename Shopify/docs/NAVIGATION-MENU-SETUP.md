@@ -1,6 +1,6 @@
-# Navigation Menu Setup — Main Menu (main-menu)
+# Navigation Menu Setup — Main Menu & Footer
 
-The header uses the **main-menu** navigation. Configure it in Shopify Admin to link to Blending Lab, The Dojo, and product flows.
+The theme header uses the **main-menu** navigation. The footer uses the **footer** menu. Configure both in Shopify Admin to align with the MNKY VERSE and link to the app where appropriate.
 
 ---
 
@@ -8,28 +8,53 @@ The header uses the **main-menu** navigation. Configure it in Shopify Admin to l
 
 1. Go to your store admin: `https://YOUR-STORE.myshopify.com/admin`
 2. In the left sidebar: **Online Store** → **Navigation**
-3. Click **main-menu** (or whatever menu is assigned to the header in Theme Editor)
+3. Edit **main-menu** for the header and **footer** for the footer link list
 
 ---
 
-## Recommended MNKY VERSE Menu Structure
+## Main Menu (Header)
 
-To align with the MNKY VERSE (The Experience, The Dojo, The Foundation), add these links:
+Recommended structure aligned with Verse routes and brand pillars:
 
-| Menu Item      | Link / URL                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| Blending Lab   | `http://localhost:3000/blending` (dev) or `https://app.moodmnky.com/blending` (prod) |
-| Match My Mood  | `http://localhost:3000/craft` (dev) or `https://app.moodmnky.com/craft` (prod) |
-| The Dojo       | Your community/blog URL or `https://docs.moodmnky.com`                      |
-| Shop           | `/collections/all` or your main collection                                 |
-| Subscriptions  | `/collections/subscriptions`                                               |
+| Label                 | Link / URL                                                                 |
+| --------------------- | -------------------------------------------------------------------------- |
+| Home                  | /                                                                          |
+| Shop                  | /collections/all or /collections/available-moods                            |
+| Subscriptions         | /collections/subscriptions                                                 |
+| Blending Lab          | https://app.moodmnky.com/blending (or /verse for landing)                  |
+| Match My Mood / Craft | https://app.moodmnky.com/craft                                             |
+| The Dojo / My Dojo    | https://app.moodmnky.com/verse/dojo — *Your private portal in the MNKY VERSE app.* |
+| Explore               | https://app.moodmnky.com/verse/explore                                     |
+| Blog                  | /blogs/hello-welcome-to-mood-mnky (or add secondary “Verse Blog” → app)   |
+| Agents                | https://app.moodmnky.com/verse/agents                                     |
+| Community             | Shopify page "Community" (Discord + store blog + Verse blog) or https://app.moodmnky.com/verse/community |
+
+**Mega menu (optional):** In **Customize** → Header group, you can group items (e.g. **Shop**: Shop, Subscriptions; **The Verse**: Blending Lab, Dojo, Explore, Blog, Agents, Community).
+
+---
+
+## Footer Menu
+
+The theme footer includes a **Community** text block (Discord, store blog, MNKY VERSE blog). You can also add these to the **footer** link list in Admin. Create or edit the **footer** menu with links such as:
+
+| Label        | Link / URL                                      |
+| ------------ | ----------------------------------------------- |
+| About        | Link to “Who We Are” page                       |
+| MNKY VERSE   | https://app.moodmnky.com/verse                  |
+| Discord      | (Discord invite link — set when available)     |
+| Store Blog   | /blogs/hello-welcome-to-mood-mnky              |
+| Verse Blog   | https://app.moodmnky.com/verse/blog            |
+| Contact      | /pages/contact (or contact page)               |
+| Refund policy| /policies/refund-policy                         |
+| Privacy policy | /policies/privacy-policy                     |
+| Terms of service | /policies/terms-of-service                 |
 
 ---
 
 ## Development vs Production
 
-- **Development**: Use `http://localhost:3000` as the base for app links (Blending Lab, Match My Mood) so nav items point to your local mnky-command-app.
-- **Production**: Replace with your deployed app URL (e.g. `https://app.moodmnky.com`).
+- **Development:** Use `http://localhost:3000` as the base for app links so the nav points to your local app.
+- **Production:** Use `https://app.moodmnky.com` for all app links (Blending Lab, Craft, Dojo, Explore, Agents, Community, Verse blog).
 
 ---
 
@@ -37,8 +62,8 @@ To align with the MNKY VERSE (The Experience, The Dojo, The Foundation), add the
 
 The header uses:
 
-- **Logo position**: middle-left (brand-focused)
-- **Menu type**: mega (desktop)
-- **Sticky**: on-scroll-up
+- **Logo position:** middle-left (brand-focused)
+- **Menu type:** mega (desktop)
+- **Sticky:** on-scroll-up
 
-To change these: **Customize** → select the header section → adjust in the right sidebar.
+To change: **Customize** → select the header section → adjust in the right sidebar.

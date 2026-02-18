@@ -29,11 +29,16 @@
 {%- endstyle -%}
 
 {%- liquid
-  assign products_to_display = section.settings.collection.all_products_count
+  assign collection = section.settings.collection
+  assign products_to_display = 0
+  assign more_in_collection = false
 
-  if section.settings.collection.all_products_count > section.settings.products_to_show
-    assign products_to_display = section.settings.products_to_show
-    assign more_in_collection = true
+  if collection != blank
+    assign products_to_display = collection.all_products_count
+    if collection.all_products_count > section.settings.products_to_show
+      assign products_to_display = section.settings.products_to_show
+      assign more_in_collection = true
+    endif
   endif
 
   assign columns_mobile_int = section.settings.columns_mobile | plus: 0
@@ -57,12 +62,11 @@
         </h2>
       {%- endif -%}
       {%- if section.settings.description != blank
-        or section.settings.show_description
-        and section.settings.collection.description != empty
+        or section.settings.show_description and collection != blank and collection.description != empty
       -%}
         <div class="collection__description {{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-          {%- if section.settings.show_description -%}
-            {{ section.settings.collection.description }}
+          {%- if section.settings.show_description and collection != blank -%}
+            {{ collection.description }}
           {%- else -%}
             {{ section.settings.description -}}
           {%- endif %}
@@ -73,11 +77,12 @@
     <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
       <ul
         id="Slider-{{ section.id }}"
-        class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+        class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
         role="list"
         aria-label="{{ 'general.slider.name' | t }}"
       >
-        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+        {%- if collection != blank -%}
+          {%- for product in collection.products limit: section.settings.products_to_show -%}
           <li
             id="Slide-{{ section.id }}-{{ forloop.index }}"
             class="grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -98,6 +103,11 @@
             %}
           </li>
         {%- else -%}
+          {%- if request.design_mode -%}
+            <li class="grid__item" style="grid-column: 1 / -1;">
+              <p class="caption" style="margin: 0; opacity: 0.8;">No collection selected. Choose a collection in the theme editor or create collections with handles &lsquo;available-moods&rsquo; and &lsquo;subscriptions&rsquo;.</p>
+            </li>
+          {%- endif -%}
           {%- for i in (1..4) -%}
             <li
               class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -114,6 +124,23 @@
             </li>
           {%- endfor -%}
         {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..4) -%}
+            <li
+              class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              {% if settings.animations_reveal_on_scroll %}
+                data-cascade
+                style="--animation-order: {{ forloop.index }};"
+              {% endif %}
+            >
+              {%- assign placeholder_image = 'product-apparel-' | append: forloop.rindex -%}
+              {% render 'card-product',
+                show_vendor: section.settings.show_vendor,
+                placeholder_image: placeholder_image
+              %}
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
       </ul>
       {%- if show_mobile_slider or show_desktop_slider -%}
         <div class="slider-buttons no-js-hidden">
@@ -145,12 +172,12 @@
       {%- endif -%}
     </slider-component>
 
-    {%- if section.settings.show_view_all and more_in_collection -%}
+    {%- if section.settings.show_view_all and more_in_collection and collection != blank -%}
       <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
         <a
-          href="{{ section.settings.collection.url }}"
+          href="{{ collection.url }}"
           class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"
-          aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: section.settings.collection.title }}"
+          aria-label="{{ 'sections.featured_collection.view_all_label' | t: collection_name: collection.title }}"
         >
           {{ 'sections.featured_collection.view_all' | t }}
         </a>

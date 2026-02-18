@@ -11,7 +11,7 @@ This document maps MNKY agent credentials from the Notion database to `.env` var
 
 | Env Variable    | Notion Entry      | Use Cases       | Use in App                          |
 |----------------|-------------------|-----------------|-------------------------------------|
-| `NOTION_API_KEY` | **Notion** (Parent Program) | MNKY MIND API KEY | lib/notion.ts, seed script, sync APIs, blog sync |
+| `NOTION_API_KEY` | **Notion** (Parent Program) | MNKY MIND API KEY | lib/notion.ts, seed scripts (e.g. `pnpm notion:seed-mnky-scenes`), sync APIs, blog sync |
 
 **Key format:** `ntn_...` (Notion Bearer token)  
 **Notion page:** https://www.notion.so/2e1cd2a654228078a2add0ff12e0d5cd

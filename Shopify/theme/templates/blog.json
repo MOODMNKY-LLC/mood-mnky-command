@@ -9,6 +9,33 @@
  */
 {
   "sections": {
+    "verse_blog_cta": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "More from the MNKY VERSE",
+            "heading_size": "h2"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Stories, guides, and insights from the universe of scents — <a href=\"https://app.moodmnky.com/verse/blog\">read more in the MNKY VERSE</a>.</p>"
+          }
+        }
+      },
+      "block_order": ["heading", "text"],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "background-1",
+        "full_width": false,
+        "padding_top": 40,
+        "padding_bottom": 20
+      }
+    },
     "main": {
       "type": "main-blog",
       "settings": {
@@ -27,14 +54,14 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Subscribe to our emails",
+            "heading": "Subscribe to the Vibe — Join the MNKY VERSE",
             "heading_size": "h1"
           }
         },
         "paragraph": {
           "type": "paragraph",
           "settings": {
-            "text": "<p>Be the first to know about new collections and exclusive offers.</p>"
+            "text": "<p>Be the first to know about new collections, exclusive offers, and stories from the MNKY VERSE.</p>"
           }
         },
         "email-form": {
@@ -56,6 +83,7 @@
     }
   },
   "order": [
+    "verse_blog_cta",
     "main",
     "newsletter"
   ]

@@ -16,29 +16,35 @@
       "blocks": {
         "footer-1": {
           "type": "text",
-          "disabled": true,
           "settings": {
-            "heading": "Heading",
-            "subtext": "<p>Share contact information, store details, and brand content with your customers.</p>"
+            "heading": "MOOD MNKY",
+            "subtext": "<p>Bespoke fragrance in the MNKY VERSE. Always scentsing the MOOD.</p>"
           }
         },
         "footer-0": {
           "type": "link_list",
-          "disabled": true,
           "settings": {
-            "heading": "Quick links",
+            "heading": "MNKY VERSE",
             "menu": "footer"
+          }
+        },
+        "footer-2": {
+          "type": "text",
+          "settings": {
+            "heading": "Community",
+            "subtext": "<p>Join our <a href=\"#\">Discord</a>, read the <a href=\"/blogs/hello-welcome-to-mood-mnky\">store blog</a>, or explore the <a href=\"https://app.moodmnky.com/verse/blog\">MNKY VERSE blog</a>.</p>"
           }
         }
       },
       "block_order": [
         "footer-1",
-        "footer-0"
+        "footer-0",
+        "footer-2"
       ],
       "settings": {
         "color_scheme": "background-1",
         "newsletter_enable": false,
-        "newsletter_heading": "Subscribe to our emails",
+        "newsletter_heading": "Subscribe to the Vibe — Join the MNKY VERSE",
         "enable_follow_on_shop": false,
         "show_social": true,
         "enable_country_selector": true,

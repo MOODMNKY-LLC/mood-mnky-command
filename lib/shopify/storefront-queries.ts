@@ -9,6 +9,14 @@ export const PRODUCT_CARD_FRAGMENT = `
       width
       height
     }
+    images(first: 2) {
+      nodes {
+        url
+        altText
+        width
+        height
+      }
+    }
     priceRange {
       minVariantPrice {
         amount
