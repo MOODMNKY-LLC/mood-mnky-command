@@ -8,7 +8,7 @@ export default function AssistantWidgetLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="h-full min-h-[400px] w-full bg-background text-foreground">
+    <div className="h-dvh min-h-[400px] w-full bg-background text-foreground">
       {children}
     </div>
   )

@@ -67,8 +67,18 @@ export async function POST(request: Request) {
         .insert({ anonymous_id: anonymousId })
         .select("id")
         .single()
-      if (error) return new Response("Failed to create session", { status: 500 })
-      sessionId = newSession.id
+      if (error) {
+        console.error("[storefront-assistant] Failed to create session (reuse path):", error)
+        const body = { code: "SESSION_CREATE_FAILED", message: "Failed to create session" }
+        if (process.env.NODE_ENV === "development") {
+          ;(body as Record<string, string>).detail = error.message
+        }
+        return new Response(JSON.stringify(body), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+      sessionId = newSession!.id
     }
   } else {
     const { data: newSession, error } = await supabase
@@ -76,8 +86,18 @@ export async function POST(request: Request) {
       .insert({ anonymous_id: anonymousId })
       .select("id")
       .single()
-    if (error) return new Response("Failed to create session", { status: 500 })
-    sessionId = newSession.id
+    if (error) {
+      console.error("[storefront-assistant] Failed to create session:", error)
+      const body = { code: "SESSION_CREATE_FAILED", message: "Failed to create session" }
+      if (process.env.NODE_ENV === "development") {
+        ;(body as Record<string, string>).detail = error.message
+      }
+      return new Response(JSON.stringify(body), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+    sessionId = newSession!.id
   }
 
   const { count } = await supabase
@@ -178,7 +198,7 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, x-mnky-anonymous-id",
+      "Access-Control-Allow-Headers": "Content-Type, x-mnky-anonymous-id, x-mnky-session-id",
     },
   })
 }

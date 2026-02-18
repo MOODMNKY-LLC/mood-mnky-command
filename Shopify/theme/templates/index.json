@@ -193,36 +193,70 @@
         "padding_bottom": 0
       }
     },
-    "a4b1732b-b660-4e99-b471-f681ff417699": {
-      "type": "featured-collection",
+    "1771436989adce6292": {
+      "type": "apps",
+      "blocks": {
+        "mood_mnky_command_blending_cta_7jd49A": {
+          "type": "shopify://apps/mood-mnky-command/blocks/blending-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/blending",
+            "heading": "The Foundation — Create your custom fragrance blend",
+            "subheading": "Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.",
+            "cta_label": "Go to Blending Lab",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        },
+        "mood_mnky_command_fragrance_finder_cta_VKLzif": {
+          "type": "shopify://apps/mood-mnky-command/blocks/fragrance-finder-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/craft",
+            "heading": "The Experience — Match My Mood",
+            "subheading": "Multi-sensory integration. Find the perfect fragrance for how you feel right now in the MNKY VERSE.",
+            "cta_label": "Find my fragrance",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "mood_mnky_command_blending_cta_7jd49A",
+        "mood_mnky_command_fragrance_finder_cta_VKLzif"
+      ],
       "settings": {
-        "title": "Subscribe to the Vibe!",
-        "heading_size": "h1",
-        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood in the MNKY VERSE. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
-        "show_description": true,
-        "description_style": "body",
-        "collection": "subscriptions",
-        "products_to_show": 12,
-        "columns_desktop": 5,
-        "full_width": true,
-        "show_view_all": true,
-        "view_all_style": "solid",
-        "enable_desktop_slider": true,
-        "color_scheme": "background-1",
-        "image_ratio": "adapt",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": true,
-        "show_rating": true,
-        "enable_quick_add": true,
-        "columns_mobile": "2",
-        "swipe_on_mobile": true,
-        "padding_top": 36,
-        "padding_bottom": 36
+        "include_margins": true,
+        "layout": "2_col"
+      }
+    },
+    "17714395739f3edb21": {
+      "type": "apps",
+      "blocks": {
+        "mood_mnky_command_subscription_cta_dAfKiL": {
+          "type": "shopify://apps/mood-mnky-command/blocks/subscription-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/blending",
+            "heading": "Subscribe to the Vibe — Accessible premium",
+            "subheading": "Engagement-based alternatives to traditional payment. Subscribe and save on refills. Always scentsing the MOOD.",
+            "cta_label": "Explore subscriptions",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "mood_mnky_command_subscription_cta_dAfKiL"
+      ],
+      "settings": {
+        "include_margins": true,
+        "layout": "2_col"
       }
     },
     "app-cta-0": {
       "type": "app-cta",
+      "disabled": true,
       "settings": {
         "app_base_url": "https://mnky-command.moodmnky.com",
         "cta_path": "/blending",
@@ -571,6 +605,55 @@
         "padding_bottom": 60
       }
     },
+    "a4b1732b-b660-4e99-b471-f681ff417699": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Subscribe to the Vibe!",
+        "heading_size": "h1",
+        "description": "<p>Found the perfect Vibe Vessel to suit your needs? How about a monthly subscription to put your mind at ease and ensure that you're always scentsing the mood in the MNKY VERSE. <em>(One Time Purchase price listed. Click for discounted subscription price)</em></p>",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "subscriptions",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "177143917427cd49b1": {
+      "type": "apps",
+      "blocks": {
+        "mood_mnky_command_verse_blog_LiC3bt": {
+          "type": "shopify://apps/mood-mnky-command/blocks/verse-blog/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "post_limit": 3,
+            "heading": "Latest from MNKY VERSE",
+            "view_all_label": "View all MNKY VERSE post"
+          }
+        }
+      },
+      "block_order": [
+        "mood_mnky_command_verse_blog_LiC3bt"
+      ],
+      "settings": {
+        "include_margins": true,
+        "layout": "stacked"
+      }
+    },
     "newsletter": {
       "type": "newsletter",
       "blocks": {
@@ -603,73 +686,18 @@
         "padding_top": 60,
         "padding_bottom": 0
       }
-    },
-    "1771436989adce6292": {
-      "type": "apps",
-      "blocks": {
-        "mood_mnky_command_blending_cta_7jd49A": {
-          "type": "shopify://apps/mood-mnky-command/blocks/blending-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
-          "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
-            "cta_path": "/blending",
-            "heading": "The Foundation — Create your custom fragrance blend",
-            "subheading": "Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.",
-            "cta_label": "Go to Blending Lab",
-            "cta_aria_label": "",
-            "button_style_secondary": false
-          }
-        },
-        "mood_mnky_command_verse_blog_byCUtQ": {
-          "type": "shopify://apps/mood-mnky-command/blocks/verse-blog/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
-          "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
-            "post_limit": 3,
-            "heading": "Latest from MNKY VERSE",
-            "view_all_label": "View all in the MNKY VERSE"
-          }
-        },
-        "mood_mnky_command_fragrance_finder_cta_VKLzif": {
-          "type": "shopify://apps/mood-mnky-command/blocks/fragrance-finder-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
-          "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
-            "cta_path": "/craft",
-            "heading": "The Experience — Match My Mood",
-            "subheading": "Multi-sensory integration. Find the perfect fragrance for how you feel right now in the MNKY VERSE.",
-            "cta_label": "Find my fragrance",
-            "cta_aria_label": "",
-            "button_style_secondary": false
-          }
-        },
-        "mood_mnky_command_subscription_cta_TeCyaA": {
-          "type": "shopify://apps/mood-mnky-command/blocks/subscription-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
-          "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
-            "cta_path": "/blending",
-            "heading": "Subscribe to the Vibe — Accessible premium",
-            "subheading": "Engagement-based alternatives to traditional payment. Subscribe and save on refills. Always scentsing the MOOD.",
-            "cta_label": "Explore subscriptions",
-            "cta_aria_label": "",
-            "button_style_secondary": false
-          }
-        }
-      },
-      "block_order": [
-        "mood_mnky_command_blending_cta_7jd49A",
-        "mood_mnky_command_verse_blog_byCUtQ",
-        "mood_mnky_command_fragrance_finder_cta_VKLzif",
-        "mood_mnky_command_subscription_cta_TeCyaA"
-      ],
-      "settings": {
-        "include_margins": true
-      }
     }
   },
   "order": [
     "slideshow",
     "multicolumn-0",
     "featured-collection-0",
+    "1771436989adce6292",
     "a4b1732b-b660-4e99-b471-f681ff417699",
+    "17714395739f3edb21",
     "app-cta-0",
+    "featured-blog",
+    "177143917427cd49b1",
     "image-with-text-0",
     "image-with-text-1",
     "image-with-text-2",
@@ -677,8 +705,6 @@
     "featured-collection-1",
     "rich-text",
     "multicolumn-1",
-    "featured-blog",
-    "newsletter",
-    "1771436989adce6292"
+    "newsletter"
   ]
 }

@@ -1,7 +1,29 @@
+{%- liquid
+  assign layout = section.settings.layout
+  assign grid_class = 'apps-blocks'
+  if layout == 'stacked'
+    assign grid_class = 'apps-blocks apps-blocks--stacked'
+  elsif layout == '2_col'
+    assign grid_class = 'apps-blocks grid grid--1-col-tablet-down grid--2-col-desktop'
+  elsif layout == '4_col'
+    assign grid_class = 'apps-blocks grid grid--1-col-tablet-down grid--4-col-desktop'
+  endif
+-%}
+{%- style -%}
+  .apps-blocks--stacked {
+    display: flex;
+    flex-direction: column;
+    gap: var(--grid-desktop-vertical-spacing, 2rem);
+  }
+{%- endstyle -%}
 <div class="{% if section.settings.include_margins %}page-width{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-  {%- for block in section.blocks -%}
-    {% render block %}
-  {%- endfor -%}
+  <div class="{{ grid_class }}">
+    {%- for block in section.blocks -%}
+      <div class="apps-blocks__item{% if layout != 'stacked' %} grid__item{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {% render block %}
+      </div>
+    {%- endfor -%}
+  </div>
 </div>
 
 {% schema %}
@@ -15,6 +37,26 @@
       "id": "include_margins",
       "default": true,
       "label": "t:sections.apps.settings.include_margins.label"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "default": "stacked",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        },
+        {
+          "value": "2_col",
+          "label": "2 columns"
+        },
+        {
+          "value": "4_col",
+          "label": "4 columns"
+        }
+      ]
     }
   ],
   "blocks": [

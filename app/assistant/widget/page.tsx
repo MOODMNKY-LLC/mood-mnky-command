@@ -9,9 +9,14 @@ import {
   VersePromptInputSubmit,
   VersePromptInputTextarea,
 } from "@/components/verse/chat"
-import { VerseConversation, VerseConversationContent } from "@/components/verse/chat"
+import {
+  VerseConversation,
+  VerseConversationContent,
+  VerseConversationScrollButton,
+} from "@/components/verse/chat"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { VerseButton } from "@/components/verse/ui/button"
+import { X as XIcon } from "lucide-react"
 import { PromptInput, PromptInputFooter } from "@/components/ai-elements/prompt-input"
 
 const MNKY_ANONYMOUS_ID_KEY = "mnky_anonymous_id"
@@ -76,21 +81,46 @@ export default function AssistantWidgetPage() {
 
   const isStreaming = status === "streaming" || status === "submitted"
 
+  const handleClose = useCallback(() => {
+    if (typeof window !== "undefined" && window.parent) {
+      window.parent.postMessage({ type: "mnky-assistant-close" }, "*")
+    }
+  }, [])
+
   return (
-    <div className="flex h-full min-h-[400px] flex-col overflow-hidden rounded-lg border border-border bg-background">
-      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-        <VerseLogoHairIcon size="sm" />
-        <span className="text-sm font-medium">MNKY Assistant</span>
+    <div className="grid h-full min-h-0 grid-rows-[auto_1fr_auto] overflow-hidden rounded-lg border border-border bg-background">
+      {/* Fixed header */}
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <VerseLogoHairIcon size="sm" className="shrink-0" />
+            <span className="truncate text-sm font-semibold">MNKY CHAT</span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            Ask about fragrances, products & the MNKY VERSE
+          </span>
+        </div>
+        <VerseButton
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Close chat"
+          onClick={handleClose}
+          className="shrink-0"
+        >
+          <XIcon className="size-4" />
+        </VerseButton>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <VerseConversation className="min-h-0 flex-1">
-          <VerseConversationContent>
+      {/* Fixed scrollable message area */}
+      <div className="min-h-0 overflow-y-auto overflow-x-hidden">
+        <VerseConversation className="h-full min-h-0">
+          <VerseConversationContent className="min-h-full">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-4 px-4 py-8 text-center">
                 <VerseLogoHairIcon size="lg" className="text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
-                  Hi! I&apos;m the MNKY Assistant. Ask about fragrances, products, shipping, or explore the MNKY VERSE.
+                  Hi! Ask about fragrances, products, shipping, or explore the MNKY VERSE.
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {["What candles do you have?", "Shipping & returns", "Tell me about MOOD MNKY"].map(
@@ -131,28 +161,29 @@ export default function AssistantWidgetPage() {
               </VerseMessage>
             ))}
           </VerseConversationContent>
+          <VerseConversationScrollButton />
         </VerseConversation>
-
         {error && (
           <p className="px-3 py-1 text-sm text-destructive">{error.message}</p>
         )}
+      </div>
 
-        <div className="shrink-0 border-t border-border p-2">
-          <PromptInput onSubmit={handleSubmit} className="w-full">
-            <VersePromptInputBody>
-              <VersePromptInputTextarea
-                placeholder="Ask about fragrances, products, shipping..."
-                className="min-h-[44px] resize-none"
-              />
-            </VersePromptInputBody>
-            <PromptInputFooter>
-              <VersePromptInputSubmit
-                disabled={isStreaming}
-                status={isStreaming ? "streaming" : "ready"}
-              />
-            </PromptInputFooter>
-          </PromptInput>
-        </div>
+      {/* Fixed input bar */}
+      <div className="shrink-0 border-t border-border p-2">
+        <PromptInput onSubmit={handleSubmit} className="w-full">
+          <VersePromptInputBody>
+            <VersePromptInputTextarea
+              placeholder="Ask about fragrances, products, shipping..."
+              className="min-h-[44px] resize-none"
+            />
+          </VersePromptInputBody>
+          <PromptInputFooter>
+            <VersePromptInputSubmit
+              disabled={isStreaming}
+              status={isStreaming ? "streaming" : "ready"}
+            />
+          </PromptInputFooter>
+        </PromptInput>
       </div>
     </div>
   )
