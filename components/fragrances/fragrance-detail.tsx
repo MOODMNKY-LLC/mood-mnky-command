@@ -18,9 +18,10 @@ import { FragranceEditDialog } from "@/components/fragrances/fragrance-edit-dial
 interface FragranceDetailProps {
   oil: FragranceOil
   onEditSuccess?: () => void
+  readOnly?: boolean
 }
 
-export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
+export function FragranceDetail({ oil, onEditSuccess, readOnly }: FragranceDetailProps) {
   const [editOpen, setEditOpen] = useState(false)
   const safetyItems = [
     { label: "Candle", safe: oil.candleSafe, max: oil.maxUsageCandle },
@@ -89,15 +90,17 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
                   ({oil.reviewCount})
                 </span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5"
-                onClick={() => setEditOpen(true)}
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </Button>
+              {!readOnly && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </Button>
+              )}
               {oil.notionUrl && (
                 <a
                   href={oil.notionUrl}
@@ -356,12 +359,14 @@ export function FragranceDetail({ oil, onEditSuccess }: FragranceDetailProps) {
         </Card>
       )}
 
-      <FragranceEditDialog
-        oil={oil}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSuccess={() => onEditSuccess?.()}
-      />
+      {!readOnly && (
+        <FragranceEditDialog
+          oil={oil}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSuccess={() => onEditSuccess?.()}
+        />
+      )}
     </div>
   )
 }

@@ -6,7 +6,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/verse/fragrance-wheel",
+        source: "/verse/:path*",
         headers: [
           {
             key: "Content-Security-Policy",

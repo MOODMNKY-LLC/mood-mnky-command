@@ -36,11 +36,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 /** Known repo templates that can be uploaded from disk without sending content. */
-const REPO_TEMPLATE_SUFFIXES = ["fragrance-wheel", "empty", "about-us", "contact", "discord-embed"]
+const REPO_TEMPLATE_SUFFIXES = [
+  "fragrance-wheel",
+  "blending-guide",
+  "glossary",
+  "formulas",
+  "fragrance-oils",
+  "labz-landing",
+  "empty",
+  "about-us",
+  "contact",
+  "discord-embed",
+]
 
 function suffixToLabel(suffix: string): string {
-  if (suffix === "fragrance-wheel") return "Fragrance Wheel (app embed)"
-  return suffix.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+  const labels: Record<string, string> = {
+    "fragrance-wheel": "Fragrance Wheel (app embed)",
+    "blending-guide": "Blending Lab (app embed)",
+    glossary: "Glossary (app embed)",
+    formulas: "Formulas (app embed)",
+    "fragrance-oils": "Fragrance Oils (app embed)",
+    "labz-landing": "MOOD LABZ Landing",
+  }
+  return labels[suffix] ?? suffix.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
 }
 
 export default function StoreLabzPagesPage() {

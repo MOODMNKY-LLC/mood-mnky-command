@@ -31,6 +31,10 @@ Recommended structure aligned with Verse routes and brand pillars:
 
 **Mega menu (optional):** In **Customize** → Header group, you can group items (e.g. **Shop**: Shop, Subscriptions; **The Verse**: Blending Lab, Dojo, Explore, Blog, Agents, Community).
 
+### MOOD LABZ on the store
+
+To show **MOOD LABZ** in the main nav with a **landing page** and a **dropdown** (Fragrance Wheel, Blending Lab, Glossary, Formulas, Fragrance Oils), create the pages in LABZ (Store → LABZ Pages), upload the theme templates from repo, then in **Main menu** add parent **MOOD LABZ** linking to the landing page and add the five content pages as children. See [SHOPIFY-LABZ-PAGES-AND-MENU.md](../../docs/SHOPIFY-LABZ-PAGES-AND-MENU.md) for the full steps and template list.
+
 ---
 
 ## Footer Menu
