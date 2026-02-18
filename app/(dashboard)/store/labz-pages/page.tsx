@@ -1,0 +1,539 @@
+"use client"
+
+import { useState } from "react"
+import useSWR from "swr"
+import { FileText, ExternalLink, Loader2, Plus, Pencil } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+/** Known repo templates that can be uploaded from disk without sending content. */
+const REPO_TEMPLATE_SUFFIXES = ["fragrance-wheel", "empty", "about-us", "contact", "discord-embed"]
+
+function suffixToLabel(suffix: string): string {
+  if (suffix === "fragrance-wheel") return "Fragrance Wheel (app embed)"
+  return suffix.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+}
+
+export default function StoreLabzPagesPage() {
+  const [title, setTitle] = useState("")
+  const [handle, setHandle] = useState("")
+  const [templateSuffix, setTemplateSuffix] = useState("default")
+  const [body, setBody] = useState("")
+  const [isPublished, setIsPublished] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [createdPage, setCreatedPage] = useState<{ id: string; title: string; handle: string } | null>(null)
+  const [editingPage, setEditingPage] = useState<{
+    id: number
+    title: string
+    handle: string
+    body_html: string
+    template_suffix: string | null
+    published_at: string | null
+  } | null>(null)
+  const [editTitle, setEditTitle] = useState("")
+  const [editHandle, setEditHandle] = useState("")
+  const [editBody, setEditBody] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  const { data: pagesData, isLoading, mutate } = useSWR(
+    "/api/shopify/content?type=pages",
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+
+  const { data: templatesData, isLoading: templatesLoading, mutate: mutateTemplates } = useSWR(
+    "/api/shopify/theme/templates",
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+
+  const themeSuffixes: string[] = templatesData?.suffixes ?? []
+  const themeName = templatesData?.themeName ?? null
+  const templateOptions = [
+    { value: "default", label: "Default" },
+    ...themeSuffixes.map((s) => ({ value: s, label: suffixToLabel(s) })),
+  ]
+
+  const pages = pagesData?.pages ?? []
+  const count = pagesData?.count ?? pages.length
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setCreatedPage(null)
+    if (!title.trim()) {
+      setError("Title is required.")
+      return
+    }
+    setCreating(true)
+    try {
+      const res = await fetch("/api/shopify/pages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          handle: handle.trim() || undefined,
+          templateSuffix: templateSuffix === "default" ? undefined : templateSuffix,
+          body: body.trim() || undefined,
+          isPublished,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? `Request failed (${res.status})`)
+      }
+      setCreatedPage(data.page)
+      await mutate()
+      setTitle("")
+      setHandle("")
+      setTemplateSuffix("default")
+      setBody("")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create page.")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  function handleCreateFragranceWheel() {
+    setTitle("Fragrance Wheel")
+    setHandle("fragrance-wheel")
+    setTemplateSuffix("fragrance-wheel")
+    setBody("")
+    setIsPublished(true)
+    setError(null)
+    setCreatedPage(null)
+  }
+
+  async function handleUploadTemplate() {
+    if (templateSuffix === "default") return
+    setError(null)
+    setUploading(true)
+    try {
+      const res = await fetch("/api/shopify/theme/templates/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suffix: templateSuffix }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? "Upload failed")
+      }
+      await mutateTemplates()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const canUploadFromRepo =
+    templateSuffix !== "default" && REPO_TEMPLATE_SUFFIXES.includes(templateSuffix)
+  const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""
+
+  function openEdit(page: {
+    id: number
+    title: string
+    handle: string
+    body_html: string
+    template_suffix: string | null
+    published_at: string | null
+  }) {
+    setEditingPage(page)
+    setEditTitle(page.title)
+    setEditHandle(page.handle)
+    setEditBody(page.body_html ?? "")
+    setError(null)
+  }
+
+  async function handleSaveEdit() {
+    if (!editingPage) return
+    setError(null)
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/shopify/pages/${editingPage.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          handle: editHandle.trim() || null,
+          body: editBody,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? "Update failed")
+      }
+      await mutate()
+      setEditingPage(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Update failed.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          LABZ Pages
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Create and manage Shopify storefront pages. Templates are read from your store&apos;s main theme; upload from repo when needed.
+        </p>
+        <div className="rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          <strong className="text-foreground">Add MNKY LABZ to the main nav:</strong> In Shopify Admin go to{" "}
+          <strong>Content → Menus → Main menu</strong>. Add a menu item &quot;MNKY LABZ&quot; (parent), then add &quot;Fragrance Wheel&quot; as a child linking to the page you created. See{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">docs/SHOPIFY-LABZ-PAGES-AND-MENU.md</code> for details.
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Plus className="h-4 w-4" />
+              Create page
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Fragrance Wheel"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="handle">Handle (optional)</Label>
+                <Input
+                  id="handle"
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
+                  placeholder="e.g. fragrance-wheel"
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  URL slug. Leave empty to generate from title.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="template">Template</Label>
+                <Select
+                  value={templateSuffix}
+                  onValueChange={setTemplateSuffix}
+                  disabled={templatesLoading}
+                >
+                  <SelectTrigger id="template">
+                    <SelectValue placeholder={templatesLoading ? "Loading…" : "Select template"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templateOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {themeName != null
+                    ? `From theme: ${themeName}. Use "Fragrance Wheel" for the app-embed page.`
+                    : "Templates are loaded from the store's main theme (read_themes)."}
+                </p>
+                {canUploadFromRepo && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUploadTemplate}
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Uploading…
+                      </>
+                    ) : (
+                      `Upload page.${templateSuffix}.json from repo to theme`
+                    )}
+                  </Button>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="body">Body HTML (optional)</Label>
+                <Textarea
+                  id="body"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="<p>Static content...</p>"
+                  rows={3}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isPublished"
+                  checked={isPublished}
+                  onChange={(e) => setIsPublished(e.target.checked)}
+                  className="h-4 w-4 rounded border-input"
+                />
+                <Label htmlFor="isPublished" className="font-normal cursor-pointer">
+                  Publish immediately
+                </Label>
+              </div>
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              {createdPage && (
+                <p className="text-sm text-success">
+                  Created: {createdPage.title} (/{createdPage.handle})
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" disabled={creating}>
+                  {creating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating…
+                    </>
+                  ) : (
+                    "Create page in Shopify"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCreateFragranceWheel}
+                  disabled={creating}
+                >
+                  Pre-fill Fragrance Wheel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FileText className="h-4 w-4" />
+              Existing pages
+            </CardTitle>
+            <Badge variant="secondary">{count}</Badge>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="flex flex-col gap-3 p-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : pages.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+                <FileText className="h-8 w-8" />
+                <p className="text-sm">No pages found</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Handle</TableHead>
+                    <TableHead>Template</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-10"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pages.map(
+                    (page: {
+                      id: number
+                      title: string
+                      handle: string
+                      body_html?: string
+                      template_suffix: string | null
+                      published_at: string | null
+                      updated_at: string
+                    }) => (
+                      <TableRow key={page.id}>
+                        <TableCell className="text-sm font-medium text-foreground">
+                          {page.title}
+                        </TableCell>
+                        <TableCell className="text-xs font-mono text-muted-foreground">
+                          /{page.handle}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {page.template_suffix ?? "default"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`text-[10px] border-0 ${
+                              page.published_at
+                                ? "bg-success/10 text-success"
+                                : "bg-warning/10 text-warning"
+                            }`}
+                          >
+                            {page.published_at ? "Published" : "Draft"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() =>
+                              openEdit({
+                                id: page.id,
+                                title: page.title,
+                                handle: page.handle,
+                                body_html: page.body_html ?? "",
+                                template_suffix: page.template_suffix,
+                                published_at: page.published_at,
+                              })
+                            }
+                            aria-label="Edit page"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          {storeDomain && (
+                            <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
+                              <a
+                                href={`https://${storeDomain}/admin/pages/${page.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Open in Shopify Admin"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Sheet open={!!editingPage} onOpenChange={(open) => !open && setEditingPage(null)}>
+        <SheetContent className="flex w-full flex-col gap-4 overflow-y-auto sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>
+              Edit: {editingPage?.title ?? "Page"}
+            </SheetTitle>
+          </SheetHeader>
+          {editingPage && (
+            <>
+              <Tabs defaultValue="fields" className="flex flex-1 flex-col overflow-hidden">
+                <TabsList>
+                  <TabsTrigger value="fields">Fields</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+                <TabsContent value="fields" className="mt-4 flex flex-col gap-4 overflow-auto">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-title">Title</Label>
+                    <Input
+                      id="edit-title"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Page title"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-handle">Handle</Label>
+                    <Input
+                      id="edit-handle"
+                      value={editHandle}
+                      onChange={(e) => setEditHandle(e.target.value)}
+                      placeholder="url-slug"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-body">Body HTML</Label>
+                    <Textarea
+                      id="edit-body"
+                      value={editBody}
+                      onChange={(e) => setEditBody(e.target.value)}
+                      placeholder="<p>Content...</p>"
+                      rows={12}
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </TabsContent>
+                <TabsContent value="preview" className="mt-4 flex-1 overflow-auto">
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none rounded-md border border-border bg-muted/30 p-4"
+                    dangerouslySetInnerHTML={{ __html: editBody || "<p class=\"text-muted-foreground\">No content to preview.</p>" }}
+                  />
+                </TabsContent>
+              </Tabs>
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={handleSaveEdit} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingPage(null)}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+  )
+}

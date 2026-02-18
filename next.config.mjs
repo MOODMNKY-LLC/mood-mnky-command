@@ -3,6 +3,19 @@ import withSerwistInit from "@serwist/next"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/verse/fragrance-wheel",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
+    ]
+  },
   webpack: (config) => {
     config.resolve.fallback = { ...config.resolve.fallback, "react-native-fs": false }
     return config
