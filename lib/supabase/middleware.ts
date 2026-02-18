@@ -31,10 +31,16 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // If accessing dashboard routes without auth, redirect to login
+  // Allow /auth, /api, and /verse/auth (Discord OAuth start + callback)
+  const pathname = request.nextUrl.pathname
+  const isAuthRoute = pathname.startsWith("/auth")
+  const isApiRoute = pathname.startsWith("/api")
+  const isVerseAuthRoute = pathname.startsWith("/verse/auth")
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api")
+    !isAuthRoute &&
+    !isApiRoute &&
+    !isVerseAuthRoute
   ) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"
@@ -43,9 +49,6 @@ export async function updateSession(request: NextRequest) {
 
   // If authenticated, check role and redirect pending users; non-admins to /verse
   if (user) {
-    const pathname = request.nextUrl.pathname
-    const isAuthRoute = pathname.startsWith("/auth")
-    const isApiRoute = pathname.startsWith("/api")
     const isVerseRoute = pathname.startsWith("/verse")
 
     if (!isAuthRoute && !isApiRoute) {
