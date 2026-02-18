@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Users, MessageCircle, BookOpen, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const DISCORD_INVITE_URL =
+  process.env.NEXT_PUBLIC_DISCORD_INVITE_URL ?? ""
 
 export default function VerseCommunityPage() {
   return (
@@ -15,10 +18,57 @@ export default function VerseCommunityPage() {
           Community
         </h1>
         <p className="mt-3 text-verse-text-muted">
-          Forums, events, and collaborative projects are coming soon. Join us for
-          wellness discussions and fragrance discovery.
+          Forums, events, and collaborative projects. Join us for wellness
+          discussions and fragrance discovery.
         </p>
-        <Button asChild className="mt-6">
+
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+          {DISCORD_INVITE_URL ? (
+            <Button asChild variant="default" size="lg">
+              <Link
+                href={DISCORD_INVITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Join Discord
+              </Link>
+            </Button>
+          ) : (
+            <p className="text-sm text-verse-text-muted">
+              Discord community coming soon. Set NEXT_PUBLIC_DISCORD_INVITE_URL to enable.
+            </p>
+          )}
+          <Button asChild variant="outline" size="lg">
+            <Link href="/verse/blog" className="inline-flex items-center gap-2">
+              <Newspaper className="h-5 w-5" />
+              MNKY VERSE Blog
+            </Link>
+          </Button>
+        </div>
+
+        <div className="mt-12 rounded-xl border border-verse-text/10 bg-verse-text/5 p-6 text-left">
+          <h2 className="font-verse-heading text-lg font-semibold text-verse-text">
+            Community touchpoints
+          </h2>
+          <ul className="mt-3 space-y-2 text-sm text-verse-text-muted">
+            <li className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 shrink-0 text-verse-button" />
+              Discord — chat, events, and exclusive drops
+            </li>
+            <li className="flex items-center gap-2">
+              <Newspaper className="h-4 w-4 shrink-0 text-verse-button" />
+              MNKY VERSE Blog — stories, guides, and insights
+            </li>
+            <li className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 shrink-0 text-verse-button" />
+              Store blog — product updates and new collections
+            </li>
+          </ul>
+        </div>
+
+        <Button asChild variant="ghost" className="mt-8">
           <Link href="/verse">Back to Portal</Link>
         </Button>
       </div>

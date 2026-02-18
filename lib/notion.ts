@@ -134,6 +134,28 @@ async function notionFetch<T>(
 
 // ---- Database Methods ----
 
+/** Retrieve a single page by ID (for syncing assistant knowledge from specific pages) */
+export async function retrievePage(pageId: string): Promise<NotionPage | null> {
+  try {
+    const data = await notionFetch<{
+      id: string
+      properties: Record<string, NotionProperty>
+      created_time: string
+      last_edited_time: string
+      url: string
+    }>(`/pages/${pageId}`)
+    return {
+      id: data.id,
+      properties: data.properties,
+      created_time: data.created_time,
+      last_edited_time: data.last_edited_time,
+      url: data.url,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getDatabaseInfo(
   databaseId: string
 ): Promise<NotionDatabaseInfo> {

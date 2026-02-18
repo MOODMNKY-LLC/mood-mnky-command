@@ -41,7 +41,7 @@ The theme and the mood-mnky-command Next.js app integrate via **link-based CTAs*
 
 1. **Theme**: In the theme customizer → **App CTA** section → set **App base URL**
    - Dev: `http://localhost:3000`
-   - Prod: `https://app.moodmnky.com` (or your deployed URL)
+   - Prod: `https://mnky-command.moodmnky.com` (or your deployed URL)
 2. **App**: Set `NEXT_PUBLIC_APP_URL` in `.env` to the same value (used by app features that need its own URL)
 
 ### App Paths
@@ -54,13 +54,18 @@ The theme and the mood-mnky-command Next.js app integrate via **link-based CTAs*
 
 ### Theme App Extension (Phase 3 — Implemented)
 
-The project includes a **Theme App Extension** (`extensions/mood-mnky-theme/`) with three embedded app blocks:
+The project includes a **Theme App Extension** (`extensions/mood-mnky-theme/`) with **four app blocks** (under **Add block → Apps**) and **one app embed** (under **Theme settings → App embeds**). See [APP-BLOCKS-BREAKDOWN.md](APP-BLOCKS-BREAKDOWN.md) for the verified list.
 
-| Block | Purpose | Default path |
-|-------|---------|--------------|
+| Block (Add block → Apps) | Purpose | Default path / behavior |
+|--------------------------|---------|--------------------------|
 | **Blending Lab CTA** | Links to fragrance Blending Lab | `/blending` |
+| **Latest from MNKY VERSE** | Fetches blog posts from app API | `GET /api/verse/blog`, link to `/verse/blog` |
 | **Match My Mood CTA** | Links to fragrance finder / Match My Mood | `/craft` |
 | **Subscription CTA** | Links to subscription experience | `/blending` |
+
+| App embed (Theme settings → App embeds) | Purpose |
+|----------------------------------------|---------|
+| **MNKY Assistant** | Floating chat button; not in section block picker |
 
 **Setup & deployment**
 
@@ -75,7 +80,7 @@ The project includes a **Theme App Extension** (`extensions/mood-mnky-theme/`) w
 3. **Install on store** via Partners Dashboard → Apps → Install app
 4. **Add blocks in theme editor**: Theme Customizer → any section that supports app blocks → Add block → Apps → MOOD MNKY Theme
 
-**Block settings**: Each block has an **App base URL** setting (e.g. `https://app.moodmnky.com`). Leave blank to show a disabled state.
+**Block settings**: Each block has an **App base URL** setting (e.g. `https://mnky-command.moodmnky.com`). Leave blank to show a disabled state.
 
 ### Future Integration (Phases 2 & 4)
 

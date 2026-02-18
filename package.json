@@ -22,6 +22,7 @@
     "notion:seed-mnky-scenes": "tsx scripts/notion-seed-mnky-scenes.ts",
     "notion:update-mnky-scenes-mascot": "tsx scripts/notion-update-mnky-scenes-mascot.ts",
     "verse:seed-blog": "tsx scripts/seed-verse-blog-posts.ts",
+    "notion:sync-assistant-knowledge": "tsx scripts/sync-assistant-knowledge.ts",
     "vercel:env-check": "node scripts/vercel-env-check.mjs",
     "vercel:env-sync": "node scripts/vercel-env-sync.mjs",
     "vercel:env-sync:dry": "node scripts/vercel-env-sync.mjs --dry-run",

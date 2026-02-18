@@ -145,6 +145,7 @@ const verseItems: NavItem[] = [
   { title: "Products", href: "/verse/products", icon: Package },
   { title: "Collections", href: "/verse/collections", icon: Tags },
   { title: "Cart", href: "/verse/cart", icon: ShoppingCart },
+  { title: "Discord", href: "/platform/discord", icon: MessageSquare },
 ]
 
 const platformItemsBase: NavItem[] = [
@@ -152,6 +153,7 @@ const platformItemsBase: NavItem[] = [
   { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
   { title: "Table Editor", href: "/platform/tables", icon: Table2 },
   { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
+  { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
   { title: "Members", href: "/members", icon: Users },
 ]
 

@@ -25,6 +25,11 @@ https://mnky-command.moodmnky.com/**
 https://mnky-verse.moodmnky.com/**
 ```
 
+**Discord OAuth (MNKY VERSE):** Supabase redirects to the app after Discord login. Ensure verse callback is allowed (covered by wildcards above):
+
+- `https://mnky-verse.moodmnky.com/verse/auth/callback`
+- In Discord Developer Portal, set OAuth2 Redirect URI to your Supabase project callback: `https://<project-ref>.supabase.co/auth/v1/callback`
+
 **Optional (explicit paths):** If you prefer exact URLs instead of wildcards:
 
 ```
@@ -34,6 +39,7 @@ https://mnky-command.moodmnky.com/auth/confirm?next=/auth/update-password
 https://mnky-verse.moodmnky.com/auth/confirm
 https://mnky-verse.moodmnky.com/auth/confirm?next=/
 https://mnky-verse.moodmnky.com/auth/confirm?next=/auth/update-password
+https://mnky-verse.moodmnky.com/verse/auth/callback
 ```
 
 ## Why both domains

@@ -172,3 +172,53 @@ export const FEATURED_PRODUCTS_QUERY = `
     }
   }
 `;
+
+/**
+ * Product search via Storefront API search query.
+ * Use for storefront assistant product discovery.
+ */
+export const PRODUCT_SEARCH_QUERY = `
+  ${PRODUCT_CARD_FRAGMENT}
+  query ProductSearch($query: String!, $first: Int!) {
+    search(query: $query, first: $first, types: [PRODUCT]) {
+      edges {
+        node {
+          ... on Product {
+            ...ProductCard
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Shop policies (shipping, refund, privacy, terms) for storefront assistant.
+ */
+export const SHOP_POLICIES_QUERY = `
+  query ShopPolicies {
+    shop {
+      name
+      shippingPolicy {
+        title
+        body
+        url
+      }
+      refundPolicy {
+        title
+        body
+        url
+      }
+      privacyPolicy {
+        title
+        body
+        url
+      }
+      termsOfService {
+        title
+        body
+        url
+      }
+    }
+  }
+`;

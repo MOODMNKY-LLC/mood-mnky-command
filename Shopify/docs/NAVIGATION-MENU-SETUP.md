@@ -21,13 +21,13 @@ Recommended structure aligned with Verse routes and brand pillars:
 | Home                  | /                                                                          |
 | Shop                  | /collections/all or /collections/available-moods                            |
 | Subscriptions         | /collections/subscriptions                                                 |
-| Blending Lab          | https://app.moodmnky.com/blending (or /verse for landing)                  |
-| Match My Mood / Craft | https://app.moodmnky.com/craft                                             |
-| The Dojo / My Dojo    | https://app.moodmnky.com/verse/dojo — *Your private portal in the MNKY VERSE app.* |
-| Explore               | https://app.moodmnky.com/verse/explore                                     |
+| Blending Lab          | https://mnky-command.moodmnky.com/blending (or /verse for landing)                  |
+| Match My Mood / Craft | https://mnky-command.moodmnky.com/craft                                             |
+| The Dojo / My Dojo    | https://mnky-command.moodmnky.com/verse/dojo — *Your private portal in the MNKY VERSE app.* |
+| Explore               | https://mnky-command.moodmnky.com/verse/explore                                     |
 | Blog                  | /blogs/hello-welcome-to-mood-mnky (or add secondary “Verse Blog” → app)   |
-| Agents                | https://app.moodmnky.com/verse/agents                                     |
-| Community             | Shopify page "Community" (Discord + store blog + Verse blog) or https://app.moodmnky.com/verse/community |
+| Agents                | https://mnky-command.moodmnky.com/verse/agents                                     |
+| Community             | Shopify page "Community" (Discord + store blog + Verse blog) or https://mnky-command.moodmnky.com/verse/community |
 
 **Mega menu (optional):** In **Customize** → Header group, you can group items (e.g. **Shop**: Shop, Subscriptions; **The Verse**: Blending Lab, Dojo, Explore, Blog, Agents, Community).
 
@@ -40,10 +40,10 @@ The theme footer includes a **Community** text block (Discord, store blog, MNKY 
 | Label        | Link / URL                                      |
 | ------------ | ----------------------------------------------- |
 | About        | Link to “Who We Are” page                       |
-| MNKY VERSE   | https://app.moodmnky.com/verse                  |
+| MNKY VERSE   | https://mnky-command.moodmnky.com/verse                  |
 | Discord      | (Discord invite link — set when available)     |
 | Store Blog   | /blogs/hello-welcome-to-mood-mnky              |
-| Verse Blog   | https://app.moodmnky.com/verse/blog            |
+| Verse Blog   | https://mnky-command.moodmnky.com/verse/blog            |
 | Contact      | /pages/contact (or contact page)               |
 | Refund policy| /policies/refund-policy                         |
 | Privacy policy | /policies/privacy-policy                     |
@@ -54,7 +54,7 @@ The theme footer includes a **Community** text block (Discord, store blog, MNKY 
 ## Development vs Production
 
 - **Development:** Use `http://localhost:3000` as the base for app links so the nav points to your local app.
-- **Production:** Use `https://app.moodmnky.com` for all app links (Blending Lab, Craft, Dojo, Explore, Agents, Community, Verse blog).
+- **Production:** Use `https://mnky-command.moodmnky.com` for all app links (Blending Lab, Craft, Dojo, Explore, Agents, Community, Verse blog).
 
 ---
 

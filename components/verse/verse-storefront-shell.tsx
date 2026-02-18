@@ -1,40 +1,19 @@
 "use client";
 
-import { Persona } from "@/components/ai-elements/persona";
 import { VerseHeader } from "./verse-header";
 import { VerseFooter } from "./verse-footer";
 import { VerseAnnouncementBar } from "./verse-announcement-bar";
 import { VerseAdminDock } from "./verse-admin-dock";
 import { VerseUserProvider } from "./verse-user-context";
-import { VersePersonaStateProvider, useVersePersonaState } from "./verse-persona-state-context";
+import { VersePersonaStateProvider } from "./verse-persona-state-context";
 import { useVerseTheme } from "./verse-theme-provider";
-import { VerseErrorBoundary, VersePersonaErrorBoundary } from "./verse-error-boundary";
+import { VerseErrorBoundary } from "./verse-error-boundary";
 
 export type VerseUser = {
   id: string;
   email?: string;
   displayName?: string;
 } | null;
-
-function VerseFixedPersona() {
-  const { personaState } = useVersePersonaState();
-  return (
-    <div
-      className="pointer-events-none fixed right-4 z-[99]"
-      style={{ bottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
-      aria-hidden
-    >
-      <VersePersonaErrorBoundary>
-        <Persona
-          state={personaState}
-          variant="halo"
-          className="size-14 shrink-0"
-          themeColorVariable="--verse-text-rgb"
-        />
-      </VersePersonaErrorBoundary>
-    </div>
-  );
-}
 
 export function VerseStorefrontShell({
   children,
@@ -65,7 +44,6 @@ export function VerseStorefrontShell({
             </VerseErrorBoundary>
             <VerseFooter />
             <VerseAdminDock isAdmin={isAdmin} user={user} />
-            <VerseFixedPersona />
           </div>
         </VerseErrorBoundary>
       </VersePersonaStateProvider>

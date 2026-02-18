@@ -6,7 +6,7 @@ import { DefaultChatTransport } from "ai";
 import Link from "next/link";
 import { CopyIcon } from "lucide-react";
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon";
-import { Persona, type PersonaState } from "@/components/ai-elements/persona";
+import type { PersonaState } from "@/components/ai-elements/persona";
 import {
   VerseAttachmentsDisplay,
   VerseChatUserPill,
@@ -252,11 +252,11 @@ export function VerseChatPageContent() {
             </Select>
             )}
             <VerseChatUserPill user={user} />
-            <Persona
-              state={personaState}
-              variant="halo"
-              className="size-24 shrink-0"
-              themeColorVariable="--verse-text-rgb"
+            <VerseLogoHairIcon
+              size="lg"
+              withRing
+              status={personaState === "thinking" ? "thinking" : "idle"}
+              className="shrink-0"
             />
           </div>
         </header>

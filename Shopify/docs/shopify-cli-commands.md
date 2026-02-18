@@ -144,6 +144,41 @@ For non-interactive use (e.g. GitHub Actions):
 6. `shopify theme push` — Deploy to store
 7. `shopify theme publish` — Go live (when ready)
 
+## Theme Workflow (push/pull and Admin alignment)
+
+This project keeps the theme in `Shopify/theme/` and uses store `mood-mnky-3.myshopify.com`. Use these commands from the repo root (or pass `--path Shopify/theme`).
+
+- **Push with `--live --allow-live`** updates the **existing** live theme in place; it does **not** create a new theme in the Theme Library. A new theme appears only when using `--unpublished`.
+- **Customize edits** (including image picks in Admin) are stored in theme JSON on the server (`config/settings_data.json`, `templates/*.json`). **Pull** brings those into the repo so local dev shows the same refs; images load from the store CDN.
+- **Push overwrites** the remote theme. It can remove Customize-only edits (e.g. image choices). When both Admin and repo are used, prefer **pull → merge repo changes → push** so Admin asset updates are not lost.
+- **Exact commands** for this store and path:
+
+| Action | Command |
+|--------|--------|
+| List themes (live theme and IDs) | `shopify theme list --store mood-mnky-3.myshopify.com` |
+| Pull from live into repo | `shopify theme pull --path Shopify/theme --store mood-mnky-3.myshopify.com --live` |
+| Push repo to live | `shopify theme push --path Shopify/theme --store mood-mnky-3.myshopify.com --live --allow-live` |
+| Push as new unpublished theme | `shopify theme push --path Shopify/theme --store mood-mnky-3.myshopify.com --unpublished` |
+
+**Recommended flow when Admin has edited images/settings:** Pull from live first, re-apply any repo-only copy/code changes into the pulled files, then push. To get Admin image updates into the repo after a push: re-apply image choices in **Admin → Themes → Customize** (live theme), then run the pull command above and commit the updated JSON.
+
+## Switching store (e.g. after changing `dev_store_url`)
+
+If you changed `shopify.app.toml` (e.g. from `mood-mnky-3-2` to `mood-mnky-3`) but commands still hit the old store, the CLI may be using a cached session.
+
+1. **Log out**, then run a theme command so the CLI re-authenticates using the store in the config:
+   ```bash
+   shopify auth logout
+   shopify theme list --path Shopify/theme
+   ```
+   When prompted, log in and select the correct store if asked.
+
+2. **Or force the store** on every command so config/cache doesn’t matter:
+   ```bash
+   shopify theme list --path Shopify/theme --store mood-mnky-3.myshopify.com
+   shopify theme push --path Shopify/theme --store mood-mnky-3.myshopify.com --unpublished --theme "MNKY VERSE Theme"
+   ```
+
 ## References
 
 - [Shopify CLI for themes](https://shopify.dev/docs/storefronts/themes/tools/cli)

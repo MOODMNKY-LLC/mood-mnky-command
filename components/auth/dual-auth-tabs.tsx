@@ -82,6 +82,12 @@ export function DualAuthTabs({
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <LoginWithShopifyButton />
+            <Link
+              href="/verse/auth/discord"
+              className="inline-flex items-center justify-center rounded-md bg-[#5865F2] text-white text-sm font-medium hover:bg-[#4752C4] h-10 px-4 w-full transition-colors"
+            >
+              Login with Discord
+            </Link>
             <div className="text-center">
               <Link
                 href="/verse"

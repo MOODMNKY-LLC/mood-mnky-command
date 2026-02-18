@@ -1,14 +1,21 @@
 # MOOD MNKY Theme App Extension
 
-Theme app extension that provides embedded app blocks for the mood-mnky-command storefront. Merchants can add these blocks to any section that supports `@app` blocks.
+Theme app extension for the mood-mnky-command storefront. It provides **app blocks** (add to sections under **Apps** in the theme editor) and one **app embed** (configured under **Theme settings → App embeds**).
 
-## Blocks
+## App blocks (Add block → Apps → MOOD MNKY Theme)
 
-| Block | File | Default path |
-|-------|------|--------------|
+| Display name in editor | File | Default path / behavior |
+|------------------------|------|--------------------------|
 | Blending Lab CTA | `blocks/blending-cta.liquid` | `/blending` |
+| Latest from MNKY VERSE | `blocks/verse-blog.liquid` | Fetches posts from app API, link to `/verse/blog` |
 | Match My Mood CTA | `blocks/fragrance-finder-cta.liquid` | `/craft` |
 | Subscription CTA | `blocks/subscription-cta.liquid` | `/blending` |
+
+## App embed (Theme settings → App embeds)
+
+| Display name in editor | File | Purpose |
+|------------------------|------|---------|
+| MNKY Assistant | `blocks/mnky-assistant-embed.liquid` | Floating chat button; does not appear in section block picker |
 
 ## Setup
 
@@ -31,7 +38,7 @@ Theme app extension that provides embedded app blocks for the mood-mnky-command 
 
 Each block has:
 
-- **App base URL** – Base URL of the mood-mnky-command app (e.g. `https://app.moodmnky.com` or `http://localhost:3000` for dev). Leave blank to show a disabled button.
+- **App base URL** – Base URL of the mood-mnky-command app (e.g. `https://mnky-command.moodmnky.com` or `http://localhost:3000` for dev). Leave blank to show a disabled button.
 - **App path** – Path appended to the base URL (e.g. `/blending`, `/craft`).
 - **Heading, subheading, button label** – Content.
 - **Button accessibility label** – Optional, for screen readers.

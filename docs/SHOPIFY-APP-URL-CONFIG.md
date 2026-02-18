@@ -1,0 +1,84 @@
+# Shopify app URL – sourcing and configuration
+
+This doc explains how the **app URL** (base URL of the mood-mnky-command Next.js app) is sourced and where it must be set so the Shopify store theme works correctly.
+
+## Canonical production URL
+
+The production app is served at:
+
+- **App / LABZ (admin):** `https://mnky-command.moodmnky.com`
+- **Verse (storefront):** `https://mnky-verse.moodmnky.com`
+
+For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse blog links, etc.), the **App base URL** must point at the **same app**. Both domains serve the same deployment; use one canonical base for the theme:
+
+- **Use:** `https://mnky-command.moodmnky.com`  
+  This is the app’s primary domain and what the codebase and Vercel env use as `NEXT_PUBLIC_APP_URL`.
+
+**Do not use:** `https://app.moodmnky.com` — that subdomain is not the deployed app.
+
+---
+
+## How the app URL is sourced
+
+### 1. Environment variable (source of truth)
+
+| Variable | Purpose | Production value |
+|----------|---------|------------------|
+| `NEXT_PUBLIC_APP_URL` | Base URL of the app (LABZ, API, widget, blog). Used by server and client. | `https://mnky-command.moodmnky.com` |
+| `NEXT_PUBLIC_VERSE_APP_URL` | Verse storefront base (auth callbacks, logout redirect when origin unknown). | `https://mnky-verse.moodmnky.com` |
+
+- **Where set:** `.env` / `.env.local` (local), **Vercel** → Project → Settings → Environment Variables (production/preview).
+- **Code:** Any runtime fallback when `NEXT_PUBLIC_APP_URL` is unset should use `https://mnky-command.moodmnky.com`, not `app.moodmnky.com`.
+
+### 2. Where the app URL is used in code
+
+- **Storefront Assistant** (`/api/storefront-assistant`, storefront tools, system prompt): links and `{app_base_url}` replacement use `NEXT_PUBLIC_APP_URL` (fallback: `https://mnky-command.moodmnky.com`).
+- **Verse blog API** (`/api/verse/blog`): base URL for canonical links uses `NEXT_PUBLIC_APP_URL`.
+- **LABZ Storefront Assistant page** (`/platform/storefront-assistant`): “App base URL” shown and copied for the theme uses `NEXT_PUBLIC_APP_URL` or `window.location.origin` in browser.
+- **Customer Account API** (auth/callback/logout): callbacks and redirects use `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_VERSE_APP_URL`.
+- **Login with Shopify button:** uses `NEXT_PUBLIC_APP_URL` for OAuth redirect (e.g. when using ngrok in dev).
+- **Funnels, Jotform webhooks, blend APIs, etc.:** webhook/base URLs use `NEXT_PUBLIC_APP_URL`.
+
+### 3. Shopify theme (Theme Editor)
+
+The theme does **not** read env vars. You set the **App base URL** in the Shopify Admin:
+
+1. **Online Store** → **Themes** → **Customize**.
+2. For each of the following, set **App base URL** (or equivalent) to **`https://mnky-command.moodmnky.com`** (no trailing slash):
+   - **App embeds:** if your app provides an embed (e.g. MNKY Assistant), its settings include “App base URL” — set it to `https://mnky-command.moodmnky.com`.
+   - **App CTA section** (if present): section setting **App base URL**.
+   - **App blocks** (Blending CTA, Fragrance Finder, Subscription CTA, Verse blog, MNKY Assistant, etc.): each block has an **App base URL** (or **app_base_url**) setting; use the same value.
+3. **Featured blog / Verse blog link:** if there is a “Verse blog URL” or similar, set it to `https://mnky-command.moodmnky.com/verse/blog` (or the same base + `/verse/blog`).
+
+**Important:** The value in the theme must match your production app. If you use a different domain in Vercel (e.g. only `mnky-verse.moodmnky.com`), use that as the App base URL everywhere in the theme instead; the code’s fallback and this doc assume **mnky-command.moodmnky.com** as the canonical app URL.
+
+---
+
+## Checklist for adding the app to the Shopify store theme
+
+1. **Vercel (production)**  
+   - [ ] `NEXT_PUBLIC_APP_URL` = `https://mnky-command.moodmnky.com`  
+   - [ ] `NEXT_PUBLIC_VERSE_APP_URL` = `https://mnky-verse.moodmnky.com` (if you use Verse auth/callbacks).
+
+2. **Shopify Admin → Theme Editor**  
+   - [ ] **App embeds:** enable the app’s embed(s) (e.g. MNKY Assistant). Set **App base URL** to `https://mnky-command.moodmnky.com`.  
+   - [ ] **App CTA section:** set **App base URL** to `https://mnky-command.moodmnky.com`.  
+   - [ ] **App blocks** (Blending CTA, Fragrance Finder, Subscription CTA, Verse blog, etc.): set **App base URL** / **app_base_url** to `https://mnky-command.moodmnky.com`.  
+   - [ ] **Verse blog link** (if applicable): set to `https://mnky-command.moodmnky.com/verse/blog`.  
+   - [ ] Save the theme.
+
+3. **Optional – LABZ verification**  
+   - [ ] In LABZ, open **Platform** → **Storefront Assistant**.  
+   - [ ] Confirm “App base URL” shows `https://mnky-command.moodmnky.com` (or your chosen base).  
+   - [ ] Use “Verify widget” and “Verify API” to confirm the assistant and API respond.
+
+---
+
+## Summary
+
+| Context | What to set |
+|--------|-------------|
+| **Source of truth** | `NEXT_PUBLIC_APP_URL` in Vercel (and .env locally) = `https://mnky-command.moodmnky.com` |
+| **Shopify theme – App base URL** | Same: `https://mnky-command.moodmnky.com` in every app embed/section/block that asks for it |
+| **Verse blog link in theme** | `https://mnky-command.moodmnky.com/verse/blog` |
+| **Do not use** | `https://app.moodmnky.com` (not the deployed app) |

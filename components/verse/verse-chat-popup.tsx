@@ -6,7 +6,7 @@ import { DefaultChatTransport } from "ai";
 import Link from "next/link";
 import { CopyIcon } from "lucide-react";
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon";
-import { Persona, type PersonaState } from "@/components/ai-elements/persona";
+import type { PersonaState } from "@/components/ai-elements/persona";
 import {
   Sheet,
   SheetContent,
@@ -189,11 +189,11 @@ export function VerseChatPopup({
             </SheetTitle>
             <div className="flex items-center gap-2">
               {user && <VerseChatUserPill user={user} />}
-              <Persona
-                state={personaState}
-                variant="halo"
-                className="size-12 shrink-0"
-                themeColorVariable="--verse-text-rgb"
+              <VerseLogoHairIcon
+                size="md"
+                withRing
+                status={personaState === "thinking" ? "thinking" : "idle"}
+                className="shrink-0"
               />
             </div>
           </div>

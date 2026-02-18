@@ -32,7 +32,7 @@
           "type": "text",
           "settings": {
             "heading": "Community",
-            "subtext": "<p>Join our <a href=\"#\">Discord</a>, read the <a href=\"/blogs/hello-welcome-to-mood-mnky\">store blog</a>, or explore the <a href=\"https://app.moodmnky.com/verse/blog\">MNKY VERSE blog</a>.</p>"
+            "subtext": "<p>Join our <a href=\"#\">Discord</a>, read the <a href=\"/blogs/hello-welcome-to-mood-mnky\">store blog</a>, or explore the <a href=\"https://mnky-command.moodmnky.com/verse/blog\">MNKY VERSE blog</a>.</p>"
           }
         }
       },

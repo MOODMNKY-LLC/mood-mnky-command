@@ -30,6 +30,7 @@ import {
   Newspaper,
   ArrowDownToLine,
   ArrowUpToLine,
+  MessageSquare,
 } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -642,7 +643,7 @@ export function NotionSyncPanel() {
 
       {/* Sync Tabs */}
       <Tabs defaultValue="fragrance-oils" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="fragrance-oils" className="text-xs">
             <Droplets className="mr-1 h-3 w-3" />
             Fragrance Oils
@@ -662,6 +663,10 @@ export function NotionSyncPanel() {
           <TabsTrigger value="blog" className="text-xs">
             <Newspaper className="mr-1 h-3 w-3" />
             VERSE Blog
+          </TabsTrigger>
+          <TabsTrigger value="assistant-knowledge" className="text-xs">
+            <MessageSquare className="mr-1 h-3 w-3" />
+            Assistant
           </TabsTrigger>
         </TabsList>
 
@@ -720,6 +725,21 @@ export function NotionSyncPanel() {
               { key: "slug", label: "Slug" },
               { key: "status", label: "Status" },
               { key: "publishedAt", label: "Published" },
+            ]}
+          />
+        </TabsContent>
+        <TabsContent value="assistant-knowledge" className="mt-4">
+          <DatabaseCard
+            title="Storefront Assistant Knowledge"
+            icon={MessageSquare}
+            endpoint="/api/notion/sync/assistant-knowledge"
+            itemKey="pages"
+            syncMethod="POST"
+            postSyncItemsEndpoint="/api/notion/sync/assistant-knowledge"
+            rowKeyProp="pageId"
+            columns={[
+              { key: "pageId", label: "Page ID" },
+              { key: "title", label: "Title" },
             ]}
           />
         </TabsContent>

@@ -1,0 +1,212 @@
+{% comment %}
+  MOOD MNKY - MNKY Assistant App Embed
+  Floating chat button + iframe widget for the native Shopify store.
+  Renders when enabled in Theme Settings → App embeds.
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign enabled = block.settings.enabled
+  assign position = block.settings.position | default: 'bottom-right'
+  assign widget_url = app_url | append: '/assistant/widget'
+  assign is_valid = false
+  if app_url != '' and app_url != blank and enabled
+    assign is_valid = true
+  endif
+  assign pos_left = 'auto'
+  assign pos_right = '1.25rem'
+  if position == 'bottom-left'
+    assign pos_left = '1.25rem'
+    assign pos_right = 'auto'
+  endif
+  assign app_base = app_url
+  assign base_len = app_base.size | minus: 1
+  if base_len >= 0
+    assign last_char = app_base | slice: base_len, 1
+    if last_char == '/'
+      assign app_base = app_base | slice: 0, base_len
+    endif
+  endif
+  assign logo_url = app_base | append: '/auth/logo-hair.svg'
+-%}
+{%- if is_valid -%}
+<div
+  class="mood-mnky-assistant-embed"
+  {{ block.shopify_attributes }}
+  style="
+    --mnky-assistant-z: 9999;
+    --mnky-assistant-primary: {{ block.settings.primary_color | default: '#1a1a1a' }};
+  "
+>
+  <div
+    id="mnky-assistant-toggle"
+    class="mnky-assistant-toggle"
+    role="button"
+    tabindex="0"
+    aria-label="Open MNKY Assistant chat"
+    aria-expanded="false"
+    data-status="idle"
+    style="
+      position: fixed;
+      bottom: 1.25rem;
+      left: {{ pos_left }};
+      right: {{ pos_right }};
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: #fff;
+      color: #1a1a1a;
+      border: 2px solid var(--mnky-assistant-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: var(--mnky-assistant-z);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    "
+  >
+    <img
+      src="{{ logo_url }}"
+      alt=""
+      width="28"
+      height="40"
+      style="
+        width: 1.75rem;
+        height: auto;
+        max-height: 2.25rem;
+        object-fit: contain;
+        pointer-events: none;
+      "
+      aria-hidden="true"
+    >
+  </div>
+  <div
+    id="mnky-assistant-panel"
+    class="mnky-assistant-panel"
+    role="dialog"
+    aria-label="MNKY Assistant chat"
+    aria-hidden="true"
+    style="
+      display: none;
+      position: fixed;
+      bottom: 5rem;
+      left: {{ pos_left }};
+      right: {{ pos_right }};
+      width: min(400px, calc(100vw - 2.5rem));
+      height: min(560px, calc(100dvh - 7rem));
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: var(--mnky-assistant-z);
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+    "
+  >
+    <iframe
+      src="{{ widget_url }}"
+      title="MNKY Assistant"
+      style="
+        width: 100%;
+        height: 100%;
+        border: none;
+      "
+    ></iframe>
+  </div>
+  <style>
+    .mnky-assistant-toggle[data-status="idle"] {
+      border-color: var(--mnky-assistant-primary);
+      border-width: 2px;
+    }
+    .mnky-assistant-toggle[data-status="streaming"],
+    .mnky-assistant-toggle[data-status="thinking"] {
+      border-width: 2px;
+      border-color: var(--mnky-assistant-primary);
+      animation: mnky-assistant-ring-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes mnky-assistant-ring-pulse {
+      0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+      50% { box-shadow: 0 0 0 3px rgba(26,26,26,0.2); }
+    }
+  </style>
+  <script>
+    (function() {
+      var toggle = document.getElementById('mnky-assistant-toggle');
+      var panel = document.getElementById('mnky-assistant-panel');
+      if (!toggle || !panel) return;
+      function open() {
+        panel.style.display = 'block';
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+      function close() {
+        panel.style.display = 'none';
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+      function togglePanel() {
+        if (panel.style.display === 'block') close(); else open();
+      }
+      toggle.addEventListener('click', togglePanel);
+      toggle.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          togglePanel();
+        }
+      });
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'mnky-assistant-close') close();
+        if (e.data && e.data.type === 'mnky-assistant-status' && e.data.status && toggle) {
+          toggle.setAttribute('data-status', e.data.status);
+        }
+      });
+    })();
+  </script>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "MNKY Assistant",
+  "target": "body",
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Enable MNKY Assistant",
+      "default": true,
+      "info": "Show the floating chat button on the storefront"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command app (e.g. https://mnky-command.moodmnky.com)",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Button position",
+      "options": [
+        { "value": "bottom-right", "label": "Bottom right" },
+        { "value": "bottom-left", "label": "Bottom left" }
+      ],
+      "default": "bottom-right"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Button color",
+      "default": "#1a1a1a"
+    }
+  ]
+}
+{% endschema %}

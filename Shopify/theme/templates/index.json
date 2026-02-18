@@ -56,7 +56,7 @@
             "heading_size": "h1",
             "subheading": "Your private corner in the MNKY VERSE. Preferences, your default agent, and your connection to the ecosystem—all in one place. Enter through the MNKY VERSE app.",
             "button_label": "Enter the MNKY VERSE",
-            "link": "https://app.moodmnky.com/verse",
+            "link": "https://mnky-command.moodmnky.com/verse",
             "button_style_secondary": false,
             "box_align": "bottom-center",
             "show_text_box": true,
@@ -92,42 +92,14 @@
         "72a99abd-f56f-4e63-81e3-9ce37a0efadb"
       ],
       "settings": {
-        "layout": "full_bleed",
+        "layout": "grid",
         "slide_height": "adapt_image",
-        "slider_visual": "counter",
+        "slider_visual": "dots",
         "auto_rotate": true,
         "change_slides_speed": 9,
         "image_behavior": "none",
         "show_text_below": true,
         "accessibility_info": "Featured MOOD MNKY: Who we are, Custom candles, Blog, Wax melts, The Dojo"
-      }
-    },
-    "featured-collection-0": {
-      "type": "featured-collection",
-      "settings": {
-        "title": "Sensory Journeys: Our Starting Lineup",
-        "heading_size": "h2",
-        "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience in the MNKY VERSE. Candles and wax-melts.</p>",
-        "show_description": true,
-        "description_style": "body",
-        "collection": "mnky-moods",
-        "products_to_show": 12,
-        "columns_desktop": 5,
-        "full_width": true,
-        "show_view_all": true,
-        "view_all_style": "outline",
-        "enable_desktop_slider": true,
-        "color_scheme": "background-1",
-        "image_ratio": "adapt",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": true,
-        "show_rating": true,
-        "enable_quick_add": true,
-        "columns_mobile": "2",
-        "swipe_on_mobile": true,
-        "padding_top": 0,
-        "padding_bottom": 0
       }
     },
     "multicolumn-0": {
@@ -193,6 +165,34 @@
         "padding_bottom": 92
       }
     },
+    "featured-collection-0": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Sensory Journeys: Our Starting Lineup",
+        "heading_size": "h2",
+        "description": "<p>From the Eiffel Tower to the streets of Marrakesh—multi-sensory integration meets traveled blends. Transform your scentsing experience in the MNKY VERSE. Candles and wax-melts.</p>",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "mnky-moods",
+        "products_to_show": 12,
+        "columns_desktop": 5,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "link",
+        "enable_desktop_slider": true,
+        "color_scheme": "background-1",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": true,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": true,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
     "a4b1732b-b660-4e99-b471-f681ff417699": {
       "type": "featured-collection",
       "settings": {
@@ -224,7 +224,7 @@
     "app-cta-0": {
       "type": "app-cta",
       "settings": {
-        "app_base_url": "https://app.moodmnky.com",
+        "app_base_url": "https://mnky-command.moodmnky.com",
         "cta_path": "/blending",
         "heading": "The Foundation — Create your custom fragrance blend",
         "heading_size": "h2",
@@ -565,7 +565,7 @@
         "show_date": true,
         "show_author": true,
         "show_view_all": true,
-        "verse_blog_url": "https://app.moodmnky.com/verse/blog",
+        "verse_blog_url": "https://mnky-command.moodmnky.com/verse/blog",
         "verse_blog_label": "View all in the MNKY VERSE",
         "padding_top": 60,
         "padding_bottom": 60
@@ -603,12 +603,71 @@
         "padding_top": 60,
         "padding_bottom": 0
       }
+    },
+    "1771436989adce6292": {
+      "type": "apps",
+      "blocks": {
+        "mood_mnky_command_blending_cta_7jd49A": {
+          "type": "shopify://apps/mood-mnky-command/blocks/blending-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/blending",
+            "heading": "The Foundation — Create your custom fragrance blend",
+            "subheading": "Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.",
+            "cta_label": "Go to Blending Lab",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        },
+        "mood_mnky_command_verse_blog_byCUtQ": {
+          "type": "shopify://apps/mood-mnky-command/blocks/verse-blog/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "post_limit": 3,
+            "heading": "Latest from MNKY VERSE",
+            "view_all_label": "View all in the MNKY VERSE"
+          }
+        },
+        "mood_mnky_command_fragrance_finder_cta_VKLzif": {
+          "type": "shopify://apps/mood-mnky-command/blocks/fragrance-finder-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/craft",
+            "heading": "The Experience — Match My Mood",
+            "subheading": "Multi-sensory integration. Find the perfect fragrance for how you feel right now in the MNKY VERSE.",
+            "cta_label": "Find my fragrance",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        },
+        "mood_mnky_command_subscription_cta_TeCyaA": {
+          "type": "shopify://apps/mood-mnky-command/blocks/subscription-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
+          "settings": {
+            "app_base_url": "https://mnky-command.moodmnky.com",
+            "cta_path": "/blending",
+            "heading": "Subscribe to the Vibe — Accessible premium",
+            "subheading": "Engagement-based alternatives to traditional payment. Subscribe and save on refills. Always scentsing the MOOD.",
+            "cta_label": "Explore subscriptions",
+            "cta_aria_label": "",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "mood_mnky_command_blending_cta_7jd49A",
+        "mood_mnky_command_verse_blog_byCUtQ",
+        "mood_mnky_command_fragrance_finder_cta_VKLzif",
+        "mood_mnky_command_subscription_cta_TeCyaA"
+      ],
+      "settings": {
+        "include_margins": true
+      }
     }
   },
   "order": [
     "slideshow",
-    "featured-collection-0",
     "multicolumn-0",
+    "featured-collection-0",
     "a4b1732b-b660-4e99-b471-f681ff417699",
     "app-cta-0",
     "image-with-text-0",
@@ -619,6 +678,7 @@
     "rich-text",
     "multicolumn-1",
     "featured-blog",
-    "newsletter"
+    "newsletter",
+    "1771436989adce6292"
   ]
 }

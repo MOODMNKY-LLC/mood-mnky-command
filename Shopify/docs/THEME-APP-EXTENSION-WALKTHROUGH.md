@@ -55,10 +55,11 @@ shopify app deploy
      - **Blending Lab CTA**
      - **Match My Mood CTA**
      - **Subscription CTA**
+     - **Latest from MNKY VERSE**
 5. In the block settings (right sidebar), set:
    - **App base URL**: your mood-mnky-command app URL  
      - Dev: `http://localhost:3000`  
-     - Prod: `https://app.moodmnky.com` (or your deployed URL)
+     - Prod: `https://mnky-command.moodmnky.com` (or your deployed URL)
 6. Adjust heading, subheading, and button label if needed
 7. Click **Save**
 
@@ -77,6 +78,27 @@ App blocks can be added to any section that supports apps, for example:
 
 ---
 
+## App embed: MNKY Assistant (chat bubble)
+
+The **MNKY Assistant** is an app embed block that shows a floating chat button on the storefront. When visitors click it, an AI assistant helps with product discovery, FAQs, and shipping info.
+
+### Enable MNKY Assistant
+
+1. In the theme editor, go to **Theme settings** (gear icon) in the left sidebar
+2. Scroll to **App embeds**
+3. Find **MOOD MNKY Theme** → **MNKY Assistant**
+4. Enable it (toggle on)
+5. Configure:
+   - **Enable MNKY Assistant**: checked
+   - **App base URL**: e.g. `https://mnky-command.moodmnky.com` (dev: `http://localhost:3000`)
+   - **Button position**: Bottom right or Bottom left
+   - **Button color**: Optional accent color
+6. Click **Save**
+
+The chat button will appear on all store pages (unless restricted by template settings). The widget loads from `{app_base_url}/assistant/widget` in an iframe.
+
+---
+
 ## Quick reference: block purposes
 
 | Block                 | Use for                          | Default path |
@@ -84,6 +106,11 @@ App blocks can be added to any section that supports apps, for example:
 | Blending Lab CTA      | Link to fragrance Blending Lab  | `/blending`  |
 | Match My Mood CTA     | Link to fragrance finder        | `/craft`     |
 | Subscription CTA     | Link to subscription experience | `/blending`  |
+| Latest from MNKY VERSE | Fetches blog posts from app API | `GET /api/verse/blog` |
+
+| App embed             | Use for                                |
+|-----------------------|----------------------------------------|
+| MNKY Assistant        | Floating AI chat on native store pages |
 
 ---
 

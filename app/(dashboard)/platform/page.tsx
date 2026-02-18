@@ -10,6 +10,7 @@ import {
   Activity,
   Globe,
   Clock,
+  MessageSquare,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -247,6 +248,25 @@ export default function PlatformPage() {
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     View row-level security per table
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/platform/discord">
+          <Card className="cursor-pointer transition-colors hover:border-primary/30">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-3/10">
+                  <MessageSquare className="h-5 w-5 text-chart-3" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">
+                    Discord
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    MNKY VERSE bot: send messages, create forum posts
                   </p>
                 </div>
               </div>

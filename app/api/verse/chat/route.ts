@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { DEFAULT_AGENT_SLUG, isAgentSlug } from "@/lib/agents"
 import { VERSE_SYSTEM_PROMPT } from "@/lib/chat/verse-system-prompt"
+import { searchVerseProductsTool, searchVerseBlogTool } from "@/lib/chat/storefront-tools"
 
 export const maxDuration = 30
 
@@ -156,6 +157,10 @@ export async function POST(request: Request) {
     model: openai(model),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
+    tools: {
+      search_verse_products: searchVerseProductsTool,
+      search_verse_blog: searchVerseBlogTool,
+    },
   })
 
   const response = result.toUIMessageStreamResponse({

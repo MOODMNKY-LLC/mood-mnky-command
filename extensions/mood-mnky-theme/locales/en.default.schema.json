@@ -4,7 +4,7 @@
     "settings": {
       "app_base_url": {
         "label": "App base URL",
-        "info": "Base URL of mood-mnky-command app (e.g. https://app.moodmnky.com). Leave blank to show disabled state."
+        "info": "Base URL of mood-mnky-command app (e.g. https://mnky-command.moodmnky.com). Leave blank to show disabled state."
       },
       "cta_path": {
         "label": "App path",

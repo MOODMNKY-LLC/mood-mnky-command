@@ -29,3 +29,62 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+/* MNKY VERSE Blog block */
+.mood-mnky-verse-blog__header {
+  margin-bottom: 1rem;
+}
+
+.mood-mnky-verse-blog__posts {
+  margin-bottom: 1rem;
+}
+
+.mood-mnky-verse-blog__loading {
+  color: var(--color-foreground, #333);
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.mood-mnky-verse-blog__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.mood-mnky-verse-blog__item {
+  margin: 0;
+}
+
+.mood-mnky-verse-blog__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mood-mnky-verse-blog__link:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mood-mnky-verse-blog__title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.mood-mnky-verse-blog__excerpt {
+  display: block;
+  font-size: 0.875rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.mood-mnky-verse-blog__footer {
+  margin-top: 0.5rem;
+}

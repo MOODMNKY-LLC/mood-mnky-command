@@ -21,3 +21,7 @@ voice-previews/
 public/sw*
 public/swe-worker*
 .vercel
+
+# Pulled theme copies (reconciliation only; do not commit)
+Shopify/theme-live/
+Shopify/theme-dev/
