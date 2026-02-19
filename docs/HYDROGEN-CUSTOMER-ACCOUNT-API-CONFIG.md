@@ -133,7 +133,17 @@ These are shown in **Customer Account API → Application endpoints**:
 | Token | `https://shopify.com/authentication/69343281426/oauth/token` |
 | Logout | `https://shopify.com/authentication/69343281426/logout` |
 
-Our app uses OpenID discovery from the store domain (`https://${NEXT_PUBLIC_STORE_DOMAIN}/.well-known/openid-configuration`) for auth and token endpoints. The logout endpoint is used when a Shopify customer signs out for full SSO logout.
+Our app uses OpenID discovery from the store domain (`https://${NEXT_PUBLIC_STORE_DOMAIN}/.well-known/openid-configuration`) for authorization, token, and end_session (logout) endpoints when not set via env. You can override with `PUBLIC_CUSTOMER_ACCOUNT_API_AUTHORIZE_URL`, `PUBLIC_CUSTOMER_ACCOUNT_API_TOKEN_URL`, and optionally `PUBLIC_CUSTOMER_ACCOUNT_API_LOGOUT_URL`.
+
+**Callback and logout URLs in Shopify** must exactly match the app: add the callback URI(s) and logout URI(s) listed above to your app’s Allowed redirect URLs and Logout URIs in Shopify Admin.
+
+### Token storage and refresh
+
+We store `access_token`, `expires_at`, `refresh_token`, and `id_token` in `customer_account_tokens`. The refresh token is used to obtain a new access token when it expires or is about to expire; if refresh fails (e.g. `invalid_grant`), the user must re-link. The id_token is sent as `id_token_hint` to the end_session endpoint on logout for proper OIDC sign-out.
+
+### Linking requires Supabase session
+
+Linking a Shopify account is only available to users who are already signed in (Supabase: email/password, Discord, or GitHub). The login page message “Sign in below to link your Shopify account” reflects this: sign in first, then complete the Shopify OAuth flow to link. This is analogous to Discord/GitHub: Supabase OAuth establishes the app session; Shopify OAuth links an existing session to your store.
 
 ---
 

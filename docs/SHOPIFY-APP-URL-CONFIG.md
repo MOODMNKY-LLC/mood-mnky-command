@@ -47,11 +47,13 @@ The Customer Account API OAuth flow requires the **redirect_uri** sent to Shopif
 
 **Checklist – Allowed redirect URLs in Shopify Admin:**
 
+Shopify requires **HTTPS** for redirect URLs; `http://localhost` is not accepted.
+
 1. Go to your app (e.g. **Hydrogen** or **Customer Account API** app) → **Allowed redirect URLs** (or equivalent).
-2. Add the exact callback URL for each app domain you use:
+2. Add the exact **https** callback URL for each app domain you use:
    - `https://mnky-command.moodmnky.com/api/customer-account-api/callback`
    - `https://mnky-verse.moodmnky.com/api/customer-account-api/callback` (if Verse auth is on a different domain)
-3. For **local dev with ngrok**, optionally add: `https://<your-ngrok-domain>/api/customer-account-api/callback` and set `NEXT_PUBLIC_APP_URL` (or Verse equivalent) to that ngrok URL only in `.env.local`.
+3. For **local dev**: Use a tunnel (e.g. **ngrok**) so you have an HTTPS origin. Add `https://<your-ngrok-domain>/api/customer-account-api/callback` to Allowed redirect URLs and set `NEXT_PUBLIC_APP_URL` (or `NEXT_PUBLIC_VERSE_APP_URL`) in `.env.local` to `https://<your-ngrok-domain>` so the OAuth flow uses that callback.
 
 **Debug:** GET `/api/customer-account-api/auth-config` returns the callback URL for the current origin (no secrets). Use it to confirm which URL must be in Shopify’s Allowed redirect URLs.
 

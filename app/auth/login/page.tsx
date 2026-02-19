@@ -20,6 +20,7 @@ const SHOPIFY_LINK_ERRORS = [
   "missing_params",
   "config",
   "invalid_state",
+  "shopify_session_mismatch",
   "token_exchange_failed",
   "storage_failed",
   "callback_failed",
@@ -131,9 +132,16 @@ export default function LoginPage() {
           ) : (
             <AuthLabzLogoBlock />
           )}
+          {activeTab === "verse" && linkShopify && !showShopifyLinkHint && (
+            <p className="w-full max-w-md text-center text-sm text-muted-foreground">
+              Sign in below to link your Shopify account. After signing in you&apos;ll be taken to Shopify to connect your store, then back here.
+            </p>
+          )}
           {showShopifyLinkHint && (
             <p className="w-full max-w-md rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-700 dark:text-amber-300">
-              Shopify link failed. If you&apos;re on localhost, use ngrok and add the HTTPS callback URL in Shopify. Check that your app URL and Client ID match Shopify Application setup.
+              {error === "shopify_session_mismatch"
+                ? "Your session changed or expired. Sign in again and try linking your Shopify account in the same browser."
+                : "Shopify link failed. If you're on localhost, use ngrok and add the HTTPS callback URL in Shopify. Check that your app URL and Client ID match Shopify Application setup."}
             </p>
           )}
           <DualAuthTabs

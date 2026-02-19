@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { storeDomain, clientId, appUrl } =
+    const { storeDomain, clientId, appUrl, tokenUrl: envTokenUrl } =
       getCustomerAccountApiConfig(request);
 
     if (!storeDomain || !clientId || !appUrl) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     const { data: verifierRow, error: verifierError } = await supabase
       .from("customer_account_code_verifiers")
-      .select("verifier")
+      .select("verifier, profile_id")
       .eq("state", state)
       .single();
 
@@ -59,19 +59,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const openidConfigUrl = `https://${storeDomain}/.well-known/openid-configuration`;
-    const openidResponse = await fetch(openidConfigUrl);
+    const serverSupabase = await createClient();
+    const {
+      data: { user },
+    } = await serverSupabase.auth.getUser();
+    if (verifierRow.profile_id != null && user?.id !== verifierRow.profile_id) {
+      console.error("Customer Account API: profile_id mismatch");
+      return NextResponse.redirect(
+        new URL("/auth/login?error=shopify_session_mismatch", appUrl)
+      );
+    }
 
-    if (!openidResponse.ok) {
+    const tokenEndpoint =
+      envTokenUrl ||
+      (storeDomain
+        ? await (async () => {
+            const openidConfigUrl = `https://${storeDomain}/.well-known/openid-configuration`;
+            const openidResponse = await fetch(openidConfigUrl);
+            if (!openidResponse.ok) return null;
+            const openidConfig = (await openidResponse.json()) as {
+              token_endpoint?: string;
+            };
+            return openidConfig.token_endpoint ?? null;
+          })()
+        : null);
+
+    if (!tokenEndpoint) {
       return NextResponse.redirect(
         new URL("/auth/login?error=discovery_failed", request.url)
       );
     }
-
-    const openidConfig = (await openidResponse.json()) as {
-      token_endpoint: string;
-    };
-    const tokenEndpoint = openidConfig.token_endpoint;
 
     const callbackUrl = `${appUrl}/api/customer-account-api/callback`;
 
@@ -104,6 +121,8 @@ export async function GET(request: NextRequest) {
     const tokenData = (await tokenResponse.json()) as {
       access_token: string;
       expires_in?: number;
+      refresh_token?: string;
+      id_token?: string;
     };
 
     const expiresAt = tokenData.expires_in
@@ -116,6 +135,8 @@ export async function GET(request: NextRequest) {
         shop: storeDomain,
         access_token: tokenData.access_token,
         expires_at: expiresAt?.toISOString() ?? null,
+        refresh_token: tokenData.refresh_token ?? null,
+        id_token: tokenData.id_token ?? null,
       })
       .select("id")
       .single();
@@ -137,20 +158,18 @@ export async function GET(request: NextRequest) {
       tokenData.access_token,
       storeDomain
     );
-    if (customer?.id) {
-      const serverSupabase = await createClient();
-      const {
-        data: { user },
-      } = await serverSupabase.auth.getUser();
-      if (user?.id) {
-        await supabase
-          .from("profiles")
-          .update({ shopify_customer_id: customer.id })
-          .eq("id", user.id);
-      }
+    if (customer?.id && user?.id) {
+      await supabase
+        .from("profiles")
+        .update({ shopify_customer_id: customer.id })
+        .eq("id", user.id);
     }
 
-    const redirect = NextResponse.redirect(new URL("/verse", appUrl));
+    // Use the request's origin so we always redirect back to the same host the user hit (avoids wrong host when proxied or env appUrl differs)
+    const requestOrigin = url.origin;
+    const versePath = "/verse?shopify=linked";
+    const redirectUrl = `${requestOrigin}${versePath}`;
+    const redirect = NextResponse.redirect(redirectUrl);
     const opts = getCustomerSessionCookieOptions();
     redirect.cookies.set(CUSTOMER_SESSION_COOKIE, tokenRow.id, {
       ...opts,
