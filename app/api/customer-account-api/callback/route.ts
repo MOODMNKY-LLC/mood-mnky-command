@@ -63,7 +63,8 @@ export async function GET(request: NextRequest) {
     const {
       data: { user },
     } = await serverSupabase.auth.getUser();
-    if (verifierRow.profile_id != null && user?.id !== verifierRow.profile_id) {
+    // If we have a session and it doesn't match who started the link, reject
+    if (user?.id != null && verifierRow.profile_id != null && user.id !== verifierRow.profile_id) {
       console.error("Customer Account API: profile_id mismatch");
       return NextResponse.redirect(
         new URL("/auth/login?error=shopify_session_mismatch", appUrl)
@@ -153,16 +154,21 @@ export async function GET(request: NextRequest) {
       .delete()
       .eq("state", state);
 
-    // Persist Shopify customer ID to profile when user is logged into Verse
+    // Persist Shopify customer ID to profile. Use verifierRow.profile_id when session
+    // cookie is missing (e.g. cross-site redirect from Shopify) so the link is still stored.
     const customer = await fetchCustomerWithToken(
       tokenData.access_token,
       storeDomain
     );
-    if (customer?.id && user?.id) {
-      await supabase
+    const profileId = user?.id ?? verifierRow.profile_id ?? null;
+    if (customer?.id && profileId) {
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({ shopify_customer_id: customer.id })
-        .eq("id", user.id);
+        .eq("id", profileId);
+      if (updateError) {
+        console.error("Customer Account API: failed to update profile", updateError);
+      }
     }
 
     // Use the request's origin so we always redirect back to the same host the user hit (avoids wrong host when proxied or env appUrl differs)
