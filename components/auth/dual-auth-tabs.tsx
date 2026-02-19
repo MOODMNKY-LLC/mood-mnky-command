@@ -26,6 +26,8 @@ export interface DualAuthTabsProps {
   onTabChange?: (tab: AuthTab) => void
   /** Light mode appearance for MNKY LABZ - white card, dark contrast */
   appearance?: "default" | "light"
+  /** Redirect path after Verse login (e.g. /verse or /api/customer-account-api/auth when linkShopify=1) */
+  verseRedirectTo?: string
 }
 
 export function DualAuthTabs({
@@ -33,6 +35,7 @@ export function DualAuthTabs({
   defaultTab = "verse",
   onTabChange,
   appearance = "default",
+  verseRedirectTo = "/verse",
 }: DualAuthTabsProps) {
   const isLight = appearance === "light"
 
@@ -83,12 +86,12 @@ export function DualAuthTabs({
           <CardContent className="flex flex-col gap-4">
             <OAuthProviderButton
               provider="discord"
-              redirectTo="/verse/auth/callback?next=/verse"
+              redirectTo={`/verse/auth/callback?next=${encodeURIComponent(verseRedirectTo)}`}
               className="inline-flex items-center justify-center rounded-md bg-[#5865F2] text-white text-sm font-medium hover:bg-[#4752C4] h-10 px-4 w-full transition-colors"
             >
               Login with Discord
             </OAuthProviderButton>
-            <LoginForm redirectTo="/verse" />
+            <LoginForm redirectTo={verseRedirectTo} />
             <div className="text-center">
               <Link
                 href="/verse"

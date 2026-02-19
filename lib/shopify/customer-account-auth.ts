@@ -14,6 +14,12 @@ export type CustomerAccountApiConfig = {
   appUrl: string | undefined
 }
 
+/** True when origin is http://localhost (any port). Shopify requires HTTPS; use env app URL (e.g. ngrok) instead. */
+function isLocalhostOrigin(origin: string | undefined): boolean {
+  if (!origin) return false
+  return /^http:\/\/localhost(:\d+)?$/i.test(origin)
+}
+
 /** Read and trim Customer Account API env so CRLF/whitespace never reach Shopify. */
 export function getCustomerAccountApiConfig(request?: {
   nextUrl?: { origin?: string }
@@ -26,12 +32,15 @@ export function getCustomerAccountApiConfig(request?: {
     process.env.PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
     process.env.NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID
   )?.trim()
+  const requestOrigin = request?.nextUrl?.origin?.trim()
   const appUrl = (
-    request?.nextUrl?.origin ||
+    isLocalhostOrigin(requestOrigin)
+      ? undefined
+      : requestOrigin
+  ) ||
     process.env.NEXT_PUBLIC_VERSE_APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL
-  )?.trim()
-  return { storeDomain, clientId, appUrl }
+  return { storeDomain, clientId, appUrl: appUrl?.trim() }
 }
 const SESSION_MAX_AGE = 60 * 60; // 1 hour (matches token expiry)
 

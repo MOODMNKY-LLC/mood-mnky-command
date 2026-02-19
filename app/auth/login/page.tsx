@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { DualAuthTabs, type AuthTab } from "@/components/auth/dual-auth-tabs"
 import { AuthVerseLogoBlock } from "@/components/auth/auth-verse-logo-block"
@@ -14,10 +15,33 @@ const VERSE_BG_LIGHT = "/auth/mnky-verse-bg-light.png"
 const MASCOT_VERSE = "/verse/mood-mnky-3d.png"
 const MASCOT_LABZ = "/verse/code-mnky-3d.png"
 
+const SHOPIFY_LINK_ERRORS = [
+  "shopify_auth_failed",
+  "missing_params",
+  "config",
+  "invalid_state",
+  "token_exchange_failed",
+  "storage_failed",
+  "callback_failed",
+]
+
 export default function LoginPage() {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<AuthTab>("verse")
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
+
+  const next = searchParams.get("next")
+  const linkShopify = searchParams.get("linkShopify") === "1"
+  const error = searchParams.get("error")
+
+  const verseRedirectTo = useMemo(() => {
+    if (linkShopify) return "/api/customer-account-api/auth"
+    if (next?.startsWith("/")) return next
+    return "/verse"
+  }, [linkShopify, next])
+
+  const showShopifyLinkHint = Boolean(error && SHOPIFY_LINK_ERRORS.includes(error))
 
   useEffect(() => setMounted(true), [])
 
@@ -107,11 +131,17 @@ export default function LoginPage() {
           ) : (
             <AuthLabzLogoBlock />
           )}
+          {showShopifyLinkHint && (
+            <p className="w-full max-w-md rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-700 dark:text-amber-300">
+              Shopify link failed. If you&apos;re on localhost, use ngrok and add the HTTPS callback URL in Shopify. Check that your app URL and Client ID match Shopify Application setup.
+            </p>
+          )}
           <DualAuthTabs
             value={activeTab}
             defaultTab="verse"
             onTabChange={setActiveTab}
             appearance={activeTab === "labz" ? "light" : "default"}
+            verseRedirectTo={verseRedirectTo}
           />
         </div>
       </BlurFade>

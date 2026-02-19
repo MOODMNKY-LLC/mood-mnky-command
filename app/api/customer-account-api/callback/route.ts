@@ -91,7 +91,11 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errText = await tokenResponse.text();
-      console.error("Customer Account API token exchange failed:", errText);
+      console.error(
+        "Customer Account API token exchange failed:",
+        tokenResponse.status,
+        errText
+      );
       return NextResponse.redirect(
         new URL("/auth/login?error=token_exchange_failed", request.url)
       );
