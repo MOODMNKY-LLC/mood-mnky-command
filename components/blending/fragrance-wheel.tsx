@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   FRAGRANCE_FAMILIES,
@@ -223,10 +223,10 @@ export function FragranceWheel({
         </svg>
       </div>
 
-      {/* Legend */}
-      {activeFamily && (
-        <Card className="bg-card border-border">
-          <CardContent className="p-4">
+      {/* Legend - always reserved to prevent layout shift */}
+      <Card className="min-h-[140px] border-border bg-card">
+        <CardContent className="p-4">
+          {activeFamily ? (
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div
@@ -283,9 +283,18 @@ export function FragranceWheel({
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div className="flex min-h-[108px] flex-col justify-center gap-1 text-center">
+              <p className="text-sm text-muted-foreground">
+                Click or hover a segment
+              </p>
+              <p className="text-xs text-muted-foreground">
+                to see kindred and complementary families
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import { DojoWelcomeHero } from "@/components/dojo/dojo-welcome-hero";
+import { DojoProfileSnapshot } from "@/components/dojo/dojo-profile-snapshot";
 import { DojoXpCard } from "@/components/dojo/dojo-xp-card";
 import {
   DojoQuestsCard,
   type QuestWithAction,
 } from "@/components/dojo/dojo-quests-card";
 import { DojoQuickActionsCard } from "@/components/dojo/dojo-quick-actions-card";
-import { DojoLowerSection } from "@/components/dojo/dojo-lower-section";
+import { DojoHomeSections } from "@/components/dojo/dojo-home-sections";
 
 function getQuestAction(rule: unknown, issueSlugById: Record<string, string>): { href: string; label: string } | null {
   const r = rule as { requirements?: Array<{ type?: string; issueId?: string }> } | null;
@@ -31,37 +33,77 @@ export default async function DojoPage() {
   } = await supabase.auth.getUser();
   const profileId = user?.id;
 
-  const [xpResult, questsResult, progressResult, issuesResult, claimsResult] =
-    await Promise.all([
-      profileId
-        ? supabase
-            .from("xp_state")
-            .select("xp_total, level, updated_at")
-            .eq("profile_id", profileId)
-            .single()
-        : Promise.resolve({ data: null, error: null }),
-      supabase
-        .from("quests")
-        .select("id, title, description, rule, xp_reward")
-        .eq("active", true)
-        .order("title"),
-      profileId
-        ? supabase
-            .from("quest_progress")
-            .select("quest_id, completed_at")
-            .eq("profile_id", profileId)
-        : Promise.resolve({ data: [] as { quest_id: string; completed_at: string | null }[] }),
-      supabase.from("mnky_issues").select("id, slug"),
-      profileId
-        ? supabase
-            .from("reward_claims")
-            .select(
-              "id, status, issued_at, rewards(id, type, payload, min_level)"
-            )
-            .eq("profile_id", profileId)
-            .order("issued_at", { ascending: false })
-        : Promise.resolve({ data: [] }),
-    ]);
+  const [
+    profileResult,
+    xpResult,
+    questsResult,
+    progressResult,
+    issuesResult,
+    claimsResult,
+    blendsCountResult,
+    funnelResult,
+    discordResult,
+  ] = await Promise.all([
+    profileId
+      ? supabase
+          .from("profiles")
+          .select("id, display_name, full_name, avatar_url, email, handle, shopify_customer_id")
+          .eq("id", profileId)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    profileId
+      ? supabase
+          .from("xp_state")
+          .select("xp_total, level, updated_at")
+          .eq("profile_id", profileId)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from("quests")
+      .select("id, title, description, rule, xp_reward")
+      .eq("active", true)
+      .order("title"),
+    profileId
+      ? supabase
+          .from("quest_progress")
+          .select("quest_id, completed_at")
+          .eq("profile_id", profileId)
+      : Promise.resolve({ data: [] as { quest_id: string; completed_at: string | null }[] }),
+    supabase.from("mnky_issues").select("id, slug"),
+    profileId
+      ? supabase
+          .from("reward_claims")
+          .select(
+            "id, status, issued_at, rewards(id, type, payload, min_level)"
+          )
+          .eq("profile_id", profileId)
+          .order("issued_at", { ascending: false })
+      : Promise.resolve({ data: [] }),
+    user
+      ? supabase
+          .from("saved_blends")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+      : Promise.resolve({ count: 0 }),
+    user
+      ? supabase
+          .from("funnel_runs")
+          .select("id, funnel_id")
+          .eq("user_id", user.id)
+          .eq("status", "submitted")
+          .order("submitted_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    profileId
+      ? supabase
+          .from("discord_event_ledger")
+          .select("id")
+          .eq("profile_id", profileId)
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const xpTotal = xpResult.data?.xp_total ?? 0;
   const level = xpResult.data?.level ?? 1;
@@ -96,6 +138,49 @@ export default async function DojoPage() {
   const totalActive = questsData.length;
   const completedCount = progressData.filter((p) => p.completed_at != null).length;
 
+  const profile = profileResult.data as {
+    display_name?: string | null;
+    full_name?: string | null;
+    avatar_url?: string | null;
+    email?: string | null;
+    handle?: string | null;
+    shopify_customer_id?: string | null;
+  } | null;
+  const savedBlendsCount = blendsCountResult.count ?? 0;
+  const hasDiscordLink = !!discordResult.data;
+  const hasShopifyLink = !!profile?.shopify_customer_id;
+
+  let funnelProfile: Record<string, unknown> | null = null;
+  if (funnelResult.data) {
+    const run = funnelResult.data as { id: string; funnel_id: string };
+    const { data: answers } = await supabase
+      .from("funnel_answers")
+      .select("question_key, answer")
+      .eq("run_id", run.id);
+    const { data: funnelDef } = await supabase
+      .from("funnel_definitions")
+      .select("question_mapping")
+      .eq("id", run.funnel_id)
+      .single();
+    const mapping = (funnelDef?.question_mapping ?? {}) as Record<string, string>;
+    const answersMap = (answers ?? []).reduce(
+      (acc, { question_key, answer }) => {
+        const val = (answer as { text?: string })?.text ?? answer;
+        acc[question_key] = val;
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+    funnelProfile = {};
+    for (const [semanticKey, qKey] of Object.entries(mapping)) {
+      const val = answersMap[qKey];
+      if (val !== undefined && val !== null && val !== "") {
+        funnelProfile[semanticKey] = val;
+      }
+    }
+    if (Object.keys(funnelProfile).length === 0) funnelProfile = null;
+  }
+
   const claimsData = (claimsResult.data ?? []) as Array<{
     id: string;
     status: string;
@@ -110,9 +195,20 @@ export default async function DojoPage() {
     payload: c.rewards?.payload ?? {},
   }));
 
+  const displayName = profile?.display_name ?? profile?.full_name ?? user?.email?.split("@")[0] ?? null;
+
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <DojoWelcomeHero displayName={displayName} isReturning={!!user} />
+      <div className="grid auto-rows-min gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <DojoProfileSnapshot
+          displayName={displayName}
+          avatarUrl={profile?.avatar_url ?? null}
+          email={user?.email ?? null}
+          xpTotal={xpTotal}
+          level={level}
+          handle={profile?.handle}
+        />
         <DojoXpCard xpTotal={xpTotal} level={level} />
         <DojoQuestsCard
           totalActive={totalActive}
@@ -121,8 +217,14 @@ export default async function DojoPage() {
         />
         <DojoQuickActionsCard />
       </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 p-4 md:min-h-min">
-        <DojoLowerSection rewardClaims={rewardClaims} />
+      <div className="min-h-0 flex-1 space-y-4 rounded-xl bg-muted/50 p-4">
+        <h2 className="text-lg font-semibold">Your space</h2>
+        <DojoHomeSections
+          rewardClaims={rewardClaims}
+          savedBlendsCount={savedBlendsCount}
+          funnelProfile={funnelProfile}
+          linkedAccounts={{ shopify: hasShopifyLink, discord: hasDiscordLink }}
+        />
       </div>
     </div>
   );

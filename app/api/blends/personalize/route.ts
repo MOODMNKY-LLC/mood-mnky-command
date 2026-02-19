@@ -22,6 +22,7 @@ interface PersonalizeBody {
     batchWeightG?: number
     fragranceLoadPct?: number
     notes?: string
+    aiSummary?: string
   }
   generateImage?: boolean
   promptForImage?: string
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
   const effectiveBatchWeight = blendSummary.batchWeightG ?? 400
   const fragranceLoadPct = blendSummary.fragranceLoadPct ?? 10
   const notes = [blendSummary.notes, signature].filter(Boolean).join(" | ")
+  const aiSummary = blendSummary.aiSummary?.trim() || null
 
   const { data: blend, error: insertError } = await supabase
     .from("saved_blends")
@@ -94,6 +96,7 @@ export async function POST(request: NextRequest) {
       fragrance_load_pct: fragranceLoadPct,
       fragrances: blendSummary.fragrances,
       notes: notes || null,
+      ai_summary: aiSummary,
     })
     .select("id")
     .single()

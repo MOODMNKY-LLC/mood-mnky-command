@@ -3,6 +3,7 @@
 import type { Experimental_SpeechResult as SpeechResult } from "ai";
 import type { ComponentProps, CSSProperties } from "react";
 
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ButtonGroup,
@@ -129,7 +130,9 @@ export const AudioPlayerSeekBackwardButton = ({
       data-slot="audio-player-seek-backward-button"
       seekOffset={seekOffset}
       {...props}
-    />
+    >
+      <ChevronsLeft slot="icon" className="h-4 w-4" />
+    </MediaSeekBackwardButton>
   </Button>
 );
 
@@ -146,7 +149,9 @@ export const AudioPlayerSeekForwardButton = ({
       data-slot="audio-player-seek-forward-button"
       seekOffset={seekOffset}
       {...props}
-    />
+    >
+      <ChevronsRight slot="icon" className="h-4 w-4" />
+    </MediaSeekForwardButton>
   </Button>
 );
 

@@ -39,6 +39,7 @@ export function VerseMusicPlaylistBuilder({
   const [search, setSearch] = useState("")
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [movingId, setMovingId] = useState<string | null>(null)
+  const [masterToggling, setMasterToggling] = useState(false)
 
   const playlistAssetIds = useMemo(
     () => new Set(versePlaylist.map((p) => p.media_asset_id)),
@@ -56,6 +57,19 @@ export function VerseMusicPlaylistBuilder({
         (a.file_name ?? "").toLowerCase().includes(q)
     )
   }, [uploadedTracks, search])
+
+  const allFilteredIn = useMemo(
+    () =>
+      filteredTracks.length > 0 &&
+      filteredTracks.every((a) => playlistAssetIds.has(a.id)),
+    [filteredTracks, playlistAssetIds]
+  )
+  const allFilteredOut = useMemo(
+    () =>
+      filteredTracks.length > 0 &&
+      filteredTracks.every((a) => !playlistAssetIds.has(a.id)),
+    [filteredTracks, playlistAssetIds]
+  )
 
   const inPlaylistOrdered = useMemo(
     () =>
@@ -108,6 +122,34 @@ export function VerseMusicPlaylistBuilder({
     }
   }
 
+  const handleMasterToggle = async (checked: boolean) => {
+    if (filteredTracks.length === 0) return
+    setMasterToggling(true)
+    try {
+      if (checked) {
+        const toAdd = filteredTracks.filter((a) => !playlistAssetIds.has(a.id))
+        for (const a of toAdd) await onAdd(a.id)
+        if (toAdd.length > 0) {
+          toast({ title: `Added ${toAdd.length} track${toAdd.length === 1 ? "" : "s"} to playlist` })
+        }
+      } else {
+        const toRemove = filteredTracks.filter((a) => playlistAssetIds.has(a.id))
+        for (const a of toRemove) await onRemove(a.id)
+        if (toRemove.length > 0) {
+          toast({ title: `Removed ${toRemove.length} track${toRemove.length === 1 ? "" : "s"} from playlist` })
+        }
+      }
+    } catch (err) {
+      toast({
+        title: "Failed",
+        description: err instanceof Error ? err.message : "Could not update playlist",
+        variant: "destructive",
+      })
+    } finally {
+      setMasterToggling(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -127,7 +169,19 @@ export function VerseMusicPlaylistBuilder({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Tracks — toggle to add or remove from playlist</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Tracks — toggle to add or remove from playlist</CardTitle>
+            {filteredTracks.length > 0 && (
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="text-xs text-muted-foreground">All</span>
+                <Switch
+                  checked={allFilteredIn}
+                  onCheckedChange={handleMasterToggle}
+                  disabled={masterToggling}
+                />
+              </div>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             Use the switch to include tracks. Reorder with ↑↓ when in playlist.
           </p>

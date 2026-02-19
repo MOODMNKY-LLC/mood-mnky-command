@@ -90,6 +90,8 @@
     "cobe": "^0.6.5",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "flowise-embed": "^3.0.5",
+    "flowise-embed-react": "^3.0.5",
     "flowise-sdk": "^1.0.9",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",

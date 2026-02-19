@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -18,25 +16,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useDojoContext } from "@/components/dojo/dojo-context-provider";
+import { dojoContexts } from "@/lib/dojo-sidebar-config";
 
-export function DojoTeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string;
-    logo: React.ComponentType<{ className?: string }>;
-    plan: string;
-    url?: string;
-  }[];
-}) {
+export function DojoTeamSwitcher() {
   const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const { contextId, setContextId } = useDojoContext();
+  const activeContext = dojoContexts.find((c) => c.id === contextId) ?? dojoContexts[0];
 
-  if (!activeTeam) {
-    return null;
-  }
-
-  const Logo = activeTeam.logo;
+  const Logo = activeContext.logo;
 
   return (
     <SidebarMenu>
@@ -51,8 +39,8 @@ export function DojoTeamSwitcher({
                 <Logo className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeTeam.name}</span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
+                <span className="truncate font-medium">{activeContext.name}</span>
+                <span className="truncate text-xs">{activeContext.plan}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -64,37 +52,26 @@ export function DojoTeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Teams
+              Context
             </DropdownMenuLabel>
-            {teams.map((team) => {
-              const TeamLogo = team.logo;
+            {dojoContexts.map((ctx) => {
+              const CtxLogo = ctx.logo;
               return (
                 <DropdownMenuItem
-                  key={team.name}
-                  onClick={() => setActiveTeam(team)}
+                  key={ctx.id}
+                  onClick={() => setContextId(ctx.id)}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 items-center justify-center rounded-md border">
-                    <TeamLogo className="size-3.5 shrink-0" />
+                    <CtxLogo className="size-3.5 shrink-0" />
                   </div>
-                  {team.name}
+                  <div className="flex flex-col items-start">
+                    <span>{ctx.name}</span>
+                    <span className="text-muted-foreground text-xs">{ctx.plan}</span>
+                  </div>
                 </DropdownMenuItem>
               );
             })}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link
-                href="/verse"
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <Plus className="size-4" />
-                </div>
-                <span className="text-muted-foreground font-medium">
-                  Switch to Verse
-                </span>
-              </Link>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
