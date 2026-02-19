@@ -61,6 +61,8 @@ export async function updateSession(request: NextRequest) {
   // If authenticated, check role and redirect pending users; non-admins to /verse
   if (user) {
     const isVerseRoute = pathname.startsWith("/verse")
+    const isDojoRoute = pathname.startsWith("/dojo")
+    const isMemberRoute = isVerseRoute || isDojoRoute
 
     if (!isAuthRoute && !isApiRoute) {
       // Use admin client for reliable profile lookup (bypasses RLS/Edge quirks).
@@ -94,9 +96,9 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
       }
 
-      // Non-admin users: redirect dashboard paths to /verse
+      // Non-admin users: redirect dashboard paths to /verse (allow /dojo as member route)
       const isAdmin = profile?.role === "admin" || profile?.is_admin === true
-      if (!isAdmin && !isVerseRoute) {
+      if (!isAdmin && !isMemberRoute) {
         const url = request.nextUrl.clone()
         url.pathname = "/verse"
         return NextResponse.redirect(url)

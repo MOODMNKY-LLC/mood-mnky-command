@@ -1,5 +1,5 @@
-import { DojoPageClient } from "./dojo-page-client";
+import { redirect } from "next/navigation";
 
-export default function DojoPage() {
-  return <DojoPageClient />;
+export default function OldDojoPage() {
+  redirect("/dojo");
 }

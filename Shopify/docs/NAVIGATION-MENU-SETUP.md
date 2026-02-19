@@ -23,7 +23,7 @@ Recommended structure aligned with Verse routes and brand pillars:
 | Subscriptions         | /collections/subscriptions                                                 |
 | Blending Lab          | https://mnky-command.moodmnky.com/blending (or /verse for landing)                  |
 | Match My Mood / Craft | https://mnky-command.moodmnky.com/craft                                             |
-| The Dojo / My Dojo    | https://mnky-command.moodmnky.com/verse/dojo — *Your private portal in the MNKY VERSE app.* |
+| The Dojo / My Dojo    | https://mnky-command.moodmnky.com/dojo — *Your private portal in the MNKY VERSE app.* |
 | Explore               | https://mnky-command.moodmnky.com/verse/explore                                     |
 | Blog                  | /blogs/hello-welcome-to-mood-mnky (or add secondary “Verse Blog” → app)   |
 | Agents                | https://mnky-command.moodmnky.com/verse/agents                                     |

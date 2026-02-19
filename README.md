@@ -76,7 +76,7 @@ flowchart LR
    pnpm dev
    ```
 
-   App runs at `http://localhost:3000`. Verse routes: `/verse`, `/verse/dojo`, `/verse/blog`, `/verse/community`, etc.
+   App runs at `http://localhost:3000`. Verse routes: `/verse`, `/verse/blog`, `/verse/community`; Dojo (members' private hub): `/dojo`.
 
 4. **Theme (Shopify):** Use Shopify CLI to push/pull the theme from `Shopify/theme/` and preview. See [Shopify/docs/NAVIGATION-MENU-SETUP.md](Shopify/docs/NAVIGATION-MENU-SETUP.md) for nav and footer setup.
 

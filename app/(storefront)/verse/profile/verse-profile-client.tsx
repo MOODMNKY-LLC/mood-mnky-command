@@ -90,7 +90,7 @@ export function VerseProfileClient({
         <CardContent>
           <p className="text-verse-text">{defaultAgentName}</p>
           <Button variant="outline" size="sm" asChild className="mt-2">
-            <Link href="/verse/dojo">Change in Dojo</Link>
+            <Link href="/dojo/preferences">Change in Dojo</Link>
           </Button>
         </CardContent>
       </Card>

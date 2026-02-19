@@ -20,12 +20,17 @@ flowchart TB
         appSidebar[app-sidebar]
         dashboardLayout[dashboard layout]
     end
+    subgraph Dojo [Dojo Section]
+        dojoLayout[dojo layout]
+        dojoSidebar[dojo-sidebar]
+    end
     globals --> tailwind
     globals --> shadcn
     verseCss --> verseComps
     verseComps --> verseCss
     tailwind --> verseComps
     tailwind --> appSidebar
+    tailwind --> dojoSidebar
 ```
 
 ---
@@ -120,6 +125,14 @@ This ensures the LABZ auth card always renders in light mode, regardless of syst
 
 ---
 
+---
+
+## Dojo
+
+The Dojo (`app/dojo/`) is the members' private hub. It uses **root design tokens** (grayscale primary) and shared shadcn components, aligned with LABZ. No separate CSS file; the `.dojo-dashboard` wrapper class scopes layout styling. Components: `components/dojo/dojo-sidebar.tsx`, `lib/dojo-sidebar-config.tsx`. See `docs/DOJO-SECTION.md` for route structure and auth.
+
+---
+
 ## Optional Future LABZ Overrides
 
 If LABZ-specific overrides are needed later:
@@ -145,6 +158,7 @@ If LABZ-specific overrides are needed later:
 ## References
 
 - Root tokens: `app/globals.css`
+- Dojo: `app/dojo/layout.tsx`, `docs/DOJO-SECTION.md`
 - Verse tokens: `app/(storefront)/verse/verse-storefront.css`
 - Glass effects: `app/(storefront)/verse/verse-glass.css`
 - Tailwind config: `tailwind.config.ts`

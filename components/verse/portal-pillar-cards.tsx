@@ -10,7 +10,7 @@ const PILLAR_CARDS = [
   {
     name: "The Dojo",
     description: "Your personal space—wellness, learning, and projects.",
-    href: "/verse/dojo",
+    href: "/dojo",
     cta: "Enter",
     Icon: User,
     className: "col-span-3 lg:col-span-1",

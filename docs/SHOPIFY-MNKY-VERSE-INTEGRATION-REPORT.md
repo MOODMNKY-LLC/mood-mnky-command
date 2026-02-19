@@ -20,7 +20,7 @@ This report documents the first comprehensive pass to align the Shopify theme an
 
 - **Location:** `app/(storefront)/verse/`, `components/verse/`.
 - **Catalog:** Same Shopify catalog via Storefront API (`lib/shopify/storefront-queries.ts`, `storefront-client.ts`).
-- **Routes:** `/verse`, `/verse/explore`, `/verse/blog`, `/verse/agents`, `/verse/products`, `/verse/collections`, `/verse/dojo`, `/verse/community`, `/verse/cart`, etc.
+- **Routes:** `/verse`, `/verse/explore`, `/verse/blog`, `/verse/agents`, `/verse/products`, `/verse/collections`, `/dojo` (members' private hub), `/verse/community`, `/verse/cart`, etc.
 - **Blog:** Verse blog is in **Supabase** (`verse_blog_posts`), synced from Notion — served at `https://mnky-command.moodmnky.com/verse/blog`. The Shopify theme’s featured-blog uses the **native Shopify blog** (`hello-welcome-to-mood-mnky`). The two are linked by copy and CTAs, not by dynamic content pull.
 
 ### Brand Pillars
@@ -60,7 +60,7 @@ This report documents the first comprehensive pass to align the Shopify theme an
 | Subscriptions | /collections/subscriptions |
 | Blending Lab | https://mnky-command.moodmnky.com/blending |
 | Match My Mood / Craft | https://mnky-command.moodmnky.com/craft |
-| The Dojo / My Dojo | https://mnky-command.moodmnky.com/verse/dojo — *Private portal in the MNKY VERSE app.* |
+| The Dojo / My Dojo | https://mnky-command.moodmnky.com/dojo — *Private portal in the MNKY VERSE app.* |
 | Explore | https://mnky-command.moodmnky.com/verse/explore |
 | Blog | /blogs/hello-welcome-to-mood-mnky |
 | Agents | https://mnky-command.moodmnky.com/verse/agents |
@@ -81,7 +81,7 @@ Full reference: [Shopify/docs/NAVIGATION-MENU-SETUP.md](../Shopify/docs/NAVIGATI
 | Page title | Summary | CTA |
 |------------|---------|-----|
 | **Who We Are / About** | Story, “The Experience,” “Always scentsing the MOOD.” | “Enter the MNKY VERSE” → https://mnky-command.moodmnky.com/verse |
-| **The Dojo** | Your private portal in the MNKY VERSE. Set preferences, default agent, stay connected. Enter via the app. | “Enter the MNKY VERSE” or “Go to My Dojo” → https://mnky-command.moodmnky.com/verse/dojo |
+| **The Dojo** | Your private portal in the MNKY VERSE. Set preferences, default agent, stay connected. Enter via the app. | “Enter the MNKY VERSE” or “Go to My Dojo” → https://mnky-command.moodmnky.com/dojo |
 | **Community** | Public touchpoints: Discord, store blog, MNKY VERSE blog. List all three with links (Discord invite, /blogs/hello-welcome-to-mood-mnky, https://mnky-command.moodmnky.com/verse/blog). | Use as main-menu “Community” target or link from footer. |
 | **Blending Lab** | What it is. | “Create your blend” → https://mnky-command.moodmnky.com/blending |
 | **Fragrance Wheel / Guide** (optional) | Links to app tools. | https://mnky-command.moodmnky.com/verse/fragrance-wheel, https://mnky-command.moodmnky.com/verse/blending-guide |
