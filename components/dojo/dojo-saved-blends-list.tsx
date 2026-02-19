@@ -146,7 +146,7 @@ export function DojoSavedBlendsList({ embedded }: DojoSavedBlendsListProps = {})
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{blend.product_type}</Badge>
               <Badge variant="outline">
-                {blend.batch_weight_g}g @ {blend.fragrance_load_pct}%
+                {(blend.batch_weight_g / 28.35).toFixed(1)}oz @ {blend.fragrance_load_pct}%
               </Badge>
             </div>
             {blend.fragrances && blend.fragrances.length > 0 && (

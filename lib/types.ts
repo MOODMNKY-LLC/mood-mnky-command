@@ -219,6 +219,8 @@ export interface FragranceOil {
   thumbnailUrl?: string | null
   /** notional | supabase | ai-generated */
   imageSource?: string | null
+  /** Allergen statement URL or text from Notion */
+  allergenStatement?: string | null
 }
 
 // ---- Container Types (CandleScience catalog) ----

@@ -13,19 +13,37 @@ export default function BlendingPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
-            Fragrance Blending
+            Fragrance and Blending Calculator
           </h1>
           <DocsTrigger category="guide" slug="blending-lab">
             View guide
           </DocsTrigger>
         </div>
         <p className="text-sm text-muted-foreground">
-          Use the CandleScience fragrance wheel to explore scent families and
-          build custom blends with up to 4 fragrances
+          Get precise fragrance calculations for any project
         </p>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-base font-medium text-foreground">
+            Formulating unique fragrances for your products just got easier!
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            The Fragrance and Blending Calculator makes it simple to create
+            signature scents quickly and accurately:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+            <li>Pick up to 4 fragrances to build your blend</li>
+            <li>Set the blend ratios</li>
+            <li>Select the product type for the blend</li>
+            <li>Choose the desired fragrance load from the slider options</li>
+          </ul>
+          <p className="text-xs text-muted-foreground">
+            This calculator also helps you determine the amount of fragrance for
+            single-scent products. Just select one fragrance in that case!
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

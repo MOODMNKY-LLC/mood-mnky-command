@@ -77,14 +77,14 @@ export function DojoOilPicker({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-auto min-h-[56px] w-full justify-between gap-2 px-3 py-2 text-left font-normal",
+            "h-9 min-h-0 w-full justify-between gap-1.5 px-2.5 py-1.5 text-left font-normal",
             !value && "text-muted-foreground"
           )}
         >
           {selectedOil ? (
-            <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="flex min-w-0 flex-1 items-center gap-1.5">
               {imageUrl ? (
-                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded border border-border">
+                <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded border border-border">
                   <img
                     src={imageUrl}
                     alt={selectedOil.name}
@@ -98,13 +98,13 @@ export function DojoOilPicker({
                   style={{ backgroundColor: FAMILY_COLORS[selectedOil.family] }}
                 />
               )}
-              <span className="truncate text-sm">{selectedOil.name}</span>
-              <span className="text-xs text-muted-foreground">({selectedOil.type})</span>
+              <span className="truncate text-xs">{selectedOil.name}</span>
+              <span className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline">({selectedOil.type})</span>
             </span>
           ) : (
-            <span className="flex-1 truncate">{placeholder}</span>
+            <span className="flex-1 truncate text-xs">{placeholder}</span>
           )}
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[340px] p-0" align="start">

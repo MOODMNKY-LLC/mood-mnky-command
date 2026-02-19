@@ -25,6 +25,22 @@ export function AnimatedListItem({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** Soft blur + fade-in (no scale). Use for blend preview cards. */
+export function AnimatedListItemBlur({ children }: { children: React.ReactNode }) {
+  const animations: MotionProps = {
+    initial: { opacity: 0, filter: "blur(8px)" },
+    animate: { opacity: 1, filter: "blur(0px)" },
+    exit: { opacity: 0, filter: "blur(8px)" },
+    transition: { duration: 0.4, ease: "easeOut" },
+  }
+
+  return (
+    <motion.div {...animations} className="mx-auto w-full h-full min-h-full">
+      {children}
+    </motion.div>
+  )
+}
+
 export interface AnimatedListProps extends ComponentPropsWithoutRef<"div"> {
   children: React.ReactNode
   delay?: number

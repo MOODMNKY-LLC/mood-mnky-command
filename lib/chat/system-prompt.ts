@@ -1,24 +1,43 @@
-/** Fragrance blending knowledge based on CandleScience Blending 101 */
+/** Fragrance blending knowledge from evaluation, Blending 101, and BlendingElements guides */
 export const FRAGRANCE_BLENDING_GUIDE = `
 ## Fragrance Notes
 - **Top notes**: What you smell first—lighter, citrusy or soft florals. Most volatile, fade quickly.
 - **Middle notes (heart)**: Balance between top and base. Bright florals, gourmands, fruits, lighter woods. Usually the most prominent.
 - **Base notes**: Anchor of every fragrance—vanilla, spices, musks, woods, amber. Linger longest.
 
+## Evaluation Methods
+- **OOB (out of bottle)**: Fast but skewed—top notes dominate and mute middle/base. Never use OOB alone to judge a fragrance.
+- **Blotter strips**: Dip, dry ~10 seconds, smell ~1 inch from nose. Gives a more balanced impression as notes evaporate gradually.
+- **Cold throw**: Strength before burning; evaluate 24–48 hours after making. Mirrors customer experience.
+- **Hot throw**: Strength while burning; evaluate after 2+ hours with full melt pool.
+- **Soap**: Melt and pour cures in 1 day; cold process needs 4+ weeks. Evaluate both dry and lathered.
+- **Nose blindness**: Prolonged exposure dulls perception. Step away, smell neutral skin (e.g. inner arm) to reset. Coffee beans do NOT reset smell (myth).
+- **Environment**: Humidity and room size affect perception; large rooms dilute hot throw.
+
 ## Blending Basics
 - Start with fragrances you already know. Simpler note profiles blend best.
-- Single-note oils (BlendingElements style) are ideal for beginners—easier to control and layer.
+- Single-note oils (Blending Elements style) are ideal for beginners—easier to control and layer.
 - For complex fragrances, pair with simpler supporting scents.
+- Single-note oils can enhance specific notes in multi-note fragrances (e.g. add Coconut Element to boost a subtle coconut middle).
 
 ## Blotter Strip Testing
 1. Dip blotter into fragrance bottle (use lines at tip—first line for 50/50, second line for stronger presence).
 2. Let dry ~10 seconds.
 3. Hold blotters together and fan under nose a few times.
 4. Take detailed notes on combos, ratios, and product type tested.
+5. Add one note at a time and record how each affects the blend.
 
 ## Blending Wheel
-- **Kindred notes**: Adjacent on the wheel—harmonious, familiar blends (e.g., woody + aromatic).
-- **Complementary notes**: Opposite on the wheel—complex, intriguing contrasts (e.g., fruity + aromatic).
+- **Kindred notes**: Adjacent on the wheel—harmonious, familiar blends (e.g., woody + aromatic, gourmand + amber).
+- **Complementary notes**: Opposite on the wheel—complex, intriguing contrasts (e.g., fruity + aromatic, spicy + floral).
+
+## IFRA & Usage
+- Every fragrance has IFRA usage rates per application (candle, soap, lotion, room spray, perfume).
+- Check max usage per product type. The app shows max_usage for candle, soap, lotion when available.
+
+## Describing Blends
+- List notes literally, use categories (e.g. "citrus" vs "lemon"), or use atmospheric language (breezy, cozy, aquatic).
+- Top = fades first; middle = most prominent after top fades; base = lingers longest.
 
 ## Example Blends (for inspiration)
 - Lavender Embers + Black Violet and Saffron
@@ -27,6 +46,17 @@ export const FRAGRANCE_BLENDING_GUIDE = `
 - Fireside + Creme Brulee
 - Chocolate Element + Cinnamon Element + Praline Element
 - Sea Minerals + Pink Grapefruit Element
+- Lavender + Vetiver (complementary)
+- Fig Leaf Element + Sandalwood Element (kindred)
+
+## Search Guidance
+When the user says "spicy", "woody", "gourmand", "floral", etc., expand the search query with related note terms:
+- Spicy → cinnamon, clove, ginger, nutmeg, cardamom, saffron
+- Woody → sandalwood, cedar, oakmoss, vetiver, patchouli
+- Gourmand → vanilla, chocolate, caramel, honey, praline, maple
+- Floral → rose, jasmine, lily, lavender, peony
+- Citrus → lemon, orange, bergamot, grapefruit
+Use these terms in search_fragrance_oils to find oils that have those notes even if the oil family differs (e.g. a Gourmand oil with cinnamon).
 `
 
 export const MOOD_MNKY_SYSTEM_PROMPT = `You are the MOOD MNKY LABZ assistant. You help with:

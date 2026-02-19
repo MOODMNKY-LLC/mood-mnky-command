@@ -6,14 +6,13 @@ import {
   AudioPlayer,
   AudioPlayerElement,
   AudioPlayerPlayButton,
-  AudioPlayerSeekBackwardButton,
-  AudioPlayerSeekForwardButton,
   AudioPlayerTimeDisplay,
   AudioPlayerTimeRange,
   AudioPlayerDurationDisplay,
   AudioPlayerVolumeRange,
+  AudioPlayerMuteButton,
 } from "@/components/ai-elements/audio-player";
-import { Repeat, Repeat1, Shuffle, FileAudio, ListMusic, ChevronDown, ChevronUp } from "lucide-react";
+import { Repeat, Repeat1, Shuffle, SkipBack, SkipForward, FileAudio, ListMusic, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -240,31 +239,48 @@ export function DojoMusicPlayer() {
             </div>
           </div>
 
-          {/* Volume slider — top, centered */}
-          <div className="flex w-full flex-col items-center">
-            <div className="flex w-full max-w-[200px] mx-auto">
-              <AudioPlayerVolumeRange className="min-w-0 w-full" />
+          {/* Volume — icon + slim slider */}
+          <div className="flex w-full items-center justify-center gap-1">
+            <AudioPlayerMuteButton className="!p-0 !h-7 !w-7 !min-w-7 !bg-transparent !border-0 shrink-0 text-muted-foreground hover:text-foreground" />
+            <div className="flex w-full max-w-[160px]">
+              <AudioPlayerVolumeRange className="min-w-0 w-full h-1.5 [&::-webkit-slider-runnable-track]:h-1 [&::-moz-range-track]:h-1" />
             </div>
           </div>
 
-          {/* Playback controls — Shuffle | Back | Play | Forward | Repeat, all in one row */}
+          {/* Playback controls — Shuffle | Prev track | Play | Next track | Repeat (no bg) */}
           <div className="flex w-full items-center justify-center gap-2">
             <Button
-              variant={isShuffle ? "secondary" : "ghost"}
+              variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0"
+              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
               onClick={() => setIsShuffle(!isShuffle)}
               title={isShuffle ? "Shuffle (on)" : "Shuffle"}
             >
-              <Shuffle className="h-4 w-4" />
+              <Shuffle className={cn("h-4 w-4", isShuffle && "text-primary")} />
             </Button>
-            <AudioPlayerSeekBackwardButton />
-            <AudioPlayerPlayButton className="!h-12 !w-12" />
-            <AudioPlayerSeekForwardButton />
             <Button
-              variant={repeatMode !== "off" ? "secondary" : "ghost"}
+              variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0"
+              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
+              onClick={() => advanceTrack(-1)}
+              title="Previous track"
+            >
+              <SkipBack className="h-4 w-4" />
+            </Button>
+            <AudioPlayerPlayButton className="!h-12 !w-12 !bg-transparent !border-0 hover:bg-muted/50" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
+              onClick={() => advanceTrack(1)}
+              title="Next track"
+            >
+              <SkipForward className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
               onClick={() => {
                 const next: RepeatMode =
                   repeatMode === "off" ? "repeatOne" : repeatMode === "repeatOne" ? "repeatAll" : "off";
@@ -279,9 +295,9 @@ export function DojoMusicPlayer() {
               }
             >
               {repeatMode === "repeatOne" ? (
-                <Repeat1 className="h-4 w-4" />
+                <Repeat1 className="h-4 w-4 text-primary" />
               ) : (
-                <Repeat className={cn("h-4 w-4", repeatMode === "off" && "text-muted-foreground")} />
+                <Repeat className={cn("h-4 w-4", repeatMode === "off" && "text-muted-foreground", repeatMode === "repeatAll" && "text-primary")} />
               )}
             </Button>
           </div>

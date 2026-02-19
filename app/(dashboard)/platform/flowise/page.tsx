@@ -145,6 +145,23 @@ export default function FlowisePage() {
     name: string;
   } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [embedForm, setEmbedForm] = useState<{
+    scope: string;
+    chatflowId: string;
+    apiHost: string;
+    themeJson: string;
+    chatflowConfigJson: string;
+    customCSS: string;
+  }>({
+    scope: "dojo",
+    chatflowId: "",
+    apiHost: "",
+    themeJson: "{}",
+    chatflowConfigJson: "{}",
+    customCSS: "",
+  });
+  const [embedSaveLoading, setEmbedSaveLoading] = useState(false);
+  const [embedSaveError, setEmbedSaveError] = useState<string | null>(null);
 
   const { data: pingData } = useSWR<{ ok?: boolean }>("/api/flowise/ping", fetcher, {
     refreshInterval: 30000,
@@ -163,6 +180,37 @@ export default function FlowisePage() {
   const { data: toolsData, error: toolsError, isLoading: toolsLoading, mutate: mutateTools } = useSWR<
     ToolItem[] | { error?: string }
   >("/api/flowise/tools", fetcher, { revalidateOnFocus: false });
+
+  const { data: embedConfigData } = useSWR<{
+    chatflowId?: string;
+    apiHost?: string;
+    theme?: Record<string, unknown>;
+    chatflowConfig?: Record<string, unknown>;
+  }>("/api/flowise/embed-config?scope=dojo", fetcher, { revalidateOnFocus: false });
+
+  useEffect(() => {
+    if (embedConfigData) {
+      const theme = embedConfigData.theme ?? {};
+      const customCSS =
+        typeof theme.customCSS === "string" ? theme.customCSS : "";
+      const themeWithoutCSS = { ...theme };
+      delete themeWithoutCSS.customCSS;
+      setEmbedForm((prev) => ({
+        ...prev,
+        chatflowId: embedConfigData.chatflowId ?? process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID ?? "",
+        apiHost: embedConfigData.apiHost ?? process.env.NEXT_PUBLIC_FLOWISE_HOST ?? "",
+        themeJson:
+          Object.keys(themeWithoutCSS).length > 0
+            ? JSON.stringify(themeWithoutCSS, null, 2)
+            : "{}",
+        chatflowConfigJson:
+          Object.keys(embedConfigData.chatflowConfig ?? {}).length > 0
+            ? JSON.stringify(embedConfigData.chatflowConfig, null, 2)
+            : "{}",
+        customCSS,
+      }));
+    }
+  }, [embedConfigData]);
 
   const chatflowsList = Array.isArray(chatflowsData) ? chatflowsData : [];
   const variablesList = Array.isArray(variablesData) ? variablesData : [];
@@ -386,6 +434,50 @@ export default function FlowisePage() {
     mutateTools();
   };
 
+  const saveEmbedConfig = async () => {
+    setEmbedSaveError(null);
+    setEmbedSaveLoading(true);
+    try {
+      let theme: Record<string, unknown> = {};
+      try {
+        theme = JSON.parse(embedForm.themeJson);
+      } catch {
+        setEmbedSaveError("Theme must be valid JSON");
+        setEmbedSaveLoading(false);
+        return;
+      }
+      let chatflowConfig: Record<string, unknown> = {};
+      try {
+        chatflowConfig = JSON.parse(embedForm.chatflowConfigJson);
+      } catch {
+        setEmbedSaveError("Chatflow config must be valid JSON");
+        setEmbedSaveLoading(false);
+        return;
+      }
+      if (embedForm.customCSS.trim()) {
+        theme.customCSS = embedForm.customCSS.trim();
+      }
+      const res = await fetch("/api/flowise/embed-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: embedForm.scope,
+          chatflowId: embedForm.chatflowId.trim(),
+          apiHost: embedForm.apiHost.trim(),
+          theme,
+          chatflowConfig,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setEmbedSaveError((data as { error?: string }).error ?? "Failed to save");
+        return;
+      }
+    } finally {
+      setEmbedSaveLoading(false);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     const { type, id } = deleteTarget;
@@ -441,6 +533,7 @@ export default function FlowisePage() {
           <TabsTrigger value="chatflows">Chatflows</TabsTrigger>
           <TabsTrigger value="variables">Variables</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
+          <TabsTrigger value="embed">Embed Config</TabsTrigger>
           <TabsTrigger value="test">Test Run</TabsTrigger>
           <TabsTrigger value="howto">How to</TabsTrigger>
         </TabsList>
@@ -658,6 +751,115 @@ export default function FlowisePage() {
                   </Table>
                 </ScrollArea>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="embed" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader>
+              <CardTitle className="text-base">Embed Config</CardTitle>
+              <CardDescription>
+                Configure the Flowise bubble embed (Dojo Blending Lab). Stored in Supabase; used by{" "}
+                <code className="text-xs">DojoFlowiseBubble</code>.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {embedSaveError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{embedSaveError}</AlertDescription>
+                </Alert>
+              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="embed-scope">Scope</Label>
+                  <Input
+                    id="embed-scope"
+                    value={embedForm.scope}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({ ...p, scope: e.target.value }))
+                    }
+                    placeholder="dojo"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="embed-chatflow">Chatflow ID</Label>
+                  <Input
+                    id="embed-chatflow"
+                    value={embedForm.chatflowId}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({ ...p, chatflowId: e.target.value }))
+                    }
+                    placeholder="From Flowise UI or env"
+                  />
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="embed-api-host">API Host</Label>
+                  <Input
+                    id="embed-api-host"
+                    value={embedForm.apiHost}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({ ...p, apiHost: e.target.value }))
+                    }
+                    placeholder="https://flowise-dev.moodmnky.com"
+                  />
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="embed-theme">Theme (JSON)</Label>
+                  <textarea
+                    id="embed-theme"
+                    className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                    placeholder='{ "button": { "backgroundColor": "..." }, "chatWindow": { ... } }'
+                    value={embedForm.themeJson}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({ ...p, themeJson: e.target.value }))
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    FlowiseChatEmbed theme: button, chatWindow, customCSS, etc. See Flowise docs.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="embed-chatflow-config">Chatflow Override Config (JSON)</Label>
+                  <textarea
+                    id="embed-chatflow-config"
+                    className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                    placeholder='{ "topK": 4, "systemMessage": "..." }'
+                    value={embedForm.chatflowConfigJson}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({
+                        ...p,
+                        chatflowConfigJson: e.target.value,
+                      }))
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    overrideConfig passed to Predict API: topK, systemMessage, vars, etc.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="embed-custom-css">Custom CSS</Label>
+                  <textarea
+                    id="embed-custom-css"
+                    className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                    placeholder=".dark flowise-chatbot { --flowise-primary: hsl(...); }"
+                    value={embedForm.customCSS}
+                    onChange={(e) =>
+                      setEmbedForm((p) => ({ ...p, customCSS: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={saveEmbedConfig}
+                disabled={
+                  embedSaveLoading ||
+                  !embedForm.chatflowId.trim() ||
+                  !embedForm.apiHost.trim()
+                }
+              >
+                {embedSaveLoading ? "Saving…" : "Save Embed Config"}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

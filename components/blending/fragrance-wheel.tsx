@@ -16,12 +16,15 @@ interface FragranceWheelProps {
   selectedFamily?: FragranceFamily | null
   onSelectFamily?: (family: FragranceFamily) => void
   highlightedFamilies?: FragranceFamily[]
+  /** When true, hides the legend card below the wheel (for compact embedding) */
+  compact?: boolean
 }
 
 export function FragranceWheel({
   selectedFamily,
   onSelectFamily,
   highlightedFamilies,
+  compact = false,
 }: FragranceWheelProps) {
   const [hoveredFamily, setHoveredFamily] = useState<FragranceFamily | null>(
     null
@@ -223,7 +226,8 @@ export function FragranceWheel({
         </svg>
       </div>
 
-      {/* Legend - always reserved to prevent layout shift */}
+      {/* Legend - always reserved to prevent layout shift (hidden when compact) */}
+      {!compact && (
       <Card className="min-h-[140px] border-border bg-card">
         <CardContent className="p-4">
           {activeFamily ? (
@@ -295,6 +299,7 @@ export function FragranceWheel({
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }

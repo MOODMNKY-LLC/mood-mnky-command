@@ -9,14 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import type { FragranceOil, ProductType, FragranceFamily } from "@/lib/types"
+import { FragranceSelectorDialog } from "@/components/blending/fragrance-selector-dialog"
 import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -38,10 +32,11 @@ const PRODUCT_MAX_LOAD: Record<string, number> = {
 export function BlendingCalculator() {
   const [productType, setProductType] = useState<ProductType>("candle")
   const [fragranceLoad, setFragranceLoad] = useState(10)
-  const [batchWeight, setBatchWeight] = useState(400)
+  const [batchWeightOz, setBatchWeightOz] = useState(14) // ~400g default
   const [slots, setSlots] = useState<BlendSlot[]>([
     { oilId: null, percentage: 100 },
   ])
+  const [dialogSlotIndex, setDialogSlotIndex] = useState<number | null>(null)
 
   const { data, isLoading } = useSWR<{ fragranceOils: FragranceOil[] }>(
     "/api/fragrance-oils",
@@ -58,8 +53,9 @@ export function BlendingCalculator() {
   const totalPercentage = slots.reduce((sum, s) => sum + s.percentage, 0)
   const isValid = totalPercentage === 100
 
-  const fragranceWeight = (effectiveLoad / 100) * batchWeight
-  const baseWeight = batchWeight - fragranceWeight
+  const batchWeightG = batchWeightOz * 28.35
+  const fragranceWeight = (effectiveLoad / 100) * batchWeightG
+  const baseWeight = batchWeightG - fragranceWeight
 
   const usedOilIds = slots.map((s) => s.oilId).filter(Boolean) as string[]
 
@@ -152,14 +148,16 @@ export function BlendingCalculator() {
             {/* Batch Weight */}
             <div className="flex flex-col gap-2">
               <Label className="text-xs text-muted-foreground">
-                Batch Weight (g)
+                Batch Weight (oz)
               </Label>
               <Input
                 type="number"
-                value={batchWeight}
+                value={batchWeightOz}
                 onChange={(e) =>
-                  setBatchWeight(Math.max(10, Number(e.target.value) || 10))
+                  setBatchWeightOz(Math.max(0.5, Number(e.target.value) || 0.5))
                 }
+                step={0.5}
+                min={0.5}
                 className="bg-secondary border-border text-foreground font-mono"
               />
             </div>
@@ -219,7 +217,7 @@ export function BlendingCalculator() {
             const oil = slot.oilId
               ? fragranceOils.find((o) => o.id === slot.oilId)
               : null
-            const slotWeight = (slot.percentage / 100) * fragranceWeight
+            const slotWeightG = (slot.percentage / 100) * fragranceWeight
 
             return (
               <div
@@ -244,44 +242,33 @@ export function BlendingCalculator() {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {/* Oil Select */}
                   <div className="sm:col-span-2">
-                    <Select
-                      value={slot.oilId ?? ""}
-                      onValueChange={(v) => updateOil(index, v)}
+                    <Button
+                      variant="outline"
+                      className="w-full h-10 justify-start gap-2 bg-secondary border-border text-foreground font-normal"
+                      onClick={() => setDialogSlotIndex(index)}
                       disabled={isLoading}
                     >
-                      <SelectTrigger className="bg-secondary border-border text-foreground">
-                        <SelectValue
-                          placeholder={
-                            isLoading
-                              ? "Loading fragrances..."
-                              : "Choose a fragrance..."
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {fragranceOils
-                          .filter(
-                            (o) =>
-                              !usedOilIds.includes(o.id) || o.id === slot.oilId
-                          )
-                          .map((o) => (
-                          <SelectItem key={o.id} value={o.id}>
-                            <span className="flex items-center gap-2">
-                              <span
-                                className="inline-block h-2 w-2 rounded-full"
-                                style={{
-                                  backgroundColor: FAMILY_COLORS[o.family],
-                                }}
-                              />
-                              {o.name}
-                              <span className="text-muted-foreground text-xs">
-                                ({o.family})
-                              </span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      {oil ? (
+                        <>
+                          <span
+                            className="inline-block h-2 w-2 rounded-full shrink-0"
+                            style={{
+                              backgroundColor: FAMILY_COLORS[oil.family],
+                            }}
+                          />
+                          <span className="truncate">{oil.name}</span>
+                          <span className="text-muted-foreground text-xs shrink-0">
+                            ({oil.family})
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {isLoading
+                            ? "Loading fragrances..."
+                            : "Choose Fragrance"}
+                        </span>
+                      )}
+                    </Button>
                   </div>
 
                   {/* Percentage */}
@@ -330,7 +317,7 @@ export function BlendingCalculator() {
                       ))}
                     </div>
                     <span className="text-sm font-mono font-medium text-primary">
-                      {slotWeight.toFixed(2)} g
+                      {(slotWeightG / 28.35).toFixed(2)} oz
                     </span>
                   </div>
                 )}
@@ -356,7 +343,7 @@ export function BlendingCalculator() {
                 {totalPercentage}%
               </span>
               <span className="text-sm font-mono font-semibold text-foreground">
-                {fragranceWeight.toFixed(2)} g fragrance
+                {(fragranceWeight / 28.35).toFixed(2)} oz fragrance
               </span>
             </div>
           </div>
@@ -369,6 +356,24 @@ export function BlendingCalculator() {
         </CardContent>
       </Card>
 
+      <FragranceSelectorDialog
+        open={dialogSlotIndex !== null}
+        onOpenChange={(open) => setDialogSlotIndex(open ? dialogSlotIndex : null)}
+        oils={fragranceOils}
+        usedOilIds={usedOilIds}
+        slotOilId={
+          dialogSlotIndex !== null
+            ? slots[dialogSlotIndex]?.oilId ?? null
+            : null
+        }
+        onSelect={(oilId) => {
+          if (dialogSlotIndex !== null) {
+            updateOil(dialogSlotIndex, oilId)
+            setDialogSlotIndex(null)
+          }
+        }}
+      />
+
       {/* Batch Summary */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -380,15 +385,15 @@ export function BlendingCalculator() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <SummaryItem
               label="Batch Weight"
-              value={`${batchWeight.toFixed(0)} g`}
+              value={`${batchWeightOz.toFixed(1)} oz`}
             />
             <SummaryItem
               label="Base Material"
-              value={`${baseWeight.toFixed(2)} g`}
+              value={`${(baseWeight / 28.35).toFixed(2)} oz`}
             />
             <SummaryItem
               label="Total Fragrance"
-              value={`${fragranceWeight.toFixed(2)} g`}
+              value={`${(fragranceWeight / 28.35).toFixed(2)} oz`}
               highlight
             />
             <SummaryItem
@@ -410,7 +415,7 @@ export function BlendingCalculator() {
                   const oil = fragranceOils.find(
                     (o) => o.id === slot.oilId
                   )!
-                  const weight = (slot.percentage / 100) * fragranceWeight
+                  const weightOz = ((slot.percentage / 100) * fragranceWeight) / 28.35
                   return (
                     <div
                       key={slot.oilId}
@@ -431,7 +436,7 @@ export function BlendingCalculator() {
                         </span>
                       </div>
                       <span className="text-sm font-mono font-medium text-primary">
-                        {weight.toFixed(2)} g
+                        {weightOz.toFixed(2)} oz
                       </span>
                     </div>
                   )

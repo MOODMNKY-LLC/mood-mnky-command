@@ -1,24 +1,27 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { useState } from "react";
+import { Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { DojoFragranceOilCard } from "@/components/dojo/dojo-fragrance-oil-card";
-import type { FragranceOil } from "@/lib/types";
-
-function escapeRegex(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+import type { FragranceOil, FragranceFamily } from "@/lib/types";
 
 interface DojoFragranceBrowserProps {
   oils: FragranceOil[];
   onSelectOil: (oil: FragranceOil) => void;
   usedOilIds: string[];
   isLoading?: boolean;
+  /** Error loading catalog */
+  error?: Error | { error?: string } | null;
   /** Controlled search - when provided, search is controlled by parent */
   search?: string;
   onSearchChange?: (value: string) => void;
+  /** Filter by fragrance family */
+  familyFilter?: FragranceFamily | null;
+  /** When user clicks an oil row (preview without adding) */
+  onPreviewOil?: (oil: FragranceOil) => void;
 }
 
 export function DojoFragranceBrowser({
@@ -26,29 +29,18 @@ export function DojoFragranceBrowser({
   onSelectOil,
   usedOilIds,
   isLoading = false,
+  error: searchError,
   search: controlledSearch,
   onSearchChange,
+  familyFilter = null,
+  onPreviewOil,
 }: DojoFragranceBrowserProps) {
   const [internalSearch, setInternalSearch] = useState("");
-  const search = controlledSearch !== undefined ? controlledSearch : internalSearch;
+  const search =
+    controlledSearch !== undefined ? controlledSearch : internalSearch;
   const setSearch = onSearchChange ?? setInternalSearch;
 
-  const filteredOils = useMemo(() => {
-    const addable = oils.filter((o) => !usedOilIds.includes(o.id));
-    const q = search.trim().toLowerCase();
-    if (!q) return addable;
-    const re = new RegExp(escapeRegex(q), "i");
-    return addable.filter(
-      (o) =>
-        re.test(o.name) ||
-        re.test(o.family) ||
-        o.topNotes.some((n) => re.test(n)) ||
-        o.middleNotes.some((n) => re.test(n)) ||
-        o.baseNotes.some((n) => re.test(n)) ||
-        o.subfamilies?.some((f) => re.test(f)) ||
-        re.test(o.description || "")
-    );
-  }, [oils, usedOilIds, search]);
+  const filteredOils = oils.filter((o) => !usedOilIds.includes(o.id));
 
   return (
     <div className="flex flex-col gap-3">
@@ -62,27 +54,57 @@ export function DojoFragranceBrowser({
           disabled={isLoading}
         />
       </div>
+      <p className="text-xs text-muted-foreground">
+        {filteredOils.length} fragrance{filteredOils.length !== 1 ? "s" : ""} found
+      </p>
       <ScrollArea className="h-[320px] rounded-md border">
         <div className="space-y-2 p-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
               Loading...
             </div>
+          ) : searchError ? (
+            <div className="py-8 text-center text-sm text-destructive">
+              Failed to load fragrances. Please try again.
+            </div>
           ) : filteredOils.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              {search.trim()
+              {controlledSearch?.trim() ?? search.trim()
                 ? "No fragrances match your search"
                 : "All oils are in use or catalog is empty"}
             </div>
           ) : (
-            filteredOils.map((oil) => (
-              <DojoFragranceOilCard
-                key={oil.id}
-                oil={oil}
-                onSelect={onSelectOil}
-                compact
-              />
-            ))
+            filteredOils.map((oil) =>
+              onPreviewOil ? (
+                <div key={oil.id} className="flex items-start gap-1">
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => onPreviewOil(oil)}
+                  >
+                    <DojoFragranceOilCard oil={oil} compact />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 shrink-0 mt-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectOil(oil);
+                    }}
+                    title="Add to blend"
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </div>
+              ) : (
+                <DojoFragranceOilCard
+                  key={oil.id}
+                  oil={oil}
+                  onSelect={onSelectOil}
+                  compact
+                />
+              )
+            )
           )}
         </div>
       </ScrollArea>

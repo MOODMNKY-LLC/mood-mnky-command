@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getThumbnailUrlFromPublicUrl } from "@/lib/supabase/storage";
-import type { FragranceOil, FragranceFamily } from "@/lib/types";
+import {
+  getExpandedSearchTerms,
+  oilMatchesTerms,
+} from "@/lib/fragrance-search";
+import {
+  type FragranceOil,
+  type FragranceFamily,
+  FRAGRANCE_FAMILIES,
+} from "@/lib/types";
 
 function dbRowToFragranceOil(row: {
   id: string;
@@ -34,6 +42,7 @@ function dbRowToFragranceOil(row: {
   notion_url: string | null;
   image_url: string | null;
   image_source: string | null;
+  allergen_statement?: string | null;
 }): FragranceOil {
   return {
     id: row.id,
@@ -69,36 +78,41 @@ function dbRowToFragranceOil(row: {
     notionId: row.notion_id ?? null,
     imageUrl: row.image_url ?? null,
     imageSource: row.image_source ?? null,
+    allergenStatement:
+      "allergen_statement" in row ? row.allergen_statement ?? null : undefined,
   };
-}
-
-function escapeIlike(value: string): string {
-  return value.replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim() ?? "";
+  const familyParam = searchParams.get("family")?.trim();
+  const family: FragranceFamily | null =
+    familyParam && FRAGRANCE_FAMILIES.includes(familyParam as FragranceFamily)
+      ? (familyParam as FragranceFamily)
+      : null;
   const limit = Math.min(
-    50,
-    Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10))
+    500,
+    Math.max(1, parseInt(searchParams.get("limit") ?? "200", 10))
   );
+
+  const terms = getExpandedSearchTerms(q, family);
+  const hasSearch = terms.length > 0;
 
   const supabase = createAdminClient();
 
-  let query = supabase
+  // Fetch enough rows for semantic search across notes/arrays
+  const fetchLimit = hasSearch ? 500 : limit;
+
+  // Always fetch enough rows; semantic search requires filtering notes/arrays in app
+  // (single-term ilike on name/family/description misses oils with term only in notes)
+  const query = supabase
     .from("fragrance_oils")
-    .select("*, notion_url, image_url, image_source")
-    .order("name");
+    .select("*, notion_url, image_url, image_source, allergen_statement")
+    .order("name")
+    .limit(fetchLimit);
 
-  if (q) {
-    const p = escapeIlike(q);
-    query = query.or(
-      `name.ilike.%${p}%,family.ilike.%${p}%,description.ilike.%${p}%`
-    );
-  }
-
-  const { data, error } = await query.limit(limit);
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -106,25 +120,12 @@ export async function GET(request: NextRequest) {
 
   let oils = (data ?? []).map(dbRowToFragranceOil) as FragranceOil[];
 
-  if (q) {
-    const lower = q.toLowerCase();
-    const terms = lower.split(/\s+/).filter(Boolean);
-    oils = oils.filter((oil) => {
-      const searchable =
-        [
-          oil.name,
-          oil.family,
-          oil.description,
-          ...oil.topNotes,
-          ...oil.middleNotes,
-          ...oil.baseNotes,
-          ...(oil.subfamilies ?? []),
-        ]
-          .join(" ")
-          .toLowerCase() || "";
-      return terms.some((t) => searchable.includes(t));
-    });
+  if (hasSearch) {
+    oils = oils.filter((oil) => oilMatchesTerms(oil, terms));
   }
+
+  const total = oils.length;
+  oils = oils.slice(0, limit);
 
   const enriched = oils.map((oil) => {
     if (oil.imageUrl) {
@@ -140,6 +141,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     fragranceOils: enriched,
-    total: enriched.length,
+    total,
   });
 }

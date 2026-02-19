@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import useSWR from "swr";
-import { Plus, X, FlaskConical, Droplets } from "lucide-react";
+import { X, FlaskConical, Droplets, ChevronUp, ChevronDown, Lock, LockOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AnimatedListItemBlur } from "@/components/ui/animated-list";
 import { FragranceWheel } from "@/components/blending/fragrance-wheel";
 import { DojoOilPicker } from "@/components/dojo/dojo-oil-picker";
 import { DojoFragranceBrowser } from "@/components/dojo/dojo-fragrance-browser";
+import { BlendFragranceCard } from "@/components/dojo/blend-fragrance-card";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   Reasoning,
   ReasoningTrigger,
@@ -30,40 +33,143 @@ import {
   type FragranceOil,
   type ProductType,
   type FragranceFamily,
+  FRAGRANCE_FAMILIES,
   PRODUCT_TYPE_LABELS,
   FAMILY_COLORS,
 } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+const BLEND_PREVIEW_CARD_HEIGHT = 760;
+
+function BlendPreviewOneAtATime({ oils }: { oils: FragranceOil[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scroll = (direction: 1 | -1) => {
+    scrollRef.current?.scrollBy({
+      top: direction * BLEND_PREVIEW_CARD_HEIGHT,
+      behavior: "smooth",
+    });
+  };
+  return (
+    <div className="relative flex-1 min-h-[760px]">
+      <div
+        ref={scrollRef}
+        className="h-[760px] overflow-y-auto overflow-x-hidden scroll-snap-y scroll-snap-mandatory rounded-lg"
+      >
+        {oils.map((oil) => (
+          <div
+            key={oil.id}
+            className="min-h-[760px] flex-shrink-0 scroll-snap-align-start scroll-snap-stop"
+          >
+            <AnimatedListItemBlur>
+              <BlendFragranceCard oil={oil} />
+            </AnimatedListItemBlur>
+          </div>
+        ))}
+      </div>
+      {oils.length > 1 && (
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 !bg-transparent !border-0 hover:bg-muted/50"
+            onClick={() => scroll(-1)}
+            aria-label="Previous card"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 !bg-transparent !border-0 hover:bg-muted/50"
+            onClick={() => scroll(1)}
+            aria-label="Next card"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface BlendSlot {
   oilId: string | null;
   proportionPct: number;
+  locked?: boolean;
 }
 
 export function DojoBlendingLab() {
   const [productType, setProductType] = useState<ProductType>("candle");
-  const [batchWeightG, setBatchWeightG] = useState(400);
+  const [batchWeightOz, setBatchWeightOz] = useState(14); // ~400g default
   const [blendName, setBlendName] = useState("");
   const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiSuggestedName, setAiSuggestedName] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [slots, setSlots] = useState<BlendSlot[]>([{ oilId: null, proportionPct: 100 }]);
+  const [slots, setSlots] = useState<BlendSlot[]>([
+    { oilId: null, proportionPct: 25, locked: false },
+    { oilId: null, proportionPct: 25, locked: false },
+    { oilId: null, proportionPct: 25, locked: false },
+    { oilId: null, proportionPct: 25, locked: false },
+  ]);
   const [browserSearch, setBrowserSearch] = useState("");
+  const [familyFilter, setFamilyFilter] = useState<FragranceFamily | null>(null);
+  const [selectedForReview, setSelectedForReview] =
+    useState<FragranceOil | null>(null);
 
-  const { data, isLoading } = useSWR<{ fragranceOils: FragranceOil[] }>(
-    "/api/fragrance-oils",
+  const debouncedSearch = useDebounce(browserSearch, 300);
+  const useFullCatalog = !debouncedSearch && !familyFilter;
+  const oilsUrl = useFullCatalog
+    ? "/api/fragrance-oils"
+    : `/api/fragrance-oils/search?q=${encodeURIComponent(debouncedSearch)}&limit=200` +
+      (familyFilter ? `&family=${encodeURIComponent(familyFilter)}` : "");
+
+  const {
+    data,
+    isLoading,
+    error: searchError,
+  } = useSWR<{ fragranceOils: FragranceOil[]; error?: string }>(
+    oilsUrl,
     fetcher,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
+    { revalidateOnFocus: false, dedupingInterval: 10000 }
   );
-  const fragranceOils = data?.fragranceOils ?? [];
+  const fragranceOils = (data?.error ? [] : data?.fragranceOils) ?? [];
+  const [slotOilsCache, setSlotOilsCache] = useState<Map<string, FragranceOil>>(
+    () => new Map()
+  );
+
+  // Prune cache to only oils currently in slots
+  const slotOilIds = useMemo(
+    () => new Set(slots.map((s) => s.oilId).filter(Boolean) as string[]),
+    [slots]
+  );
+  const prunedCache = useMemo(() => {
+    const next = new Map<string, FragranceOil>();
+    for (const [id, oil] of slotOilsCache) {
+      if (slotOilIds.has(id)) next.set(id, oil);
+    }
+    return next;
+  }, [slotOilsCache, slotOilIds]);
+
+  // Merge search results with cached slot oils (so carousel/picker have full data when slot oil isn't in current search)
+  const fragranceOilsWithSlots = useMemo(() => {
+    const byId = new Map(fragranceOils.map((o) => [o.id, o]));
+    for (const [id, oil] of prunedCache) {
+      if (!byId.has(id)) byId.set(id, oil);
+    }
+    return Array.from(byId.values());
+  }, [fragranceOils, prunedCache]);
 
   // Include both Fragrance Oil and Blending Element types
-  const oilsForSelect = fragranceOils;
+  const oilsForSelect = fragranceOilsWithSlots;
 
-  const totalPct = slots.reduce((s, slot) => s + slot.proportionPct, 0);
+  const totalPct = slots
+    .filter((s) => s.oilId)
+    .reduce((sum, s) => sum + s.proportionPct, 0);
   const isValid = Math.abs(totalPct - 100) < 1;
 
   const usedOilIds = slots.map((s) => s.oilId).filter(Boolean) as string[];
@@ -97,59 +203,142 @@ export function DojoBlendingLab() {
       });
   }, [slots, fragranceOils]);
 
-  function addSlot() {
-    if (slots.length >= 4) return;
-    const count = slots.length + 1;
-    const evenPercent = Math.floor(100 / count);
-    const newSlots = slots.map((s) => ({ ...s, proportionPct: evenPercent }));
-    newSlots.push({ oilId: null, proportionPct: 100 - evenPercent * slots.length });
-    setSlots(newSlots);
-  }
-
-  function removeSlot(index: number) {
-    if (slots.length <= 1) return;
-    const newSlots = slots.filter((_, i) => i !== index);
-    const count = newSlots.length;
-    const evenPercent = Math.floor(100 / count);
-    const adjusted = newSlots.map((s, i) => ({
-      ...s,
-      proportionPct: i === count - 1 ? 100 - evenPercent * (count - 1) : evenPercent,
-    }));
-    setSlots(adjusted);
-  }
-
-  function updateOil(index: number, oilId: string) {
-    setSlots((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, oilId } : s))
+  function redistributeProportions(s: BlendSlot[]): BlendSlot[] {
+    const filled = s
+      .map((slot, i) => (slot.oilId ? i : -1))
+      .filter((i) => i >= 0);
+    if (filled.length === 0) {
+      return s.map((slot) => ({ ...slot, proportionPct: 25, locked: slot.locked ?? false }));
+    }
+    const lockedSum = filled.reduce(
+      (sum, i) => sum + (s[i].locked ? s[i].proportionPct : 0),
+      0
     );
+    const unlockedFilled = filled.filter((i) => !s[i].locked);
+    const remainder = 100 - lockedSum;
+    if (unlockedFilled.length === 0) {
+      return s.map((slot) => ({ ...slot, locked: slot.locked ?? false }));
+    }
+    const evenPct = Math.floor(remainder / unlockedFilled.length);
+    const extra = remainder - evenPct * unlockedFilled.length;
+    return s.map((slot, i) => {
+      if (!slot.oilId) return { ...slot, proportionPct: 25, locked: slot.locked ?? false };
+      if (slot.locked) return { ...slot, locked: true };
+      const idx = unlockedFilled.indexOf(i);
+      const pct = idx === unlockedFilled.length - 1 ? evenPct + extra : evenPct;
+      return { ...slot, proportionPct: pct, locked: false };
+    });
+  }
+
+  function updateOil(index: number, oilId: string | null) {
+    setSlots((prev) => {
+      const next = prev.map((s, i) =>
+        i === index ? { ...s, oilId } : s
+      );
+      return redistributeProportions(next);
+    });
   }
 
   function addOilFromBrowser(oil: FragranceOil) {
     const firstEmpty = slots.findIndex((s) => !s.oilId);
     if (firstEmpty >= 0) {
-      updateOil(firstEmpty, oil.id);
-    } else if (slots.length < 4) {
-      const count = slots.length + 1;
-      const evenPercent = Math.floor(100 / count);
-      const newSlots = slots.map((s) => ({ ...s, proportionPct: evenPercent }));
-      newSlots.push({
-        oilId: oil.id,
-        proportionPct: 100 - evenPercent * slots.length,
+      setSlotOilsCache((prev) => new Map(prev).set(oil.id, oil));
+      setSlots((prev) => {
+        const next = prev.map((s, i) =>
+          i === firstEmpty ? { ...s, oilId: oil.id } : s
+        );
+        return redistributeProportions(next);
       });
-      setSlots(newSlots);
+      setSelectedForReview(null);
     }
   }
 
+  function clearSlot(index: number) {
+    setSlots((prev) => {
+      const next = prev.map((s, i) =>
+        i === index ? { ...s, oilId: null, proportionPct: 25, locked: false } : s
+      );
+      return redistributeProportions(next);
+    });
+  }
+
+  function toggleLock(index: number) {
+    setSlots((prev) => {
+      const next = prev.map((s, i) =>
+        i === index ? { ...s, locked: !(s.locked ?? false) } : s
+      );
+      return redistributeProportions(next);
+    });
+  }
+
   function updateProportion(index: number, value: number) {
-    setSlots((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, proportionPct: value } : s))
-    );
+    setSlots((prev) => {
+      const filledIndices = prev
+        .map((s, i) => (s.oilId ? i : -1))
+        .filter((i) => i >= 0);
+      if (!filledIndices.includes(index)) {
+        return prev.map((s, i) =>
+          i === index
+            ? { ...s, proportionPct: Math.max(0, Math.min(100, Math.round(value))) }
+            : s
+        );
+      }
+      const clamped = Math.max(0, Math.min(100, Math.round(value)));
+      const lockedSum = filledIndices.reduce(
+        (sum, i) => sum + (i !== index && prev[i].locked ? prev[i].proportionPct : 0),
+        0
+      );
+      const remainder = Math.max(0, 100 - clamped - lockedSum);
+      const otherUnlockedFilled = filledIndices.filter(
+        (i) => i !== index && !prev[i].locked
+      );
+      if (filledIndices.length === 1 || otherUnlockedFilled.length === 0) {
+        return prev.map((s, i) =>
+          i === index ? { ...s, proportionPct: clamped } : s
+        );
+      }
+      const otherSum = otherUnlockedFilled.reduce(
+        (sum, i) => sum + prev[i].proportionPct,
+        0
+      );
+
+      const otherPcts: { i: number; pct: number }[] =
+        otherSum === 0
+          ? (() => {
+              const even = Math.floor(remainder / otherUnlockedFilled.length);
+              const extra = remainder - even * otherUnlockedFilled.length;
+              return otherUnlockedFilled.map((i, idx) => ({
+                i,
+                pct:
+                  idx === otherUnlockedFilled.length - 1 ? even + extra : even,
+              }));
+            })()
+          : (() => {
+              const raw = otherUnlockedFilled.map((i) => ({
+                i,
+                pct: Math.floor(
+                  (prev[i].proportionPct / otherSum) * remainder
+                ),
+              }));
+              const total = raw.reduce((s, x) => s + x.pct, 0);
+              const diff = remainder - total;
+              raw[raw.length - 1].pct += diff;
+              return raw;
+            })();
+
+      return prev.map((s, i) => {
+        if (i === index) return { ...s, proportionPct: clamped };
+        const o = otherPcts.find((x) => x.i === i);
+        return o != null ? { ...s, proportionPct: o.pct } : s;
+      });
+    });
   }
 
   async function handleDescribe() {
     if (fragrancesForApi.length === 0) return;
     setAiLoading(true);
     setAiSummary(null);
+    setAiSuggestedName(null);
     try {
       const res = await fetch("/api/dojo/blends/describe", {
         method: "POST",
@@ -171,6 +360,7 @@ export function DojoBlendingLab() {
       }
       const data = await res.json();
       setAiSummary(data.summary ?? "");
+      setAiSuggestedName(data.suggestedName ?? null);
     } catch (e) {
       setAiSummary(`Error: ${e instanceof Error ? e.message : "Unknown error"}`);
     } finally {
@@ -196,7 +386,7 @@ export function DojoBlendingLab() {
               oilName: f.oilName,
               proportionPct: f.proportionPct,
             })),
-            batchWeightG,
+            batchWeightG: Math.round(batchWeightOz * 28.35),
             fragranceLoadPct: 10,
             aiSummary: aiSummary ?? undefined,
           },
@@ -209,6 +399,7 @@ export function DojoBlendingLab() {
       setSaveSuccess(true);
       setBlendName("");
       setAiSummary(null);
+      setAiSuggestedName(null);
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -231,141 +422,202 @@ export function DojoBlendingLab() {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid min-h-[400px] gap-6 lg:grid-cols-4">
-          {/* Left: Fragrance Browser - search + browse oils */}
+        <div className="grid min-h-[400px] gap-6 lg:grid-cols-5">
+          {/* Col 1: Browse Oils */}
           <div className="min-h-[400px] overflow-y-auto lg:col-span-1">
             <Label className="mb-2 block text-sm font-medium">Browse Oils</Label>
-            {fragrancesForApi.length === 0 && (
-              <div className="mb-3 flex flex-wrap gap-1.5">
-                {["Cozy fall blend", "Citrus summer", "Woody + floral", "Vanilla gourmand"].map(
-                  (s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setBrowserSearch(s)}
-                      className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      {s}
-                    </button>
-                  )
-                )}
-              </div>
-            )}
+            <div className="mb-3 flex flex-wrap gap-2">
+              {FRAGRANCE_FAMILIES.map((family) => (
+                <button
+                  key={family}
+                  type="button"
+                  onClick={() =>
+                    setFamilyFilter((f) => (f === family ? null : family))
+                  }
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium transition-colors border",
+                    familyFilter === family
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:bg-secondary"
+                  )}
+                  style={
+                    familyFilter !== family
+                      ? { borderColor: FAMILY_COLORS[family] }
+                      : undefined
+                  }
+                >
+                  {family}
+                </button>
+              ))}
+            </div>
             <DojoFragranceBrowser
               oils={oilsForSelect}
               onSelectOil={addOilFromBrowser}
               usedOilIds={usedOilIds}
               isLoading={isLoading}
+              error={searchError || data?.error}
               search={browserSearch}
               onSearchChange={setBrowserSearch}
+              familyFilter={familyFilter}
+              onPreviewOil={setSelectedForReview}
             />
           </div>
-          {/* Center: Oil Selector + Sliders - fixed height, scroll if overflow */}
-          <div className="min-h-[400px] space-y-4 overflow-y-auto lg:col-span-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Oil Selection</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addSlot}
-                disabled={slots.length >= 4}
-              >
-                <Plus className="mr-1 size-4" />
-                Add slot
-              </Button>
-            </div>
+
+          {/* Col 2: Oil Selection - 4 fixed slots */}
+          <div className="min-h-[400px] space-y-2 overflow-y-auto lg:col-span-2">
+            <Label className="text-sm font-medium">Oil Selection</Label>
+            {slots.every((s) => !s.oilId) && (
+              <p className="text-xs text-muted-foreground">
+                Pick an oil from the catalog on the left to add it here. Use the
+                family filters to narrow by scent type.
+              </p>
+            )}
             {slots.map((slot, index) => {
               const oil = slot.oilId
                 ? fragranceOils.find((o) => o.id === slot.oilId)
                 : null;
+              const isEmpty = !slot.oilId;
               return (
                 <div
                   key={index}
-                  className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4"
+                  className={cn(
+                    "flex flex-col gap-2 rounded-lg p-2.5",
+                    isEmpty
+                      ? "border border-dashed border-border bg-muted/20"
+                      : "border bg-muted/30 border-border"
+                  )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-[11px] font-medium text-muted-foreground">
                       Slot {index + 1}
                     </span>
-                    {slots.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-6"
-                        onClick={() => removeSlot(index)}
-                      >
-                        <X className="size-3" />
-                      </Button>
+                    {!isEmpty && (
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-5"
+                          onClick={() => toggleLock(index)}
+                          aria-label={slot.locked ? "Unlock proportion" : "Lock proportion"}
+                          title={slot.locked ? "Unlock so this slot adjusts with others" : "Lock so only other slots adjust"}
+                        >
+                          {slot.locked ? (
+                            <Lock className="size-2.5 text-primary" />
+                          ) : (
+                            <LockOpen className="size-2.5 text-muted-foreground" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-5"
+                          onClick={() => clearSlot(index)}
+                        >
+                          <X className="size-2.5" />
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <DojoOilPicker
-                    oils={oilsForSelect}
-                    value={slot.oilId}
-                    onChange={(oilId) => updateOil(index, oilId)}
-                    usedOilIds={usedOilIds}
-                    disabled={isLoading}
-                    placeholder={
-                      isLoading
-                        ? "Loading..."
-                        : "Search or choose fragrance..."
-                    }
-                  />
-                  <div className="flex items-center gap-3">
-                    <Slider
-                      value={[slot.proportionPct]}
-                      onValueChange={([v]) =>
-                        updateProportion(index, Math.max(0, Math.min(100, v)))
-                      }
-                      max={100}
-                      min={0}
-                      step={1}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      value={slot.proportionPct}
-                      onChange={(e) =>
-                        updateProportion(
-                          index,
-                          Math.max(0, Math.min(100, Number(e.target.value) || 0))
-                        )
-                      }
-                      className="w-14 shrink-0 text-center font-mono text-sm"
-                    />
-                    <span className="w-5 shrink-0 text-xs text-muted-foreground">%</span>
-                  </div>
-                  {oil && (
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px]"
-                        style={{
-                          borderColor: `${FAMILY_COLORS[oil.family]}40`,
-                          color: FAMILY_COLORS[oil.family],
-                        }}
-                      >
-                        {oil.family}
-                      </Badge>
-                      {oil.maxUsageCandle > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          max candle {oil.maxUsageCandle}%
-                        </span>
-                      )}
+                  {isEmpty ? (
+                    <div className="flex flex-col items-center justify-center gap-0.5 py-3 text-center">
+                      <Droplets className="size-5 text-muted-foreground/50" />
+                      <p className="text-xs text-muted-foreground">
+                        Pick an oil from the catalog to add here.
+                      </p>
                     </div>
+                  ) : (
+                    <>
+                      <DojoOilPicker
+                        oils={oilsForSelect}
+                        value={slot.oilId}
+                        onChange={(oilId) => {
+                          const oil = oilsForSelect.find((o) => o.id === oilId);
+                          if (oil)
+                            setSlotOilsCache((prev) =>
+                              new Map(prev).set(oil.id, oil)
+                            );
+                          updateOil(index, oilId);
+                        }}
+                        usedOilIds={usedOilIds}
+                        disabled={isLoading}
+                        placeholder={
+                          isLoading
+                            ? "Loading..."
+                            : "Search or choose fragrance..."
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <Slider
+                          value={[slot.proportionPct]}
+                          onValueChange={([v]) =>
+                            updateProportion(
+                              index,
+                              Math.round(Math.max(0, Math.min(100, v)))
+                            )
+                          }
+                          max={100}
+                          min={0}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <div className="flex min-w-[4rem] shrink-0 items-center gap-0.5">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={slot.proportionPct}
+                            onChange={(e) =>
+                              updateProportion(
+                                index,
+                                Math.max(
+                                  0,
+                                  Math.min(100, Math.round(Number(e.target.value) || 0))
+                                )
+                              )
+                            }
+                            className="w-14 min-w-12 shrink-0 text-center font-mono text-xs"
+                            aria-label={`Slot ${index + 1} proportion percent`}
+                          />
+                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      {oil && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0"
+                            style={{
+                              borderColor: `${FAMILY_COLORS[oil.family]}40`,
+                              color: FAMILY_COLORS[oil.family],
+                            }}
+                          >
+                            {oil.family}
+                          </Badge>
+                          {oil.maxUsageCandle > 0 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              max candle {oil.maxUsageCandle}%
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               );
             })}
             <div
-              className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
+              className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
                 isValid
                   ? "bg-primary/5 border-primary/20"
                   : "bg-destructive/5 border-destructive/20"
               }`}
             >
-              <span className="text-sm font-semibold">Total</span>
+              <span className="text-xs font-semibold">Total</span>
               <span
-                className={`font-mono text-sm ${
+                className={`font-mono text-xs ${
                   isValid ? "text-primary" : "text-destructive"
                 }`}
               >
@@ -374,7 +626,38 @@ export function DojoBlendingLab() {
             </div>
           </div>
 
-          {/* Right: Fragrance Wheel - fixed height, scroll if overflow */}
+          {/* Col 3: Blend Preview - one card at a time, scrollable, blur fade-in */}
+          <div className="min-h-[800px] flex flex-col lg:col-span-1">
+            <Label className="mb-2 text-sm font-medium">Blend Preview</Label>
+            {slots.some((s) => s.oilId) ? (
+              <BlendPreviewOneAtATime
+                oils={slots
+                  .map((s) =>
+                    s.oilId
+                      ? fragranceOilsWithSlots.find((o) => o.id === s.oilId)
+                      : null
+                  )
+                  .filter((oil): oil is FragranceOil => !!oil)}
+              />
+            ) : selectedForReview ? (
+              <div className="min-h-[760px] flex flex-1">
+                <AnimatedListItemBlur>
+                  <BlendFragranceCard
+                    oil={selectedForReview}
+                    onAddToBlend={() => addOilFromBrowser(selectedForReview)}
+                  />
+                </AnimatedListItemBlur>
+              </div>
+            ) : (
+              <div className="flex min-h-[760px] flex-1 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20">
+                <p className="px-4 text-center text-sm text-muted-foreground">
+                  Click an oil to preview details before adding.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Col 4: Fragrance Wheel */}
           <div className="min-h-[400px] space-y-4 overflow-y-auto lg:col-span-1">
             <Label className="text-sm font-medium">Wheel Guidance</Label>
             <div className="rounded-lg border bg-muted/30 p-4 [&_.fill-foreground]:fill-foreground [&_.fill-muted-foreground]:fill-muted-foreground">
@@ -407,73 +690,101 @@ export function DojoBlendingLab() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">
-                  Batch weight (g)
+                  Batch weight (oz)
                 </Label>
                 <Input
                   type="number"
-                  value={batchWeightG}
+                  value={batchWeightOz}
                   onChange={(e) =>
-                    setBatchWeightG(Math.max(10, Number(e.target.value) || 10))
+                    setBatchWeightOz(Math.max(0.5, Number(e.target.value) || 0.5))
                   }
+                  step={0.5}
+                  min={0.5}
                   className="mt-1 font-mono"
                 />
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* AI Summary */}
-        <div className="space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDescribe}
-            disabled={
-              aiLoading || fragrancesForApi.length === 0 || !isValid
-            }
-          >
-            <Droplets className="mr-2 size-4" />
-            {aiLoading ? (
-              <Shimmer duration={1.5}>Describing...</Shimmer>
-            ) : (
-              "Generate AI Summary"
-            )}
-          </Button>
-          {aiSummary && (
-            <Reasoning defaultOpen={true}>
-              <ReasoningTrigger label="AI fragrance description" />
-              <ReasoningContent>
-                <ReasoningText text={aiSummary} />
-              </ReasoningContent>
-            </Reasoning>
-          )}
-        </div>
-
-        {/* Save Blend */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[200px]">
-              <Label className="text-xs text-muted-foreground">Blend name</Label>
-              <Input
-                placeholder="e.g. Summer Citrus Dream"
-                value={blendName}
-                onChange={(e) => {
-                  setBlendName(e.target.value);
-                  setSaveError(null);
-                }}
-                className="mt-1"
-              />
+            {/* Your blend - name, AI summary, save */}
+            <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+              <Label className="text-sm font-medium">Your blend</Label>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">
+                    Blend name
+                  </Label>
+                  <div className="mt-1 flex gap-2">
+                    <Input
+                      placeholder="e.g. Summer Citrus Dream"
+                      value={blendName}
+                      onChange={(e) => {
+                        setBlendName(e.target.value);
+                        setSaveError(null);
+                      }}
+                      className="flex-1"
+                    />
+                    {aiSuggestedName && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setBlendName(aiSuggestedName);
+                          setSaveError(null);
+                        }}
+                        title={`Use suggested: ${aiSuggestedName}`}
+                      >
+                        Use
+                      </Button>
+                    )}
+                  </div>
+                  {aiSuggestedName && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Suggested: &ldquo;{aiSuggestedName}&rdquo;
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDescribe}
+                  disabled={
+                    aiLoading || fragrancesForApi.length === 0 || !isValid
+                  }
+                  className="w-full"
+                >
+                  <Droplets className="mr-2 size-4" />
+                  {aiLoading ? (
+                    <Shimmer duration={1.5}>Describing...</Shimmer>
+                  ) : (
+                    "Generate AI Summary"
+                  )}
+                </Button>
+                {aiSummary && (
+                  <Reasoning defaultOpen={true}>
+                    <ReasoningTrigger label="AI fragrance description" />
+                    <ReasoningContent>
+                      <ReasoningText text={aiSummary} />
+                    </ReasoningContent>
+                  </Reasoning>
+                )}
+                <Button
+                  onClick={handleSave}
+                  disabled={!canSave || saveLoading}
+                  className="w-full"
+                >
+                  {saveLoading
+                    ? "Saving..."
+                    : saveSuccess
+                      ? "Saved!"
+                      : "Save Blend"}
+                </Button>
+                {saveError && (
+                  <p className="text-sm text-destructive">{saveError}</p>
+                )}
+              </div>
             </div>
-            <Button
-              onClick={handleSave}
-              disabled={!canSave || saveLoading}
-            >
-              {saveLoading ? "Saving..." : saveSuccess ? "Saved!" : "Save Blend"}
-            </Button>
           </div>
-          {saveError && (
-            <p className="text-sm text-destructive">{saveError}</p>
-          )}
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 # Blending Lab
 
-Use the CandleScience fragrance wheel to explore scent families and build custom blends with up to 4 fragrances.
+Use the fragrance wheel to explore scent families and build custom blends with up to 4 fragrances. Available in the **Dojo Blending Lab** and the **LABZ Blending Calculator**.
 
 ## Fragrance Wheel
 
@@ -23,3 +23,9 @@ The wheel shows fragrance families in a circular layout:
 - **Kindred** – Blend adjacent families for harmony
 - **Complementary** – Blend opposite families for intrigue
 - **Test** – Use blotter strips before committing to a full batch
+
+## Related Guides
+
+- **Fragrance Evaluation** – OOB, blotter strips, cold/hot throw, soap testing
+- **Blending 101** – Notes, wheel, kindred vs complementary, example blends
+- **Blending Elements** – Single-note blending, IFRA usage, describing blends
