@@ -6,9 +6,9 @@ import {
   FlaskConical,
   Home,
   Compass,
+  Swords,
   ShoppingBag,
   ShoppingCart,
-  Store,
 } from "lucide-react";
 import { Persona } from "@/components/ai-elements/persona";
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon";
@@ -51,8 +51,34 @@ export function VerseAdminDock({
           iconSize={36}
           iconMagnification={48}
         >
+          {/* Left: Chat (1st), Dojo (2nd), then nav */}
           {isAdmin ? (
             <>
+              <DockIcon>
+                <VerseChatPopup
+                  user={user ?? undefined}
+                  trigger={
+                    <button
+                      type="button"
+                      className="flex size-full items-center justify-center rounded-full border-0 bg-transparent text-verse-text cursor-pointer"
+                      aria-label="Open chat"
+                    >
+                      <VerseLogoHairIcon size="sm" withRing />
+                    </button>
+                  }
+                />
+              </DockIcon>
+              {user && (
+                <DockIcon>
+                  <Link
+                    href="/dojo"
+                    className="flex size-full items-center justify-center text-verse-text"
+                    title="Your Dojo"
+                  >
+                    <Swords className="h-5 w-5" />
+                  </Link>
+                </DockIcon>
+              )}
               <DockIcon>
                 <Link
                   href="/"
@@ -62,18 +88,34 @@ export function VerseAdminDock({
                   <FlaskConical className="h-5 w-5" />
                 </Link>
               </DockIcon>
-              <DockIcon>
-                <Link
-                  href="/verse/cart"
-                  className="flex size-full items-center justify-center text-verse-text"
-                  title="Cart"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </DockIcon>
             </>
           ) : (
             <>
+              <DockIcon>
+                <VerseChatPopup
+                  user={user ?? undefined}
+                  trigger={
+                    <button
+                      type="button"
+                      className="flex size-full items-center justify-center rounded-full border-0 bg-transparent text-verse-text cursor-pointer"
+                      aria-label="Open chat"
+                    >
+                      <VerseLogoHairIcon size="sm" withRing />
+                    </button>
+                  }
+                />
+              </DockIcon>
+              {user && (
+                <DockIcon>
+                  <Link
+                    href="/dojo"
+                    className="flex size-full items-center justify-center text-verse-text"
+                    title="Your Dojo"
+                  >
+                    <Swords className="h-5 w-5" />
+                  </Link>
+                </DockIcon>
+              )}
               <DockIcon>
                 <Link
                   href="/verse"
@@ -127,59 +169,25 @@ export function VerseAdminDock({
               </div>
             </DialogContent>
           </Dialog>
-          {isAdmin ? (
-            <>
-              <DockIcon>
-                <Link
-                  href="/store"
-                  className="flex size-full items-center justify-center text-verse-text"
-                  title="Store Admin"
-                >
-                  <Store className="h-5 w-5" />
-                </Link>
-              </DockIcon>
-              <DockIcon>
-                <VerseChatPopup
-                  user={user ?? undefined}
-                  trigger={
-                    <button
-                      type="button"
-                      className="flex size-full items-center justify-center rounded-full border-0 bg-transparent text-verse-text cursor-pointer"
-                      aria-label="Open chat"
-                    >
-                      <VerseLogoHairIcon size="sm" withRing />
-                    </button>
-                  }
-                />
-              </DockIcon>
-            </>
-          ) : (
-            <>
-              <DockIcon>
-                <Link
-                  href="/verse/products"
-                  className="flex size-full items-center justify-center text-verse-text"
-                  title="Shop"
-                >
-                  <ShoppingBag className="h-5 w-5" />
-                </Link>
-              </DockIcon>
-              <DockIcon>
-                <VerseChatPopup
-                  user={user ?? undefined}
-                  trigger={
-                    <button
-                      type="button"
-                      className="flex size-full items-center justify-center rounded-full border-0 bg-transparent text-verse-text cursor-pointer"
-                      aria-label="Open chat"
-                    >
-                      <VerseLogoHairIcon size="sm" withRing />
-                    </button>
-                  }
-                />
-              </DockIcon>
-            </>
-          )}
+          {/* Right: Shop, Cart */}
+          <DockIcon>
+            <Link
+              href="/verse/products"
+              className="flex size-full items-center justify-center text-verse-text"
+              title="Shop"
+            >
+              <ShoppingBag className="h-5 w-5" />
+            </Link>
+          </DockIcon>
+          <DockIcon>
+            <Link
+              href="/verse/cart"
+              className="flex size-full items-center justify-center text-verse-text"
+              title="Cart"
+            >
+              <ShoppingCart className="h-5 w-5" />
+            </Link>
+          </DockIcon>
         </Dock>
       </div>
     </div>

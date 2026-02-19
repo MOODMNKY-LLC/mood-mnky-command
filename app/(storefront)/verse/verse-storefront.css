@@ -14,6 +14,7 @@
   --verse-text-muted: #475569;
   --verse-border: rgba(15, 23, 42, 0.08);
   --verse-button: #475569;
+  --verse-button-rgb: 71, 85, 105;
   --verse-button-text: #f8fafc;
   --verse-page-width: 1600px;
   --verse-spacing-sections: 24px;
@@ -37,6 +38,7 @@
   --verse-text-muted: #94a3b8;
   --verse-border: rgba(200, 196, 196, 0.12);
   --verse-button: #94a3b8;
+  --verse-button-rgb: 148, 163, 184;
   --verse-button-text: #0f172a;
 }
 

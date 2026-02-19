@@ -10,6 +10,8 @@ Sync fragrance oils, collections, and formulas from your MNKY_MIND Notion worksp
 | **Collections** | Collection definitions |
 | **Formulas** | Formula catalog (when configured) |
 | **Fragrance Notes** | Glossary / MNKY Note Glossary |
+| **MNKY Manga Collections** | Manga series (e.g. World Traveler Series) — Name, Slug |
+| **MNKY Manga Issues** | One issue per collection — Title, Slug, Collection, Issue Number, Status, Arc Summary, Cover URL, Published Date |
 
 ## Running a Sync
 
@@ -29,6 +31,15 @@ Sync fragrance oils, collections, and formulas from your MNKY_MIND Notion worksp
 - **NOTION_API_KEY** in environment
 - Notion database shared with the integration
 - Supabase connected (local or production)
+
+## Manga Sync
+
+Manga sync uses dedicated databases under **MNKY_MIND Databases**:
+
+- **MNKY Manga Collections** — manga series (Name, Slug)
+- **MNKY Manga Issues** — issues linked to collections via Collection relation (Title, Slug, Issue Number, Status, Arc Summary, Cover URL, Published Date)
+
+Set `NOTION_MNKY_COLLECTIONS_DATABASE_ID` and `NOTION_MNKY_ISSUES_DATABASE_ID` in `.env`. Trigger sync from Verse Backoffice → Manga → "Sync from Notion".
 
 ## Two-Way Considerations
 

@@ -57,7 +57,15 @@ export default async function VerseIssueSlugPage({
           )}
         </CardHeader>
         <CardContent>
-          <h2 className="mb-4 font-semibold">Chapters</h2>
+          <div className="mb-4 flex flex-wrap items-center gap-4">
+            <h2 className="font-semibold">Chapters</h2>
+            <Link
+              href={`/verse/issues/${slug}/quiz`}
+              className="text-sm font-medium text-primary underline hover:no-underline"
+            >
+              Take Quiz
+            </Link>
+          </div>
           <ul className="space-y-2">
             {chapters?.map((c) => (
               <li key={c.id}>

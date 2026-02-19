@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot } from "lucide-react";
+import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { createClient } from "@/lib/supabase/client";
@@ -95,6 +95,19 @@ export function VerseHeader({
           >
             Shop
           </Link>
+          {user && (
+            <>
+              <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
+              <Link
+                href="/dojo"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+                title="Your Dojo"
+              >
+                <Swords className="h-4 w-4" />
+                <span className="hidden sm:inline">Dojo</span>
+              </Link>
+            </>
+          )}
           <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
           <VerseHeaderCartLink />
         </nav>

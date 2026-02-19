@@ -87,8 +87,8 @@ export const PRODUCT_PAGE_FRAGMENT = `
 
 export const PRODUCTS_QUERY = `
   ${PRODUCT_CARD_FRAGMENT}
-  query Products($first: Int!, $after: String) {
-    products(first: $first, after: $after, query: "status:active") {
+  query Products($first: Int!, $after: String, $sortKey: ProductSortKeys, $reverse: Boolean, $query: String) {
+    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
       pageInfo {
         hasNextPage
         endCursor
@@ -101,6 +101,9 @@ export const PRODUCTS_QUERY = `
     }
   }
 `;
+
+/** Default query for products: status:active. Callers pass query or "status:active". */
+export const PRODUCTS_DEFAULT_QUERY = "status:active";
 
 export const PRODUCT_BY_HANDLE_QUERY = `
   ${PRODUCT_PAGE_FRAGMENT}
@@ -133,7 +136,7 @@ export const COLLECTIONS_QUERY = `
 
 export const COLLECTION_BY_HANDLE_QUERY = `
   ${PRODUCT_CARD_FRAGMENT}
-  query CollectionByHandle($handle: String!, $first: Int!, $after: String) {
+  query CollectionByHandle($handle: String!, $first: Int!, $after: String, $filters: [ProductFilter!], $sortKey: ProductCollectionSortKeys, $reverse: Boolean) {
     collectionByHandle(handle: $handle) {
       id
       title
@@ -145,7 +148,7 @@ export const COLLECTION_BY_HANDLE_QUERY = `
         width
         height
       }
-      products(first: $first, after: $after) {
+      products(first: $first, after: $after, filters: $filters, sortKey: $sortKey, reverse: $reverse) {
         pageInfo {
           hasNextPage
           endCursor
@@ -168,6 +171,21 @@ export const FEATURED_PRODUCTS_QUERY = `
         node {
           ...ProductCard
         }
+      }
+    }
+  }
+`;
+
+/**
+ * Fetch products by GID list. Used for manga "From the story" products.
+ * Returns only Product nodes; invalid IDs return null.
+ */
+export const PRODUCTS_BY_IDS_QUERY = `
+  ${PRODUCT_CARD_FRAGMENT}
+  query ProductsByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        ...ProductCard
       }
     }
   }

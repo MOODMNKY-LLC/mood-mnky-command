@@ -2,12 +2,34 @@
 
 The Dojo is the members' **private hub** in the MNKY VERSE—more exclusive than the public storefront. Each authenticated user has access to their own Dojo at `/dojo`.
 
+## Dashboard-07 Alignment
+
+The Dojo sidebar and layout follow the `temp/dashboard-07` pattern (sidebar-07 block):
+
+- **DojoSidebar:** Forwards `...props` to Sidebar, uses `collapsible="icon"`, SidebarRail
+- **DojoTeamSwitcher:** Dropdown with teams, "Switch to Verse" link, `useSidebar().isMobile` for positioning
+- **DojoNavMain:** SidebarGroup + Collapsible items with sub-menus; flat items use `Link`
+- **DojoNavProjects:** SidebarMenuAction + DropdownMenu per item (View/Share); "More" button; `group-data-[collapsible=icon]:hidden`
+- **DojoSidebarFooter:** NavUser-style dropdown (avatar, name, email, Profile, Preferences, Sign out)
+- **Header:** Breadcrumb (The Dojo > current page), SidebarTrigger, `group-has-data-[collapsible=icon]/sidebar-wrapper:h-12` transition
+
 ## Route Structure
 
 | Path | Description |
 |------|-------------|
-| `/dojo` | Main hub—overview, quick links to preferences and Verse |
+| `/dojo` | Main hub—XP/level, quests, quick actions, manga/UGC entry points |
 | `/dojo/preferences` | User preferences (default agent, etc.) |
+
+## Gamification Integration
+
+The Dojo home page surfaces XP, quests, manga, and UGC per [PRD-Gamification-MNKY-VERSE.md](./PRD-Gamification-MNKY-VERSE.md), [PRD-Collection-Manga-Magazine.md](./PRD-Collection-Manga-Magazine.md), and [MAG-XP-RULES.md](./MAG-XP-RULES.md):
+
+- **XP / Level card:** Fetches from `xp_state`, links to `/verse/profile`
+- **Quests card:** Fetches active quests + `quest_progress` completed count, links to `/verse/quests`
+- **Quick actions:** Preferences, Verse Shop, Chat, Issues, UGC
+- **Lower section:** Manga/Issues and UGC entry points linking to `/verse/issues` and `/verse/ugc`
+
+APIs: `GET /api/xp/state`, `GET /api/quests`, `GET /api/quests/my-progress`
 
 ## Auth Model
 
@@ -17,9 +39,12 @@ The Dojo is the members' **private hub** in the MNKY VERSE—more exclusive than
 
 ## Layout and Components
 
-- **Layout:** `app/dojo/layout.tsx`—SidebarProvider, DojoSidebar, SidebarInset
-- **Sidebar:** `components/dojo/dojo-sidebar.tsx`—collapsible icon sidebar (shadcn pattern)
-- **Nav config:** `lib/dojo-sidebar-config.tsx`
+- **Layout:** `app/dojo/layout.tsx`—DojoAuthContext + DojoDashboardLayout
+- **Dashboard layout:** `components/dojo/dojo-dashboard-layout.tsx`—SidebarProvider, DojoSidebar, SidebarInset, Breadcrumb header
+- **Sidebar:** `components/dojo/dojo-sidebar.tsx`—shadcn sidebar-07 block (collapsible icon, team switcher, nav groups, quick access, user footer)
+- **Sidebar subcomponents:** DojoTeamSwitcher, DojoNavMain, DojoNavProjects, DojoSidebarFooter
+- **Nav config:** `lib/dojo-sidebar-config.tsx`—dojoNavGroups, dojoQuickAccessItems, dojoTeams
+- **Page cards:** DojoXpCard, DojoQuestsCard, DojoQuickActionsCard, DojoLowerSection
 - **Auth:** `components/dojo/dojo-auth-context.tsx`—server-side user fetch and redirect
 
 ## Design

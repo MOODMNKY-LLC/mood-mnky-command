@@ -23,6 +23,11 @@ export async function GET() {
 
   if (error) {
     console.error("ElevenLabs config GET error:", error);
+    // 42P01 = relation does not exist; return env fallback so client can still work
+    if (error.code === "42P01") {
+      const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? null;
+      return NextResponse.json({ agentId });
+    }
     return NextResponse.json(
       { error: "Failed to load config" },
       { status: 500 }

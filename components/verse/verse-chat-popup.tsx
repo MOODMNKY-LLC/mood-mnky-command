@@ -43,6 +43,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { VerseButton } from "@/components/verse/ui/button";
 import { useVersePersonaState } from "@/components/verse/verse-persona-state-context";
+import { useVerseTheme } from "@/components/verse/verse-theme-provider";
 import type { VerseUser } from "./verse-storefront-shell";
 import {
   MessageAction,
@@ -87,6 +88,7 @@ export function VerseChatPopup({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [agents, setAgents] = useState<{ slug: string; display_name: string }[]>([]);
   const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT_SLUG);
+  const { theme } = useVerseTheme();
 
   useEffect(() => {
     if (!open) return;
@@ -180,9 +182,10 @@ export function VerseChatPopup({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden border-[var(--verse-border)] bg-[var(--verse-bg)] p-0 text-[var(--verse-text)] sm:max-w-md"
+        data-verse-theme={theme}
+        className="verse-storefront verse-chat-popup-glass flex h-dvh max-h-dvh w-full flex-col overflow-hidden border border-[var(--verse-border)] p-0 text-[var(--verse-text)] sm:max-w-md"
       >
-        <SheetHeader className="shrink-0 border-b border-[var(--verse-border)] px-4 py-3">
+        <SheetHeader className="verse-chat-inner-panel shrink-0 border-b-0 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <SheetTitle className="font-verse-heading text-lg text-verse-text">
               MNKY VERSE Chat
@@ -200,10 +203,23 @@ export function VerseChatPopup({
           <div className="flex flex-wrap items-center gap-2">
             {agents.length > 0 && (
               <Select value={agentSlug} onValueChange={setAgentSlug}>
-                <SelectTrigger className="h-8 w-[130px] border-[var(--verse-border)] text-verse-text">
+                <SelectTrigger
+                  className={
+                    theme === "dark"
+                      ? "h-8 w-[130px] border-[rgba(200,196,196,0.2)] bg-[rgba(24,22,25,0.9)] text-verse-text"
+                      : "h-8 w-[130px] border-[var(--verse-border)] bg-[rgba(241,245,249,0.9)] text-verse-text"
+                  }
+                >
                   <SelectValue placeholder="Agent" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  data-verse-theme={theme}
+                  className={
+                    theme === "dark"
+                      ? "verse-storefront border-[rgba(200,196,196,0.2)] bg-[rgba(24,22,25,0.98)] text-[#c8c4c4] backdrop-blur-xl"
+                      : "verse-storefront border-[rgba(15,23,42,0.12)] bg-[rgba(241,245,249,0.98)] text-[#0f172a] backdrop-blur-xl"
+                  }
+                >
                   {agents.map((a) => (
                     <SelectItem key={a.slug} value={a.slug}>
                       {a.display_name}
@@ -212,7 +228,7 @@ export function VerseChatPopup({
                 </SelectContent>
               </Select>
             )}
-            <div className="flex rounded-lg border border-[var(--verse-border)] p-0.5">
+            <div className="verse-chat-inner-panel flex rounded-lg border border-[var(--verse-border)] p-0.5">
               <button
                 type="button"
                 onClick={() => setMode("chat")}
@@ -276,7 +292,13 @@ export function VerseChatPopup({
                   )}
                   {messages.map((message, msgIndex) => (
                     <VerseMessage key={message.id} from={message.role}>
-                      <VerseMessageContent>
+                      <VerseMessageContent
+                        className={
+                          message.role === "user"
+                            ? "verse-chat-message-user"
+                            : "verse-chat-message-assistant"
+                        }
+                      >
                         {message.role === "assistant" && (
                           <MessageActions className="mb-1">
                             <MessageAction
@@ -394,7 +416,7 @@ export function VerseChatPopup({
                   {error.message}
                 </p>
               )}
-              <div className="shrink-0 border-t border-[var(--verse-border)] p-4">
+              <div className="verse-chat-input-panel shrink-0 border-t border-[var(--verse-border)] p-4">
                 <PromptInput
                   onSubmit={handleSubmit}
                   className="w-full"

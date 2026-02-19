@@ -29,3 +29,62 @@
     background: rgba(var(--verse-bg-rgb, 241, 245, 249), 0.92);
   }
 }
+
+/* Chat popup - frosted glass / glassmorphic (readable, not transparent) */
+.verse-chat-popup-glass {
+  --chat-glass-blur: 24px;
+  --chat-glass-bg-light: rgba(241, 245, 249, 0.94);
+  --chat-glass-bg-dark: rgba(24, 22, 25, 0.96);
+  --chat-glass-border-light: rgba(15, 23, 42, 0.12);
+  --chat-glass-border-dark: rgba(200, 196, 196, 0.14);
+  --chat-glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(var(--chat-glass-blur));
+  -webkit-backdrop-filter: blur(var(--chat-glass-blur));
+  box-shadow: var(--chat-glass-shadow);
+}
+
+.verse-chat-popup-glass[data-verse-theme="light"] {
+  background: var(--chat-glass-bg-light) !important;
+  border-color: var(--chat-glass-border-light) !important;
+}
+
+.verse-chat-popup-glass[data-verse-theme="dark"] {
+  background: var(--chat-glass-bg-dark) !important;
+  border-color: var(--chat-glass-border-dark) !important;
+}
+
+/* Inner elements - solid frosted panels for contrast */
+.verse-chat-popup-glass .verse-chat-inner-panel {
+  background: rgba(var(--verse-bg-rgb, 241, 245, 249), 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+}
+
+.verse-chat-popup-glass[data-verse-theme="dark"] .verse-chat-inner-panel {
+  background: rgba(var(--verse-bg-rgb, 24, 22, 25), 0.8);
+}
+
+.verse-chat-popup-glass .verse-chat-message-user {
+  background: rgba(var(--verse-button-rgb, 71, 85, 105), 0.35) !important;
+  backdrop-filter: blur(4px);
+}
+
+.verse-chat-popup-glass .verse-chat-message-assistant {
+  background: rgba(var(--verse-text-rgb, 15, 23, 42), 0.04) !important;
+  backdrop-filter: blur(4px);
+}
+
+.verse-chat-popup-glass[data-verse-theme="dark"] .verse-chat-message-assistant {
+  background: rgba(var(--verse-text-rgb, 200, 196, 196), 0.06) !important;
+}
+
+.verse-chat-popup-glass .verse-chat-input-panel {
+  background: rgba(var(--verse-bg-rgb, 241, 245, 249), 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.verse-chat-popup-glass[data-verse-theme="dark"] .verse-chat-input-panel {
+  background: rgba(var(--verse-bg-rgb, 24, 22, 25), 0.9);
+}
