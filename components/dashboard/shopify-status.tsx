@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import useSWR from "swr"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -75,6 +76,12 @@ export function ShopifyStatus() {
                 </span>
               </div>
             )}
+            <Link
+              href="/store/labz-pages"
+              className="text-xs text-primary hover:underline"
+            >
+              LABZ Pages →
+            </Link>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

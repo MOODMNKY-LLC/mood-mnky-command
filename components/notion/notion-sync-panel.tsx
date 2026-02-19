@@ -4,9 +4,11 @@ import React from "react"
 
 import { useState, useCallback } from "react"
 import useSWR from "swr"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import {
   Table,
   TableBody,
@@ -86,6 +88,7 @@ function DatabaseCard({
       const data = await res.json()
       if (data.error) {
         setSyncError(data.error)
+        toast.error(`${title} sync failed`, { description: data.error })
       } else {
         let items = data[itemKey] || []
         if (syncMethod === "POST" && postSyncItemsEndpoint && data.recordsSynced != null) {
@@ -93,15 +96,19 @@ function DatabaseCard({
           const itemsData = await itemsRes.json()
           items = itemsData[itemKey] || itemsData.fragranceOils || []
         }
+        const total = data.recordsSynced ?? data.total ?? items.length
         setSyncResult({
           database: data.database || title,
-          total: data.recordsSynced ?? data.total ?? items.length,
+          total,
           syncedAt: data.syncedAt ?? new Date().toISOString(),
           items,
         })
+        toast.success(`${title} synced`, { description: `${total} records synced to Supabase` })
       }
     } catch (e) {
-      setSyncError(e instanceof Error ? e.message : "Sync failed")
+      const msg = e instanceof Error ? e.message : "Sync failed"
+      setSyncError(msg)
+      toast.error(`${title} sync failed`, { description: msg })
     } finally {
       setIsSyncing(false)
     }
@@ -141,6 +148,7 @@ function DatabaseCard({
         </div>
       </CardHeader>
       <CardContent>
+        {isSyncing && <Progress indeterminate className="h-1.5 mb-3" />}
         {syncError && (
           <div className="flex items-center gap-2 text-sm text-destructive mb-3">
             <AlertCircle className="h-4 w-4" />
@@ -229,13 +237,16 @@ function NoteGlossaryCard({ title, icon: Icon }: { title: string; icon: React.El
       const data = await res.json()
       if (data.error) {
         setError(data.error)
+        toast.error("Note glossary fetch failed", { description: data.error })
       } else {
         setNotes(data.notes ?? [])
         setTotal(data.total ?? 0)
         setLastSyncedAt(data.syncedAt ?? null)
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Fetch failed")
+      const msg = e instanceof Error ? e.message : "Fetch failed"
+      setError(msg)
+      toast.error("Note glossary fetch failed", { description: msg })
     } finally {
       setIsLoading(false)
     }
@@ -253,15 +264,22 @@ function NoteGlossaryCard({ title, icon: Icon }: { title: string; icon: React.El
       const data = await res.json()
       if (data.error) {
         setError(data.error)
+        toast.error("Note glossary sync failed", { description: data.error })
       } else {
         setLastSyncedAt(data.syncedAt ?? new Date().toISOString())
         if (direction === "to-supabase") {
           setTotal(data.recordsSynced ?? data.total ?? total)
         }
         await handleFetch()
+        const label = direction === "to-supabase" ? "Notion → Supabase" : "Supabase → Notion"
+        toast.success(`Note glossary: ${label}`, {
+          description: `${data.recordsSynced ?? data.created ?? data.updated ?? data.total ?? 0} records synced.`,
+        })
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Sync failed")
+      const msg = e instanceof Error ? e.message : "Sync failed"
+      setError(msg)
+      toast.error("Note glossary sync failed", { description: msg })
     } finally {
       setSyncDirection(null)
     }
@@ -329,6 +347,7 @@ function NoteGlossaryCard({ title, icon: Icon }: { title: string; icon: React.El
         </div>
       </CardHeader>
       <CardContent>
+        {(isLoading || syncDirection) && <Progress indeterminate className="h-1.5 mb-3" />}
         {error && (
           <div className="flex items-center gap-2 text-sm text-destructive mb-3">
             <AlertCircle className="h-4 w-4" />
@@ -401,13 +420,16 @@ function DocsCommandCard({ title, icon: Icon }: { title: string; icon: React.Ele
       const data = await res.json()
       if (data.error) {
         setError(data.error)
+        toast.error("Command docs fetch failed", { description: data.error })
       } else {
         setDocs(data.docs ?? [])
         setTotal(data.total ?? 0)
         setLastSyncedAt(data.syncedAt ?? null)
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Fetch failed")
+      const msg = e instanceof Error ? e.message : "Fetch failed"
+      setError(msg)
+      toast.error("Command docs fetch failed", { description: msg })
     } finally {
       setIsLoading(false)
     }
@@ -425,13 +447,20 @@ function DocsCommandCard({ title, icon: Icon }: { title: string; icon: React.Ele
       const data = await res.json()
       if (data.error) {
         setError(data.error)
+        toast.error("Command docs sync failed", { description: data.error })
       } else {
         setLastSyncedAt(data.syncedAt ?? new Date().toISOString())
         setTotal(data.total ?? data.written ?? (data.created ?? 0) + (data.updated ?? 0) ?? total)
         await handleFetch()
+        const label = direction === "to-files" ? "Notion → Files" : "Files → Notion"
+        toast.success(`Command docs: ${label}`, {
+          description: `${data.written ?? data.total ?? data.created + data.updated ?? 0} docs synced.`,
+        })
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Sync failed")
+      const msg = e instanceof Error ? e.message : "Sync failed"
+      setError(msg)
+      toast.error("Command docs sync failed", { description: msg })
     } finally {
       setSyncDirection(null)
     }
@@ -499,6 +528,7 @@ function DocsCommandCard({ title, icon: Icon }: { title: string; icon: React.Ele
         </div>
       </CardHeader>
       <CardContent>
+        {(isLoading || syncDirection) && <Progress indeterminate className="h-1.5 mb-3" />}
         {error && (
           <div className="flex items-center gap-2 text-sm text-destructive mb-3">
             <AlertCircle className="h-4 w-4" />

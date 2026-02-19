@@ -69,6 +69,8 @@ export type SpeechInputProps = ComponentProps<typeof Button> & {
    * Return the transcribed text, which will be passed to onTranscriptionChange.
    */
   onAudioRecorded?: (audioBlob: Blob) => Promise<string>
+  /** Called when listening state changes (e.g. for persona/UI feedback). */
+  onListeningChange?: (listening: boolean) => void
   lang?: string
 }
 
@@ -92,6 +94,7 @@ export const SpeechInput = ({
   className,
   onTranscriptionChange,
   onAudioRecorded,
+  onListeningChange,
   lang = "en-US",
   ...props
 }: SpeechInputProps) => {
@@ -108,10 +111,19 @@ export const SpeechInput = ({
   >(onTranscriptionChange)
   const onAudioRecordedRef =
     useRef<SpeechInputProps["onAudioRecorded"]>(onAudioRecorded)
+  const onListeningChangeRef = useRef<SpeechInputProps["onListeningChange"]>(
+    onListeningChange
+  )
 
   // Keep refs in sync
   onTranscriptionChangeRef.current = onTranscriptionChange
   onAudioRecordedRef.current = onAudioRecorded
+  onListeningChangeRef.current = onListeningChange
+
+  // Notify parent when listening state changes
+  useEffect(() => {
+    onListeningChangeRef.current?.(isListening)
+  }, [isListening])
 
   // Initialize Speech Recognition when mode is speech-recognition
   useEffect(() => {

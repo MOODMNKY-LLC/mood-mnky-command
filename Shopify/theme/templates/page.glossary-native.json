@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "glossary-index",
+      "settings": {
+        "heading": "Fragrance note glossary",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": ["main"]
+}

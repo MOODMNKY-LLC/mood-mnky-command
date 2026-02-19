@@ -10,6 +10,12 @@ import {
 /** Known page templates in repo (Shopify/theme/templates/) that can be read from disk when content not provided. */
 const REPO_TEMPLATE_SUFFIXES = [
   "fragrance-wheel",
+  "blending-guide",
+  "glossary",
+  "formulas",
+  "fragrance-oils",
+  "labz-landing",
+  "glossary-native",
   "empty",
   "about-us",
   "contact",

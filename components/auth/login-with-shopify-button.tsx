@@ -6,18 +6,12 @@ import { ShimmerButton } from "@/components/ui/shimmer-button"
 
 /**
  * CTA for MNKY VERSE - initiates Shopify Customer Account API OAuth flow.
- * Redirects to /api/customer-account-api/auth which handles PKCE and redirect to Shopify.
- * Uses NEXT_PUBLIC_APP_URL when it points to ngrok so localhost users get correct OAuth callback.
+ * Uses a relative URL so the browser always uses the current origin; the server
+ * uses request.nextUrl.origin for redirect_uri when redirecting to Shopify.
  */
 export function LoginWithShopifyButton() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
-  const useNgrokForAuth = appUrl?.includes("ngrok")
-  const authHref = useNgrokForAuth
-    ? `${appUrl.replace(/\/$/, "")}/api/customer-account-api/auth`
-    : "/api/customer-account-api/auth"
-
   return (
-    <Link href={authHref} className="block w-full">
+    <Link href="/api/customer-account-api/auth" className="block w-full">
       <ShimmerButton className="w-full">
         Login with Shopify
       </ShimmerButton>

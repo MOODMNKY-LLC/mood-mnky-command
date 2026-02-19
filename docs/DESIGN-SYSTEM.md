@@ -98,6 +98,10 @@ When inside `.verse-storefront`, the root `--primary` and `--accent` are overrid
 
 The LABZ dashboard uses the root layout, `next-themes`, and shared shadcn components. It does not have a separate component folder.
 
+### Dashboard
+
+The dashboard page uses the root design tokens and shadcn patterns: **Card**, **Badge**, **Button**, **Progress**, **Skeleton**, **Alert**, **Tooltip**, **Separator**. Section order and visibility (e.g. LABZ hub card, connect alert, LABZ pages count) are driven by `lib/dashboard-config.ts` (`dashboardConfig`). Status styling uses semantic tokens (e.g. `bg-success/10 text-success` for connected/success, muted or `--warning` for partial/connect prompts). See `docs/DASHBOARD-ENV.md` for environment and config.
+
 ### Light-Mode Focus
 
 - Default theme: **light** (`app/layout.tsx` → `ThemeProvider defaultTheme="light"`)

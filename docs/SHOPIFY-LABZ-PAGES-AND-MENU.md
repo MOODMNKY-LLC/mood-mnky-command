@@ -61,4 +61,6 @@ You can add more LABZ pages (e.g. future app-embed pages) as additional child it
 ## Related
 
 - [SHOPIFY-APP-URL-CONFIG.md](./SHOPIFY-APP-URL-CONFIG.md) – App base URL for theme and embeds.
+- [STOREFRONT-READ-ONLY-APIS.md](./STOREFRONT-READ-ONLY-APIS.md) – Public APIs used by Verse and store (glossary, formulas, fragrance oils).
+- [SHOPIFY-METAOBJECTS-SYNC.md](./SHOPIFY-METAOBJECTS-SYNC.md) – Native Liquid Glossary via metaobjects (Phase 2).
 - [Shopify/docs/APP-BLOCKS-BREAKDOWN.md](../Shopify/docs/APP-BLOCKS-BREAKDOWN.md) – Theme app blocks and MNKY CHAT embed.

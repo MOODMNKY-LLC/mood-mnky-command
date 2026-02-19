@@ -14,6 +14,7 @@ export const BUCKETS = {
   privateDocuments: "private-documents",
   chatAttachments: "chat-attachments",
   mnkyVerseTracks: "mnky-verse-tracks",
+  ugcSubmissions: "ugc-submissions",
 } as const
 
 export type BucketId = (typeof BUCKETS)[keyof typeof BUCKETS]
@@ -180,6 +181,13 @@ export const BUCKET_CONFIG: Record<
       "video/mp4",
     ],
     isPublic: true,
+  },
+  "ugc-submissions": {
+    label: "UGC Submissions",
+    description: "User-generated content for manga/quest challenges (photo, video)",
+    maxSizeMB: 10,
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"],
+    isPublic: false,
   },
 }
 

@@ -383,3 +383,174 @@ export async function themeFileUpsert(
   if (!file) throw new Error("Theme file upsert returned no file")
   return file
 }
+
+// ---- Metaobjects (write_metaobject_definitions, write_metaobjects) ----
+
+/** Fragrance note metaobject type (merchant-owned, storefront PUBLIC_READ for native Liquid). */
+export const FRAGRANCE_NOTE_METAOBJECT_TYPE = "fragrance_note"
+
+const METAOBJECT_DEFINITION_CREATE = `
+  mutation MetaobjectDefinitionCreate($definition: MetaobjectDefinitionCreateInput!) {
+    metaobjectDefinitionCreate(definition: $definition) {
+      metaobjectDefinition { id type name }
+      userErrors { field message code }
+    }
+  }
+`
+
+/**
+ * Ensure the fragrance_note metaobject definition exists. Idempotent; safe to call repeatedly.
+ * Requires write_metaobject_definitions. Creates merchant-owned definition with storefront PUBLIC_READ.
+ */
+export async function ensureFragranceNoteMetaobjectDefinition(): Promise<void> {
+  const data = await shopifyGraphQL<{
+    metaobjectDefinitionCreate: {
+      metaobjectDefinition: { id: string; type: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_DEFINITION_CREATE, {
+    definition: {
+      name: "Fragrance Note",
+      type: FRAGRANCE_NOTE_METAOBJECT_TYPE,
+      access: { storefront: "PUBLIC_READ" },
+      fieldDefinitions: [
+        { name: "Name", key: "name", type: "single_line_text_field" },
+        { name: "Slug", key: "slug", type: "single_line_text_field" },
+        { name: "Description", key: "description_short", type: "multi_line_text_field" },
+        { name: "Olfactive profile", key: "olfactive_profile", type: "multi_line_text_field" },
+        { name: "Facts", key: "facts", type: "multi_line_text_field" },
+      ],
+    },
+  })
+  const result = data.metaobjectDefinitionCreate
+  if (result.userErrors?.length) {
+    const taken = result.userErrors.some(
+      (e) => e.code === "TAKEN" || /already exists|taken/i.test(e.message)
+    )
+    if (taken) return
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`Metaobject definition create failed: ${msg}`)
+  }
+}
+
+const METAOBJECT_CREATE = `
+  mutation MetaobjectCreate($metaobject: MetaobjectCreateInput!) {
+    metaobjectCreate(metaobject: $metaobject) {
+      metaobject { id handle }
+      userErrors { field message code }
+    }
+  }
+`
+
+export interface FragranceNoteMetaobjectFields {
+  name: string
+  slug: string
+  description_short: string
+  olfactive_profile: string
+  facts: string
+}
+
+/**
+ * Create a fragrance_note metaobject entry. Requires write_metaobjects.
+ * Handle is used as the URL slug (e.g. /metaobject/fragrance_note/amber).
+ */
+export async function metaobjectCreateFragranceNote(
+  handle: string,
+  fields: FragranceNoteMetaobjectFields
+): Promise<{ id: string; handle: string }> {
+  const data = await shopifyGraphQL<{
+    metaobjectCreate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_CREATE, {
+    metaobject: {
+      type: FRAGRANCE_NOTE_METAOBJECT_TYPE,
+      handle,
+      fields: [
+        { key: "name", value: fields.name },
+        { key: "slug", value: fields.slug },
+        { key: "description_short", value: fields.description_short ?? "" },
+        { key: "olfactive_profile", value: fields.olfactive_profile ?? "" },
+        { key: "facts", value: fields.facts ?? "" },
+      ],
+    },
+  })
+  const result = data.metaobjectCreate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`Metaobject create failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject create returned no metaobject")
+  return result.metaobject
+}
+
+const METAOBJECT_UPDATE = `
+  mutation MetaobjectUpdate($id: ID!, $metaobject: MetaobjectUpdateInput!) {
+    metaobjectUpdate(id: $id, metaobject: $metaobject) {
+      metaobject { id handle }
+      userErrors { field message code }
+    }
+  }
+`
+
+/**
+ * Update an existing fragrance_note metaobject by GID. Requires write_metaobjects.
+ */
+export async function metaobjectUpdateFragranceNote(
+  id: string,
+  fields: Partial<FragranceNoteMetaobjectFields>
+): Promise<{ id: string; handle: string }> {
+  const fieldEntries = Object.entries(fields).filter(([, v]) => v != null) as [string, string][]
+  const data = await shopifyGraphQL<{
+    metaobjectUpdate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_UPDATE, {
+    id,
+    metaobject: {
+      fields: fieldEntries.map(([key, value]) => ({ key, value })),
+    },
+  })
+  const result = data.metaobjectUpdate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`Metaobject update failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject update returned no metaobject")
+  return result.metaobject
+}
+
+const METAOBJECTS_QUERY = `
+  query GetMetaobjectsByType($type: String!, $first: Int!) {
+    metaobjects(type: $type, first: $first) {
+      nodes { id handle }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+`
+
+/**
+ * List fragrance_note metaobject handles (and ids) for sync idempotency. Requires read_metaobjects.
+ */
+export async function metaobjectListFragranceNoteHandles(): Promise<Array<{ id: string; handle: string }>> {
+  const nodes: Array<{ id: string; handle: string }> = []
+  let cursor: string | null = null
+  const first = 100
+  for (;;) {
+    const data = await shopifyGraphQL<{
+      metaobjects: {
+        nodes: Array<{ id: string; handle: string }>
+        pageInfo: { hasNextPage: boolean; endCursor: string | null }
+      }
+    }>(METAOBJECTS_QUERY, { type: FRAGRANCE_NOTE_METAOBJECT_TYPE, first })
+    const result = data.metaobjects
+    nodes.push(...(result?.nodes ?? []))
+    if (!result?.pageInfo?.hasNextPage || !result.pageInfo.endCursor) break
+    cursor = result.pageInfo.endCursor
+    // Pagination would need after: cursor in the query; for initial sync 100 is often enough
+    break
+  }
+  return nodes
+}

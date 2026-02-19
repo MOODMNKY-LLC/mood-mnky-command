@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FlaskConical, Droplets, Package, Palette } from "lucide-react"
+import { FlaskConical, Droplets, Package, Palette, FileText, Database, Store } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const actions = [
@@ -28,6 +28,24 @@ const actions = [
     description: "Build custom fragrance blends",
     href: "/blending",
     icon: Palette,
+  },
+  {
+    title: "LABZ Pages",
+    description: "Manage Shopify LABZ pages and sync",
+    href: "/store/labz-pages",
+    icon: FileText,
+  },
+  {
+    title: "Notion Sync",
+    description: "Sync Notion databases to Supabase",
+    href: "/notion",
+    icon: Database,
+  },
+  {
+    title: "Store",
+    description: "Shopify catalog, orders, and content",
+    href: "/store",
+    icon: Store,
   },
 ]
 

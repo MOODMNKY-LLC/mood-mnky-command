@@ -70,6 +70,20 @@ export async function GET(request: NextRequest) {
     }
 
     const callbackUrl = `${appUrl}/api/customer-account-api/callback`;
+    const isDevOrigin =
+      /^https?:\/\/localhost(\d*)/.test(appUrl) || appUrl.includes("ngrok");
+    const envAppUrl =
+      process.env.NEXT_PUBLIC_VERSE_APP_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "";
+    const envLooksProduction =
+      envAppUrl.includes("moodmnky.com") && !envAppUrl.includes("ngrok");
+    if (isDevOrigin && envLooksProduction) {
+      console.warn(
+        "[Customer Account API] Request origin is localhost/ngrok but env app URL looks like production. Ensure Shopify Allowed redirect URLs include:",
+        callbackUrl
+      );
+    }
     const authUrl = new URL(authorizationEndpoint);
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");

@@ -36,8 +36,24 @@ For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse bl
 - **Verse blog API** (`/api/verse/blog`): base URL for canonical links uses `NEXT_PUBLIC_APP_URL`.
 - **LABZ Storefront Assistant page** (`/platform/storefront-assistant`): “App base URL” shown and copied for the theme uses `NEXT_PUBLIC_APP_URL` or `window.location.origin` in browser.
 - **Customer Account API** (auth/callback/logout): callbacks and redirects use `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_VERSE_APP_URL`.
-- **Login with Shopify button:** uses `NEXT_PUBLIC_APP_URL` for OAuth redirect (e.g. when using ngrok in dev).
+- **Login with Shopify button:** uses a relative link `/api/customer-account-api/auth`; the server uses `request.nextUrl.origin` for the OAuth redirect_uri.
 - **Funnels, Jotform webhooks, blend APIs, etc.:** webhook/base URLs use `NEXT_PUBLIC_APP_URL`.
+
+### Shopify Customer Account API (Login with Shopify)
+
+The Customer Account API OAuth flow requires the **redirect_uri** sent to Shopify to exactly match a URL registered in your Shopify app (e.g. Hydrogen sales channel or custom app).
+
+**Required env vars:** `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (or `NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`), `NEXT_PUBLIC_STORE_DOMAIN` (or `PUBLIC_STORE_DOMAIN`). The server uses `request.nextUrl.origin` (or fallback `NEXT_PUBLIC_VERSE_APP_URL` / `NEXT_PUBLIC_APP_URL`) to build the callback URL. **Production must use real app URLs** (no ngrok in production env).
+
+**Checklist – Allowed redirect URLs in Shopify Admin:**
+
+1. Go to your app (e.g. **Hydrogen** or **Customer Account API** app) → **Allowed redirect URLs** (or equivalent).
+2. Add the exact callback URL for each app domain you use:
+   - `https://mnky-command.moodmnky.com/api/customer-account-api/callback`
+   - `https://mnky-verse.moodmnky.com/api/customer-account-api/callback` (if Verse auth is on a different domain)
+3. For **local dev with ngrok**, optionally add: `https://<your-ngrok-domain>/api/customer-account-api/callback` and set `NEXT_PUBLIC_APP_URL` (or Verse equivalent) to that ngrok URL only in `.env.local`.
+
+**Debug:** GET `/api/customer-account-api/auth-config` returns the callback URL for the current origin (no secrets). Use it to confirm which URL must be in Shopify’s Allowed redirect URLs.
 
 ### 3. Shopify theme (Theme Editor)
 

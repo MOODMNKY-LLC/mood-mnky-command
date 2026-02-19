@@ -7,6 +7,9 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { DocsButton } from "@/components/docs/docs-button"
 import { DocsProvider } from "@/components/docs/docs-context"
+import { Toaster } from "@/components/ui/sonner"
+import { LabzDock } from "@/components/labz/labz-dock"
+import { LabzPersonaStateProvider } from "@/components/labz/labz-persona-state-context"
 
 export default function DashboardLayout({
   children,
@@ -15,6 +18,7 @@ export default function DashboardLayout({
 }) {
   return (
     <DocsProvider>
+      <Toaster />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
@@ -30,6 +34,9 @@ export default function DashboardLayout({
           </header>
           <div className="flex-1 overflow-auto">{children}</div>
         </SidebarInset>
+        <LabzPersonaStateProvider>
+          <LabzDock />
+        </LabzPersonaStateProvider>
       </SidebarProvider>
     </DocsProvider>
   )

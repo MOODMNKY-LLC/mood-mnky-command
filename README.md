@@ -115,6 +115,8 @@ Further setup (Supabase migrations, Verse blog sync, LABZ): see [docs/](docs/) a
 - **Design system:** [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)
 - **Shopify nav and footer:** [Shopify/docs/NAVIGATION-MENU-SETUP.md](Shopify/docs/NAVIGATION-MENU-SETUP.md)
 - **Store–Verse integration:** [docs/SHOPIFY-MNKY-VERSE-INTEGRATION-REPORT.md](docs/SHOPIFY-MNKY-VERSE-INTEGRATION-REPORT.md)
+- **Cursor subagents:** [docs/CURSOR-AGENTS.md](docs/CURSOR-AGENTS.md) — project subagents (shopify, verse-storefront, labz, verifier, debugger) and how to invoke them.
+- **Cursor rules and commands:** [docs/CURSOR-RULES-AND-COMMANDS.md](docs/CURSOR-RULES-AND-COMMANDS.md) — rules in `.cursor/rules`, commands in `.cursor/commands`, and how they work with skills and agents.
 
 See `docs/` for more runbooks and references.
 

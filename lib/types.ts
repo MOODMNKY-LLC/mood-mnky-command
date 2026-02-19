@@ -268,4 +268,6 @@ export interface ActivityItem {
   action: string
   target: string
   timestamp: string
+  /** Source of the activity for optional badge (e.g. Shopify, Notion). */
+  source?: "shopify" | "notion" | "supabase"
 }

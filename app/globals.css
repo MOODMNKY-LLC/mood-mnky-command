@@ -8,6 +8,20 @@
   }
 }
 
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.progress-indeterminate-indicator {
+  width: 30%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
 /* Verse blog prose preset: on-brand headings, code, blockquotes */
 @layer components {
   .prose-verse {
@@ -64,6 +78,9 @@
     --success-foreground: 0 0% 98%;
     --warning: 36 80% 56%;
     --warning-foreground: 0 0% 4%;
+    /* LABZ status ring: blue=ready, green=active, red=record/error, yellow=warning */
+    --status-ready: 200 50% 50%;
+    --status-active: 145 63% 42%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -103,6 +120,8 @@
     --success-foreground: 0 0% 98%;
     --warning: 36 80% 56%;
     --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 55%;
+    --status-active: 145 50% 48%;
   }
   .theme {
     --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;

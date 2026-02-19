@@ -1,0 +1,81 @@
+{% comment %}
+  Renders a single fragrance note metaobject (name, description, olfactive profile, facts).
+  Used by templates/metaobject.fragrance_note.json. The metaobject variable is in scope.
+{% endcomment %}
+{{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="page-width page-width--narrow section-{{ section.id }}-padding">
+  {% if metaobject.name.value != blank %}
+    <h1 class="main-page-title page-title h0">
+      {{ metaobject.name.value | escape }}
+    </h1>
+  {% endif %}
+
+  {% if metaobject.description_short.value != blank %}
+    <div class="rte glossary-field">
+      <h2 class="h4">Description</h2>
+      {{ metaobject.description_short.value }}
+    </div>
+  {% endif %}
+
+  {% if metaobject.olfactive_profile.value != blank %}
+    <div class="rte glossary-field">
+      <h2 class="h4">Olfactive profile</h2>
+      {{ metaobject.olfactive_profile.value }}
+    </div>
+  {% endif %}
+
+  {% if metaobject.facts.value != blank %}
+    <div class="rte glossary-field">
+      <h2 class="h4">Facts</h2>
+      {{ metaobject.facts.value }}
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Fragrance note metaobject",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ]
+}
+{% endschema %}

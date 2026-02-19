@@ -1,0 +1,84 @@
+{% comment %}
+  Lists all fragrance_note metaobjects with links to their native store URLs.
+  Use on a page with template page.glossary-native to show Glossary index (native Liquid).
+  Requires metaobjects to be synced from Supabase (POST /api/shopify/sync/metaobject-fragrance-notes).
+{% endcomment %}
+{{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+  .glossary-index-list { list-style: none; padding: 0; }
+  .glossary-index-list li { margin-bottom: 0.5rem; }
+  .glossary-index-list a { text-decoration: none; }
+  .glossary-index-list a:hover { text-decoration: underline; }
+{%- endstyle -%}
+
+<div class="page-width page-width--narrow section-{{ section.id }}-padding">
+  {% if section.settings.heading != blank %}
+    <h1 class="main-page-title page-title h0">{{ section.settings.heading }}</h1>
+  {% endif %}
+
+  {% assign fragrance_notes = metaobjects.fragrance_note.values %}
+  {% if fragrance_notes.size > 0 %}
+    <ul class="glossary-index-list">
+      {% for entry in fragrance_notes %}
+        <li>
+          <a href="{{ entry.system.url }}">
+            {{ entry.name.value | default: entry.system.handle | escape }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No fragrance notes yet. Sync from LABZ (Supabase → Shopify metaobjects) to populate.</p>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Glossary index native",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Fragrance note glossary"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ]
+}
+{% endschema %}

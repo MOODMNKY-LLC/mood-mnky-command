@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import type { ActivityItem } from "@/lib/types"
 
 interface ActivityFeedProps {
@@ -27,9 +28,14 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
             ))}
           </div>
         ) : activities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No recent activity. Connect your integrations to see live updates.
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-muted-foreground">
+              No recent activity. Connect your integrations to see live updates.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Sync Notion or update products to see activity here.
+            </p>
+          </div>
         ) : (
           <div className="flex flex-col gap-4">
             {activities.map((activity) => (
@@ -38,9 +44,16 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
                 className="flex items-start justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0"
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-foreground">
-                    {activity.action}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm text-foreground">
+                      {activity.action}
+                    </span>
+                    {activity.source && (
+                      <Badge variant="secondary" className="text-[10px] font-normal capitalize">
+                        {activity.source}
+                      </Badge>
+                    )}
+                  </div>
                   <span className="text-sm font-medium text-primary">
                     {activity.target}
                   </span>

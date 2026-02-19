@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getProductCount, getProducts, getAllCollections, isConfigured as shopifyConfigured } from "@/lib/shopify"
+import { getProductCount, getProducts, getAllCollections, getPageCount, isConfigured as shopifyConfigured } from "@/lib/shopify"
 import { getDatabaseInfo, NOTION_DATABASE_IDS, isConfigured as notionConfigured } from "@/lib/notion"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -9,21 +9,25 @@ export async function GET() {
     totalFragrances: 0,
     totalFormulas: 0,
     totalCollections: 0,
+    glossaryCount: 0,
+    labzPagesCount: 0,
     shopifyConnected: false,
     notionConnected: false,
-    recentActivity: [] as Array<{ id: string; action: string; target: string; timestamp: string; _sort: number }>,
+    recentActivity: [] as Array<{ id: string; action: string; target: string; timestamp: string; source?: "shopify" | "notion" | "supabase"; _sort: number }>,
   }
 
   // Fetch Shopify data
   if (shopifyConfigured()) {
     try {
-      const [count, products, collections] = await Promise.all([
+      const [count, products, collections, pageCount] = await Promise.all([
         getProductCount(),
         getProducts({ limit: 5, status: "active" }),
         getAllCollections(),
+        getPageCount(),
       ])
       stats.totalProducts = count
       stats.totalCollections = collections.length
+      stats.labzPagesCount = pageCount
       stats.shopifyConnected = true
 
       for (const product of products) {
@@ -33,6 +37,7 @@ export async function GET() {
           action: "Product updated",
           target: product.title,
           timestamp: dt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          source: "shopify",
           _sort: dt.getTime(),
         })
       }
@@ -70,11 +75,20 @@ export async function GET() {
         action: "Fragrance updated",
         target: row.name ?? "Unknown",
         timestamp: dt.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        source: "notion",
         _sort: dt.getTime(),
       })
     }
   } catch {
     // DB not reachable
+  }
+
+  // Glossary (fragrance_notes) count
+  try {
+    const { count } = await supabase.from("fragrance_notes").select("*", { count: "exact", head: true })
+    stats.glossaryCount = count ?? 0
+  } catch {
+    // ignore
   }
 
   // Lightweight Notion connection check
@@ -89,7 +103,7 @@ export async function GET() {
 
   // Sort all activity by timestamp (newest first), then strip _sort from response
   stats.recentActivity.sort((a, b) => b._sort - a._sort)
-  const recentActivity = stats.recentActivity.map(({ _sort, ...r }) => r)
+  const recentActivity = stats.recentActivity.map(({ _sort, ...r }) => r) as Array<{ id: string; action: string; target: string; timestamp: string; source?: "shopify" | "notion" | "supabase" }>
 
   return NextResponse.json({ ...stats, recentActivity })
 }

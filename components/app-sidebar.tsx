@@ -2,43 +2,17 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Database, LogOut, Plus, ChevronRight } from "lucide-react"
 import {
-  Bot,
-  Droplets,
-  LayoutDashboard,
-  Package,
-  FlaskConical,
-  Palette,
-  Flame,
-  Database,
-  LogOut,
-  Server,
-  Table2,
-  Terminal,
-  Store,
-  ShoppingCart,
-  FolderOpen,
-  ClipboardList,
-  Users,
-  Warehouse,
-  Tags,
-  Megaphone,
-  FileText,
-  ListFilter,
-  Wallet,
-  BarChart3,
-  ChevronRight,
-  Plus,
-  ImagePlus,
-  FolderArchive,
-  Sparkles,
-  Video,
-  Mic,
-  BookOpen,
-  MessageSquare,
-  Globe,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+  labItems,
+  storeItems,
+  createAndChatItems,
+  integrationsItems,
+  verseItems,
+  verseBackofficeItems,
+  platformItems,
+  labGroupBadge,
+} from "@/lib/sidebar-config"
 
 import {
   Collapsible,
@@ -64,99 +38,11 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
-
-// ---------------------------------------------------------------------------
-// Navigation data
-// ---------------------------------------------------------------------------
-
-interface NavItem {
-  title: string
-  href: string
-  icon: LucideIcon
-}
-
-interface NavItemWithChildren extends NavItem {
-  children?: { title: string; href: string }[]
-}
-
-const labItems: NavItem[] = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Formulas", href: "/formulas", icon: FlaskConical },
-  { title: "Fragrance Oils", href: "/fragrances", icon: Droplets },
-  { title: "Glossary", href: "/glossary", icon: BookOpen },
-  { title: "Blending Lab", href: "/blending", icon: Palette },
-  { title: "Wicks & Wax", href: "/wicks", icon: Flame },
-  { title: "Product Builder", href: "/products", icon: Package },
-]
-
-const storeItems: NavItemWithChildren[] = [
-  { title: "Store Overview", href: "/store", icon: Store },
-  {
-    title: "Catalog",
-    href: "/store/products",
-    icon: ShoppingCart,
-    children: [
-      { title: "Products", href: "/store/products" },
-      { title: "Collections", href: "/store/collections" },
-      { title: "Inventory", href: "/store/inventory" },
-    ],
-  },
-  {
-    title: "Sales",
-    href: "/store/orders",
-    icon: ClipboardList,
-    children: [
-      { title: "Orders", href: "/store/orders" },
-      { title: "Customers", href: "/store/customers" },
-      { title: "Discounts", href: "/store/discounts" },
-    ],
-  },
-  {
-    title: "Growth",
-    href: "/store/marketing",
-    icon: Megaphone,
-    children: [
-      { title: "Marketing", href: "/store/marketing" },
-      { title: "Analytics", href: "/store/analytics" },
-    ],
-  },
-  { title: "Content", href: "/store/content", icon: FileText },
-  { title: "LABZ Pages", href: "/store/labz-pages", icon: FileText },
-  { title: "Finance", href: "/store/finance", icon: Wallet },
-]
-
-const mnkyChatItems: NavItem[] = [
-  { title: "AI Chat", href: "/chat", icon: MessageSquare },
-  { title: "Agents", href: "/chat/agents", icon: Bot },
-  { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
-]
-
-const studioItems: NavItem[] = [
-  { title: "Image Studio", href: "/studio", icon: Sparkles },
-  { title: "Audio Studio", href: "/studio/audio", icon: Mic },
-  { title: "Video Studio", href: "/studio/video", icon: Video },
-  { title: "Media Library", href: "/media", icon: ImagePlus },
-]
-
-const verseItems: NavItem[] = [
-  { title: "MNKY VERSE", href: "/verse", icon: Globe },
-  { title: "Products", href: "/verse/products", icon: Package },
-  { title: "Collections", href: "/verse/collections", icon: Tags },
-  { title: "Cart", href: "/verse/cart", icon: ShoppingCart },
-  { title: "Discord", href: "/platform/discord", icon: MessageSquare },
-]
-
-const platformItemsBase: NavItem[] = [
-  { title: "Overview", href: "/platform", icon: Server },
-  { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
-  { title: "Table Editor", href: "/platform/tables", icon: Table2 },
-  { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
-  { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
-  { title: "Members", href: "/members", icon: Users },
-]
+import type { NavItem, NavItemWithChildren } from "@/lib/sidebar-config"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -220,7 +106,14 @@ export function AppSidebar() {
       <SidebarContent>
         {/* ======== MNKY LABZ ======== */}
         <SidebarGroup>
-          <SidebarGroupLabel>MNKY LABZ</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center gap-2">
+            <span>MNKY LABZ</span>
+            {labGroupBadge && (
+              <Badge variant="secondary" className="text-[10px] font-normal opacity-90 group-data-[collapsible=icon]:hidden">
+                {labGroupBadge}
+              </Badge>
+            )}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {labItems.map((item) => (
@@ -229,6 +122,7 @@ export function AppSidebar() {
                     asChild
                     isActive={isActive(pathname, item.href, item.href === "/")}
                     tooltip={item.title}
+                    className={pathname === "/" && item.href === "/" ? "bg-sidebar-accent/80" : undefined}
                   >
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4" />
@@ -243,43 +137,12 @@ export function AppSidebar() {
 
         <SidebarSeparator />
 
-        {/* ======== Data Sources ======== */}
+        {/* ======== Integrations ======== */}
         <SidebarGroup>
-          <SidebarGroupLabel>Data Sources</SidebarGroupLabel>
+          <SidebarGroupLabel>Integrations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive(pathname, "/notion")}
-                  tooltip="Notion Sync"
-                >
-                  <Link href="/notion">
-                    <Database className="h-4 w-4" />
-                    <span>Notion Sync</span>
-                  </Link>
-                </SidebarMenuButton>
-                <SidebarMenuAction asChild>
-                  <Link href="/notion" aria-label="Sync now">
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-                    </span>
-                  </Link>
-                </SidebarMenuAction>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* ======== MNKY Chat ======== */}
-        <SidebarGroup>
-          <SidebarGroupLabel>MNKY Chat</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mnkyChatItems.map((item) => (
+              {integrationsItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -291,6 +154,16 @@ export function AppSidebar() {
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
+                  {item.href === "/notion" && (
+                    <SidebarMenuAction asChild>
+                      <Link href="/notion" aria-label="Sync now">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+                        </span>
+                      </Link>
+                    </SidebarMenuAction>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -299,40 +172,49 @@ export function AppSidebar() {
 
         <SidebarSeparator />
 
-        {/* ======== Studio ======== */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Studio</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {studioItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(pathname, item.href)}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* ======== Create & Chat (collapsible) ======== */}
+        <Collapsible defaultOpen className="group/createchat">
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center">
+                Create & Chat
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/createchat:rotate-90" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {createAndChatItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(pathname, item.href)}
+                        tooltip={item.title}
+                      >
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         <SidebarSeparator />
 
-        {/* ======== MNKY VERSE (dashboard is admin-only; no client check needed) ======== */}
+        {/* ======== Verse ======== */}
         <Collapsible defaultOpen className="group/verse">
-              <SidebarGroup>
-                <SidebarGroupLabel asChild>
-                  <CollapsibleTrigger className="flex w-full items-center">
-                    MNKY VERSE
-                    <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/verse:rotate-90" />
-                  </CollapsibleTrigger>
-                </SidebarGroupLabel>
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center">
+                Verse
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/verse:rotate-90" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
                 <CollapsibleContent>
                   <SidebarGroupContent>
                     <SidebarMenu>
@@ -359,14 +241,46 @@ export function AppSidebar() {
                 </CollapsibleContent>
               </SidebarGroup>
         </Collapsible>
+
+        {/* ======== Verse Backoffice (Manga, XP, UGC, Discord) ======== */}
+        <Collapsible defaultOpen className="group/verse-backoffice">
+          <SidebarGroup>
+            <SidebarGroupLabel asChild>
+              <CollapsibleTrigger className="flex w-full items-center">
+                Verse Backoffice
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/verse-backoffice:rotate-90" />
+              </CollapsibleTrigger>
+            </SidebarGroupLabel>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {verseBackofficeItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(pathname, item.href)}
+                        tooltip={item.title}
+                      >
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
         <SidebarSeparator />
 
-        {/* ======== Shopify Store (collapsible) ======== */}
+        {/* ======== Store (collapsible) ======== */}
         <Collapsible defaultOpen className="group/store">
           <SidebarGroup>
             <SidebarGroupLabel asChild>
               <CollapsibleTrigger className="flex w-full items-center">
-                Shopify Store
+                Store
                 <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/store:rotate-90" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
@@ -453,19 +367,19 @@ export function AppSidebar() {
 
         <SidebarSeparator />
 
-        {/* ======== Supabase (collapsible) ======== */}
-        <Collapsible defaultOpen className="group/supa">
+        {/* ======== Platform (collapsible) ======== */}
+        <Collapsible defaultOpen className="group/platform">
           <SidebarGroup>
             <SidebarGroupLabel asChild>
               <CollapsibleTrigger className="flex w-full items-center">
-                Supabase
-                <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/supa:rotate-90" />
+                Platform
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/platform:rotate-90" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {platformItemsBase.map((item) => (
+                  {platformItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild

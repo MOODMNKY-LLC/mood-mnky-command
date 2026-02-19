@@ -1,0 +1,107 @@
+{% comment %}
+  MNKY VERSE - Issue Teaser block
+  Links to manga/issues in the app. Set app_base_url to mood-mnky-command (e.g. https://mnky-command.moodmnky.com).
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign path = block.settings.verse_issues_path | default: '/verse/issues'
+  assign full_url = app_url | append: path
+  assign is_valid = false
+  if app_url != '' and app_url != blank
+    assign is_valid = true
+  endif
+-%}
+<div
+  class="mood-mnky-app-block mood-mnky-verse-issue-teaser"
+  {{ block.shopify_attributes }}
+>
+  {%- if block.settings.heading != blank -%}
+    <h3 class="mood-mnky-block-heading">{{ block.settings.heading | escape }}</h3>
+  {%- endif -%}
+  {%- if block.settings.subheading != blank -%}
+    <p class="mood-mnky-block-subheading">{{ block.settings.subheading | escape }}</p>
+  {%- endif -%}
+  {%- if block.settings.cta_label != blank -%}
+    {%- if is_valid -%}
+      <a
+        href="{{ full_url }}"
+        class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+        {% if block.settings.cta_aria_label != blank %}aria-label="{{ block.settings.cta_aria_label | escape }}"{% endif %}
+      >
+        {{ block.settings.cta_label | escape }}
+      </a>
+    {%- else -%}
+      <span
+        class="button button--disabled"
+        role="button"
+        aria-disabled="true"
+        aria-label="Configure App base URL in block settings"
+      >
+        {{ block.settings.cta_label | escape }}
+      </span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "MNKY VERSE Issue Teaser",
+  "target": "section",
+  "stylesheet": "app-blocks.css",
+  "enabled_on": {
+    "templates": ["index", "collection", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command (e.g. https://mnky-command.moodmnky.com). Required for link to work.",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "text",
+      "id": "verse_issues_path",
+      "label": "Verse issues path",
+      "default": "/verse/issues"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Manga issues"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Read collection stories and earn XP in the MNKY VERSE."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "View issues"
+    },
+    {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "Button accessibility label"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

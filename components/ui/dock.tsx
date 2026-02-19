@@ -112,7 +112,7 @@ const DockIcon = ({
   ...props
 }: DockIconProps) => {
   const ref = useRef<HTMLDivElement>(null)
-  const padding = Math.max(6, size * 0.2)
+  const padding = disableMagnification ? 0 : Math.max(6, size * 0.2)
   const defaultMouseX = useMotionValue(Infinity)
 
   const distanceCalc = useTransform(mouseX ?? defaultMouseX, (val: number) => {
