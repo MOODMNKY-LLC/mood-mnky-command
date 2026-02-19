@@ -1,15 +1,19 @@
 /**
  * Shopify Customer Account API - OAuth callback.
  * GET /api/customer-account-api/callback
- * Exchanges code for token, stores token, sets session cookie, redirects to /verse.
+ * Exchanges code for token, stores token, sets session cookie, and when the user
+ * is logged into Verse, persists their Shopify customer ID to profiles for order/XP linkage.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
+  getCustomerAccountApiConfig,
   CUSTOMER_SESSION_COOKIE,
   getCustomerSessionCookieOptions,
 } from "@/lib/shopify/customer-account-auth";
+import { fetchCustomerWithToken } from "@/lib/shopify/customer-account-client";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -31,17 +35,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const storeDomain =
-      process.env.NEXT_PUBLIC_STORE_DOMAIN ||
-      process.env.PUBLIC_STORE_DOMAIN;
-    const clientId =
-      process.env.PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
-      process.env.NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID;
-    // Prefer request origin for dual-domain support (mnky-verse vs mnky-command)
-    const appUrl =
-      request.nextUrl.origin ||
-      process.env.NEXT_PUBLIC_VERSE_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL;
+    const { storeDomain, clientId, appUrl } =
+      getCustomerAccountApiConfig(request);
 
     if (!storeDomain || !clientId || !appUrl) {
       return NextResponse.redirect(
@@ -132,6 +127,24 @@ export async function GET(request: NextRequest) {
       .from("customer_account_code_verifiers")
       .delete()
       .eq("state", state);
+
+    // Persist Shopify customer ID to profile when user is logged into Verse
+    const customer = await fetchCustomerWithToken(
+      tokenData.access_token,
+      storeDomain
+    );
+    if (customer?.id) {
+      const serverSupabase = await createClient();
+      const {
+        data: { user },
+      } = await serverSupabase.auth.getUser();
+      if (user?.id) {
+        await supabase
+          .from("profiles")
+          .update({ shopify_customer_id: customer.id })
+          .eq("id", user.id);
+      }
+    }
 
     const redirect = NextResponse.redirect(new URL("/verse", appUrl));
     const opts = getCustomerSessionCookieOptions();

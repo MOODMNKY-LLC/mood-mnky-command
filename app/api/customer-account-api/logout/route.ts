@@ -21,11 +21,13 @@ function clearCookie(response: NextResponse) {
 
 export async function GET(request: NextRequest) {
   // Prefer request origin for dual-domain; fallback to verse URL for post-logout redirect
-  const appUrl =
+  const appUrl = (
     request.nextUrl.origin ||
     process.env.NEXT_PUBLIC_VERSE_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL;
-  const shopId = process.env.SHOP_ID;
+    process.env.NEXT_PUBLIC_APP_URL ||
+    ""
+  ).trim();
+  const shopId = process.env.SHOP_ID?.trim();
 
   const postLogoutRedirect = `${appUrl}/verse`;
 

@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  getCustomerAccountApiConfig,
   generateCodeVerifier,
   generateCodeChallenge,
   generateState,
@@ -14,17 +15,8 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    const storeDomain =
-      process.env.NEXT_PUBLIC_STORE_DOMAIN ||
-      process.env.PUBLIC_STORE_DOMAIN;
-    const clientId =
-      process.env.PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
-      process.env.NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID;
-    // Prefer request origin for dual-domain support (mnky-verse vs mnky-command)
-    const appUrl =
-      request.nextUrl.origin ||
-      process.env.NEXT_PUBLIC_VERSE_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL;
+    const { storeDomain, clientId, appUrl } =
+      getCustomerAccountApiConfig(request);
 
     if (!storeDomain || !clientId || !appUrl) {
       return NextResponse.json(
@@ -72,10 +64,11 @@ export async function GET(request: NextRequest) {
     const callbackUrl = `${appUrl}/api/customer-account-api/callback`;
     const isDevOrigin =
       /^https?:\/\/localhost(\d*)/.test(appUrl) || appUrl.includes("ngrok");
-    const envAppUrl =
+    const envAppUrl = (
       process.env.NEXT_PUBLIC_VERSE_APP_URL ||
       process.env.NEXT_PUBLIC_APP_URL ||
-      "";
+      ""
+    ).trim();
     const envLooksProduction =
       envAppUrl.includes("moodmnky.com") && !envAppUrl.includes("ngrok");
     if (isDevOrigin && envLooksProduction) {
@@ -85,6 +78,7 @@ export async function GET(request: NextRequest) {
       );
     }
     const authUrl = new URL(authorizationEndpoint);
+    // clientId from getCustomerAccountApiConfig is trimmed to avoid CRLF in env causing invalid client credentials
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("redirect_uri", callbackUrl);

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCustomerAccessToken } from "@/lib/shopify/customer-account-client";
 import { VerseProfileClient } from "./verse-profile-client";
 
 export default async function VerseProfilePage() {
@@ -25,6 +26,7 @@ export default async function VerseProfilePage() {
   }
 
   const defaultAgentSlug = (profile?.preferences?.default_agent_slug as string) ?? "mood_mnky";
+  const shopifyLinked = !!(await getCustomerAccessToken());
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-8 md:px-6">
@@ -32,6 +34,7 @@ export default async function VerseProfilePage() {
         email={user.email ?? ""}
         displayName={profile?.display_name ?? undefined}
         defaultAgentSlug={defaultAgentSlug}
+        shopifyLinked={shopifyLinked}
       />
     </div>
   );

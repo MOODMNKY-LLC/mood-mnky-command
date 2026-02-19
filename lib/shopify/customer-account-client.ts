@@ -107,22 +107,58 @@ const CUSTOMER_QUERY = `
   }
 `;
 
-/** Fetch current customer from Customer Account API. */
+type CustomerPayload = {
+  customer: {
+    id: string;
+    displayName: string;
+    firstName?: string;
+    lastName?: string;
+    emailAddress?: { emailAddress?: string };
+  };
+};
+
+/** Fetch customer from Customer Account API using a given access token (e.g. right after OAuth callback). */
+export async function fetchCustomerWithToken(
+  accessToken: string,
+  storeDomain: string
+): Promise<{ id: string; displayName?: string; email?: string } | null> {
+  const wellKnownUrl = `https://${storeDomain}/.well-known/customer-account-api`;
+  const res = await fetch(wellKnownUrl);
+  if (!res.ok) return null;
+  const config = (await res.json()) as {
+    customer_account_api?: { api_url?: string };
+  };
+  const apiUrl = config.customer_account_api?.api_url;
+  if (!apiUrl) return null;
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ query: CUSTOMER_QUERY }),
+  });
+  if (!response.ok) return null;
+  const json = (await response.json()) as { data?: CustomerPayload; errors?: unknown[] };
+  if (json.errors?.length) return null;
+  const c = json.data?.customer;
+  if (!c) return null;
+  return {
+    id: c.id,
+    displayName: c.displayName ?? undefined,
+    email: c.emailAddress?.emailAddress ?? undefined,
+  };
+}
+
+/** Fetch current customer from Customer Account API (uses session cookie). */
 export async function getCurrentCustomer(): Promise<{
   id: string;
   displayName?: string;
   email?: string;
 } | null> {
   try {
-    const data = await customerAccountFetch<{
-      customer: {
-        id: string;
-        displayName: string;
-        firstName?: string;
-        lastName?: string;
-        emailAddress?: { emailAddress?: string };
-      };
-    }>(CUSTOMER_QUERY);
+    const data = await customerAccountFetch<CustomerPayload>(CUSTOMER_QUERY);
     const c = data?.customer;
     if (!c) return null;
     return {

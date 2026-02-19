@@ -43,7 +43,7 @@ For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse bl
 
 The Customer Account API OAuth flow requires the **redirect_uri** sent to Shopify to exactly match a URL registered in your Shopify app (e.g. Hydrogen sales channel or custom app).
 
-**Required env vars:** `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (or `NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`), `NEXT_PUBLIC_STORE_DOMAIN` (or `PUBLIC_STORE_DOMAIN`). The server uses `request.nextUrl.origin` (or fallback `NEXT_PUBLIC_VERSE_APP_URL` / `NEXT_PUBLIC_APP_URL`) to build the callback URL. **Production must use real app URLs** (no ngrok in production env).
+**Required env vars:** `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (or `NEXT_PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`), `NEXT_PUBLIC_STORE_DOMAIN` (or `PUBLIC_STORE_DOMAIN`). The server uses `request.nextUrl.origin` (or fallback `NEXT_PUBLIC_VERSE_APP_URL` / `NEXT_PUBLIC_APP_URL`) to build the callback URL. **Production must use real app URLs** (no ngrok in production env). Ensure `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` has no leading/trailing spaces or newlines; otherwise Shopify will reject the OAuth request with "invalid client credentials".
 
 **Checklist – Allowed redirect URLs in Shopify Admin:**
 

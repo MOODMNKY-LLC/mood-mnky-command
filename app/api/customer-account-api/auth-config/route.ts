@@ -7,11 +7,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const origin =
+  const origin = (
     request.nextUrl.origin ||
     process.env.NEXT_PUBLIC_VERSE_APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "";
+    ""
+  ).trim();
   const callbackUrl = origin
     ? `${origin}/api/customer-account-api/callback`
     : "";

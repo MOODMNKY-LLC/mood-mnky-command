@@ -4,12 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 import { VerseButton } from "@/components/verse/ui/button";
 import { DottedMap } from "@/components/ui/dotted-map";
 import { useVerseTheme } from "./verse-theme-provider";
 import { useVerseUser } from "./verse-user-context";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Badge } from "@/components/ui/badge";
 import type { COBEOptions } from "cobe";
+
+const shopifyStatusFetcher = (url: string) =>
+  fetch(url).then((r) => r.json()) as Promise<{ linked: boolean }>;
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -81,6 +86,11 @@ export function VerseHeroDynamic() {
   );
   const name = user?.displayName || user?.email?.split("@")[0] || null;
   const isLoggedIn = Boolean(name);
+  const { data: shopifyStatus } = useSWR<{ linked: boolean }>(
+    isLoggedIn ? "/api/customer-account-api/status" : null,
+    shopifyStatusFetcher
+  );
+  const shopifyLinked = shopifyStatus?.linked ?? false;
   const mapSamples = isMobile ? 1500 : 4000;
 
   return (
@@ -127,9 +137,20 @@ export function VerseHeroDynamic() {
               <VerseButton asChild variant="outline" size="lg">
                 <Link href="/verse/collections">Browse Collections</Link>
               </VerseButton>
-              <VerseButton asChild variant="outline" size="lg">
-                <Link href="/api/customer-account-api/auth">Link Shopify account</Link>
-              </VerseButton>
+              {shopifyLinked ? (
+                <Badge
+                  variant="secondary"
+                  className="border-verse-text/20 bg-verse-bg/80 px-3 py-1.5 text-sm font-medium text-verse-text"
+                >
+                  Shopify connected
+                </Badge>
+              ) : (
+                <VerseButton asChild variant="outline" size="lg">
+                  <Link href="/api/customer-account-api/auth">
+                    Link Shopify account
+                  </Link>
+                </VerseButton>
+              )}
               <VerseButton asChild variant="outline" size="lg">
                 <Link href="/dojo">Visit your Dojo</Link>
               </VerseButton>

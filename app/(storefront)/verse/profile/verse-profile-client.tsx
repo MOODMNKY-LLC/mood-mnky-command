@@ -25,10 +25,12 @@ export function VerseProfileClient({
   email,
   displayName,
   defaultAgentSlug = "mood_mnky",
+  shopifyLinked = false,
 }: {
   email: string;
   displayName?: string;
   defaultAgentSlug?: string;
+  shopifyLinked?: boolean;
 }) {
   const router = useRouter();
 
@@ -92,6 +94,30 @@ export function VerseProfileClient({
           <Button variant="outline" size="sm" asChild className="mt-2">
             <Link href="/dojo/preferences">Change in Dojo</Link>
           </Button>
+        </CardContent>
+      </Card>
+      <Card className="border-verse-text/15 bg-verse-bg/60">
+        <CardHeader>
+          <h2 className="font-verse-heading text-lg font-medium text-verse-text">
+            Connected accounts
+          </h2>
+          <p className="text-sm text-verse-text-muted">
+            Services linked to your Verse account.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between rounded-lg border border-verse-text/15 bg-verse-bg/40 px-3 py-2">
+            <span className="text-sm font-medium text-verse-text">Shopify</span>
+            {shopifyLinked ? (
+              <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
+                Linked
+              </span>
+            ) : (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/api/customer-account-api/auth">Link account</Link>
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
       <Card className="border-verse-text/15 bg-verse-bg/60">
