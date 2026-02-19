@@ -114,7 +114,7 @@ export function VerseProfileClient({
               </span>
             ) : (
               <Button variant="outline" size="sm" asChild>
-                <Link href="/api/customer-account-api/auth">Link account</Link>
+                <a href="/api/customer-account-api/auth">Link account</a>
               </Button>
             )}
           </div>

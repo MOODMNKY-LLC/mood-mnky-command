@@ -146,9 +146,9 @@ export function VerseHeroDynamic() {
                 </Badge>
               ) : (
                 <VerseButton asChild variant="outline" size="lg">
-                  <Link href="/api/customer-account-api/auth">
+                  <a href="/api/customer-account-api/auth">
                     Link Shopify account
-                  </Link>
+                  </a>
                 </VerseButton>
               )}
               <VerseButton asChild variant="outline" size="lg">
