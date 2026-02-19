@@ -14,9 +14,11 @@ import { cn } from "@/lib/utils"
 
 export interface LoginFormProps {
   variant?: "default" | "light"
+  /** Redirect path after successful sign-in. Default "/" (LABZ). Use "/verse" for Verse tab. */
+  redirectTo?: string
 }
 
-export function LoginForm({ variant = "default" }: LoginFormProps) {
+export function LoginForm({ variant = "default", redirectTo = "/" }: LoginFormProps) {
   const isLight = variant === "light"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -36,7 +38,7 @@ export function LoginForm({ variant = "default" }: LoginFormProps) {
         password,
       })
       if (error) throw error
-      router.push("/")
+      router.push(redirectTo)
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred")

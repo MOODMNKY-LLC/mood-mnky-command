@@ -102,12 +102,39 @@ export function VerseHeroDynamic() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <VerseButton asChild size="lg">
-            <Link href="/verse/products">Shop Products</Link>
-          </VerseButton>
-          <VerseButton asChild variant="outline" size="lg">
-            <Link href="/verse/collections">Browse Collections</Link>
-          </VerseButton>
+          {!isLoggedIn ? (
+            <>
+              <VerseButton asChild size="lg">
+                <Link href="/auth/login?next=/verse&linkShopify=1">
+                  Link Shopify account
+                </Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/dojo">Visit your Dojo</Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/verse/products">Shop Products</Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/verse/collections">Browse Collections</Link>
+              </VerseButton>
+            </>
+          ) : (
+            <>
+              <VerseButton asChild size="lg">
+                <Link href="/verse/products">Shop Products</Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/verse/collections">Browse Collections</Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/api/customer-account-api/auth">Link Shopify account</Link>
+              </VerseButton>
+              <VerseButton asChild variant="outline" size="lg">
+                <Link href="/dojo">Visit your Dojo</Link>
+              </VerseButton>
+            </>
+          )}
         </div>
       </div>
 

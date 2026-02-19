@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { LoginForm } from "@/components/auth/login-form"
-import { LoginWithShopifyButton } from "@/components/auth/login-with-shopify-button"
+import { OAuthProviderButton } from "@/components/auth/oauth-provider-button"
 export type AuthTab = "verse" | "labz"
 
 export interface DualAuthTabsProps {
@@ -81,13 +81,14 @@ export function DualAuthTabs({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <LoginWithShopifyButton />
-            <Link
-              href="/verse/auth/discord"
+            <OAuthProviderButton
+              provider="discord"
+              redirectTo="/verse/auth/callback?next=/verse"
               className="inline-flex items-center justify-center rounded-md bg-[#5865F2] text-white text-sm font-medium hover:bg-[#4752C4] h-10 px-4 w-full transition-colors"
             >
               Login with Discord
-            </Link>
+            </OAuthProviderButton>
+            <LoginForm redirectTo="/verse" />
             <div className="text-center">
               <Link
                 href="/verse"
@@ -123,7 +124,19 @@ export function DualAuthTabs({
               Admin access to manage your product lab
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col gap-4">
+            <OAuthProviderButton
+              provider="github"
+              redirectTo="/auth/callback?next=/"
+              className={cn(
+                "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 w-full transition-colors",
+                isLight
+                  ? "bg-gray-900 text-white hover:bg-gray-800"
+                  : "bg-[#24292f] text-white hover:bg-[#2d333b]"
+              )}
+            >
+              Login with GitHub
+            </OAuthProviderButton>
             <LoginForm variant={isLight ? "light" : "default"} />
           </CardContent>
         </Card>

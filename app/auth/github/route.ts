@@ -5,19 +5,19 @@ import {
 } from "@/lib/supabase/server"
 
 /**
- * GET /verse/auth/discord
- * Initiates Discord OAuth for MNKY VERSE. Redirects to Supabase OAuth URL.
- * Only used from VERSE auth tab (Discord login button).
+ * GET /auth/github
+ * Initiates GitHub OAuth for MNKY LABZ. Redirects to Supabase OAuth URL.
+ * Callback: /auth/callback?next=/ (app-level callback).
  * Cookies set by Supabase (PKCE code_verifier) are attached to the redirect so
  * the callback route can exchange the code for a session in local dev.
  */
 export async function GET(request: NextRequest) {
   const { supabase, cookiesToSet } = await createClientForOAuthRedirect()
   const origin = request.nextUrl.origin
-  const callbackUrl = `${origin}/verse/auth/callback?next=/verse`
+  const callbackUrl = `${origin}/auth/callback?next=/`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "discord",
+    provider: "github",
     options: {
       redirectTo: callbackUrl,
     },
