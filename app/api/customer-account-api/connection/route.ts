@@ -1,61 +1,36 @@
 /**
- * Auth-scoped Shopify connection status.
+ * Shopify Customer Account API – Connection status.
  * GET /api/customer-account-api/connection
- * Returns { linked, needsReconnect, email? } for the current Supabase user.
- * Used by profile and hero to show masked email and reconnect state.
+ * Returns { linked, needsReconnect, email?, displayName? } for the current session.
+ * displayName is used by the header tooltip to show verified Shopify user data.
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getCustomerAccessToken } from "@/lib/shopify/customer-account-client";
 import { getCurrentCustomer } from "@/lib/shopify/customer-account-client";
 
-function maskEmail(email: string): string {
-  if (!email || !email.includes("@")) return "***@***";
-  const [local, domain] = email.split("@");
-  const first = local?.charAt(0) ?? "";
-  return `${first}***@${domain}`;
-}
-
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const adminSupabase = createAdminClient();
-  const { data: profile } = await adminSupabase
-    .from("profiles")
-    .select("shopify_customer_id")
-    .eq("id", user.id)
-    .single();
-
-  const hasProfileLink = !!profile?.shopify_customer_id;
-  const token = await getCustomerAccessToken();
-  const linked = !!token;
-
-  let needsReconnect = false;
-  let email: string | undefined;
-
-  if (linked) {
-    try {
-      const customer = await getCurrentCustomer();
-      if (customer?.email) email = maskEmail(customer.email);
-    } catch {
-      // token may be invalid
+  try {
+    const accessToken = await getCustomerAccessToken();
+    if (!accessToken) {
+      return NextResponse.json({
+        linked: false,
+        needsReconnect: false,
+      });
     }
-  } else if (hasProfileLink) {
-    needsReconnect = true;
+    const customer = await getCurrentCustomer();
+    return NextResponse.json({
+      linked: true,
+      needsReconnect: false,
+      email: customer?.email,
+      displayName: customer?.displayName,
+    });
+  } catch {
+    return NextResponse.json({
+      linked: true,
+      needsReconnect: true,
+      email: undefined,
+      displayName: undefined,
+    });
   }
-
-  return NextResponse.json({
-    linked,
-    needsReconnect,
-    email: email ?? undefined,
-  });
 }

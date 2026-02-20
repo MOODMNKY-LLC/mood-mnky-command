@@ -290,7 +290,7 @@ export function VerseMusicPlaylistBuilder({
           <CardHeader>
             <CardTitle className="text-sm">Playlist preview</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Order shown on Verse /music page
+              Order shown on MNKY VERSE /music page
             </p>
           </CardHeader>
           <CardContent>

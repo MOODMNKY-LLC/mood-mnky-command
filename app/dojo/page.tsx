@@ -148,7 +148,6 @@ export default async function DojoPage() {
   } | null;
   const savedBlendsCount = blendsCountResult.count ?? 0;
   const hasDiscordLink = !!discordResult.data;
-  const hasShopifyLink = !!profile?.shopify_customer_id;
 
   let funnelProfile: Record<string, unknown> | null = null;
   if (funnelResult.data) {
@@ -223,7 +222,7 @@ export default async function DojoPage() {
           rewardClaims={rewardClaims}
           savedBlendsCount={savedBlendsCount}
           funnelProfile={funnelProfile}
-          linkedAccounts={{ shopify: hasShopifyLink, discord: hasDiscordLink }}
+          linkedAccounts={{ discord: hasDiscordLink }}
         />
       </div>
     </div>

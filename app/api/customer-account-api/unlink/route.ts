@@ -1,27 +1,16 @@
 /**
- * Shopify Customer Account API - Unlink.
+ * Shopify Customer Account API – Unlink.
  * POST /api/customer-account-api/unlink
- * Requires Supabase auth. Clears session cookie and profile shopify_customer_id;
- * optionally deletes the token row for the current session.
+ * Requires Supabase auth. Deletes token row(s) for current user, clears profiles.shopify_customer_id, clears cookie.
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   CUSTOMER_SESSION_COOKIE,
   getCustomerSessionCookieOptions,
 } from "@/lib/shopify/customer-account-auth";
-import { cookies } from "next/headers";
-
-function clearCookie(response: NextResponse) {
-  const opts = getCustomerSessionCookieOptions();
-  response.cookies.set(CUSTOMER_SESSION_COOKIE, "", {
-    ...opts,
-    maxAge: 0,
-  });
-  return response;
-}
 
 export async function POST() {
   const supabase = await createClient();
@@ -33,22 +22,20 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const cookieStore = await cookies();
-  const tokenId = cookieStore.get(CUSTOMER_SESSION_COOKIE)?.value;
+  const admin = createAdminClient();
 
-  const adminSupabase = createAdminClient();
-  if (tokenId) {
-    await adminSupabase
-      .from("customer_account_tokens")
-      .delete()
-      .eq("id", tokenId);
-  }
+  await admin
+    .from("customer_account_tokens")
+    .delete()
+    .eq("profile_id", user.id);
 
-  await adminSupabase
+  await admin
     .from("profiles")
     .update({ shopify_customer_id: null })
     .eq("id", user.id);
 
-  const response = NextResponse.json({ success: true });
-  return clearCookie(response);
+  const res = NextResponse.json({ ok: true });
+  const opts = getCustomerSessionCookieOptions();
+  res.cookies.set(CUSTOMER_SESSION_COOKIE, "", { ...opts, maxAge: 0 });
+  return res;
 }

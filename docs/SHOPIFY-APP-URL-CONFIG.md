@@ -36,10 +36,10 @@ For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse bl
 - **Verse blog API** (`/api/verse/blog`): base URL for canonical links uses `NEXT_PUBLIC_APP_URL`.
 - **LABZ Storefront Assistant page** (`/platform/storefront-assistant`): “App base URL” shown and copied for the theme uses `NEXT_PUBLIC_APP_URL` or `window.location.origin` in browser.
 - **Customer Account API** (auth/callback/logout): callbacks and redirects use `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_VERSE_APP_URL`.
-- **Login with Shopify button:** uses a relative link `/api/customer-account-api/auth`; the server uses `request.nextUrl.origin` for the OAuth redirect_uri.
+- **Authenticate with Shopify (when implemented):** OAuth will use `/api/customer-account-api/auth`; the server uses `request.nextUrl.origin` for the OAuth redirect_uri.
 - **Funnels, Jotform webhooks, blend APIs, etc.:** webhook/base URLs use `NEXT_PUBLIC_APP_URL`.
 
-### Shopify Customer Account API (Login with Shopify)
+### Shopify Customer Account API (Authenticate with Shopify)
 
 The Customer Account API OAuth flow requires the **redirect_uri** sent to Shopify to exactly match a URL registered in your Shopify app (e.g. Hydrogen sales channel or custom app).
 

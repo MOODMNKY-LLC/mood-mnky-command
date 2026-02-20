@@ -80,6 +80,6 @@ So for a **Hydrogen (Remix) headless storefront**, this screen is the control ce
 
 - The **Oxygen deployments** screen you opened is for the **MNKY VERSE** storefront entity in Shopify. The connected repo is mood-mnky-command, but **Oxygen's auto-deploy and `hydrogen deploy` only work for a Hydrogen (Remix) project**. This codebase does not have a Hydrogen CLI build or `shopify hydrogen deploy` in scripts or CI, so nothing in this repo is currently being deployed to Oxygen.
 - You can **leave the Git connection as-is** for future use (e.g. if you ever add a Hydrogen (Remix) app in this or another repo that should deploy to MNKY VERSE). The **Default** token is there for CLI or custom CI if you need it later.
-- For **current** deployment of the Verse storefront (Next.js), you continue using **Vercel**; no change is required on the Oxygen deployments page for that.
+- For **current** deployment of the MNKY VERSE storefront (Next.js), you continue using **Vercel**; no change is required on the Oxygen deployments page for that.
 
 **Summary:** The screenshot explains how Oxygen deployments work and how to set them up for a Hydrogen headless storefront. For mood-mnky-command specifically, the app is Next.js on Vercel; Oxygen deploy would only become relevant if you introduce a Hydrogen (Remix) build and run `shopify hydrogen deploy` (from this repo or another) targeting the MNKY VERSE storefront.

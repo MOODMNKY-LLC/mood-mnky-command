@@ -92,7 +92,7 @@ export function AppSidebar() {
               MOOD MNKY
             </span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              LABZ
+              MNKY LABZ
             </span>
           </div>
         </Link>

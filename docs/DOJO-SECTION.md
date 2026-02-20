@@ -26,7 +26,7 @@ The Dojo home page surfaces XP, quests, manga, and UGC per [PRD-Gamification-MNK
 
 - **XP / Level card:** Fetches from `xp_state`, links to `/verse/profile`
 - **Quests card:** Fetches active quests + `quest_progress` completed count, links to `/verse/quests`
-- **Quick actions:** Preferences, Verse Shop, Chat, Issues, UGC
+- **Quick actions:** Preferences, MNKY VERSE Shop, Chat, Issues, UGC
 - **Lower section:** Manga/Issues and UGC entry points linking to `/verse/issues` and `/verse/ugc`
 
 APIs: `GET /api/xp/state`, `GET /api/quests`, `GET /api/quests/my-progress`

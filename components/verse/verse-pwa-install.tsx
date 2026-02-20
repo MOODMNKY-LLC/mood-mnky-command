@@ -94,18 +94,18 @@ export function VersePwaInstall() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="verse-pwa-install fixed left-1/2 top-1/2 z-[100] w-[min(90vw,320px)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-verse-text/20 bg-verse-bg/95 px-4 py-3 shadow-xl backdrop-blur-sm"
       style={{
-        padding: "max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px))",
+        marginTop: "env(safe-area-inset-top, 0px)",
+        marginLeft: "env(safe-area-inset-left, 0px)",
       }}
     >
-      <div className="verse-pwa-install w-full max-w-[var(--verse-page-width,400px)] rounded-lg border border-verse-text/20 bg-verse-bg/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-        {showInstall ? (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-medium text-verse-text">
-              Install MNKY VERSE for a better experience
-            </p>
-            <div className="flex items-center gap-2">
+      {showInstall ? (
+        <div className="flex flex-col items-stretch gap-3 text-center">
+          <p className="text-sm font-medium text-verse-text">
+            Install MNKY VERSE for a better experience
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={handleInstall}
@@ -124,7 +124,7 @@ export function VersePwaInstall() {
             </div>
           </div>
         ) : showIosHint ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col items-stretch gap-2 text-center">
             <p className="text-sm text-verse-text">
               Add to Home Screen: tap <strong>Share</strong> then{" "}
               <strong>Add to Home Screen</strong>.
@@ -132,13 +132,12 @@ export function VersePwaInstall() {
             <button
               type="button"
               onClick={dismiss}
-              className="shrink-0 text-sm text-verse-text-muted hover:text-verse-text"
+              className="text-sm text-verse-text-muted hover:text-verse-text"
             >
               Dismiss
             </button>
           </div>
         ) : null}
-      </div>
     </div>
   );
 }

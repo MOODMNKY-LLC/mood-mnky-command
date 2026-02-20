@@ -7,7 +7,8 @@ const profileSelect =
   "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id, role";
 
 function getStoreAccountUrl(): string | undefined {
-  const domain = process.env.NEXT_PUBLIC_STORE_DOMAIN || process.env.PUBLIC_STORE_DOMAIN;
+  const domain =
+    process.env.NEXT_PUBLIC_STORE_DOMAIN || process.env.PUBLIC_STORE_DOMAIN;
   if (!domain?.trim()) return undefined;
   return `https://${domain.trim()}/account`;
 }
@@ -78,7 +79,8 @@ export default async function VerseProfilePage({
   const savedBlendsCount = blendsCountRes.count ?? 0;
   const hasFunnelSubmission = !!funnelRes.data;
   const discordLinked = !!discordRes.data;
-  const shopifyLinked = !!(await getCustomerAccessToken()) || !!profile?.shopify_customer_id;
+  const shopifyLinked =
+    !!(await getCustomerAccessToken()) || !!profile?.shopify_customer_id;
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-8 md:px-6">

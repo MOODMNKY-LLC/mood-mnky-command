@@ -71,7 +71,6 @@ export async function GET() {
   }>;
   const savedBlendsCount = blendsCountRes.count ?? 0;
   const hasDiscordLink = !!discordRes.data;
-  const hasShopifyLink = !!(profile?.shopify_customer_id);
 
   let funnelProfile: Record<string, unknown> | null = null;
   if (funnelRes.data) {
@@ -124,7 +123,6 @@ export async function GET() {
     savedBlendsCount,
     funnelProfile: funnelProfile && Object.keys(funnelProfile).length > 0 ? funnelProfile : null,
     linkedAccounts: {
-      shopify: hasShopifyLink,
       discord: hasDiscordLink,
     },
   });

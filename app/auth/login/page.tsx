@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
@@ -15,17 +15,6 @@ const VERSE_BG_LIGHT = "/auth/mnky-verse-bg-light.png"
 const MASCOT_VERSE = "/verse/mood-mnky-3d.png"
 const MASCOT_LABZ = "/verse/code-mnky-3d.png"
 
-const SHOPIFY_LINK_ERRORS = [
-  "shopify_auth_failed",
-  "missing_params",
-  "config",
-  "invalid_state",
-  "shopify_session_mismatch",
-  "token_exchange_failed",
-  "storage_failed",
-  "callback_failed",
-]
-
 export default function LoginPage() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<AuthTab>("verse")
@@ -33,16 +22,7 @@ export default function LoginPage() {
   const { resolvedTheme } = useTheme()
 
   const next = searchParams.get("next")
-  const linkShopify = searchParams.get("linkShopify") === "1"
-  const error = searchParams.get("error")
-
-  const verseRedirectTo = useMemo(() => {
-    if (linkShopify) return "/api/customer-account-api/auth"
-    if (next?.startsWith("/")) return next
-    return "/verse"
-  }, [linkShopify, next])
-
-  const showShopifyLinkHint = Boolean(error && SHOPIFY_LINK_ERRORS.includes(error))
+  const verseRedirectTo = next?.startsWith("/") ? next : "/verse"
 
   useEffect(() => setMounted(true), [])
 
@@ -131,18 +111,6 @@ export default function LoginPage() {
             <AuthVerseLogoBlock />
           ) : (
             <AuthLabzLogoBlock />
-          )}
-          {activeTab === "verse" && linkShopify && !showShopifyLinkHint && (
-            <p className="w-full max-w-md text-center text-sm text-muted-foreground">
-              Sign in below to link your Shopify account. After signing in you&apos;ll be taken to Shopify to connect your store, then back here.
-            </p>
-          )}
-          {showShopifyLinkHint && (
-            <p className="w-full max-w-md rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-700 dark:text-amber-300">
-              {error === "shopify_session_mismatch"
-                ? "Your session changed or expired. Sign in again and try linking your Shopify account in the same browser."
-                : "Shopify link failed. If you're on localhost, use ngrok and add the HTTPS callback URL in Shopify. Check that your app URL and Client ID match Shopify Application setup."}
-            </p>
           )}
           <DualAuthTabs
             value={activeTab}

@@ -12,7 +12,7 @@ const LABZ_SECTIONS = [
   { label: "Blending Lab", href: "/blending" },
   { label: "Wicks & Wax", href: "/wicks" },
   { label: "Product Builder", href: "/products" },
-  { label: "LABZ Pages", href: "/store/labz-pages" },
+  { label: "MNKY LABZ Pages", href: "/store/labz-pages" },
   { label: "Notion Sync", href: "/notion" },
 ] as const
 
@@ -94,7 +94,7 @@ export const searchGlossaryTool = tool({
  * Get LABZ pages summary (count and optional titles from Shopify).
  */
 export const getLabzPagesSummaryTool = tool({
-  description: "Get the count and optional list of LABZ pages on the Shopify store. Use when the user asks how many LABZ pages exist or what pages are on the store.",
+  description: "Get the count and optional list of MNKY LABZ pages on the Shopify store. Use when the user asks how many MNKY LABZ pages exist or what pages are on the store.",
   inputSchema: z.object({}),
   execute: async () => {
     try {
@@ -135,7 +135,7 @@ export const notionSyncStatusTool = tool({
  * Return deep links to LABZ sections so the assistant can suggest "Open Formulas" etc.
  */
 export const openLabzSectionTool = tool({
-  description: "Get links to LABZ sections (Dashboard, Formulas, Fragrance Oils, Glossary, Blending Lab, LABZ Pages, Notion Sync). Use when the user wants to open a specific part of the app.",
+  description: "Get links to MNKY LABZ sections (Dashboard, Formulas, Fragrance Oils, Glossary, Blending Lab, MNKY LABZ Pages, Notion Sync). Use when the user wants to open a specific part of the app.",
   inputSchema: z.object({
     section: z.enum(["dashboard", "formulas", "fragrances", "glossary", "blending", "wicks", "products", "labz_pages", "notion"]).optional(),
   }),
@@ -149,7 +149,7 @@ export const openLabzSectionTool = tool({
         blending: { label: "Blending Lab", href: "/blending" },
         wicks: { label: "Wicks & Wax", href: "/wicks" },
         products: { label: "Product Builder", href: "/products" },
-        labz_pages: { label: "LABZ Pages", href: "/store/labz-pages" },
+        labz_pages: { label: "MNKY LABZ Pages", href: "/store/labz-pages" },
         notion: { label: "Notion Sync", href: "/notion" },
       }
       return { section: map[section] ?? null, allSections: LABZ_SECTIONS }

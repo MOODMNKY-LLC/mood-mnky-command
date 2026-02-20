@@ -30,8 +30,8 @@ const actions = [
     icon: Palette,
   },
   {
-    title: "LABZ Pages",
-    description: "Manage Shopify LABZ pages and sync",
+    title: "MNKY LABZ Pages",
+    description: "Manage Shopify MNKY LABZ pages and sync",
     href: "/store/labz-pages",
     icon: FileText,
   },

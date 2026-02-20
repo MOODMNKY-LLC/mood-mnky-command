@@ -1,6 +1,6 @@
 # Design System
 
-This document describes the color palette, tokens, and design architecture for MOOD MNKY LABZ and the Verse storefront.
+This document describes the color palette, tokens, and design architecture for MOOD MNKY LABZ and the MNKY VERSE storefront.
 
 ## Architecture Overview
 
@@ -72,7 +72,7 @@ The root design system uses **grayscale primary** tokens shared by LABZ and all 
 
 ## Verse (verse-storefront.css)
 
-The Verse storefront has its own scoped design language. Tokens are prefixed with `--verse-*` and apply inside `.verse-storefront`.
+The MNKY VERSE storefront has its own scoped design language. Tokens are prefixed with `--verse-*` and apply inside `.verse-storefront`.
 
 ### Scoped Primary Override
 
@@ -105,7 +105,7 @@ The LABZ dashboard uses the root layout, `next-themes`, and shared shadcn compon
 
 ### Dashboard
 
-The dashboard page uses the root design tokens and shadcn patterns: **Card**, **Badge**, **Button**, **Progress**, **Skeleton**, **Alert**, **Tooltip**, **Separator**. Section order and visibility (e.g. LABZ hub card, connect alert, LABZ pages count) are driven by `lib/dashboard-config.ts` (`dashboardConfig`). Status styling uses semantic tokens (e.g. `bg-success/10 text-success` for connected/success, muted or `--warning` for partial/connect prompts). See `docs/DASHBOARD-ENV.md` for environment and config.
+The dashboard page uses the root design tokens and shadcn patterns: **Card**, **Badge**, **Button**, **Progress**, **Skeleton**, **Alert**, **Tooltip**, **Separator**. Section order and visibility (e.g. MNKY LABZ hub card, connect alert, MNKY LABZ pages count) are driven by `lib/dashboard-config.ts` (`dashboardConfig`). Status styling uses semantic tokens (e.g. `bg-success/10 text-success` for connected/success, muted or `--warning` for partial/connect prompts). See `docs/DASHBOARD-ENV.md` for environment and config.
 
 ### Light-Mode Focus
 

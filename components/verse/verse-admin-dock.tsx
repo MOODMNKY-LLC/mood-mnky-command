@@ -22,6 +22,7 @@ import { useVersePersonaState } from "@/components/verse/verse-persona-state-con
 import { useVerseTheme } from "@/components/verse/verse-theme-provider";
 import { VerseChatPopup } from "@/components/verse/verse-chat-popup";
 import { VerseRealtimeVoiceCard } from "@/components/verse/verse-realtime-voice-card";
+import { cn } from "@/lib/utils";
 import { DEFAULT_AGENT_SLUG } from "@/lib/agents";
 import type { VerseUser } from "./verse-storefront-shell";
 
@@ -43,11 +44,12 @@ export function VerseAdminDock({
     >
       <div className="pointer-events-auto">
         <Dock
-          className={
+          className={cn(
+            "shadow-2xl backdrop-blur-2xl",
             theme === "dark"
-              ? "border-verse-text/20 bg-neutral-800/90 shadow-lg shadow-verse-text/10 backdrop-blur-md"
-              : "border-verse-text/20 bg-slate-200/90 shadow-lg shadow-verse-text/10 backdrop-blur-md"
-          }
+              ? "border-[var(--verse-border)] bg-[var(--verse-bg)]/90 shadow-black/20"
+              : "border-verse-text/20 bg-slate-200/90 shadow-black/5"
+          )}
           iconSize={36}
           iconMagnification={48}
         >

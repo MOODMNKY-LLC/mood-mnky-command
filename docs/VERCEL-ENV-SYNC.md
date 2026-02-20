@@ -40,7 +40,7 @@ pnpm vercel:env-check
 - [ ] `PRIVATE_STOREFRONT_API_TOKEN`
 - [ ] `NEXT_PUBLIC_STOREFRONT_ID`
 - [ ] `PUBLIC_STOREFRONT_ID`
-- [ ] `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (for Login with Shopify on /verse)
+- [ ] `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (for Customer Account API / Authenticate with Shopify when implemented)
 - [ ] `PUBLIC_CUSTOMER_ACCOUNT_API_URL` (optional)
 - [ ] `SHOP_ID` (required for full SSO logout; e.g. `69343281426`)
 

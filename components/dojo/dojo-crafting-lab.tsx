@@ -37,7 +37,7 @@ export function DojoCraftingLab() {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/verse/chat">
-              Chat with LABZ assistant
+              Chat with MNKY LABZ assistant
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">

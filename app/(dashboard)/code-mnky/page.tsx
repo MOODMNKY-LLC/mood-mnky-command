@@ -65,15 +65,15 @@ const ROADMAP_ITEMS: { id: string; title: string; body: string; status: string }
   },
   {
     id: "verse",
-    title: "Verse",
-    body: "Storefront. Planned or read-only: e.g. LABZ pages summary for storefront context.",
+    title: "MNKY VERSE",
+    body: "Storefront. Planned or read-only: e.g. MNKY LABZ pages summary for storefront context.",
     status: "Planned / read-only",
   },
   {
     id: "store",
     title: "Store",
-    body: "Catalog, Sales, Growth, Content, LABZ Pages, Finance. LABZ Pages is already integrated; other areas are planned.",
-    status: "LABZ Pages Integrated; others Planned",
+    body: "Catalog, Sales, Growth, Content, MNKY LABZ Pages, Finance. MNKY LABZ Pages is already integrated; other areas are planned.",
+    status: "MNKY LABZ Pages Integrated; others Planned",
   },
   {
     id: "platform",
@@ -174,7 +174,7 @@ export default function CodeMnkyPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">CODE MNKY</h1>
         <p className="text-sm text-muted-foreground max-w-2xl">
           Configure the model, system instructions, tools, and integrations for the CODE MNKY
-          assistant that appears in the LABZ dock. This is the programmable backend for the MNKY
+          assistant that appears in the MNKY LABZ dock. This is the programmable backend for the MNKY
           LABZ virtual assistant.
         </p>
       </div>
@@ -271,7 +271,7 @@ export default function CodeMnkyPage() {
         <TabsContent value="tools" className="mt-4">
           <p className="text-sm text-muted-foreground mb-3">
             These tools are called automatically when the user asks about formulas, oils, glossary,
-            sync status, LABZ pages, or navigation.
+            sync status, MNKY LABZ pages, or navigation.
           </p>
           <ScrollArea className="max-h-[50vh] w-full">
             <Agent className="border-border bg-card">
@@ -318,7 +318,7 @@ export default function CodeMnkyPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Shopify</CardTitle>
                 <CardDescription>
-                  LABZ pages and store content. get_labz_pages_summary and LABZ page management use
+                  MNKY LABZ pages and store content. get_labz_pages_summary and MNKY LABZ page management use
                   Shopify.
                 </CardDescription>
               </CardHeader>

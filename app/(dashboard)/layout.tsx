@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
+import { AppInfoDialog } from "@/components/app-info-dialog"
 import { DocsButton } from "@/components/docs/docs-button"
 import { DocsProvider } from "@/components/docs/docs-context"
 import { Toaster } from "@/components/ui/sonner"
@@ -67,7 +68,10 @@ export default function DashboardLayout({
                 MOOD MNKY LABZ
               </span>
             </div>
-            <DocsButton />
+            <div className="flex items-center gap-1">
+              <AppInfoDialog variant="labz" />
+              <DocsButton />
+            </div>
           </header>
           <div className="flex-1 overflow-auto">{children}</div>
         </SidebarInset>

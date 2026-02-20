@@ -93,7 +93,7 @@ export const storeItems: NavItemWithChildren[] = [
     ],
   },
   { title: "Content", href: "/store/content", icon: FileText },
-  { title: "LABZ Pages", href: "/store/labz-pages", icon: FileText },
+  { title: "MNKY LABZ Pages", href: "/store/labz-pages", icon: FileText },
   { title: "Finance", href: "/store/finance", icon: Wallet },
 ]
 

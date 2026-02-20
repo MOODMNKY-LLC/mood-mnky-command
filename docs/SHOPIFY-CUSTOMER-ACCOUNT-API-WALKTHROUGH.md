@@ -1,6 +1,8 @@
 # Shopify Customer Account API: Step-by-step flow and credentials
 
-This document is a **read-only walkthrough** of how the Shopify Customer Account API OAuth 2.0 + PKCE flow works in this app: each API call, each credential, and how Supabase stores PKCE state and tokens so the app can render data from the Customer Account API.
+**Status:** The previous "link your Shopify account for perks" UI and entry points have been removed. A new **Authenticate with Shopify** flow (OAuth 2.0 PKCE, token storage in Supabase, refresh, API on behalf of customers) will be implemented and will reuse the patterns below.
+
+This document is a **read-only walkthrough** of how the Shopify Customer Account API OAuth 2.0 + PKCE flow works (or will work): each API call, each credential, and how Supabase stores PKCE state and tokens so the app can render data from the Customer Account API.
 
 ---
 
@@ -31,7 +33,7 @@ sequenceDiagram
   User->>App: GET /api/customer-account-api/auth
   App->>Supabase: getUser (session)
   alt No session
-    App->>User: Redirect /auth/login?next=/verse&linkShopify=1
+    App->>User: Redirect /auth/login?next=/verse
   else Has session
     App->>App: Generate PKCE state, verifier, challenge
     App->>Supabase: Insert verifier (state, verifier, profile_id)
@@ -54,7 +56,7 @@ sequenceDiagram
 
 ---
 
-## Step 1: User hits "Link Shopify account" (start OAuth)
+## Step 1: User starts OAuth (e.g. "Authenticate with Shopify")
 
 **Request:** Browser navigates to `GET /api/customer-account-api/auth` (e.g. from a link or redirect).
 
@@ -62,11 +64,11 @@ sequenceDiagram
 
 1. **Supabase session check**  
    Uses `createClient()` from `lib/supabase/server` and calls `getUser()`.  
-   - If no user: redirect to `/auth/login?next=/verse&linkShopify=1` so the user signs in first; after login they can hit the auth route again.  
+   - If no user: redirect to `/auth/login?next=/verse` so the user signs in first; after login they can start the auth flow again.  
    - If user exists: continue.
 
 2. **Load config**  
-   `getCustomerAccountApiConfig(request)` in `lib/shopify/customer-account-auth.ts` reads env (trimmed):  
+   Config (e.g. in the new lib) reads env (trimmed):  
    - `storeDomain` from `NEXT_PUBLIC_STORE_DOMAIN` or `PUBLIC_STORE_DOMAIN`  
    - `clientId` from `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` (or next-public variant)  
    - `appUrl`: if request origin is localhost, use `NEXT_PUBLIC_APP_URL` or `NGROK_DOMAIN` or `NEXT_PUBLIC_VERSE_APP_URL`; otherwise use request origin.  

@@ -1,8 +1,7 @@
 /**
- * Shopify Customer Account API - OAuth callback.
+ * Shopify Customer Account API – OAuth callback.
  * GET /api/customer-account-api/callback
- * Exchanges code for token, stores token, sets session cookie, and when the user
- * is logged into Verse, persists their Shopify customer ID to profiles for order/XP linkage.
+ * Exchanges code for tokens, stores token (with profile_id), sets session cookie, updates profiles.shopify_customer_id.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -63,8 +62,11 @@ export async function GET(request: NextRequest) {
     const {
       data: { user },
     } = await serverSupabase.auth.getUser();
-    // If we have a session and it doesn't match who started the link, reject
-    if (user?.id != null && verifierRow.profile_id != null && user.id !== verifierRow.profile_id) {
+    if (
+      user?.id != null &&
+      verifierRow.profile_id != null &&
+      user.id !== verifierRow.profile_id
+    ) {
       console.error("Customer Account API: profile_id mismatch");
       return NextResponse.redirect(
         new URL("/auth/login?error=shopify_session_mismatch", appUrl)
@@ -130,6 +132,8 @@ export async function GET(request: NextRequest) {
       ? new Date(Date.now() + tokenData.expires_in * 1000)
       : null;
 
+    const profileId = user?.id ?? verifierRow.profile_id ?? null;
+
     const { data: tokenRow, error: insertError } = await supabase
       .from("customer_account_tokens")
       .insert({
@@ -138,12 +142,16 @@ export async function GET(request: NextRequest) {
         expires_at: expiresAt?.toISOString() ?? null,
         refresh_token: tokenData.refresh_token ?? null,
         id_token: tokenData.id_token ?? null,
+        profile_id: profileId,
       })
       .select("id")
       .single();
 
     if (insertError || !tokenRow) {
-      console.error("Customer Account API: failed to store token", insertError);
+      console.error(
+        "Customer Account API: failed to store token",
+        insertError
+      );
       return NextResponse.redirect(
         new URL("/auth/login?error=storage_failed", request.url)
       );
@@ -154,24 +162,17 @@ export async function GET(request: NextRequest) {
       .delete()
       .eq("state", state);
 
-    // Persist Shopify customer ID to profile. Use verifierRow.profile_id when session
-    // cookie is missing (e.g. cross-site redirect from Shopify) so the link is still stored.
     const customer = await fetchCustomerWithToken(
       tokenData.access_token,
       storeDomain
     );
-    const profileId = user?.id ?? verifierRow.profile_id ?? null;
     if (customer?.id && profileId) {
-      const { error: updateError } = await supabase
+      await supabase
         .from("profiles")
         .update({ shopify_customer_id: customer.id })
         .eq("id", profileId);
-      if (updateError) {
-        console.error("Customer Account API: failed to update profile", updateError);
-      }
     }
 
-    // Use the request's origin so we always redirect back to the same host the user hit (avoids wrong host when proxied or env appUrl differs)
     const requestOrigin = url.origin;
     const versePath = "/verse?shopify=linked";
     const redirectUrl = `${requestOrigin}${versePath}`;

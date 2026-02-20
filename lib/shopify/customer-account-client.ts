@@ -1,7 +1,7 @@
 /**
- * GraphQL client for Shopify Customer Account API.
+ * GraphQL client and token helpers for Shopify Customer Account API.
  * Used for authenticated requests (orders, profile, etc.) once the customer
- * has completed OAuth and we have their access token.
+ * has completed OAuth and we have their access token stored in Supabase.
  */
 
 import { cookies } from "next/headers";
@@ -24,7 +24,6 @@ function isExpiredOrExpiringSoon(expiresAt: string | null): boolean {
   return Date.now() >= expiry - EXPIRY_BUFFER_MS;
 }
 
-/** Resolve token endpoint from env or OpenID discovery. */
 async function getTokenEndpoint(): Promise<string | null> {
   const config = getCustomerAccountApiConfig();
   if (config.tokenUrl) return config.tokenUrl;
@@ -43,10 +42,6 @@ type TokenRow = {
   refresh_token: string | null;
 };
 
-/**
- * Refresh access token using refresh_token. Updates the token row on success.
- * Returns new access_token or null on invalid_grant / 4xx (caller should treat as needs re-link).
- */
 export async function refreshCustomerAccessToken(
   supabase: SupabaseClient,
   row: TokenRow,
@@ -66,8 +61,8 @@ export async function refreshCustomerAccessToken(
   });
 
   if (!res.ok) {
-    const body = await res.text();
     if (res.status >= 400 && res.status < 500) return null;
+    const body = await res.text();
     console.error("Customer Account API refresh failed:", res.status, body);
     return null;
   }
@@ -101,7 +96,10 @@ export async function refreshCustomerAccessToken(
     .eq("id", row.id);
 
   if (error) {
-    console.error("Customer Account API: failed to update token after refresh", error);
+    console.error(
+      "Customer Account API: failed to update token after refresh",
+      error
+    );
     return null;
   }
 
@@ -109,8 +107,8 @@ export async function refreshCustomerAccessToken(
 }
 
 /**
- * Get the stored access token for the current customer session.
- * Refreshes the token if expired or expiring soon (within 60s). Returns null if not authenticated or refresh fails (needs re-link).
+ * Get the stored access token for the current customer session (cookie).
+ * Refreshes the token if expired or expiring soon. Returns null if not authenticated or refresh fails.
  */
 export async function getCustomerAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
@@ -157,8 +155,44 @@ export async function getCustomerAccessToken(): Promise<string | null> {
 }
 
 /**
- * Fetch Customer Account API GraphQL endpoint URL from discovery.
+ * Get access token for a given profile (server-side "on behalf of").
+ * Use for server actions, webhooks, or background jobs that act on behalf of a linked customer.
  */
+export async function getAccessTokenForProfile(
+  profileId: string,
+  shop?: string
+): Promise<string | null> {
+  const supabase = createAdminClient();
+  const shopDomain = shop ?? storeDomain ?? undefined;
+  if (!shopDomain) return null;
+
+  const { data, error } = await supabase
+    .from("customer_account_tokens")
+    .select("id, access_token, expires_at, refresh_token")
+    .eq("profile_id", profileId)
+    .eq("shop", shopDomain)
+    .maybeSingle();
+
+  if (error || !data?.access_token) return null;
+
+  const row = data as TokenRow;
+
+  if (!isExpiredOrExpiringSoon(row.expires_at)) {
+    return row.access_token;
+  }
+
+  const tokenEndpoint = await getTokenEndpoint();
+  const config = getCustomerAccountApiConfig();
+  if (!tokenEndpoint || !config.clientId) return null;
+
+  return refreshCustomerAccessToken(
+    supabase,
+    row,
+    tokenEndpoint,
+    config.clientId
+  );
+}
+
 export async function getCustomerApiUrl(): Promise<string | null> {
   if (!storeDomain) return null;
   const wellKnownUrl = `https://${storeDomain}/.well-known/customer-account-api`;
@@ -170,9 +204,6 @@ export async function getCustomerApiUrl(): Promise<string | null> {
   return config.customer_account_api?.api_url ?? null;
 }
 
-/**
- * Run an authenticated GraphQL query against the Customer Account API.
- */
 export async function customerAccountFetch<T>(
   query: string,
   variables?: Record<string, unknown>
@@ -231,12 +262,11 @@ type CustomerPayload = {
   };
 };
 
-/** Fetch customer from Customer Account API using a given access token (e.g. right after OAuth callback). */
 export async function fetchCustomerWithToken(
   accessToken: string,
-  storeDomain: string
+  domain: string
 ): Promise<{ id: string; displayName?: string; email?: string } | null> {
-  const wellKnownUrl = `https://${storeDomain}/.well-known/customer-account-api`;
+  const wellKnownUrl = `https://${domain}/.well-known/customer-account-api`;
   const res = await fetch(wellKnownUrl);
   if (!res.ok) return null;
   const config = (await res.json()) as {
@@ -254,7 +284,10 @@ export async function fetchCustomerWithToken(
     body: JSON.stringify({ query: CUSTOMER_QUERY }),
   });
   if (!response.ok) return null;
-  const json = (await response.json()) as { data?: CustomerPayload; errors?: unknown[] };
+  const json = (await response.json()) as {
+    data?: CustomerPayload;
+    errors?: unknown[];
+  };
   if (json.errors?.length) return null;
   const c = json.data?.customer;
   if (!c) return null;
@@ -265,21 +298,15 @@ export async function fetchCustomerWithToken(
   };
 }
 
-/** Fetch current customer from Customer Account API (uses session cookie). */
 export async function getCurrentCustomer(): Promise<{
   id: string;
   displayName?: string;
   email?: string;
 } | null> {
   try {
-    const data = await customerAccountFetch<CustomerPayload>(CUSTOMER_QUERY);
-    const c = data?.customer;
-    if (!c) return null;
-    return {
-      id: c.id,
-      displayName: c.displayName ?? undefined,
-      email: c.emailAddress?.emailAddress ?? undefined,
-    };
+    const accessToken = await getCustomerAccessToken();
+    if (!accessToken || !storeDomain) return null;
+    return fetchCustomerWithToken(accessToken, storeDomain);
   } catch {
     return null;
   }

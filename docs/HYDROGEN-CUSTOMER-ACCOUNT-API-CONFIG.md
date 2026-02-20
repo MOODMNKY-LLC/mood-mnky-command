@@ -141,10 +141,9 @@ Our app uses OpenID discovery from the store domain (`https://${NEXT_PUBLIC_STOR
 
 We store `access_token`, `expires_at`, `refresh_token`, and `id_token` in `customer_account_tokens`. The refresh token is used to obtain a new access token when it expires or is about to expire; if refresh fails (e.g. `invalid_grant`), the user must re-link. The id_token is sent as `id_token_hint` to the end_session endpoint on logout for proper OIDC sign-out.
 
-### Linking requires Supabase session
+### Authenticate with Shopify (when implemented)
 
-Linking a Shopify account is only available to users who are already signed in (Supabase: email/password, Discord, or GitHub). The login page message “Sign in below to link your Shopify account” reflects this: sign in first, then complete the Shopify OAuth flow to link. This is analogous to Discord/GitHub: Supabase OAuth establishes the app session; Shopify OAuth links an existing session to your store.
-
+The new Authenticate with Shopify flow will require users to be signed in (Supabase: email/password, Discord, or GitHub) before starting OAuth. Supabase establishes the app session; Shopify OAuth will link that session to the store and store tokens in Supabase.
 ---
 
 ## Supabase vs Shopify – no custom app needed

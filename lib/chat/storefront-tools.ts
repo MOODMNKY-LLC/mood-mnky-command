@@ -147,7 +147,7 @@ export const searchVerseBlogTool = tool({
  */
 export const searchVerseProductsTool = tool({
   description:
-    "Search MOOD MNKY products (candles, soaps, room sprays, fragrances) by keyword, scent, or type. Use when members ask for product recommendations, gift ideas, or to find items by mood or notes. Returns product title, handle, price, image, and link to Verse Shop.",
+    "Search MOOD MNKY products (candles, soaps, room sprays, fragrances) by keyword, scent, or type. Use when members ask for product recommendations, gift ideas, or to find items by mood or notes. Returns product title, handle, price, image, and link to MNKY VERSE Shop.",
   inputSchema: z.object({
     query: z.string().describe("Search term (e.g. 'vanilla candle', 'lavender soap', 'relaxing scent')"),
     limit: z.number().min(1).max(10).default(5).optional(),

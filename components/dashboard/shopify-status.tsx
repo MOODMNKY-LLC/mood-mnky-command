@@ -80,7 +80,7 @@ export function ShopifyStatus() {
               href="/store/labz-pages"
               className="text-xs text-primary hover:underline"
             >
-              LABZ Pages →
+              MNKY LABZ Pages →
             </Link>
           </div>
         ) : (

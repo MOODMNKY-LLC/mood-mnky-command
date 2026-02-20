@@ -383,7 +383,7 @@ export default function StoreLabzPagesPage() {
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          LABZ Pages
+          MNKY LABZ Pages
         </h1>
         <p className="text-sm text-muted-foreground">
           Create and manage Shopify storefront pages. Templates are read from your store&apos;s main theme; upload from repo when needed.
@@ -535,7 +535,7 @@ export default function StoreLabzPagesPage() {
                       Creating…
                     </>
                   ) : (
-                    "Create all LABZ pages"
+                    "Create all MNKY LABZ pages"
                   )}
                 </Button>
               </div>

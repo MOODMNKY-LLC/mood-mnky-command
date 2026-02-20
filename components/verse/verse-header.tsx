@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
+import { VerseHeaderShopifyLink } from "./verse-header-shopify-link";
+import { AppInfoDialog } from "@/components/app-info-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { useVerseTheme } from "./verse-theme-provider";
 import { VerseButton } from "@/components/verse/ui/button";
@@ -22,19 +23,13 @@ export function VerseHeader({
   isAdmin?: boolean;
   user?: VerseUser;
 }) {
-  const router = useRouter();
   const { theme, toggleTheme } = useVerseTheme();
 
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    if (user?.id?.startsWith("gid://")) {
-      // Redirect to logout API: clears cookie and redirects to Shopify SSO logout, then /verse
-      window.location.href = "/api/customer-account-api/logout";
-      return;
-    }
-    router.push("/auth/login");
-    router.refresh();
+    // Clear Shopify session cookie and optionally redirect to Shopify logout
+    window.location.href = "/api/customer-account-api/logout";
   };
 
   return (
@@ -111,21 +106,8 @@ export function VerseHeader({
           <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
           <VerseHeaderCartLink />
         </nav>
-        {/* Right: Theme + Auth */}
+        {/* Right: User account, Link Shopify, Theme, Info */}
         <div className="flex items-center justify-end gap-2">
-          <VerseButton
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-11 w-11 min-h-[44px] min-w-[44px]"
-            title={theme === "light" ? "Switch to dark" : "Switch to light"}
-          >
-            {theme === "light" ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-          </VerseButton>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -159,6 +141,23 @@ export function VerseHeader({
               <Link href="/auth/login">Sign in</Link>
             </VerseButton>
           )}
+          {user && (
+            <VerseHeaderShopifyLink userId={user.id} />
+          )}
+          <VerseButton
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-11 w-11 min-h-[44px] min-w-[44px]"
+            title={theme === "light" ? "Switch to dark" : "Switch to light"}
+          >
+            {theme === "light" ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Sun className="h-4 w-4" />
+            )}
+          </VerseButton>
+          <AppInfoDialog variant="verse" />
         </div>
       </div>
     </header>

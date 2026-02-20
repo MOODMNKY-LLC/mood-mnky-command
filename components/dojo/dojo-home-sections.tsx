@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Gift,
-  Store,
   MessageCircle,
   Droplets,
   BookOpen,
@@ -26,7 +25,7 @@ interface DojoHomeSectionsProps {
   rewardClaims: RewardClaim[];
   savedBlendsCount: number;
   funnelProfile: Record<string, unknown> | null;
-  linkedAccounts: { shopify: boolean; discord: boolean };
+  linkedAccounts: { discord: boolean };
 }
 
 function CopyCodeButton({ code }: { code: string }) {
@@ -122,15 +121,6 @@ export function DojoHomeSections({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="flex items-center justify-between rounded-md border px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Store className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Shopify</span>
-            </div>
-            <Badge variant={linkedAccounts.shopify ? "default" : "secondary"}>
-              {linkedAccounts.shopify ? "Connected" : "Not linked"}
-            </Badge>
-          </div>
           <div className="flex items-center justify-between rounded-md border px-3 py-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4 text-muted-foreground" />

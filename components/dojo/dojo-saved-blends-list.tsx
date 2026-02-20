@@ -88,12 +88,12 @@ export function DojoSavedBlendsList({ embedded }: DojoSavedBlendsListProps = {})
             <p className="mt-1 text-sm text-muted-foreground">
               {embedded
                 ? "Use the Blending Lab below to create your first blend."
-                : "Create custom blends via the LABZ chat assistant or blending calculator."}
+                : "Create custom blends via the MNKY LABZ chat assistant or blending calculator."}
             </p>
           </div>
           {!embedded && (
             <Button asChild>
-              <Link href="/verse/chat">Open LABZ Chat</Link>
+              <Link href="/verse/chat">Open MNKY LABZ Chat</Link>
             </Button>
           )}
         </CardContent>

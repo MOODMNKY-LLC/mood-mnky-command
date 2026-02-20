@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCurrentCustomer } from "@/lib/shopify/customer-account-client";
 import { VerseProviders } from "./verse-providers";
 import { VerseStorefrontShell } from "./verse-storefront-shell";
 
@@ -44,7 +43,7 @@ export async function VerseAuthContext({
     }
   }
 
-  let userInfo: { id: string; email?: string; displayName?: string } | null =
+  const userInfo: { id: string; email?: string; displayName?: string } | null =
     user
       ? {
           id: user.id,
@@ -52,17 +51,6 @@ export async function VerseAuthContext({
           displayName: profile?.display_name ?? undefined,
         }
       : null;
-
-  if (!userInfo) {
-    const shopifyCustomer = await getCurrentCustomer();
-    if (shopifyCustomer) {
-      userInfo = {
-        id: shopifyCustomer.id,
-        email: shopifyCustomer.email,
-        displayName: shopifyCustomer.displayName,
-      };
-    }
-  }
 
   return (
     <VerseProviders>

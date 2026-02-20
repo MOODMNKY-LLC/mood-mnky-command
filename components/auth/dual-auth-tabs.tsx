@@ -26,7 +26,7 @@ export interface DualAuthTabsProps {
   onTabChange?: (tab: AuthTab) => void
   /** Light mode appearance for MNKY LABZ - white card, dark contrast */
   appearance?: "default" | "light"
-  /** Redirect path after Verse login (e.g. /verse or /api/customer-account-api/auth when linkShopify=1) */
+  /** Redirect path after Verse login (e.g. /verse) */
   verseRedirectTo?: string
 }
 

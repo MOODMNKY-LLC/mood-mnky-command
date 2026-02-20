@@ -1,76 +1,61 @@
 /**
- * Shopify Customer Account API - Logout.
- * GET: Clears cookie and redirects to Shopify end_session_endpoint (with id_token_hint when available), then to /verse.
- * POST: Clears cookie only (for API clients).
+ * Shopify Customer Account API – Logout.
+ * POST /api/customer-account-api/logout
+ * Clears session cookie. Optionally calls Shopify end_session_endpoint with id_token_hint.
+ * Does not delete the token row so the user can "reconnect" without full re-auth.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   CUSTOMER_SESSION_COOKIE,
+  getCustomerAccountApiConfig,
   getCustomerSessionCookieOptions,
-  getLogoutEndpoint,
 } from "@/lib/shopify/customer-account-auth";
 
-const storeDomain = (
-  process.env.NEXT_PUBLIC_STORE_DOMAIN || process.env.PUBLIC_STORE_DOMAIN
-)?.trim();
-
-function clearCookie(response: NextResponse) {
-  const opts = getCustomerSessionCookieOptions();
-  response.cookies.set(CUSTOMER_SESSION_COOKIE, "", {
-    ...opts,
-    maxAge: 0,
-  });
-  return response;
-}
-
-export async function GET(request: NextRequest) {
-  const appUrl = (
-    request.nextUrl?.origin ||
-    process.env.NEXT_PUBLIC_VERSE_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    ""
-  ).trim();
-  const postLogoutRedirect = `${appUrl}/verse`;
-
-  let logoutUrl: string | null = null;
-  let idToken: string | null = null;
-
-  const cookieStore = await cookies();
+async function handleLogout(request: NextRequest) {
+  const cookieStore = request.cookies;
   const tokenId = cookieStore.get(CUSTOMER_SESSION_COOKIE)?.value;
-  if (tokenId && storeDomain) {
+
+  if (tokenId) {
     const supabase = createAdminClient();
-    const { data } = await supabase
+    const { data: row } = await supabase
       .from("customer_account_tokens")
       .select("id_token")
       .eq("id", tokenId)
-      .eq("shop", storeDomain)
       .single();
-    if (data?.id_token) idToken = data.id_token;
+
+    const config = getCustomerAccountApiConfig(request);
+    const logoutUrl = config.logoutUrl;
+    if (row?.id_token && logoutUrl) {
+      try {
+        const endSessionUrl = new URL(logoutUrl);
+        endSessionUrl.searchParams.set("id_token_hint", row.id_token);
+        const appUrl = config.appUrl ?? request.nextUrl?.origin;
+        if (appUrl) endSessionUrl.searchParams.set("post_logout_redirect_uri", appUrl);
+        return NextResponse.redirect(endSessionUrl.toString());
+      } catch {
+        // Fall through to clear cookie and redirect
+      }
+    }
   }
 
-  logoutUrl = await getLogoutEndpoint();
-
-  if (logoutUrl) {
-    const params = new URLSearchParams();
-    params.set("post_logout_redirect_uri", postLogoutRedirect);
-    if (idToken) params.set("id_token_hint", idToken);
-    const redirect = NextResponse.redirect(
-      `${logoutUrl}?${params.toString()}`
-    );
-    return clearCookie(redirect);
-  }
-
-  const shopId = process.env.SHOP_ID?.trim();
-  const fallbackRedirect = shopId
-    ? `https://shopify.com/authentication/${shopId}/logout?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirect)}`
-    : postLogoutRedirect;
-  return clearCookie(NextResponse.redirect(fallbackRedirect));
+  const redirectUrl = request.nextUrl?.origin
+    ? `${request.nextUrl.origin}/auth/login`
+    : "/auth/login";
+  const res = NextResponse.redirect(redirectUrl);
+  const opts = getCustomerSessionCookieOptions();
+  res.cookies.set(CUSTOMER_SESSION_COOKIE, "", {
+    ...opts,
+    maxAge: 0,
+  });
+  return res;
 }
 
-export async function POST() {
-  const response = NextResponse.json({ success: true });
-  return clearCookie(response);
+export async function POST(request: NextRequest) {
+  return await handleLogout(request);
+}
+
+export async function GET(request: NextRequest) {
+  return await handleLogout(request);
 }

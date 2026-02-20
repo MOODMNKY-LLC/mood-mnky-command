@@ -7,35 +7,45 @@ import { Globe } from "@/components/ui/globe";
 import { useVerseTheme } from "./verse-theme-provider";
 import type { COBEOptions } from "cobe";
 
-const GLOBE_CONFIG_LIGHT: COBEOptions = {
-  width: 800,
-  height: 800,
-  onRender: () => {},
-  devicePixelRatio: 2,
-  phi: 0,
-  theta: 0.3,
-  dark: 0,
-  diffuse: 0.4,
-  mapSamples: 16000,
-  mapBrightness: 1.2,
-  baseColor: [0.96, 0.96, 0.97],
-  markerColor: [0.3, 0.35, 0.4],
-  glowColor: [0.6, 0.6, 0.65],
-  markers: [],
-};
-
-const GLOBE_CONFIG_DARK: COBEOptions = {
-  ...GLOBE_CONFIG_LIGHT,
-  baseColor: [0.06, 0.06, 0.08],
-  markerColor: [0.6, 0.63, 0.7],
-  glowColor: [0.4, 0.4, 0.45],
-};
+/** Light theme → original light globe. Dark theme → cobe dark=1 + light baseColor so map dots read as lit. */
+function getGlobeConfigForTheme(theme: "light" | "dark"): COBEOptions {
+  const base = {
+    width: 800,
+    height: 800,
+    onRender: () => {},
+    devicePixelRatio: 2,
+    phi: 0,
+    theta: 0.3,
+    dark: 0,
+    diffuse: 0.4,
+    mapSamples: 16000,
+    mapBrightness: 1.2,
+    markers: [] as COBEOptions["markers"],
+  };
+  if (theme === "dark") {
+    return {
+      ...base,
+      dark: 1,
+      mapBrightness: 5,
+      mapBaseBrightness: 0,
+      baseColor: [200 / 255, 196 / 255, 196 / 255],
+      markerColor: [200 / 255, 196 / 255, 196 / 255],
+      glowColor: [0.45, 0.43, 0.48],
+    };
+  }
+  return {
+    ...base,
+    baseColor: [0.96, 0.96, 0.97],
+    markerColor: [0.3, 0.35, 0.4],
+    glowColor: [0.6, 0.6, 0.65],
+  };
+}
 
 const INTRO_COPY = `MNKY VERSE is your gateway to the universe of scents. Discover curated fragrances and collections designed to elevate mood and intention.`;
 
 export function VerseHero() {
   const { theme } = useVerseTheme();
-  const globeConfig = theme === "dark" ? GLOBE_CONFIG_DARK : GLOBE_CONFIG_LIGHT;
+  const globeConfig = getGlobeConfigForTheme(theme);
 
   return (
     <section className="verse-hero-split mx-auto grid w-full max-w-[var(--verse-page-width)] grid-cols-1 gap-6 overflow-hidden rounded-b-2xl px-4 py-8 md:grid-cols-[1fr_1fr] md:gap-12 md:px-6 md:py-14 lg:min-h-[560px]">

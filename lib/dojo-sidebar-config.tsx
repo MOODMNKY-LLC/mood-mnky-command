@@ -64,7 +64,7 @@ export const dojoContexts: {
   },
   {
     id: "verse",
-    name: "Verse",
+    name: "MNKY VERSE",
     logo: Palette,
     plan: "MNKY VERSE",
     href: "/verse",
@@ -98,10 +98,10 @@ export const dojoItems: DojoNavItem[] = [
   { title: "Preferences", href: "/dojo/preferences", icon: Settings },
 ];
 
-/** Verse section: links to public-facing parts */
+/** MNKY VERSE section: links to public-facing parts */
 export const verseLinkItems: DojoNavItem[] = [
-  { title: "Verse Home", href: "/verse", icon: Globe },
-  { title: "Verse Shop", href: "/verse/shop", icon: ShoppingBag },
+  { title: "MNKY VERSE Home", href: "/verse", icon: Globe },
+  { title: "MNKY VERSE Shop", href: "/verse/shop", icon: ShoppingBag },
   { title: "Chat", href: "/verse/chat", icon: MessageSquare },
   { title: "Profile", href: "/verse/profile", icon: User },
 ];
@@ -133,8 +133,8 @@ export const dojoNavGroups: DojoNavGroup[] = [
   {
     label: "MNKY VERSE",
     items: [
-      { title: "Verse Home", url: "/verse", icon: Globe },
-      { title: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
+      { title: "MNKY VERSE Home", url: "/verse", icon: Globe },
+      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
       { title: "Chat", url: "/verse/chat", icon: MessageSquare },
       { title: "Profile", url: "/verse/profile", icon: User },
     ],
@@ -155,8 +155,8 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
   {
     label: "MNKY VERSE",
     items: [
-      { title: "Verse Home", url: "/verse", icon: Globe },
-      { title: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
+      { title: "MNKY VERSE Home", url: "/verse", icon: Globe },
+      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
       { title: "Glossary", url: "/verse/glossary", icon: BookMarked },
     ],
   },
@@ -176,13 +176,13 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
   },
 ];
 
-/** Verse-focused nav groups (when context is Verse) */
+/** MNKY VERSE-focused nav groups (when context is Verse) */
 export const dojoVerseNavGroups: DojoNavGroup[] = [
   {
     label: "MNKY VERSE",
     items: [
-      { title: "Verse Home", url: "/verse", icon: Globe, isActive: true },
-      { title: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
+      { title: "MNKY VERSE Home", url: "/verse", icon: Globe, isActive: true },
+      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
       { title: "Chat", url: "/verse/chat", icon: MessageSquare },
       { title: "Profile", url: "/verse/profile", icon: User },
       { title: "Issues", url: "/verse/issues", icon: BookMarked },
@@ -215,7 +215,7 @@ export function getDojoNavGroupsForContext(contextId: DojoContextId): DojoNavGro
 
 /** Quick access / projects for sidebar-07 NavProjects */
 export const dojoQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
-  { name: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
+  { name: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
   { name: "Chat", url: "/verse/chat", icon: MessageSquare },
   { name: "Profile", url: "/verse/profile", icon: User },
   { name: "Issues", url: "/verse/issues", icon: BookMarked },
@@ -227,7 +227,7 @@ export const dojoCraftingQuickAccessItems: { name: string; url: string; icon: Lu
   { name: "Blending Lab", url: "/dojo/crafting", icon: FlaskConical },
   { name: "Saved Blends", url: "/dojo/crafting/saved", icon: BookMarked },
   { name: "Glossary", url: "/verse/glossary", icon: BookMarked },
-  { name: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
+  { name: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
 ];
 
 /** Chat quick access (optional) */

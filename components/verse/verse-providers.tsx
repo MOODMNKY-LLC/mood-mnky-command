@@ -18,8 +18,8 @@ export function VerseProviders({ children }: { children: React.ReactNode }) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
         MNKY VERSE: Configure NEXT_PUBLIC_STORE_DOMAIN and
-        NEXT_PUBLIC_STOREFRONT_API_TOKEN in .env. Install the Headless channel
-        in Shopify Admin to get Storefront API tokens.
+        NEXT_PUBLIC_STOREFRONT_API_TOKEN in .env. Install the Hydrogen or
+        Headless channel in Shopify Admin to get Storefront API tokens.
       </div>
     );
   }

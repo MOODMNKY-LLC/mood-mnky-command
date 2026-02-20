@@ -62,17 +62,17 @@ export function LabzHubCard({ labzPagesCount, glossaryCount }: LabzHubCardProps)
       <CardHeader className="pb-2">
         <CardTitle className="text-lg text-foreground flex items-center gap-2">
           <Layout className="h-5 w-5 text-primary" />
-          LABZ command center
+          MNKY LABZ command center
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          Sync Notion and Shopify, then manage store LABZ pages.
+          Sync Notion and Shopify, then manage store MNKY LABZ pages.
         </p>
         {dashboardConfig.showLabzPagesCountInStats && (typeof labzPagesCount === "number" || typeof glossaryCount === "number") && (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             {typeof labzPagesCount === "number" && (
-              <span>LABZ pages on store: <span className="font-medium text-foreground">{labzPagesCount}</span></span>
+              <span>MNKY LABZ pages on store: <span className="font-medium text-foreground">{labzPagesCount}</span></span>
             )}
             {typeof glossaryCount === "number" && (
               <span>Glossary terms: <span className="font-medium text-foreground">{glossaryCount}</span></span>
@@ -103,7 +103,7 @@ export function LabzHubCard({ labzPagesCount, glossaryCount }: LabzHubCardProps)
           <Button variant="outline" size="sm" asChild>
             <Link href="/store/labz-pages" className="inline-flex items-center gap-2">
               <ExternalLink className="h-3.5 w-3" />
-              Open LABZ Pages
+              Open MNKY LABZ Pages
             </Link>
           </Button>
         </div>

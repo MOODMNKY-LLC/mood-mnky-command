@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink, Key } from "lucide-react";
+import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink, Key, Store } from "lucide-react";
 import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
 import { isAgentSlug } from "@/lib/agents";
 import { VerseAudioDropzone } from "@/components/verse/verse-audio-dropzone";
@@ -129,12 +129,6 @@ export function VerseProfileClient({
 
   const showShopifyLinkedSuccess = shopifyLinkedSuccess && !shopifySuccessDismissed;
 
-  const canUseFlowiseKey = role === "admin" || role === "moderator" || role === "user";
-  const { data: flowiseKeyStatus, mutate: mutateFlowiseKeyStatus } = useSWR<{
-    hasKey: boolean;
-    verifiedAt: string | null;
-  }>(canUseFlowiseKey ? "/api/flowise/api-key/status" : null, fetcher);
-
   useEffect(() => {
     if (!showShopifyLinkedSuccess) return;
     const t = setTimeout(() => {
@@ -151,6 +145,12 @@ export function VerseProfileClient({
     needsReconnect?: boolean;
     email?: string;
   }>(shopifyLinked ? "/api/customer-account-api/connection" : null, fetcher);
+
+  const canUseFlowiseKey = role === "admin" || role === "moderator" || role === "user";
+  const { data: flowiseKeyStatus, mutate: mutateFlowiseKeyStatus } = useSWR<{
+    hasKey: boolean;
+    verifiedAt: string | null;
+  }>(canUseFlowiseKey ? "/api/flowise/api-key/status" : null, fetcher);
 
   const avatarDisplayUrl = getAvatarDisplayUrl(supabase, avatarUrlValue || initialAvatarUrl);
 
@@ -243,7 +243,9 @@ export function VerseProfileClient({
   const handleShopifyUnlink = async () => {
     setShopifyUnlinking(true);
     try {
-      const res = await fetch("/api/customer-account-api/unlink", { method: "POST" });
+      const res = await fetch("/api/customer-account-api/unlink", {
+        method: "POST",
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setProfileError(data.error ?? "Failed to unlink");
@@ -575,31 +577,27 @@ export function VerseProfileClient({
             Linked accounts
           </h2>
           <p className="text-sm text-verse-text-muted">
-            Services linked to your Verse account.
+            Services linked to your MNKY VERSE account.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-col gap-2 rounded-lg border border-verse-text/15 bg-verse-bg/40 px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-verse-text">Shopify</span>
+              <span className="text-sm font-medium text-verse-text flex items-center gap-2">
+                <Store className="h-4 w-4 text-verse-text-muted" />
+                Shopify
+              </span>
               {shopifyLinked ? (
                 <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
                   Linked
                 </span>
-              ) : shopifyConnection?.needsReconnect ? (
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/api/customer-account-api/auth">Reconnect</a>
-                </Button>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <a href="/api/customer-account-api/auth">Link account</a>
+                  <a href="/api/customer-account-api/auth">
+                    Authenticate with Shopify
+                  </a>
                 </Button>
               )}
-            {shopifyLinked && shopifyConnection?.needsReconnect && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                Session expired. Reconnect to use Shopify features.
-              </p>
-            )}
             </div>
             {shopifyLinked && (
               <>

@@ -35,7 +35,7 @@ export function LabzPromptInputTextarea({
         "min-h-[80px] resize-none bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none",
         className
       )}
-      placeholder="Ask about formulas, oils, glossary, or LABZ Pages…"
+      placeholder="Ask about formulas, oils, glossary, or MNKY LABZ Pages…"
       {...props}
     />
   );

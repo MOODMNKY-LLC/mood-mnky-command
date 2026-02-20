@@ -62,7 +62,7 @@ export default function DashboardPage() {
         <Alert className="border-muted-foreground/30 bg-muted/30">
           <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
             <span>
-              Connect Notion and Shopify to unlock full LABZ sync and store stats.
+              Connect Notion and Shopify to unlock full MNKY LABZ sync and store stats.
             </span>
             <span className="flex items-center gap-2">
               <Link href="/docs" className="text-primary text-sm font-medium hover:underline">

@@ -142,7 +142,7 @@ function messagePartsToContent(parts: Array<{ type: string; text?: string; [k: s
 const LABZ_SUGGESTIONS = [
   "Ask about formulas",
   "Search fragrance oils",
-  "LABZ Pages summary",
+  "MNKY LABZ Pages summary",
 ] as const;
 
 export function LabzChatPopup({ trigger }: { trigger?: ReactNode }) {

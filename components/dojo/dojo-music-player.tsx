@@ -335,7 +335,7 @@ export function DojoMusicPlayer() {
                   <SheetTitle>Edit playlist</SheetTitle>
                   <SheetDescription>
                     Choose tracks for your Dojo sidebar. Unselected = use full
-                    Verse playlist.
+                    MNKY VERSE playlist.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="flex-1 overflow-y-auto py-4">
