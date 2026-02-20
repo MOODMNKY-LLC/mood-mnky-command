@@ -39,6 +39,7 @@ export default async function DojoPage() {
     questsResult,
     progressResult,
     issuesResult,
+    featuredResult,
     claimsResult,
     blendsCountResult,
     funnelResult,
@@ -69,7 +70,14 @@ export default async function DojoPage() {
           .select("quest_id, completed_at")
           .eq("profile_id", profileId)
       : Promise.resolve({ data: [] as { quest_id: string; completed_at: string | null }[] }),
-    supabase.from("mnky_issues").select("id, slug"),
+    supabase.from("mnky_issues").select("id, slug, title"),
+    supabase
+      .from("mnky_issues")
+      .select("slug, title")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
     profileId
       ? supabase
           .from("reward_claims")
@@ -110,10 +118,23 @@ export default async function DojoPage() {
   const questsData = questsResult.data ?? [];
   const progressData = progressResult.data ?? [];
   const issuesData = issuesResult.data ?? [];
+  const featuredSlugEnv = process.env.NEXT_PUBLIC_FEATURED_ISSUE_SLUG?.trim() || null;
+  const featuredFromDb = featuredResult.data as { slug: string; title: string } | null;
 
   const issueSlugById: Record<string, string> = {};
-  for (const i of issuesData) {
+  for (const i of issuesData as { id: string; slug: string }[]) {
     issueSlugById[i.id] = i.slug;
+  }
+
+  let featuredIssue: { slug: string; title: string } | null = null;
+  if (featuredSlugEnv) {
+    const bySlug = (issuesData as { slug: string; title: string }[])?.find(
+      (row) => row.slug === featuredSlugEnv
+    );
+    if (bySlug) featuredIssue = { slug: bySlug.slug, title: bySlug.title };
+    else featuredIssue = { slug: featuredSlugEnv, title: featuredSlugEnv };
+  } else if (featuredFromDb) {
+    featuredIssue = { slug: featuredFromDb.slug, title: featuredFromDb.title };
   }
 
   const progressByQuest: Record<string, boolean> = {};
@@ -223,6 +244,7 @@ export default async function DojoPage() {
           savedBlendsCount={savedBlendsCount}
           funnelProfile={funnelProfile}
           linkedAccounts={{ discord: hasDiscordLink }}
+          featuredIssue={featuredIssue}
         />
       </div>
     </div>

@@ -29,6 +29,8 @@ The Dojo home page surfaces XP, quests, manga, and UGC per [PRD-Gamification-MNK
 - **Quick actions:** Preferences, MNKY VERSE Shop, Chat, Issues, UGC
 - **Lower section:** Manga/Issues and UGC entry points linking to `/verse/issues` and `/verse/ugc`
 
+**Companion & Manga (Phase 4):** To highlight a “Current issue” or Riftbound collection, the Dojo home can show a featured issue (e.g. first published issue by slug or a config-driven slug) with a direct link to `/verse/issues/[slug]`. Reuse existing manga cards in `DojoLowerSection`; optional: add a “Current issue” or “Riftbound” quick link in [lib/dojo-sidebar-config.tsx](../lib/dojo-sidebar-config.tsx) or the quick-actions area when a featured issue exists. See [COMPANION-MANGA-ROADMAP.md](COMPANION-MANGA-ROADMAP.md).
+
 APIs: `GET /api/xp/state`, `GET /api/quests`, `GET /api/quests/my-progress`
 
 ## Auth Model

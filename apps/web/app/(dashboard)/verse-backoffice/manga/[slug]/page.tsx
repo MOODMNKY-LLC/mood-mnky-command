@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { MangaPublishShopifyButton } from "@/components/verse-backoffice/manga-publish-shopify-button"
 
 export const dynamic = "force-dynamic"
 
@@ -34,7 +35,7 @@ export default async function MangaIssueSlugPage({
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/verse-backoffice/manga" className="text-primary text-sm underline">
           ← Issues
         </Link>
@@ -42,6 +43,7 @@ export default async function MangaIssueSlugPage({
         <Badge variant={issue.status === "published" ? "default" : "secondary"}>
           {issue.status}
         </Badge>
+        <MangaPublishShopifyButton issueSlug={slug} />
       </div>
 
       <Card>
