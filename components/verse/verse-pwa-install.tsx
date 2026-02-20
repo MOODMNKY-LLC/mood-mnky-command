@@ -94,12 +94,12 @@ export function VersePwaInstall() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[100] px-4 pb-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{
-        paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))",
+        padding: "max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px))",
       }}
     >
-      <div className="verse-pwa-install mx-auto max-w-[var(--verse-page-width,1600px)] rounded-lg border border-verse-text/20 bg-verse-bg/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+      <div className="verse-pwa-install w-full max-w-[var(--verse-page-width,400px)] rounded-lg border border-verse-text/20 bg-verse-bg/95 px-4 py-3 shadow-lg backdrop-blur-sm">
         {showInstall ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-medium text-verse-text">
