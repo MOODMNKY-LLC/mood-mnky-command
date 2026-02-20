@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { BUCKETS, getPublicUrl, saveMediaAsset, type BucketId } from "@/lib/supabase/storage"
 
 type RegisterUploadBody = {
@@ -57,8 +58,11 @@ export async function POST(request: Request) {
     body.public_url ??
     getPublicUrl(supabase, bucket, body.storage_path)
 
+  // Use admin client for insert: session cookies may not reach serverless reliably.
+  // Auth and path ownership are validated above.
+  const adminSupabase = createAdminClient()
   try {
-    const asset = await saveMediaAsset(supabase, {
+    const asset = await saveMediaAsset(adminSupabase, {
       user_id: user.id,
       bucket_id: bucket,
       storage_path: body.storage_path,
@@ -75,11 +79,9 @@ export async function POST(request: Request) {
     })
     return NextResponse.json({ asset })
   } catch (err) {
-    console.error("Register upload error:", err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to register upload" },
-      { status: 500 }
-    )
+    const msg = err instanceof Error ? err.message : "Failed to register upload"
+    console.error("Register upload error:", msg, err)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 

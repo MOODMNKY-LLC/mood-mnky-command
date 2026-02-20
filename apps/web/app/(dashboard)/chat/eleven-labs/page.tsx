@@ -132,37 +132,44 @@ export default function ElevenLabsConfigPage() {
             </p>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="agentId">Agent ID</Label>
-            <Input
-              id="agentId"
-              placeholder="e.g. abc123..."
-              value={agentId}
-              onChange={(e) => setAgentId(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              From ElevenLabs dashboard → your agent → Agent ID.
-            </p>
-          </div>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSave()
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="agentId">Agent ID</Label>
+              <Input
+                id="agentId"
+                placeholder="e.g. abc123..."
+                value={agentId}
+                onChange={(e) => setAgentId(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                From ElevenLabs dashboard → your agent → Agent ID.
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="apiKeyOverride">API key override (optional)</Label>
-            <Input
-              id="apiKeyOverride"
-              type="password"
-              placeholder="Leave blank to use ELEVEN_LABS_API_KEY"
-              value={apiKeyOverride}
-              onChange={(e) => setApiKeyOverride(e.target.value)}
-              autoComplete="off"
-            />
-            <p className="text-xs text-muted-foreground">
-              Override the server env key. Stored in database; leave blank to use .env.
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="apiKeyOverride">API key override (optional)</Label>
+              <Input
+                id="apiKeyOverride"
+                type="password"
+                placeholder="Leave blank to use ELEVEN_LABS_API_KEY"
+                value={apiKeyOverride}
+                onChange={(e) => setApiKeyOverride(e.target.value)}
+                autoComplete="off"
+              />
+              <p className="text-xs text-muted-foreground">
+                Override the server env key. Stored in database; leave blank to use .env.
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Connection type</Label>
-            <Select value={connectionType} onValueChange={setConnectionType}>
+            <div className="space-y-2">
+              <Label>Connection type</Label>
+              <Select value={connectionType} onValueChange={setConnectionType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -187,24 +194,25 @@ export default function ElevenLabsConfigPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save
-            </Button>
-            <Button variant="outline" onClick={handleTest} disabled={testing}>
-              {testing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <TestTube className="mr-2 h-4 w-4" />
-              )}
-              Test connection
-            </Button>
-          </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save
+              </Button>
+              <Button type="button" variant="outline" onClick={handleTest} disabled={testing}>
+                {testing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <TestTube className="mr-2 h-4 w-4" />
+                )}
+                Test connection
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

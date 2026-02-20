@@ -268,10 +268,11 @@ export function AudioDropzone({
           coverArtUrl = getPublicUrl(supabase, BUCKET, cover.path)
         }
 
-        // Register metadata row via API (small JSON payload, keeps RLS enforcement)
+        // Register metadata row via API (small JSON payload)
         const registerRes = await fetch("/api/audio/register-upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             bucket_id: BUCKET,
             storage_path: path,
