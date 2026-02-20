@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { VerseHeader } from "./verse-header";
 import { VerseFooter } from "./verse-footer";
 import { VerseAnnouncementBar } from "./verse-announcement-bar";
@@ -19,10 +20,12 @@ export function VerseStorefrontShell({
   children,
   isAdmin = false,
   user = null,
+  shopifyLinked = false,
 }: {
   children: React.ReactNode;
   isAdmin?: boolean;
   user?: VerseUser;
+  shopifyLinked?: boolean;
 }) {
   const { theme } = useVerseTheme();
 
@@ -36,7 +39,9 @@ export function VerseStorefrontShell({
         <VerseErrorBoundary>
           <div className="relative z-10 flex min-h-screen flex-col overflow-x-hidden">
             <VerseAnnouncementBar />
-            <VerseHeader isAdmin={isAdmin} user={user} />
+            <Suspense fallback={<header className="h-16" />}>
+              <VerseHeader isAdmin={isAdmin} user={user} shopifyLinked={shopifyLinked} />
+            </Suspense>
             <VerseErrorBoundary sectionLabel="content">
               <main className="flex-1">
                 <VerseUserProvider user={user}>{children}</VerseUserProvider>

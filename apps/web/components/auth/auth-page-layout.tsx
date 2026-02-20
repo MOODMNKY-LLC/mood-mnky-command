@@ -1,7 +1,7 @@
 "use client"
 
 import { BlurFade } from "@/components/ui/blur-fade"
-import { DottedMap } from "@/components/ui/dotted-map"
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 
 export interface AuthPageLayoutProps {
   children: React.ReactNode
@@ -12,8 +12,8 @@ export interface AuthPageLayoutProps {
 }
 
 /**
- * Shared auth page shell: verse-bg + DottedMap background, optional mascot, BlurFade content.
- * Aligns all auth pages with the Verse landing aesthetic.
+ * Shared auth page shell: verse-bg + Animated Grid Pattern, optional mascot, BlurFade content.
+ * Aligns all auth pages with the Verse landing aesthetic (modern GQ/tech-forward vibe).
  * When mascot is provided: content centered, mascot in right half.
  */
 export function AuthPageLayout({
@@ -25,17 +25,17 @@ export function AuthPageLayout({
 
   return (
     <div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[var(--verse-bg)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      {/* Background: DottedMap - subtle tech-forward aesthetic */}
-      <div className="fixed inset-0 -z-10 flex items-center justify-center overflow-hidden opacity-[0.15] pointer-events-none">
-        <div className="relative h-full w-full min-h-[280px] min-w-[320px]">
-          <DottedMap
-            width={200}
-            height={100}
-            mapSamples={4000}
-            dotRadius={0.15}
-            className="h-full w-full text-[var(--verse-text)]"
-          />
-        </div>
+      {/* Background: Animated Grid Pattern - modern minimal SVG grid with fading squares */}
+      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden>
+        <AnimatedGridPattern
+          numSquares={50}
+          maxOpacity={0.25}
+          duration={4}
+          repeatDelay={0.5}
+          width={40}
+          height={40}
+          className="text-[var(--verse-text-muted)] fill-[var(--verse-text-muted)]/20 stroke-[var(--verse-text-muted)]/20"
+        />
       </div>
 
       {/* Mascot - right half (when present) */}

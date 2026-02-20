@@ -16,7 +16,7 @@ export async function GET() {
   }
 
   const profileSelect =
-    "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id";
+    "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id, shopify_metafields_synced_at";
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(profileSelect)
@@ -44,5 +44,6 @@ export async function GET() {
     created_at: profile?.created_at ?? null,
     preferences: profile?.preferences ?? {},
     shopify_customer_id: profile?.shopify_customer_id ?? null,
+    shopify_metafields_synced_at: profile?.shopify_metafields_synced_at ?? null,
   });
 }

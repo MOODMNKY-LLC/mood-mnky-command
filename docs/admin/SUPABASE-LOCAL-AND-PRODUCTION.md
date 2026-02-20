@@ -67,6 +67,20 @@ pnpm dev
 
 The app and API routes use `.env.local` → local Supabase. No confusion with a remote.
 
+### 5. Troubleshooting: "fetch failed" / self-signed certificate on login
+
+When `supabase/config.toml` has `[api.tls] enabled = true` (for Shopify Customer Account API), the local API uses HTTPS. The default auto-generated cert is self-signed and browsers reject it.
+
+**Recommended fix: use mkcert (locally-trusted certs, no browser prompt):**
+
+1. Install mkcert: `winget install mkcert` (Windows) or `brew install mkcert` (macOS)
+2. Run `mkcert -install` once to install the local CA
+3. Generate certs: `pnpm supabase:tls-setup`
+4. Restart Supabase: `supabase stop` then `supabase start`
+5. Retry login — the browser will trust the cert automatically
+
+**Alternative (manual trust):** Open `https://127.0.0.1:54321` in your browser, accept the security warning (Chrome: Advanced → Proceed), then retry login. Must be done once per browser.
+
 ---
 
 ## Pushing the database to production

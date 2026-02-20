@@ -6,6 +6,9 @@
   "scripts": {
     "build": "dotenv -e .env.local -e .env -- turbo run build",
     "dev": "dotenv -e .env.local -e .env -- turbo run dev",
+    "dev:https": "dotenv -e .env.local -e .env -- pnpm --filter web dev:https",
+    "dev:tunnel": "pnpm --filter web dev:tunnel",
+    "supabase:tls-setup": "node scripts/gen-supabase-certs.mjs",
     "lint": "turbo run lint",
     "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
     "docs:validate": "cd mnky-docs && pnpm exec mint validate"

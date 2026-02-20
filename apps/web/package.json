@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:https": "next dev --webpack --experimental-https",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
@@ -30,7 +31,8 @@
     "vercel:env-backup-pull-push:dry": "node scripts/vercel-env-backup-pull-push.mjs --dry-run",
     "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
     "voice:preview": "node scripts/preview-voices.mjs",
-    "test:flowise-uploads": "node --test --import tsx lib/flowise-uploads.test.ts"
+    "test:flowise-uploads": "node --test --import tsx lib/flowise-uploads.test.ts",
+    "shopify:setup-customer-metafields": "tsx scripts/setup-customer-metafield-definitions.ts"
   },
   "dependencies": {
     "@adobe/pdfservices-node-sdk": "^4.1.0",

@@ -77,6 +77,38 @@ This is **not** a Remix Hydrogen app. We use Shopify's "bring your own stack" pa
 
 Verse pages use `VerseProviders` (`components/verse/verse-providers.tsx`) wrapping `ShopifyProvider` and `CartProvider` for cart state and checkout.
 
+### App Proxy (Theme ↔ Verse)
+
+The Shopify Liquid theme can call the MNKY VERSE backend via the **App Proxy**. Requests to `https://{shop}.myshopify.com/apps/mnky/*` are proxied to the app.
+
+| Route | Purpose |
+|-------|---------|
+| `GET /apps/mnky/session` | Short-lived JWT for theme JS to call Verse APIs |
+| `GET /apps/mnky/api/issues` | List published manga issues |
+| `GET /apps/mnky/api/quests` | List active quests |
+
+Theme blocks (e.g. **MNKY VERSE Issue Teaser** in `extensions/mood-mnky-theme/blocks/mnky-verse-issue-teaser.liquid`) use App Proxy to fetch issues and quests. See [MNKY-VERSE-APP-PROXY-SETUP.md](../../docs/MNKY-VERSE-APP-PROXY-SETUP.md) and [Shopify Store](/applications/shopify-store).
+
+### Theme Integration and Cross-Linking
+
+The Shopify theme and MNKY VERSE share navigation and CTAs:
+
+- **Theme → Verse**: Header/main-menu links to Blending Lab, Dojo, Explore, Blog, Agents, Community; app blocks use **App base URL** (`NEXT_PUBLIC_APP_URL`) for CTAs
+- **Verse → Theme**: Verse footer and product pages link back to the Shopify store for checkout and collections
+- **Featured blog**: Theme featured-blog section has "View all in the MNKY VERSE" linking to `/verse/blog`
+
+Configure **App base URL** in Theme Editor for each app block and section. See [SHOPIFY-APP-URL-CONFIG.md](../../docs/SHOPIFY-APP-URL-CONFIG.md).
+
+### Customer Account API (Login with Shopify)
+
+MNKY VERSE supports **Authenticate with Shopify** (OAuth 2.0 PKCE) so customers can link their Shopify account for perks and order history.
+
+- **Flow**: User signs in (Supabase) → `GET /api/customer-account-api/auth` → Shopify OAuth → callback → tokens stored in Supabase
+- **Env**: `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`, `NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_APP_URL`, `SHOP_ID`
+- **Redirect URLs**: Add `https://mnky-command.moodmnky.com/api/customer-account-api/callback` in Shopify Admin → Allowed redirect URLs
+
+See [SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md](../../docs/SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md).
+
 ## Supabase Integration
 
 MNKY VERSE uses Supabase for:

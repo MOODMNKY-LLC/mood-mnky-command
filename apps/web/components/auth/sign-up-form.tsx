@@ -11,7 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 
-export function SignUpForm() {
+export interface SignUpFormProps {
+  /** Redirect path after successful sign-up (or to sign-up-success). */
+  redirectTo?: string
+  /** Redirect path for email confirmation link. Default uses redirectTo or "/". */
+  emailRedirectTo?: string
+}
+
+export function SignUpForm({ redirectTo = "/auth/sign-up-success", emailRedirectTo }: SignUpFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -38,19 +45,24 @@ export function SignUpForm() {
     }
 
     const supabase = createClient()
+    const confirmUrl = emailRedirectTo
+      ? emailRedirectTo.startsWith("http")
+        ? emailRedirectTo
+        : `${window.location.origin}${emailRedirectTo}`
+      : `${window.location.origin}/auth/confirm?next=${encodeURIComponent(redirectTo.startsWith("/") ? redirectTo : "/")}`
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=/`,
+          emailRedirectTo: confirmUrl,
           data: {
             display_name: displayName || email.split("@")[0],
           },
         },
       })
       if (error) throw error
-      router.push("/auth/sign-up-success")
+      router.push(redirectTo.startsWith("/") ? redirectTo : "/auth/sign-up-success")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {

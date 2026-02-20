@@ -203,21 +203,26 @@ const config: Config = {
   					transform: 'translateX(400%)'
   				}
   			},
-  			orbit: {
-  				'0%': {
-  					transform: 'rotate(0deg) translateY(calc(var(--radius) * 1px)) rotate(0deg)'
-  				},
-  				'100%': {
-  					transform: 'rotate(360deg) translateY(calc(var(--radius) * 1px)) rotate(-360deg)'
-  				}
-  			}
-  		},
-  		animation: {
+			orbit: {
+				'0%': {
+					transform: 'rotate(0deg) translateY(calc(var(--radius) * 1px)) rotate(0deg)'
+				},
+				'100%': {
+					transform: 'rotate(360deg) translateY(calc(var(--radius) * 1px)) rotate(-360deg)'
+				}
+			},
+			grid: {
+				'0%': { transform: 'translateY(-50%)' },
+				'100%': { transform: 'translateY(0)' }
+			}
+		},
+		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'progress-indeterminate': 'progress-indeterminate 1.5s ease-in-out infinite',
-  			orbit: 'orbit calc(var(--duration) * 1s) linear infinite'
-  		}
+			orbit: 'orbit calc(var(--duration) * 1s) linear infinite',
+			grid: 'grid 15s linear infinite'
+		}
   	}
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],

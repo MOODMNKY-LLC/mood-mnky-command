@@ -2,10 +2,18 @@
  * MOOD MNKY Documentation Theme
  * ----------------------------
  * This CSS file customizes the Mintlify documentation with:
- * 1. Monochromatic black/white color scheme
+ * 1. App-aligned light/dark palette (LABZ + Verse design system)
  * 2. Helvetica font family styling
  * 3. Agent-specific accent colors
  * 4. Enhanced UI components
+ *
+ * App palette (from docs/DESIGN-SYSTEM.md, globals.css, verse-storefront.css):
+ * | Role             | Light (app)     | Dark (app)  |
+ * |------------------|-----------------|-------------|
+ * | Primary / accent | #475569 (slate) | #94a3b8     |
+ * | Background       | #f1f5f9         | #181619     |
+ * | Text             | #0f172a         | #c8c4c4     |
+ * | Text muted       | #475569         | #94a3b8     |
  */
 
 /* Font declarations for Helvetica */
@@ -149,6 +157,61 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
+/* App-aligned palette (LABZ + Verse design system) */
+:root {
+  --app-primary: #475569;
+  --app-primary-dark: #94a3b8;
+  --app-bg-light: #f1f5f9;
+  --app-bg-dark: #181619;
+  --app-text: #0f172a;
+  --app-text-muted: #475569;
+  --app-text-dark: #C8C4C4;
+  --app-text-muted-dark: #94a3b8;
+}
+
+.dark {
+  --app-primary: #94a3b8;
+  --app-primary-dark: #475569;
+  --app-bg-light: #f1f5f9;
+  --app-bg-dark: #181619;
+  --app-text: #C8C4C4;
+  --app-text-dark: #C8C4C4;
+  --app-text-muted: #94a3b8;
+  --sidebar-border-color: var(--card-border-dark);
+}
+
+/* Dark mode: use #C8C4C4 (rgb(200,196,196)) instead of white for text and UI */
+.dark,
+.dark body,
+.dark .mdx-content,
+.dark [data-selector="content-area"] *,
+.dark .body-content,
+.dark #content-area {
+  color: var(--app-text);
+}
+
+.dark p,
+.dark span,
+.dark li,
+.dark td,
+.dark th,
+.dark label {
+  color: #C8C4C4 !important;
+}
+
+.dark a:not([class*="nav-anchor"]) {
+  color: var(--app-primary) !important;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #C8C4C4 !important;
+}
+
 /* Agent-specific color variables */
 :root {
   /* MOOD MNKY colors - gold/ember tones */
@@ -183,52 +246,169 @@ h1, h2, h3, h4, h5, h6 {
   --code-mnky-royal: #2F60C1;    /* Royal Circuit */
   --code-mnky-carbon: #4E6C78;   /* Carbon Azure */
   
-  /* Card backgrounds */
-  --card-bg-dark: #1E1E2E;
-  --card-bg-darker: #181825;
-  --card-highlight: #2D2D3A;
-  --card-border-dark: #333333;
+  /* Card backgrounds - app-aligned */
+  --card-bg-light: #ffffff;
+  --card-bg-dark: var(--app-bg-dark);
+  --card-bg-darker: #0f0e10;
+  --card-highlight: #242124;
+  --card-border-light: rgba(15, 23, 42, 0.08);
+  --card-border-dark: rgba(200, 196, 196, 0.12);
   
-  /* Other colors */
-  --sidebar-border-color: #2D2D3A;
+  /* Other colors - app-aligned */
+  --sidebar-border-color: var(--card-border-light);
   
-  /* MNKY Brand Colors */
-  --ifm-color-primary: #6E58F8;
-  --ifm-color-primary-dark: #5843E4;
-  --ifm-color-primary-light: #8A78FF;
+  /* MNKY Brand Colors - primary aligned to app grayscale */
+  --ifm-color-primary: var(--app-primary);
+  --ifm-color-primary-dark: #334155;
+  --ifm-color-primary-light: #64748b;
 }
 
-/* UI component styling */
-.card {
-  border-radius: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background-color: var(--card-bg-dark) !important;
-  border: 1px solid var(--sidebar-border-color) !important;
-  color: #fff !important;
+/* Mintlify layout: app-aligned backgrounds (use documented selectors) */
+body {
+  background-color: var(--app-bg-light) !important;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+.dark body {
+  background-color: var(--app-bg-dark) !important;
+}
+
+#navbar,
+[data-selector="navbar"] {
+  background-color: var(--app-bg-light) !important;
+}
+
+.dark #navbar,
+.dark [data-selector="navbar"] {
+  background-color: var(--app-bg-dark) !important;
+}
+
+#sidebar,
+[data-selector="sidebar"],
+.sidebar-content {
+  background-color: var(--app-bg-light) !important;
+}
+
+.dark #sidebar,
+.dark [data-selector="sidebar"],
+.dark .sidebar-content {
+  background-color: var(--app-bg-dark) !important;
+}
+
+#content-area,
+[data-selector="content-area"],
+.content-container,
+.body-content {
+  background-color: var(--app-bg-light) !important;
+}
+
+.dark #content-area,
+.dark [data-selector="content-area"],
+.dark .content-container,
+.dark .body-content {
+  background-color: var(--app-bg-dark) !important;
+}
+
+/* Dark mode: replace any white/near-white backgrounds with app dark bg (#181619) or surface (#242124) */
+.dark [style*="background-color: white"],
+.dark [style*="background-color:#fff"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background: white"],
+.dark [style*="background:#fff"],
+.dark [style*="background: #fff"],
+.dark [style*="background-color: rgb(255, 255, 255)"],
+.dark [style*="background-color:rgb(255,255,255)"],
+.dark .bg-white,
+.dark [class*="bg-white"] {
+  background-color: var(--app-bg-dark) !important;
+}
+
+.dark .card,
+.dark [class*="panel"],
+.dark [data-selector="panel"],
+.dark aside {
+  background-color: var(--app-bg-dark) !important;
+}
+
+.dark [class*="surface"],
+.dark [class*="elevated"] {
   background-color: var(--card-highlight) !important;
 }
 
-/* Dark-themed content cards for homepage */
+.dark .callout,
+.dark .frame,
+.dark [data-selector="frame"],
+.dark [data-selector="callout"],
+.dark section[class*="content"],
+.dark div[class*="content"] {
+  background-color: var(--app-bg-dark) !important;
+}
+
+.dark code,
+.dark pre {
+  background-color: var(--card-bg-darker) !important;
+}
+
+/* UI component styling - theme-aware */
+.card {
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--card-border-light) !important;
+  color: var(--app-text) !important;
+}
+
+body:not(.dark) .card {
+  background-color: var(--card-bg-light) !important;
+}
+
+body:not(.dark) .card:hover {
+  background-color: #f8fafc !important;
+}
+
+.dark .card {
+  background-color: var(--card-bg-dark) !important;
+  border-color: var(--card-border-dark) !important;
+  color: var(--app-text-dark) !important;
+}
+
+.dark .card:hover {
+  background-color: var(--card-highlight) !important;
+}
+
+/* Theme-aware content cards */
 .content-card,
 .homepage-card,
 .feature-card,
 .value-prop-card,
 [class*="value-prop"],
 [class*="feature-section"] {
+  border: 1px solid var(--card-border-light) !important;
+  color: var(--app-text) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+body:not(.dark) .content-card,
+body:not(.dark) .homepage-card,
+body:not(.dark) .feature-card,
+body:not(.dark) .value-prop-card,
+body:not(.dark) [class*="value-prop"],
+body:not(.dark) [class*="feature-section"] {
+  background-color: var(--card-bg-light) !important;
+}
+
+.dark .content-card,
+.dark .homepage-card,
+.dark .feature-card,
+.dark .value-prop-card,
+.dark [class*="value-prop"],
+.dark [class*="feature-section"] {
   background-color: var(--card-bg-dark) !important;
-  border: 1px solid var(--card-border-dark) !important;
-  color: #fff !important;
+  border-color: var(--card-border-dark) !important;
+  color: var(--app-text-dark) !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Agent cards */
+/* Agent cards - theme-aware */
 .agent-card {
-  background-color: var(--card-bg-darker) !important;
   border-radius: 12px !important;
   border: 1px solid var(--sidebar-border-color) !important;
   padding: 1.5rem !important;
@@ -236,8 +416,22 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.5rem !important;
 }
 
+body:not(.dark) .agent-card {
+  background-color: var(--card-bg-light) !important;
+  color: var(--app-text) !important;
+}
+
+.dark .agent-card {
+  background-color: var(--card-bg-darker) !important;
+  color: var(--app-text-dark) !important;
+}
+
 .agent-card:hover {
   transform: translateY(-5px) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dark .agent-card:hover {
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
@@ -386,51 +580,41 @@ img.sage-mnky-avatar {
   box-shadow: 0 2px 8px rgba(42, 157, 107, 0.3) !important; /* Emerald Veil with transparency */
 }
 
-/* Force dark backgrounds on any content cards or feature cards */
-.light-card,
-.white-card,
-.feature-box,
-div[class*="Card"],
-div[class*="card"],
-section[class*="feature"],
-.callout,
-.highlight-box {
+/* Theme-aware base for cards and callouts */
+body:not(.dark) .light-card,
+body:not(.dark) .white-card,
+body:not(.dark) .feature-box,
+body:not(.dark) .callout,
+body:not(.dark) .highlight-box {
+  background-color: var(--card-bg-light) !important;
+  color: var(--app-text) !important;
+  border-color: var(--card-border-light) !important;
+}
+
+.dark .light-card,
+.dark .white-card,
+.dark .feature-box,
+.dark div[class*="Card"],
+.dark div[class*="card"],
+.dark section[class*="feature"],
+.dark .callout,
+.dark .highlight-box {
   background-color: var(--card-bg-dark) !important;
-  color: #fff !important;
+  color: var(--app-text-dark) !important;
   border-color: var(--card-border-dark) !important;
 }
 
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .card {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  }
-  
-  /* Force light text on dark backgrounds */
-  .card p,
-  .card span,
-  .card li,
-  .card h1,
-  .card h2,
-  .card h3,
-  .card h4,
-  .card h5,
-  .card h6 {
-    color: #fff !important;
-  }
-}
-
-/* Override any Mintlify default light backgrounds */
-.dark .card,
-.dark [class*="Card"],
-.dark [class*="card"],
-.dark .content-wrapper .card {
-  background-color: var(--card-bg-dark) !important;
-  color: #fff !important;
+/* Dark mode adjustments - .dark class (Mintlify toggle) */
+.dark .card p,
+.dark .card span,
+.dark .card li,
+.dark .card h1,
+.dark .card h2,
+.dark .card h3,
+.dark .card h4,
+.dark .card h5,
+.dark .card h6 {
+  color: var(--app-text-dark) !important;
 }
 
 /* Logo Sizing in Navigation and Sidebar */
@@ -450,43 +634,26 @@ section[class*="feature"],
   }
 }
 
-/* Dark Card Styles */
-.card {
-  background-color: var(--card-bg-dark);
-  border: 1px solid var(--sidebar-border-color);
-  color: white;
-  transition: all 0.2s ease;
+/* Value Proposition Cards - theme-aware */
+body:not(.dark) .value-prop-card {
+  background-color: var(--card-bg-light);
+  border-color: var(--card-border-light);
+  color: var(--app-text);
 }
 
-.card:hover {
-  background-color: var(--card-highlight);
-  border-color: var(--ifm-color-primary);
+body:not(.dark) .value-prop-card:hover {
+  background-color: #f8fafc;
 }
 
-/* Value Proposition Cards */
-.value-prop-card {
+.dark .value-prop-card {
   background-color: var(--card-bg-darker);
   border: 1px solid var(--sidebar-border-color);
-  color: white;
-  transition: all 0.2s ease;
+  color: var(--app-text-dark);
 }
 
-.value-prop-card:hover {
+.dark .value-prop-card:hover {
   background-color: var(--card-bg-dark);
   transform: translateY(-2px);
-}
-
-/* Agent Cards */
-.agent-card {
-  background-color: var(--card-bg-darker);
-  border: 1px solid var(--sidebar-border-color);
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.agent-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .mood-mnky-agent:hover {

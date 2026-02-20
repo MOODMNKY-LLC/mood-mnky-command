@@ -22,9 +22,11 @@
 
 - [x] Migrate Dojo platform documentation (2026-02-20: dojo-overview, dojo-features aligned with codebase)
 - [x] MNKY LABZ documentation (2026-02-20: created labz-overview.mdx)
+- [x] Shopify Store documentation (2026-02-20: shopify-store.mdx — theme, extensions, App Proxy, Customer Account)
 - [ ] Migrate e-commerce integration documentation
 - [ ] Migrate personalization system documentation
 - [ ] Migrate token economy documentation
+- [x] Community/Discord documentation (2026-02-20: community-features.mdx rewritten with Discord API, events, webhooks, platform dashboard)
 
 ### Brand Documentation
 

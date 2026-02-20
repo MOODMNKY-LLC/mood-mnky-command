@@ -16,9 +16,11 @@ export interface LoginFormProps {
   variant?: "default" | "light"
   /** Redirect path after successful sign-in. Default "/" (LABZ). Use "/verse" for Verse tab. */
   redirectTo?: string
+  /** Called after successful sign-in, before redirect. Use to close dialogs. */
+  onSuccess?: () => void
 }
 
-export function LoginForm({ variant = "default", redirectTo = "/" }: LoginFormProps) {
+export function LoginForm({ variant = "default", redirectTo = "/", onSuccess }: LoginFormProps) {
   const isLight = variant === "light"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -38,10 +40,24 @@ export function LoginForm({ variant = "default", redirectTo = "/" }: LoginFormPr
         password,
       })
       if (error) throw error
+      onSuccess?.()
       router.push(redirectTo)
       router.refresh()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      const message = err instanceof Error ? err.message : "An error occurred"
+      const cause = err instanceof Error && "cause" in err ? (err.cause as Error) : null
+      const isFetchError =
+        (typeof message === "string" && (message.includes("fetch") || message.includes("Fetch"))) ||
+        (cause?.message?.includes("self-signed") ?? false) ||
+        (cause as { code?: string })?.code === "DEPTH_ZERO_SELF_SIGNED_CERT"
+
+      if (isFetchError) {
+        setError(
+          "Self-signed certificate. Run: pnpm supabase:tls-setup, then supabase stop && supabase start. Or visit https://127.0.0.1:54321 and accept the certificate."
+        )
+      } else {
+        setError(message)
+      }
     } finally {
       setIsLoading(false)
     }

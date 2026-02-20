@@ -121,6 +121,18 @@ pnpm dev
 
 **Important:** Visit `https://<YOUR-DOMAIN>/auth/login` (the ngrok URL), not localhost. Shopify OAuth requires HTTPS and does not support localhost. With `NEXT_PUBLIC_APP_URL` set to your ngrok URL, the Login with Shopify button will use the correct callback even if you open localhost first.
 
+**Use `pnpm dev` (HTTP), not `pnpm dev:https`.** ngrok forwards to `http://localhost:3000`. If you run `pnpm dev:https`, Next.js listens on HTTPS; ngrok will connect over HTTP and you’ll see `ERR_NGROK_3004: invalid or incomplete HTTP response`. ngrok provides the HTTPS layer—your local app runs plain HTTP.
+
+---
+
+## Troubleshooting
+
+### ERR_NGROK_3004: Invalid or incomplete HTTP response
+
+- **Cause:** ngrok forwards plain HTTP to `localhost:3000`, but your app is serving HTTPS (e.g. `pnpm dev:https`).
+- **Fix:** Run `pnpm dev` (plain HTTP), then `pnpm dev:tunnel`. ngrok terminates HTTPS; your app listens on HTTP.
+- **Order:** Start the dev server first, then ngrok. Confirm `http://localhost:3000` works before opening the ngrok URL.
+
 ---
 
 ## Shopify endpoints (from your Hydrogen dashboard)

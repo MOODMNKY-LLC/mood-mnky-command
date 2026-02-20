@@ -63,6 +63,17 @@
   border-color: rgba(var(--verse-text-rgb), 0.15);
 }
 
+/* Shop auth dialog (renders in portal) – theme applied via data-verse-theme */
+.verse-dropdown[data-verse-theme="dark"] {
+  --verse-bg: #181619;
+  --verse-bg-rgb: 24, 22, 25;
+  --verse-text: #c8c4c4;
+  --verse-text-muted: #94a3b8;
+  --verse-border: rgba(200, 196, 196, 0.12);
+  --verse-button: #94a3b8;
+  --verse-button-text: #0f172a;
+}
+
 /* Brand band - full-width opposite-color strip at fold, logo centered (see VerseBrandBand) */
 .verse-brand-band {
   width: 100%;

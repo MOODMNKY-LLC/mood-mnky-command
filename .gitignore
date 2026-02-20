@@ -32,3 +32,7 @@ Shopify/theme-dev/
 # Mintlify docs: exclude archive and env reports that may contain credential examples
 mnky-docs/archive/
 mnky-docs/env-management/
+
+# Local TLS certs (mkcert-generated for Supabase)
+certs/
+apps/web/certificates/

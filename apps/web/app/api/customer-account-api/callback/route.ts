@@ -20,17 +20,18 @@ export async function GET(request: NextRequest) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
+  const verseErrorRedirect = (errorCode: string) => {
+    const origin = new URL(request.url).origin;
+    return NextResponse.redirect(`${origin}/verse?error=${encodeURIComponent(errorCode)}`);
+  };
+
   if (errorParam) {
     console.error("Customer Account API callback error:", errorParam);
-    return NextResponse.redirect(
-      new URL("/auth/login?error=shopify_auth_failed", request.url)
-    );
+    return verseErrorRedirect("shopify_auth_failed");
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/auth/login?error=missing_params", request.url)
-    );
+    return verseErrorRedirect("missing_params");
   }
 
   try {
@@ -38,9 +39,7 @@ export async function GET(request: NextRequest) {
       getCustomerAccountApiConfig(request);
 
     if (!storeDomain || !clientId || !appUrl) {
-      return NextResponse.redirect(
-        new URL("/auth/login?error=config", request.url)
-      );
+      return verseErrorRedirect("config");
     }
 
     const supabase = createAdminClient();
@@ -53,9 +52,7 @@ export async function GET(request: NextRequest) {
 
     if (verifierError || !verifierRow) {
       console.error("Customer Account API: verifier not found", verifierError);
-      return NextResponse.redirect(
-        new URL("/auth/login?error=invalid_state", request.url)
-      );
+      return verseErrorRedirect("invalid_state");
     }
 
     const serverSupabase = await createClient();
@@ -88,9 +85,7 @@ export async function GET(request: NextRequest) {
         : null);
 
     if (!tokenEndpoint) {
-      return NextResponse.redirect(
-        new URL("/auth/login?error=discovery_failed", request.url)
-      );
+      return verseErrorRedirect("discovery_failed");
     }
 
     const callbackUrl = `${appUrl}/api/customer-account-api/callback`;
@@ -152,9 +147,7 @@ export async function GET(request: NextRequest) {
         "Customer Account API: failed to store token",
         insertError
       );
-      return NextResponse.redirect(
-        new URL("/auth/login?error=storage_failed", request.url)
-      );
+      return verseErrorRedirect("storage_failed");
     }
 
     await supabase
@@ -174,7 +167,7 @@ export async function GET(request: NextRequest) {
     }
 
     const requestOrigin = url.origin;
-    const versePath = "/verse?shopify=linked";
+    const versePath = "/verse/products?shopify=linked";
     const redirectUrl = `${requestOrigin}${versePath}`;
     const redirect = NextResponse.redirect(redirectUrl);
     const opts = getCustomerSessionCookieOptions();
@@ -186,8 +179,6 @@ export async function GET(request: NextRequest) {
     return redirect;
   } catch (err) {
     console.error("Customer Account API callback error:", err);
-    return NextResponse.redirect(
-      new URL("/auth/login?error=callback_failed", request.url)
-    );
+    return verseErrorRedirect("callback_failed");
   }
 }

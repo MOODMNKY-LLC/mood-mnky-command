@@ -188,6 +188,21 @@ export function VerseProfileClient({
       if (avatarUrlValue) formData.set("avatar_url", avatarUrlValue);
       const result = await updateProfile(formData);
       if (result.success) {
+        if (shopifyLinked) {
+          try {
+            await fetch("/api/customer-account-api/profile", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nickname: displayNameValue.trim() || null,
+                bio: bioValue.trim() || null,
+                verse_handle: handleValue.trim() || null,
+              }),
+            });
+          } catch {
+            // Sync is best-effort; profile save already succeeded
+          }
+        }
         router.refresh();
         globalMutate("/api/verse/profile");
       } else {

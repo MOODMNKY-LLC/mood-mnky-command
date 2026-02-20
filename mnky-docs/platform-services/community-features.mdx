@@ -1,49 +1,101 @@
 ---
 title: 'Community Features'
-description: 'Social and community engagement capabilities within the MOOD MNKY ecosystem'
+description: 'Discord integration, community touchpoints, and engagement across the MNKY VERSE ecosystem'
+icon: 'users'
 ---
 
 # Community Features
 
-<img
-  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
-  src="/images/community-features.svg"
-  alt="Community Features"
-/>
+MOOD MNKY's community features connect fragrance enthusiasts through **Discord**, the **MNKY VERSE blog**, and the **store blog**. Discord serves as the primary chat and event hub, with a full LABZ dashboard for admins to manage messages, webhooks, members, roles, and moderation.
 
 ## Overview
 
-MOOD MNKY's community features create a vibrant ecosystem where fragrance enthusiasts can connect, share experiences, and collaborate. This document outlines the social and community capabilities integrated throughout the platform.
-
-<Note>
-  This is a placeholder document. Detailed content will be added in future updates.
-</Note>
-
-## Core Features
-
-<CardGroup cols={2}>
-  <Card title="User Profiles" icon="user">
-    Customizable profiles showcasing collections and preferences
+<CardGroup cols={3}>
+  <Card title="Discord" icon="message-circle" href="#discord-integration">
+    Chat, events, exclusive drops, and quest integration
   </Card>
-  <Card title="Social Sharing" icon="share-nodes">
-    Share discoveries, creations, and experiences
+  <Card title="MNKY VERSE Blog" icon="newspaper" href="/applications/mnky-verse">
+    Stories, guides, and insights in the MNKY VERSE
   </Card>
-  <Card title="Discussion Forums" icon="comments">
-    Structured conversations around fragrance topics
-  </Card>
-  <Card title="Collaborative Creation" icon="users-gear">
-    Co-create custom scents and collections
+  <Card title="Store Blog" icon="book-open" href="/applications/shopify-store">
+    Product updates and new collections on the Shopify store
   </Card>
 </CardGroup>
 
-## Coming Soon
+## Community Touchpoints
 
-This documentation is under development and will include:
+| Touchpoint | URL | Purpose |
+|------------|-----|---------|
+| **Verse Community** | `/verse/community` | Hub page with Discord join CTA and blog links |
+| **Discord** | `NEXT_PUBLIC_DISCORD_INVITE_URL` | Primary community chat and events |
+| **MNKY VERSE Blog** | `https://mnky-command.moodmnky.com/verse/blog` | Supabase/Notion-synced stories |
+| **Store Blog** | `/blogs/hello-welcome-to-mood-mnky` | Native Shopify blog |
 
-- Profile customization options
-- Content creation guidelines
-- Moderation systems
-- Integration with rewards
-- Analytics and engagement metrics
+## Discord Integration
 
-Check back soon for updates!
+### User-Facing
+
+- **Verse Community page** (`app/(storefront)/verse/community/page.tsx`): "Join Discord" button when `NEXT_PUBLIC_DISCORD_INVITE_URL` is set; links to MNKY VERSE Blog and store blog
+- **Discord OAuth link** (`/verse/auth/discord`, `/verse/auth/discord/link`): Link Discord account to MNKY VERSE profile for quests and XP
+- **Event ingestion**: Discord events (joined, message, reaction, voice minutes, etc.) are sent to the app and processed via Inngest (`discord/event.received`) for gamification and analytics
+
+### Platform Dashboard (LABZ)
+
+**Location:** `Platform → Discord` (`app/(dashboard)/platform/discord/page.tsx`)
+
+Full control panel for the MNKY VERSE Discord server:
+
+| Tab | Purpose |
+|-----|---------|
+| **Messages** | Send messages to channels |
+| **Forums** | Forum channel management |
+| **Webhooks** | Create and manage webhooks; tokens stored securely |
+| **Embed Builder** | Build rich embeds for announcements |
+| **Members** | View and manage members, assign roles |
+| **Roles** | Role management |
+| **Moderation** | Moderation tools |
+| **Audit Logs** | Server audit logs |
+
+Requires `DISCORD_BOT_TOKEN_MNKY_VERSE` and Discord admin access.
+
+### API Routes
+
+| Route | Purpose |
+|-------|---------|
+| `GET /api/discord/guilds` | List guilds the bot is in |
+| `GET /api/discord/channels?guildId=` | List channels in a guild |
+| `GET/POST /api/discord/webhooks` | List or create webhooks; tokens encrypted in DB |
+| `POST /api/discord/webhooks/execute` | Execute stored webhook |
+| `GET /api/discord/members` | List members |
+| `GET /api/discord/roles` | List roles |
+| `POST /api/discord/events` | Ingest Discord event (internal API key required) |
+
+### Event Ingestion
+
+`POST /api/discord/events` accepts:
+
+- `profileId`, `discordUserId`, `guildId`, `channelId` (optional)
+- `eventType`: `joined`, `message`, `reaction`, `voice_minutes`, `attachment_posted`, `thread_reply`
+- `eventRef`, `value`
+
+Events are queued to Inngest `discord/event.received` for async processing (XP, quest progress, etc.).
+
+### Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `DISCORD_BOT_TOKEN_MNKY_VERSE` | Bot token for Discord API (server-only) |
+| `NEXT_PUBLIC_DISCORD_INVITE_URL` | Public invite URL for "Join Discord" button |
+
+## Content Delivery
+
+- **MNKY VERSE Blog**: Supabase `verse_blog_posts`, synced from Notion; served at `/verse/blog`
+- **Store blog**: Native Shopify blog; featured in theme and footer
+- **Cross-linking**: Homepage and blog templates link "View all in the MNKY VERSE" to the app blog
+
+## Related Resources
+
+- [Dojo Overview](/platform-services/dojo-overview) — XP, quests, Blending Lab
+- [Reward System](/platform-services/reward-system) — Token economy and gamification
+- [MNKY VERSE](/applications/mnky-verse) — Verse storefront and community entry
+- [Content Ecosystem Map](/platform-services/content-ecosystem-map)

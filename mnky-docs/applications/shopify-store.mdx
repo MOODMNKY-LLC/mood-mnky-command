@@ -1,0 +1,176 @@
+---
+title: "Shopify Store"
+description: "Theme, extensions, App Proxy, Customer Account API, and MNKY VERSE integration with the Shopify storefront"
+icon: "store"
+---
+
+# Shopify Store
+
+The MOOD MNKY Shopify Store integrates a **Dawn-derived Liquid theme**, **theme app extension blocks**, an **App Proxy**, and **Customer Account API** to connect the physical storefront with the MNKY VERSE web app. The store and the Verse share the same Shopify catalog via the Storefront API.
+
+## Overview
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **Theme** | `Shopify/theme/` | Dawn-derived Liquid theme (header, footer, homepage, collections) |
+| **Extensions** | `extensions/mood-mnky-theme/blocks/` | App blocks: Blending Lab, Fragrance Finder, Subscription, Verse blog, MNKY Assistant, Issue Teaser |
+| **App Proxy** | `/apps/mnky/*` | Backend routes for theme JS (session, issues, quests) |
+| **Storefront API** | `lib/shopify/storefront-queries.ts` | MNKY VERSE catalog, products, collections |
+| **Customer Account API** | `api/customer-account-api/` | Login with Shopify on `/verse` |
+| **LABZ pages** | Admin sync, metaobjects | Formulas, oils, glossary exposed to store as LABZ pages |
+
+## Architecture
+
+```mermaid
+flowchart TB
+  subgraph Theme [Shopify Theme]
+    Header[header-group]
+    Footer[footer-group]
+    Index[index.json]
+    AppCta[app-cta section]
+    Blocks[App blocks]
+  end
+
+  subgraph Extensions [Theme App Extension]
+    Blending[Blending Lab CTA]
+    Finder[Fragrance Finder CTA]
+    Sub[Subscription CTA]
+    VerseBlog[Verse Blog]
+    MnkyAssist[MNKY Assistant]
+    IssueTeaser[MNKY VERSE Issue Teaser]
+  end
+
+  subgraph App [mood-mnky-command Next.js]
+    Proxy[/apps/mnky/*]
+    Verse[/verse/*]
+    Labz[LABZ pages]
+  end
+
+  Theme --> Extensions
+  Extensions -->|App base URL| App
+  Theme -->|App Proxy| Proxy
+  Verse -->|Storefront API| Shopify[Shopify Store]
+```
+
+## Theme Layout
+
+- **Header:** `sections/header-group.json` — main-menu (Shopify Admin → Online Store → Navigation), announcement bar
+- **Footer:** `sections/footer-group.json` — brand tagline, MNKY VERSE link list, newsletter ("Subscribe to the Vibe — Join the MNKY VERSE")
+- **Homepage:** `templates/index.json` — slideshow, featured collections, multicolumn ("Why MOOD MNKY"), app-cta, featured-blog, newsletter
+- **Navigation:** See [Shopify/docs/NAVIGATION-MENU-SETUP.md](../../Shopify/docs/NAVIGATION-MENU-SETUP.md) for main-menu and footer setup
+
+### Main Menu Reference
+
+| Label | Link |
+|-------|------|
+| Home | / |
+| Shop | /collections/all or /collections/available-moods |
+| Subscriptions | /collections/subscriptions |
+| Blending Lab | `https://mnky-command.moodmnky.com/blending` |
+| Match My Mood / Craft | `https://mnky-command.moodmnky.com/craft` |
+| The Dojo / My Dojo | `https://mnky-command.moodmnky.com/dojo` |
+| Explore | `https://mnky-command.moodmnky.com/verse/explore` |
+| Blog | /blogs/hello-welcome-to-mood-mnky |
+| Agents | `https://mnky-command.moodmnky.com/verse/agents` |
+| Community | Shopify page "Community" or `https://mnky-command.moodmnky.com/verse/community` |
+
+## Theme App Extension Blocks
+
+Blocks live in `extensions/mood-mnky-theme/blocks/` and are added from the Theme Editor. Each block has an **App base URL** setting — set to `https://mnky-command.moodmnky.com` (or your deployment URL).
+
+| Block | File | Purpose |
+|-------|------|---------|
+| Blending Lab CTA | `blending-cta.liquid` | Links to Blending Lab in the app |
+| Fragrance Finder | `fragrance-finder-cta.liquid` | Match My Mood / craft tool |
+| Subscription CTA | `subscription-cta.liquid` | Subscription signup |
+| Verse Blog | `verse-blog.liquid` | Latest from MNKY VERSE blog |
+| MNKY Assistant | `mnky-assistant-embed.liquid` | Storefront AI assistant embed |
+| MNKY VERSE Issue Teaser | `mnky-verse-issue-teaser.liquid` | Gamification issues/quests via App Proxy |
+
+### App Base URL Configuration
+
+The theme does **not** read env vars. Configure in **Shopify Admin** → **Online Store** → **Themes** → **Customize**:
+
+1. For each app section and block, set **App base URL** to `https://mnky-command.moodmnky.com`
+2. For Verse blog link, set to `https://mnky-command.moodmnky.com/verse/blog`
+3. See [SHOPIFY-APP-URL-CONFIG.md](../../docs/SHOPIFY-APP-URL-CONFIG.md) for full checklist
+
+## App Proxy
+
+Theme blocks and JS can call the mood-mnky-command backend via the **App Proxy**. Requests to `https://{shop}.myshopify.com/apps/mnky/*` are forwarded to the app.
+
+### Partner Dashboard Configuration
+
+1. **Shopify Partner Dashboard** → your app → **App setup** → **App proxy**
+2. Set:
+   - **Subpath prefix:** `apps`
+   - **Subpath:** `mnky`
+   - **Proxy URL:** Production `https://mnky-command.moodmnky.com/apps/mnky` (or ngrok URL for local dev)
+3. Save. Prefix and subpath are immutable after the app is installed.
+
+### Backend Routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/apps/mnky/session` | Short-lived JWT for theme JS to call other APIs |
+| GET | `/apps/mnky/api/issues` | List published issues (query: `collection`, `status`) |
+| GET | `/apps/mnky/api/quests` | List active quests |
+
+Requires `APP_PROXY_JWT_SECRET` or `MOODMNKY_API_KEY` in env.
+
+### Optional: `shopify.app.toml` Config
+
+```toml
+[app_proxy]
+url = "https://mnky-command.moodmnky.com/apps/mnky"
+prefix = "apps"
+subpath = "mnky"
+```
+
+Include `write_app_proxy` in access scopes.
+
+## Customer Account API
+
+The MNKY VERSE supports **Login with Shopify** (OAuth 2.0 PKCE) so customers can link their Shopify account for perks and order history.
+
+- **Flow:** User signs in (Supabase) → `/api/customer-account-api/auth` → Shopify OAuth → callback → tokens stored in Supabase
+- **Env vars:** `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`, `NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_APP_URL`, `SHOP_ID`
+- **Allowed redirect URLs:** Add `https://mnky-command.moodmnky.com/api/customer-account-api/callback` (and Verse domain if different) in Shopify Admin
+- See [SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md](../../docs/SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md) for step-by-step flow
+
+## Storefront API
+
+The MNKY VERSE (`app/(storefront)/verse/`, `lib/shopify/storefront-queries.ts`) uses the Storefront API to fetch products, collections, and catalog. Same store as the Liquid theme.
+
+- **Env vars:** `NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_STOREFRONT_API_TOKEN`, `PUBLIC_STOREFRONT_ID`
+- Products and collections must be published to the **Headless** (or relevant) sales channel
+
+## Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `SHOPIFY_STORE_DOMAIN` | Admin API host |
+| `SHOPIFY_ADMIN_API_TOKEN` | Admin API auth (LABZ, product sync) |
+| `NEXT_PUBLIC_STORE_DOMAIN` | Storefront API store domain |
+| `NEXT_PUBLIC_STOREFRONT_API_TOKEN` | Storefront API public token |
+| `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` | OAuth client ID for Login with Shopify |
+| `NEXT_PUBLIC_APP_URL` | App base URL (theme CTAs, callbacks) |
+| `MOODMNKY_API_KEY` / `APP_PROXY_JWT_SECRET` | App Proxy and internal API auth |
+
+Full reference: [SHOPIFY-ENV-REFERENCE.md](../../docs/SHOPIFY-ENV-REFERENCE.md)
+
+## Blog Strategy
+
+- **Shopify blog** (`hello-welcome-to-mood-mnky`): Native store blog; featured-blog section uses it
+- **Verse blog:** Supabase/Notion, served at `https://mnky-command.moodmnky.com/verse/blog`
+- Cross-link both blogs; no dynamic pull from Shopify to external CMS
+
+## Related Documentation
+
+- [MNKY VERSE App](/applications/mnky-verse) — Verse storefront and theme integration
+- [MNKY VERSE App Proxy Setup](../../docs/MNKY-VERSE-APP-PROXY-SETUP.md)
+- [Shopify MNKY VERSE Integration Report](../../docs/SHOPIFY-MNKY-VERSE-INTEGRATION-REPORT.md)
+- [Shopify App URL Config](../../docs/SHOPIFY-APP-URL-CONFIG.md)
+- [Shopify Environment Reference](../../docs/SHOPIFY-ENV-REFERENCE.md)
+- [Customer Account API Walkthrough](../../docs/SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md)
+- [Theme Customization](/developer-resources/theme-customization)

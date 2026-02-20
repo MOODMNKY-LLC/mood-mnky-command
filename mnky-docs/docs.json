@@ -3,9 +3,15 @@
   "theme": "maple",
   "name": "MOOD MNKY",
   "colors": {
-    "primary": "#000000",
-    "light": "#F5F5F5",
-    "dark": "#666666"
+    "primary": "#475569",
+    "light": "#f1f5f9",
+    "dark": "#181619"
+  },
+  "background": {
+    "color": {
+      "light": "#f1f5f9",
+      "dark": "#181619"
+    }
   },
   "fonts": {
     "family": "Helvetica, sans-serif",
@@ -221,6 +227,7 @@
             "pages": [
               "applications/overview",
               "applications/mnky-verse",
+              "applications/shopify-store",
               "platform-services/labz-overview",
               "applications/trvlr-sync",
               "applications/shopify-app",

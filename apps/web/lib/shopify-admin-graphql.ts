@@ -771,3 +771,104 @@ export async function metaobjectListMnkyIssueHandles(): Promise<Array<{ id: stri
   }>(METAOBJECTS_QUERY, { type: MNKY_ISSUE_METAOBJECT_TYPE, first: 100 })
   return data.metaobjects?.nodes ?? []
 }
+
+// ---- Customer metafield definitions (Customer Account API sync) ----
+
+/** Namespace for MNKY Verse shopper profile metafields (synced to Shopify). */
+export const CUSTOMER_METAFIELD_NAMESPACE = "custom"
+
+const METAFIELD_DEFINITION_CREATE = `
+  mutation MetafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+    metafieldDefinitionCreate(definition: $definition) {
+      createdDefinition { id name namespace key }
+      userErrors { field message code }
+    }
+  }
+`
+
+const CUSTOMER_METAFIELD_DEFINITIONS = [
+  {
+    name: "Nickname",
+    key: "nickname",
+    type: "single_line_text_field",
+    description: "Preferred display name from Verse profile (synced from Dojo)",
+  },
+  {
+    name: "Bio",
+    key: "bio",
+    type: "multi_line_text_field",
+    description: "Short bio for personalization (synced from Verse profile)",
+  },
+  {
+    name: "Fragrance preferences",
+    key: "fragrance_preferences",
+    type: "json",
+    description: "Scent preferences e.g. top notes (JSON from Blending Lab)",
+  },
+  {
+    name: "Verse handle",
+    key: "verse_handle",
+    type: "single_line_text_field",
+    description: "@handle from Verse profile",
+  },
+  {
+    name: "Wishlist",
+    key: "wishlist",
+    type: "json",
+    description: "Product/variant GIDs for abandoned-cart and personalization",
+  },
+  {
+    name: "Size preferences",
+    key: "size_preferences",
+    type: "json",
+    description: "Sizing for clothing, candle, soap etc.",
+  },
+  {
+    name: "Scent personality",
+    key: "scent_personality",
+    type: "single_line_text_field",
+    description: "Designer profile slug e.g. gourmand_explorer, woodsy_adventurer",
+  },
+] as const
+
+/**
+ * Ensure customer metafield definitions exist for Customer Account API sync.
+ * Grants read_write to Customer Account API and merchant_read to Admin.
+ * Idempotent; safe to run repeatedly.
+ * Requires write_metafield_definitions scope on Admin API token.
+ */
+export async function ensureCustomerMetafieldDefinitions(): Promise<void> {
+  for (const def of CUSTOMER_METAFIELD_DEFINITIONS) {
+    const data = await shopifyGraphQL<{
+      metafieldDefinitionCreate: {
+        createdDefinition: { id: string; name: string } | null
+        userErrors: Array<{ field?: string[]; message: string; code?: string }>
+      }
+    }>(METAFIELD_DEFINITION_CREATE, {
+      definition: {
+        name: def.name,
+        namespace: CUSTOMER_METAFIELD_NAMESPACE,
+        key: def.key,
+        type: def.type,
+        description: def.description,
+        ownerType: "CUSTOMER",
+        access: {
+          customerAccount: "READ_WRITE",
+          admin: "MERCHANT_READ",
+        },
+      },
+    })
+    const result = data.metafieldDefinitionCreate
+    if (result.userErrors?.length) {
+      const taken = result.userErrors.some(
+        (e) => e.code === "TAKEN" || /already exists|taken/i.test(e.message)
+      )
+      if (taken) continue
+      const msg = result.userErrors.map((e) => e.message).join("; ")
+      throw new Error(`Customer metafield definition ${def.key} failed: ${msg}`)
+    }
+    if (result.createdDefinition) {
+      console.log(`Created customer metafield definition: ${def.key}`)
+    }
+  }
+}

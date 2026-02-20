@@ -45,6 +45,9 @@ if (!domainArg) {
 }
 
 console.log(`Starting ngrok tunnel to localhost:${port}...`);
+console.log(
+  "  Note: Use pnpm dev (HTTP), not pnpm dev:https. ngrok forwards to http://localhost and provides HTTPS."
+);
 if (domainArg) {
   const url = domainArg.startsWith("http") ? domainArg : `https://${domainArg}`;
   const base = url.replace(/^https?:\/\//, "");

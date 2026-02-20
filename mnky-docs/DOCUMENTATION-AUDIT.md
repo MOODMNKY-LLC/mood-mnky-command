@@ -7,7 +7,17 @@ This document provides an audit of the current documentation site structure, ide
 
 ## Status
 
-✅ **Documentation overhaul completed.** Core experiences (MNKY VERSE, The Dojo, MNKY LABZ) now align with the mood-mnky-command codebase.
+✅ **Documentation overhaul completed.** Core experiences (MNKY VERSE, The Dojo, MNKY LABZ) now align with the mood-mnky-command codebase. Ecosystem scope overhaul (Shopify Store, Discord/Community) completed.
+
+### Ecosystem Scope Overhaul (2026-02-20)
+
+- ✅ Updated index.mdx: "THE EXPERIENCE" → **MNKY VERSE**, "THE FOUNDATION" → **MNKY LABZ**; pillars align with introduction
+- ✅ Created applications/shopify-store.mdx — theme, extensions, App Proxy, Customer Account API, Storefront API (replaces shopify-app content)
+- ✅ Deprecated applications/shopify-app.mdx with redirect to shopify-store
+- ✅ Rewrote platform-services/community-features.mdx — Discord API, events, webhooks, platform/discord UI, /verse/community
+- ✅ Enhanced applications/mnky-verse.mdx — App Proxy, theme integration, Customer Account flow
+- ✅ Copy pass: quickstart, developer-resources/introduction, dojo-pillar — terminology aligned (MNKY VERSE, The Dojo, MNKY LABZ)
+- ✅ docs.json: Added shopify-store to Applications; Community (community-features) in nav
 
 ### Mintlify Docs Overhaul (2026-02-20)
 

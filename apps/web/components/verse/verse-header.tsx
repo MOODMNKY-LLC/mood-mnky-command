@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { VerseHeaderShopifyLink } from "./verse-header-shopify-link";
+import { ShopAuthDialog } from "./shop-auth-dialog";
 import { AppInfoDialog } from "@/components/app-info-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { useVerseTheme } from "./verse-theme-provider";
@@ -19,11 +22,34 @@ import type { VerseUser } from "./verse-storefront-shell";
 export function VerseHeader({
   isAdmin = false,
   user = null,
+  shopifyLinked = false,
 }: {
   isAdmin?: boolean;
   user?: VerseUser;
+  shopifyLinked?: boolean;
 }) {
   const { theme, toggleTheme } = useVerseTheme();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [shopAuthOpen, setShopAuthOpen] = useState(false);
+
+  const shopifyError = searchParams.get("error");
+
+  useEffect(() => {
+    if (shopifyError) setShopAuthOpen(true);
+  }, [shopifyError]);
+
+  const handleShopAuthOpenChange = useCallback(
+    (open: boolean) => {
+      setShopAuthOpen(open);
+      if (!open && shopifyError && typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("error");
+        router.replace(url.pathname + url.search, { scroll: false });
+      }
+    },
+    [router, shopifyError]
+  );
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -84,12 +110,23 @@ export function VerseHeader({
             <Bot className="h-4 w-4" />
             Agents
           </Link>
-          <Link
-            href="/verse/products"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-          >
-            Shop
-          </Link>
+          {user && shopifyLinked ? (
+            <Link
+              href="/verse/products"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+            >
+              Shop
+            </Link>
+          ) : (
+            <VerseButton
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px] min-w-[44px] font-medium text-verse-text hover:opacity-90"
+              onClick={() => setShopAuthOpen(true)}
+            >
+              Shop
+            </VerseButton>
+          )}
           {user && (
             <>
               <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
@@ -160,6 +197,15 @@ export function VerseHeader({
           <AppInfoDialog variant="verse" />
         </div>
       </div>
+      <ShopAuthDialog
+        open={shopAuthOpen}
+        onOpenChange={handleShopAuthOpenChange}
+        user={user}
+        shopifyLinked={shopifyLinked}
+        shopifyError={shopifyError}
+        redirectAfterAuth="/verse/products"
+        onContinueAsGuest={() => router.push("/verse/products")}
+      />
     </header>
   );
 }

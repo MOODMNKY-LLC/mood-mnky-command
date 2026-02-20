@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCustomerAccessToken } from "@/lib/shopify/customer-account-client";
 import { VerseProviders } from "./verse-providers";
 import { VerseStorefrontShell } from "./verse-storefront-shell";
 
-/** Server component: fetches user + profile (Supabase or Shopify Customer Account API), passes to shell */
+/** Server component: fetches user + profile + Shopify link status, passes to shell */
 export async function VerseAuthContext({
   children,
 }: {
@@ -52,9 +53,18 @@ export async function VerseAuthContext({
         }
       : null;
 
+  let shopifyLinked = false;
+  if (user) {
+    try {
+      shopifyLinked = (await getCustomerAccessToken()) != null;
+    } catch {
+      shopifyLinked = false;
+    }
+  }
+
   return (
     <VerseProviders>
-      <VerseStorefrontShell isAdmin={isAdmin} user={userInfo}>
+      <VerseStorefrontShell isAdmin={isAdmin} user={userInfo} shopifyLinked={shopifyLinked}>
         {children}
       </VerseStorefrontShell>
     </VerseProviders>

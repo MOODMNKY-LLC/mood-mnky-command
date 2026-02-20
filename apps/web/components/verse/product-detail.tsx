@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useCart, useMoney } from "@shopify/hydrogen-react";
+import { Heart } from "lucide-react";
 import {
   VerseCard,
   VerseCardContent,
@@ -119,16 +120,51 @@ export function VerseProductDetail({ product }: { product: ProductDetailProduct 
           </div>
         )}
 
-        {currentVariant && (
-          <VerseAddToCartButton
-            variantId={currentVariant.id}
-            disabled={!currentVariant.availableForSale}
-            size="lg"
-            useShimmer
-          />
-        )}
+        <div className="flex gap-2">
+          {currentVariant && (
+            <VerseAddToCartButton
+              variantId={currentVariant.id}
+              disabled={!currentVariant.availableForSale}
+              size="lg"
+              useShimmer
+            />
+          )}
+          <AddToWishlistButton productId={product.id} />
+        </div>
       </div>
     </div>
+  );
+}
+
+function AddToWishlistButton({ productId }: { productId: string }) {
+  const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/customer-account-api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "add", gid: productId }),
+      });
+      if (res.ok) setAdded(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <VerseButton
+      variant="outline"
+      size="lg"
+      disabled={loading}
+      onClick={handleClick}
+      className="shrink-0 gap-2"
+    >
+      <Heart className={`h-4 w-4 ${added ? "fill-current" : ""}`} />
+      {loading ? "Adding…" : added ? "In wishlist" : "Add to wishlist"}
+    </VerseButton>
   );
 }
 
