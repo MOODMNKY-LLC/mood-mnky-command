@@ -1,0 +1,164 @@
+---
+title: 'Getting Started with APIs'
+description: 'Quick introduction to using MOOD MNKY APIs'
+---
+
+# Getting Started with MOOD MNKY APIs
+
+This guide provides a quick introduction to working with MOOD MNKY APIs, helping you understand the key concepts and get up and running quickly.
+
+## API Ecosystem Overview
+
+MOOD MNKY offers several categories of APIs:
+
+1. **Platform APIs** - Core functionality and e-commerce capabilities
+2. **AI & Workflow APIs** - AI model hosting, workflow automation, and agent integration
+3. **Integration APIs** - Connectivity with third-party services like Notion and Bungie
+
+## Authentication
+
+Most MOOD MNKY APIs require authentication. The standard authentication method is JWT bearer tokens:
+
+```bash
+curl -X GET "https://api.moodmnky.com/endpoint" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+To obtain an access token, you'll typically need to:
+
+1. Register an application in the [MOOD MNKY Developer Portal](https://developers.moodmnky.com)
+2. Use your client credentials to request an access token
+3. Include the token in your API requests
+
+For detailed authentication instructions, see the [Authentication Guide](/api/devops/authentication).
+
+## Making Your First API Request
+
+Here's a simple example of making a request to the Core API:
+
+<CodeGroup>
+```javascript JavaScript
+// Using fetch
+fetch('https://api.moodmnky.com/v1/users/me', {
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+```python Python
+# Using requests
+import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.moodmnky.com/v1/users/me', headers=headers)
+data = response.json()
+print(data)
+```
+
+```curl cURL
+curl -X GET "https://api.moodmnky.com/v1/users/me" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json"
+```
+</CodeGroup>
+
+## Using the SDKs
+
+For easier integration, we offer SDKs for popular programming languages:
+
+<CodeGroup>
+```javascript JavaScript SDK
+// Install: npm install @moodmnky/sdk
+import { MoodMnkyClient } from '@moodmnky/sdk';
+
+const client = new MoodMnkyClient({
+  apiKey: 'YOUR_API_KEY'
+});
+
+const userProfile = await client.users.getProfile();
+console.log(userProfile);
+```
+
+```python Python SDK
+# Install: pip install moodmnky-sdk
+from moodmnky import MoodMnkyClient
+
+client = MoodMnkyClient(api_key='YOUR_API_KEY')
+
+user_profile = client.users.get_profile()
+print(user_profile)
+```
+</CodeGroup>
+
+For more information about our SDKs, see:
+- [JavaScript SDK Documentation](/developer-resources/javascript-sdk)
+- [AI Integration SDK Documentation](/developer-resources/ai-integration-sdk)
+
+## API References & Playgrounds
+
+Each API includes interactive documentation where you can:
+- Explore available endpoints
+- Test API calls directly in your browser
+- See request and response examples
+
+Visit the [API References](/api-reference/introduction) section to access these interactive tools.
+
+## Common Concepts
+
+### Rate Limiting
+
+API requests are subject to rate limiting to ensure fair usage. Rate limits are typically applied per API key and reset hourly. When a rate limit is exceeded, the API returns a `429 Too Many Requests` status code.
+
+See [Rate Limiting](/api/devops/rate-limiting) for details.
+
+### Pagination
+
+List endpoints support pagination for large result sets:
+
+```
+GET /v1/resources?limit=10&offset=20
+```
+
+Pagination parameters:
+- `limit` - Number of items to return (default: 20, max: 100)
+- `offset` - Number of items to skip (for offset-based pagination)
+- `cursor` - Cursor for cursor-based pagination (when available)
+
+### Error Handling
+
+API errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "resource_not_found",
+    "message": "The requested resource was not found",
+    "status": 404,
+    "details": {
+      "resource_id": "123",
+      "resource_type": "user"
+    }
+  }
+}
+```
+
+See [Error Handling](/api/devops/error-handling) for all error codes and resolution strategies.
+
+## Next Steps
+
+Now that you understand the basics, you can:
+
+1. Explore the specific API documentation for your use case
+2. Set up proper authentication for your application
+3. Try out the interactive API playgrounds
+4. Check out our [API standards](/api/standards) to understand our API design principles
+
+For any questions or issues, contact [developer support](mailto:dev-support@moodmnky.com) or join our [Discord community](https://discord.gg/moodmnky). 

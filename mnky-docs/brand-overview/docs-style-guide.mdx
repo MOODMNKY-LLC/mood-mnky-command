@@ -1,0 +1,201 @@
+---
+title: 'Documentation Style Guide'
+description: 'Standards and guidelines for creating consistent, high-quality documentation across the MOOD MNKY ecosystem'
+---
+
+# Documentation Style Guide
+
+<Note>
+This is a starter document outlining the documentation standards for MOOD MNKY. It will be expanded with more examples and detailed guidelines.
+</Note>
+
+## Purpose and Scope
+
+This style guide establishes standards for all MOOD MNKY documentation to ensure consistency, clarity, and effectiveness across our ecosystem. It applies to public documentation, internal knowledge bases, technical documentation, and marketing materials.
+
+## Voice and Tone
+
+### Brand Voice Principles
+
+- **Warm but Professional**: Friendly without being overly casual
+- **Clear and Concise**: Direct communication without unnecessary jargon
+- **Emotionally Intelligent**: Empathetic understanding of user needs
+- **Thoughtfully Creative**: Innovative but not overly whimsical
+
+### Audience Adaptation
+
+- **Technical Audiences**: More precise, detailed, with appropriate terminology
+- **Non-Technical Audiences**: Accessible explanations with relatable analogies
+- **Internal Teams**: Focus on actionable information and context
+- **Customers**: Emphasis on benefits and practical application
+
+## Content Structure
+
+### Document Organization
+
+- **Clear Hierarchy**: Well-defined heading structure (H1 → H4)
+- **Progressive Disclosure**: Most important information first
+- **Chunking**: Breaking content into digestible sections
+- **Consistent Patterns**: Similar documents follow the same structure
+
+### Navigation Elements
+
+- **Descriptive Headings**: Clear, scannable section titles
+- **Table of Contents**: For documents longer than 1000 words
+- **Cross-References**: Appropriate linking to related documents
+- **Wayfinding**: Clear indication of location within documentation
+
+## Writing Guidelines
+
+### Language Conventions
+
+- **Active Voice**: Prefer active over passive voice when possible
+- **Present Tense**: Use present tense for most descriptions
+- **Second Person**: Address the reader directly with "you"
+- **Gender-Neutral Language**: Avoid gendered terms and examples
+
+### Terminology Management
+
+- **Glossary Alignment**: Consistent use of defined terms
+- **Abbreviations**: Define on first use with format "Term (ABBR)"
+- **Product Names**: Correct capitalization and formatting
+- **Technical Terms**: Consistent application across all documentation
+
+## Formatting Standards
+
+### Text Formatting
+
+- **Bold**: Use for UI elements and emphasis
+- **Italic**: Use for introducing new terms and light emphasis
+- **Code Formatting**: Use for code, file names, and technical inputs
+- **Lists**: Use bulleted lists for collections, numbered lists for sequences
+
+### Visual Elements
+
+- **Screenshots**: When to use and how to format
+- **Diagrams**: Standards for creating and labeling
+- **Tables**: Formatting guidelines and best practices
+- **Color Usage**: Accessibility considerations and brand alignment
+
+## Component Usage
+
+### Mintlify Components
+
+- **Cards**: For feature highlights and navigation
+- **Tabs**: For showing alternative approaches or platforms
+- **Callouts**: For important notes, warnings, and tips
+- **Code Blocks**: For code examples and technical syntax
+
+### Agent-Specific Components
+
+- **Agent Cards**: When and how to use agent attribution
+- **Agent Sections**: Styling for agent-specific content
+- **Dialog Examples**: Formatting for conversation examples
+- **Agent Avatars**: Proper usage in documentation
+
+## Technical Documentation Standards
+
+### Code Examples
+
+- **Language Indication**: Always specify the language
+- **Formatting**: Consistent indentation and style
+- **Comments**: Clear explanations within code
+- **Completeness**: Examples should be functional if copied
+
+### API Documentation
+
+- **Endpoint Documentation**: Format for describing endpoints
+- **Parameter Tables**: Standard structure for parameters
+- **Response Examples**: How to present sample responses
+- **Error Handling**: Documentation of error codes and responses
+
+## Accessibility Requirements
+
+- **Alternative Text**: Requirements for images and diagrams
+- **Color Contrast**: Minimum standards for readability
+- **Heading Structure**: Proper use for screen readers
+- **Link Text**: Clear, descriptive link wording
+
+## Document Lifecycle Management
+
+### Creation Process
+
+- **Templates**: Available document templates and when to use them
+- **Review Process**: Required reviews before publication
+- **Collaboration Workflows**: How to work together on documentation
+
+### Maintenance Standards
+
+- **Update Frequency**: Guidelines for regular reviews
+- **Version Management**: How to indicate document versions
+- **Deprecation Process**: How to handle outdated documentation
+- **Archiving Standards**: When and how to archive documentation
+
+## Implementation Examples
+
+### Example: Product Documentation
+
+```md
+# Feature Name
+
+Brief description of what the feature does and its primary benefit.
+
+## Getting Started
+
+Step-by-step instructions for initial setup...
+
+## Common Use Cases
+
+### Use Case 1: [Scenario Name]
+Steps and examples for this specific scenario...
+
+### Use Case 2: [Scenario Name]
+Steps and examples for this specific scenario...
+
+## Reference
+
+Complete details on all options and configurations...
+```
+
+### Example: Technical Reference
+
+```md
+# API Endpoint Name
+
+`GET /api/resource/{id}`
+
+Retrieves detailed information about a specific resource.
+
+## Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| id | string | Yes | Unique identifier for the resource |
+| fields | string | No | Comma-separated list of fields to include |
+
+## Response
+
+```json
+{
+  "id": "resource_123",
+  "name": "Example Resource",
+  "status": "active"
+}
+```
+```
+
+## Resources and Tools
+
+- **Documentation Linting**: Available tools for consistency checking
+- **Glossary Management**: How to maintain the central terminology database
+- **Screenshot Tools**: Recommended tools and settings
+- **Style Checking**: Automated systems for style compliance
+
+<CardGroup cols={2}>
+  <Card title="Templates Repository" icon="file-lines" href="https://internal.moodmnky.com/docs/templates">
+    Access documentation templates for different content types
+  </Card>
+  <Card title="Brand Voice Guidelines" icon="bullhorn" href="/brand-overview/social-voice-manifesto">
+    Detailed guidelines on tone and voice for different audiences
+  </Card>
+</CardGroup>

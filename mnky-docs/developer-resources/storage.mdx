@@ -1,0 +1,151 @@
+---
+title: 'Storage Services'
+description: 'Data and file storage solutions in the MOOD MNKY platform'
+---
+
+# Storage Services
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/storage-services.svg"
+  alt="Storage Services"
+/>
+
+## Overview
+
+MOOD MNKY's storage services provide secure and scalable solutions for managing various types of data, from user-generated content to application assets. Our primary storage is powered by Supabase Storage with both standard API access and S3-compatible protocol support.
+
+## Storage Solutions
+
+<CardGroup cols={2}>
+  <Card title="Database Storage" icon="database">
+    Structured data storage with Supabase/PostgreSQL
+  </Card>
+  <Card title="Object Storage" icon="boxes-stacked">
+    Unstructured file and media storage via Supabase Storage
+  </Card>
+  <Card title="S3-Compatible Storage" icon="cloud">
+    Direct S3 protocol access to Supabase Storage
+  </Card>
+  <Card title="Local Storage" icon="hard-drive">
+    Client-side persistent storage options
+  </Card>
+</CardGroup>
+
+## Supabase Storage
+
+Supabase Storage provides a secure, scalable solution for storing and serving files in the MOOD MNKY ecosystem. It's integrated with Supabase's Row Level Security (RLS) for fine-grained access control.
+
+### Standard API Access
+
+The standard way to interact with Supabase Storage is through the Supabase client:
+
+```typescript
+import { supabase } from '@repo/supabase-client';
+
+// Upload a file
+const { data, error } = await supabase
+  .storage
+  .from('bucket-name')
+  .upload('path/to/file.jpg', file);
+
+// Download a file
+const { data, error } = await supabase
+  .storage
+  .from('bucket-name')
+  .download('path/to/file.jpg');
+
+// Get a public URL
+const { data } = supabase
+  .storage
+  .from('bucket-name')
+  .getPublicUrl('path/to/file.jpg');
+```
+
+### S3-Compatible API Access
+
+For advanced use cases, Supabase Storage also supports the S3 protocol, allowing you to use AWS SDK or other S3-compatible tools:
+
+```typescript
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+
+// Initialize S3 client with Supabase credentials
+const s3Client = new S3Client({
+  endpoint: process.env.SUPABASE_S3_URL,
+  region: process.env.SUPABASE_S3_REGION,
+  credentials: {
+    accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: true, // Required for Supabase Storage
+});
+
+// Upload a file
+const putCommand = new PutObjectCommand({
+  Bucket: 'bucket-name',
+  Key: 'path/to/file.jpg',
+  Body: fileBuffer,
+  ContentType: 'image/jpeg',
+});
+await s3Client.send(putCommand);
+
+// Download a file
+const getCommand = new GetObjectCommand({
+  Bucket: 'bucket-name',
+  Key: 'path/to/file.jpg',
+});
+const response = await s3Client.send(getCommand);
+const fileContent = await response.Body.transformToByteArray();
+```
+
+## Environment Configuration
+
+The storage service is configured through environment variables:
+
+```
+# Standard Supabase Storage (via Supabase client)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# S3-Compatible Access
+SUPABASE_S3_URL=https://your-project.supabase.co/storage/v1/s3
+SUPABASE_S3_REGION=your-region
+SUPABASE_S3_ACCESS_KEY_ID=your-access-key-id
+SUPABASE_S3_SECRET_ACCESS_KEY=your-secret-access-key
+```
+
+These variables are already configured in the production environment.
+
+## Storage Buckets
+
+The MOOD MNKY platform uses several storage buckets for different purposes:
+
+| Bucket Name    | Purpose                                     | Access Control               |
+|----------------|---------------------------------------------|------------------------------|
+| `public`       | Publicly accessible assets                  | Public read                  |
+| `profiles`     | User profile pictures and data              | User-specific access         |
+| `products`     | Product images and assets                   | Public read                  |
+| `user-content` | User-generated content                      | Creator and admin access     |
+| `temp`         | Temporary storage for processing            | Time-limited access          |
+
+## Security Best Practices
+
+1. **Use RLS Policies**: Always define Row Level Security policies for your storage buckets
+2. **Validate File Types**: Implement client and server-side validation for uploaded files
+3. **Set Size Limits**: Configure maximum file sizes to prevent abuse
+4. **Use Signed URLs**: For temporary access to restricted files
+5. **Implement Content Scanning**: For user-uploaded content
+
+## Performance Optimization
+
+1. **Image Transformations**: Use Supabase Storage image transformations for responsive images
+2. **CDN Integration**: Configure a CDN in front of Supabase Storage for improved delivery
+3. **Chunked Uploads**: Implement chunked uploads for large files
+4. **Optimized File Formats**: Convert images to WebP and other optimized formats
+5. **Lazy Loading**: Implement lazy loading for images and other media
+
+## Related Documentation
+
+- [Supabase Storage Documentation](https://supabase.com/docs/guides/storage)
+- [AWS S3 SDK Documentation](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-s3/)
+- [Supabase SSL Configuration](./supabase-ssl-config)

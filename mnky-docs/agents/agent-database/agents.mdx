@@ -1,0 +1,147 @@
+---
+title: 'Agents Database'
+description: 'Core agent identity and characteristics database documentation'
+---
+
+# Agents Database
+
+The Agents Database is the cornerstone of the MOOD MNKY agent system, defining the core identity and characteristics of each specialized agent. It serves as the primary reference for agent personalities, communication styles, and archetype information.
+
+## Purpose and Role
+
+<Info>
+The Agents Database defines "who" each agent is, serving as the foundation for consistent agent behavior across all interactions.
+</Info>
+
+This database stores the fundamental identity information for each agent, including:
+
+- Core personality traits and characteristics
+- Communication style and voice patterns
+- Visual identity and design elements
+- Archetypal roles and behavioral patterns
+- Design principles and philosophical foundations
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "name": "string",
+      "role": "string",
+      "voiceStyle": "string",
+      "personality": "string[]",
+      "archetype": "string",
+      "designPrinciples": "string[]",
+      "visualStyle": "string",
+      "stackTools": "string[]",
+      "keyInterfaces": "string[]"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "name": "MOOD MNKY",
+      "role": "Brand Identity and Sensory Interface",
+      "voiceStyle": "Conversational, friendly, attentive with emotional intelligence",
+      "personality": ["Warm", "Empathetic", "Creative", "Personable"],
+      "archetype": "The Visionary and Composer",
+      "designPrinciples": ["Emotional First", "Inclusivity", "Sensory Augmentation"],
+      "visualStyle": "Monochrome elegance, high fashion scent studio",
+      "stackTools": ["Next.js", "Shopify", "Notion", "Supabase", "Flowise"],
+      "keyInterfaces": ["Fragrance Builder", "Blog", "Product Pages", "Mood Dashboard"]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="name">
+    The unique identifier and display name of the agent.
+  </Accordion>
+  <Accordion title="role">
+    The primary function and responsibility of the agent within the ecosystem.
+  </Accordion>
+  <Accordion title="voiceStyle">
+    The communication style and tone that defines how the agent interacts with users.
+  </Accordion>
+  <Accordion title="personality">
+    Array of key personality traits that shape the agent's behavior and responses.
+  </Accordion>
+  <Accordion title="archetype">
+    The archetypal role that provides a conceptual framework for the agent's identity.
+  </Accordion>
+  <Accordion title="designPrinciples">
+    Core philosophical principles that guide the agent's development and behavior.
+  </Accordion>
+  <Accordion title="visualStyle">
+    Description of the visual aesthetic associated with the agent.
+  </Accordion>
+  <Accordion title="stackTools">
+    Primary technical tools and platforms associated with the agent.
+  </Accordion>
+  <Accordion title="keyInterfaces">
+    Main touchpoints where users interact with the agent.
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Databases
+
+The Agents Database serves as a primary reference for other databases:
+
+- **Agent Capabilities Database** references agent identities to associate capabilities
+- **Integration Points Database** uses agent references to define appropriate connections
+- **Agent Training Database** links training methodologies to specific agent identities
+- **Memory Systems Database** configures memory architectures based on agent identity
+
+## Usage Examples
+
+### Querying Agent Identity
+
+```typescript
+// Example of retrieving agent identity information
+async function getAgentIdentity(agentName: string) {
+  const { data, error } = await supabase
+    .from('agents')
+    .select('*')
+    .eq('name', agentName)
+    .single();
+    
+  if (error) throw error;
+  return data;
+}
+```
+
+### Using Agent Identity in Prompts
+
+```typescript
+// Example of incorporating agent identity into a prompt template
+function createAgentPrompt(agent, userQuery) {
+  return `You are ${agent.name}, the ${agent.role}.
+Your communication style is ${agent.voiceStyle}.
+Your personality is characterized as: ${agent.personality.join(', ')}.
+You embody the archetype of ${agent.archetype}.
+Your responses should reflect the following design principles: ${agent.designPrinciples.join(', ')}.
+
+User query: ${userQuery}`;
+}
+```
+
+## Best Practices
+
+- **Maintain Consistency**: Ensure agent identity remains consistent across all touchpoints
+- **Evolve Gradually**: Make incremental changes to agent identity to maintain user trust
+- **Test Identity Changes**: Validate identity modifications with user testing before deployment
+- **Document History**: Keep a record of identity evolution for reference and training
+- **Cross-reference**: Always check related databases when updating agent identity
+
+## Additional Resources
+
+- [Agent Role Profiles](/agents/agent-role-profiles) - Detailed exploration of agent roles
+- [Agent Styling Guide](/agents/agent-styling-guide) - Visual identity guidelines
+- [MOOD MNKY Agent Overview](/agents/mood-mnky/overview) - Detailed profile of the MOOD MNKY agent
+- [CODE MNKY Agent Overview](/agents/code-mnky/overview) - Detailed profile of the CODE MNKY agent
+- [SAGE MNKY Agent Overview](/agents/sage-mnky/overview) - Detailed profile of the SAGE MNKY agent

@@ -1,0 +1,73 @@
+---
+title: "Bungie API Endpoints"
+description: "Complete reference for all Bungie API endpoints"
+---
+
+# Bungie API Endpoints
+
+Complete reference documentation for all Bungie API endpoints available through the MOOD MNKY Bungie service integration.
+
+## Base URL
+
+```bash
+https://www.bungie.net/Platform
+```
+
+## Authentication
+
+All Bungie API requests require an API key:
+
+```bash
+X-API-Key: your-bungie-api-key
+```
+
+For authenticated endpoints, OAuth 2.0 is required. See the [Authentication Guide](/api/devops/bungie/authentication) for details.
+
+## Endpoint Categories
+
+### App Endpoints
+
+- **Get Application Usage**: Retrieve API usage statistics
+- **Get Application Status**: Check API service status
+
+### User Endpoints
+
+- **Get User**: Retrieve user profile information
+- **Search Users**: Search for users by display name
+- **Get User Memberships**: Get user membership information
+
+### Destiny 2 Endpoints
+
+- **Get Character**: Retrieve character information
+- **Get Inventory**: Get character inventory
+- **Get Vault**: Access character vault
+- **Get Activities**: Retrieve activity history
+- **Get Milestones**: Get milestone progress
+
+### Group V2 Endpoints
+
+- **Get Group**: Retrieve group/clan information
+- **Search Groups**: Search for groups
+- **Get Group Members**: Get group member list
+
+## Rate Limiting
+
+The Bungie API enforces rate limits:
+- **Per-Application**: 25 requests per second
+- **Per-User**: 250 requests per 10 seconds
+
+See [Rate Limiting Guide](/api/devops/bungie/rate-limiting) for details.
+
+## Interactive Playground
+
+Test endpoints interactively using the [Bungie API Playground](/api/devops/bungie/playground).
+
+## Related Documentation
+
+- [Bungie API Overview](/api/devops/bungie/index)
+- [Authentication Guide](/api/devops/bungie/authentication)
+- [Rate Limiting](/api/devops/bungie/rate-limiting)
+- [API Playground](/api/devops/bungie/playground)
+
+
+

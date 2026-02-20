@@ -1,0 +1,595 @@
+---
+title: 'Training Database'
+description: 'Documentation for managing training data, evaluation processes, and performance metrics for MOOD MNKY agents'
+---
+
+# Training Database
+
+The Training Database defines how MOOD MNKY agents are trained, evaluated, and improved over time. It provides a structured approach for maintaining training data, evaluation processes, and performance metrics to ensure agents deliver high-quality, consistent experiences.
+
+## Purpose and Role
+
+<Info>
+The Training Database defines "how" agents learn and improve, ensuring continuous refinement of their capabilities and performance.
+</Info>
+
+This database documents:
+- Training datasets and their characteristics
+- Evaluation methodologies and benchmarks
+- Performance metrics and improvement targets
+- Feedback collection and incorporation
+- Model version control and release management
+- Quality assurance processes and standards
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "training_id": "string",
+      "agent_id": "string",
+      "dataset_id": "string",
+      "model_version": "string",
+      "training_type": "string",
+      "parameters": "object",
+      "metrics": "object",
+      "status": "string",
+      "created_at": "timestamp",
+      "completed_at": "timestamp",
+      "created_by": "string",
+      "artifacts": "array",
+      "notes": "string"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "training_id": "train_f8e20d7",
+      "agent_id": "mood_mnky_001",
+      "dataset_id": "ds_product_recommendations",
+      "model_version": "chat-gpt-4o",
+      "training_type": "fine_tuning",
+      "parameters": {
+        "learning_rate": 3e-5,
+        "epochs": 3,
+        "batch_size": 4,
+        "weight_decay": 0.01,
+        "warmup_steps": 500
+      },
+      "metrics": {
+        "accuracy": 0.92,
+        "f1_score": 0.89,
+        "user_satisfaction": 4.7,
+        "hallucination_rate": 0.03,
+        "response_relevance": 0.91
+      },
+      "status": "completed",
+      "created_at": "2024-04-15T09:00:00Z",
+      "completed_at": "2024-04-15T14:30:00Z",
+      "created_by": "ai_team_lead",
+      "artifacts": [
+        "s3://mood-mnky/models/mood_mnky_001/20240415_143000/config.json",
+        "s3://mood-mnky/models/mood_mnky_001/20240415_143000/model.bin",
+        "s3://mood-mnky/models/mood_mnky_001/20240415_143000/vocab.json"
+      ],
+      "notes": "Training focused on improving product recommendation relevance based on user feedback. Improved accuracy by 5% compared to previous version."
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="training_id">
+    A unique identifier for the training record.
+  </Accordion>
+  <Accordion title="agent_id">
+    The ID of the agent being trained.
+  </Accordion>
+  <Accordion title="dataset_id">
+    The ID of the dataset used for training.
+  </Accordion>
+  <Accordion title="model_version">
+    The base model version or identifier.
+  </Accordion>
+  <Accordion title="training_type">
+    The type of training performed (fine-tuning, prompt engineering, etc.).
+  </Accordion>
+  <Accordion title="parameters">
+    Training parameters and configuration.
+  </Accordion>
+  <Accordion title="metrics">
+    Performance metrics and evaluation results.
+  </Accordion>
+  <Accordion title="status">
+    Current status of the training (pending, in_progress, completed, failed).
+  </Accordion>
+  <Accordion title="created_at">
+    When the training was initiated.
+  </Accordion>
+  <Accordion title="completed_at">
+    When the training was completed.
+  </Accordion>
+  <Accordion title="created_by">
+    The user or system that initiated the training.
+  </Accordion>
+  <Accordion title="artifacts">
+    Paths to model files, logs, and other training artifacts.
+  </Accordion>
+  <Accordion title="notes">
+    Additional information and observations about the training.
+  </Accordion>
+</AccordionGroup>
+
+## Training Methodologies
+
+The MOOD MNKY agent system employs various approaches to training and improving agents:
+
+<CardGroup cols={2}>
+  <Card title="Prompt Engineering" icon="wand-magic-sparkles">
+    Systematic refinement of instructions, examples, and constraints to optimize agent behavior without modifying the underlying model.
+    
+    - System message optimization
+    - Few-shot example curation
+    - Response format structuring
+    - Constraint definition
+    - Chain-of-thought guidance
+  </Card>
+  <Card title="Fine-tuning" icon="sliders">
+    Adjustment of model weights using carefully curated datasets to improve performance on specific tasks and align with brand voice.
+    
+    - Response quality improvements
+    - Domain-specific knowledge
+    - Brand tone and voice alignment
+    - Specialized capability enhancement
+    - Error reduction for common cases
+  </Card>
+  <Card title="Retrieval Augmentation" icon="database">
+    Enhancement of agent capabilities by integrating external knowledge sources and dynamically retrieved context.
+    
+    - Knowledge base integration
+    - Vector store implementation
+    - Chunking and indexing strategies
+    - Query formulation optimization
+    - Context window management
+  </Card>
+  <Card title="Behavioral Alignment" icon="arrow-up-right-dots">
+    Techniques to ensure agent outputs align with desired behaviors, safety standards, and ethical guidelines.
+    
+    - Constitutional AI approaches
+    - Reinforcement Learning from Human Feedback
+    - Safety boundary implementation
+    - Bias detection and mitigation
+    - Response quality control
+  </Card>
+</CardGroup>
+
+## Training Datasets
+
+The system maintains several types of datasets for agent training and evaluation:
+
+<Tabs>
+  <Tab title="Conversation Datasets">
+    ```python
+    conversation_dataset = [
+      {
+        "id": "conv_78325a",
+        "messages": [
+          {"role": "user", "content": "I'm looking for something to help me relax in the evening."},
+          {"role": "assistant", "content": "I'd be happy to recommend some relaxing products for your evening routine. Our Lavender Dreams candle and Sleep Well pillow mist are both popular choices for relaxation. The candle features lavender and chamomile notes, while the mist blends lavender with bergamot and cedarwood. Would you prefer something for your space, like the candle, or a more personal product like the pillow mist?"},
+          {"role": "user", "content": "The pillow mist sounds nice. Does it work well for sensitive skin?"},
+          {"role": "assistant", "content": "Yes, our Sleep Well pillow mist is formulated with sensitive skin in mind. It's designed to be sprayed on your pillow or linens rather than directly on the skin. The formula is free from parabens, phthalates, and artificial colors. All ingredients are clearly listed on our website, and many customers with sensitive skin have reported positive experiences. Would you like me to share the full ingredient list with you?"}
+        ],
+        "metadata": {
+          "task": "product_recommendation",
+          "quality_rating": 4.8,
+          "source": "customer_service",
+          "annotator": "product_specialist",
+          "tags": ["sensitivity", "sleep", "recommendations"]
+        }
+      },
+      # More conversation examples...
+    ]
+    ```
+  </Tab>
+  <Tab title="Task-specific Datasets">
+    ```python
+    task_dataset = [
+      {
+        "id": "task_92451b",
+        "task": "scent_profile_analysis",
+        "input": "I enjoy fresh, citrusy scents in the morning but prefer something warmer and woodier in the evening. I don't like anything too sweet or floral, and strong musk gives me headaches.",
+        "expected_output": {
+          "preferred_notes": ["citrus", "woody", "warm"],
+          "avoided_notes": ["sweet", "floral", "musk"],
+          "recommendations": {
+            "morning": ["Citrus Grove", "Morning Zest"],
+            "evening": ["Cedar Ember", "Warm Hearth"]
+          },
+          "sensitivity": "moderate"
+        },
+        "metadata": {
+          "difficulty": "medium",
+          "context_required": "scent_families"
+        }
+      },
+      # More task examples...
+    ]
+    ```
+  </Tab>
+  <Tab title="Evaluation Benchmarks">
+    ```python
+    evaluation_benchmark = [
+      {
+        "id": "eval_37291c",
+        "category": "personalization",
+        "test_cases": [
+          {
+            "context": "User with previous purchases of lavender products and stated sensitivity to strong scents",
+            "query": "What would you recommend for my bedroom?",
+            "evaluation_criteria": {
+              "personalization": "References previous lavender preference",
+              "safety": "Mentions sensitivity considerations",
+              "relevance": "Suggests bedroom-appropriate products",
+              "specificity": "Names specific products with reasoning"
+            }
+          },
+          # More test cases...
+        ],
+        "passing_threshold": 0.85
+      },
+      # More benchmark categories...
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+## Evaluation Framework
+
+### Core Metrics
+
+<CardGroup cols={3}>
+  <Card title="Functional Accuracy" icon="bullseye">
+    - Task completion rate
+    - Information accuracy
+    - Procedural correctness
+    - Error rate
+    - Recovery capability
+  </Card>
+  <Card title="User Experience" icon="face-smile">
+    - Response relevance
+    - Helpfulness rating
+    - User satisfaction
+    - Conversation flow
+    - Clarity and conciseness
+  </Card>
+  <Card title="Brand Alignment" icon="fingerprint">
+    - Tone consistency
+    - Brand value reflection
+    - Voice appropriateness
+    - Messaging alignment
+    - Visual harmony
+  </Card>
+  <Card title="Safety" icon="shield">
+    - Policy compliance
+    - Boundary adherence
+    - Refusal quality
+    - Risk mitigation
+    - Content appropriateness
+  </Card>
+  <Card title="Efficiency" icon="gauge-high">
+    - Response time
+    - Resolution speed
+    - Turn efficiency
+    - Resource utilization
+    - Cost-effectiveness
+  </Card>
+  <Card title="Adaptability" icon="arrows-rotate">
+    - Context handling
+    - Ambiguity resolution
+    - Error recovery
+    - Flexibility
+    - Learning application
+  </Card>
+</CardGroup>
+
+### Evaluation Processes
+
+```python
+from agents import Agent, Runner
+from evaluation import EvaluationFramework
+
+# Initialize evaluation framework
+evaluator = EvaluationFramework()
+
+async def evaluate_agent_version(agent_id: str, version: str, 
+                                 benchmark_id: str) -> dict:
+    """Evaluate a specific agent version against a benchmark."""
+    # Load agent
+    agent = await load_agent(agent_id, version)
+    
+    # Load benchmark
+    benchmark = evaluator.load_benchmark(benchmark_id)
+    
+    # Run evaluation
+    results = await evaluator.run_benchmark(
+        agent=agent,
+        benchmark=benchmark,
+        iterations=100,
+        parallel=True
+    )
+    
+    # Analyze results
+    analysis = evaluator.analyze_results(results)
+    
+    # Store evaluation record
+    evaluation_record = evaluator.store_evaluation(
+        agent_id=agent_id,
+        version=version,
+        benchmark_id=benchmark_id,
+        results=results,
+        analysis=analysis
+    )
+    
+    return evaluation_record
+
+# Example evaluation
+results = await evaluate_agent_version(
+    agent_id="mood_mnky_001",
+    version="v1.2.3",
+    benchmark_id="benchmark_core_capabilities"
+)
+```
+
+## Integration with OpenAI Agents SDK
+
+### Agent Version Management
+
+```python
+from agents import Agent, Runner
+from training import AgentVersionManager
+
+# Initialize version manager
+version_manager = AgentVersionManager()
+
+# Create new agent version
+new_version = await version_manager.create_version(
+    agent_id="mood_mnky_001",
+    base_version="v1.2.3",
+    changes=[
+        {"type": "instruction_update", "content": "Improved product recommendation guidance"},
+        {"type": "parameter_update", "name": "temperature", "value": 0.7},
+        {"type": "tool_addition", "tool_id": "scent_analyzer"}
+    ],
+    metadata={
+        "author": "ai_team_lead",
+        "purpose": "Enhance recommendation quality",
+        "ticket": "MNKY-452"
+    }
+)
+
+# Load specific agent version
+agent = await version_manager.load_version(
+    agent_id="mood_mnky_001",
+    version="v1.3.0"
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "I'm looking for a gift for someone who loves relaxing baths")
+```
+
+### A/B Testing Implementation
+
+```python
+from agents import Agent, Runner
+from training import ABTestManager
+import random
+
+# Initialize A/B test manager
+ab_test = ABTestManager()
+
+# Create A/B test
+test_id = await ab_test.create_test(
+    name="product_recommendation_approach",
+    variants={
+        "control": "mood_mnky_001:v1.2.3",
+        "variant_a": "mood_mnky_001:v1.3.0",
+        "variant_b": "mood_mnky_001:v1.3.1"
+    },
+    allocation={
+        "control": 0.4,
+        "variant_a": 0.3,
+        "variant_b": 0.3
+    },
+    metrics=[
+        "conversion_rate",
+        "satisfaction_score",
+        "average_response_time"
+    ],
+    start_date="2024-05-15",
+    end_date="2024-05-29"
+)
+
+async def get_ab_test_agent(user_id: str, test_id: str) -> Agent:
+    """Get the appropriate agent variant for a user based on A/B test."""
+    # Determine which variant to show this user
+    variant = await ab_test.get_user_variant(user_id, test_id)
+    
+    # Record exposure to this variant
+    await ab_test.record_exposure(test_id, user_id, variant)
+    
+    # Load the agent variant
+    agent_id, version = variant.split(":")
+    agent = await version_manager.load_version(agent_id, version)
+    
+    return agent
+
+# Example usage
+user_id = "usr_425b3c"
+agent = await get_ab_test_agent(user_id, test_id)
+runner = Runner()
+result = await runner.run(agent, "What would you recommend for stress relief?")
+
+# Record conversion if applicable
+if user_added_product_to_cart:
+    await ab_test.record_conversion(test_id, user_id)
+```
+
+## Training Infrastructure
+
+The MOOD MNKY training system uses specialized infrastructure for different training approaches:
+
+<Tabs>
+  <Tab title="Prompt Engineering">
+    ```
+    ┌─────────────────────────┐
+    │   Prompt Lab Platform   │
+    ├─────────────────────────┤
+    │ - Version control       │
+    │ - A/B testing framework │
+    │ - Performance analytics │
+    │ - Collaborative editing │
+    │ - Template management   │
+    └─────────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Fine-tuning">
+    ```
+    ┌─────────────────────────┐
+    │   Training Pipeline     │
+    ├─────────────────────────┤
+    │ - Dataset preparation   │
+    │ - Hyperparameter tuning │
+    │ - Training orchestration│
+    │ - Model evaluation      │
+    │ - Artifact management   │
+    └─────────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Evaluation">
+    ```
+    ┌─────────────────────────┐   ┌─────────────────────────┐
+    │   Benchmark System      │   │   Continuous Evaluation │
+    ├─────────────────────────┤   ├─────────────────────────┤
+    │ - Test case management  │   │ - Production monitoring │
+    │ - Automated evaluation  │   │ - User feedback analysis│
+    │ - Performance tracking  │   │ - Quality alerting      │
+    │ - Regression detection  │   │ - Performance dashboards│
+    │ - Report generation     │   │ - Improvement targeting │
+    └─────────────────────────┘   └─────────────────────────┘
+    ```
+  </Tab>
+</Tabs>
+
+## Continuous Improvement Process
+
+The MOOD MNKY agent system follows a structured improvement cycle:
+
+<Steps>
+  <Step title="Data Collection">
+    Gathering user interactions, feedback, and performance metrics from production environments to identify improvement opportunities
+  </Step>
+  <Step title="Analysis & Prioritization">
+    Analyzing collected data to identify patterns, issues, and high-impact improvement areas, then prioritizing them based on business impact
+  </Step>
+  <Step title="Hypothesis Development">
+    Formulating specific improvement hypotheses with expected outcomes and measurement approaches
+  </Step>
+  <Step title="Implementation">
+    Implementing improvements through prompt engineering, fine-tuning, or system modifications
+  </Step>
+  <Step title="Evaluation">
+    Testing improvements against benchmarks and through A/B testing to validate hypotheses
+  </Step>
+  <Step title="Deployment">
+    Rolling out validated improvements to production with appropriate monitoring
+  </Step>
+  <Step title="Monitoring">
+    Continuously tracking performance to ensure improvements maintain effectiveness over time
+  </Step>
+</Steps>
+
+## Feedback Collection
+
+The system collects various forms of feedback to guide training and improvement:
+
+<CardGroup cols={2}>
+  <Card title="Explicit User Feedback" icon="comment">
+    Direct feedback from users about their experience:
+    - Ratings and reviews
+    - Feature requests
+    - Error reports
+    - Satisfaction surveys
+    - Support tickets
+  </Card>
+  <Card title="Implicit Behavioral Signals" icon="chart-simple">
+    Observed patterns in user behavior:
+    - Conversation completion rates
+    - Follow-up question frequency
+    - Task success indicators
+    - Engagement metrics
+    - Repeat usage patterns
+  </Card>
+  <Card title="Human Evaluation" icon="user-check">
+    Expert assessment of agent performance:
+    - Accuracy verification
+    - Response quality scoring
+    - Brand alignment review
+    - Safety evaluation
+    - Improvement suggestions
+  </Card>
+  <Card title="System Metrics" icon="gauge">
+    Technical performance indicators:
+    - Response latency
+    - Error rates
+    - Token usage efficiency
+    - Completion rates
+    - API performance
+  </Card>
+</CardGroup>
+
+## Best Practices for Agent Training
+
+### Data Quality
+
+- **Representative Sampling**: Ensure training data covers the full range of expected use cases
+- **Balanced Coverage**: Maintain appropriate distribution across different tasks and scenarios
+- **Quality Control**: Implement rigorous review processes for training data
+- **Continuous Enrichment**: Regularly update datasets with new examples and edge cases
+- **Diversity Consideration**: Include diverse perspectives and language patterns
+
+### Evaluation Design
+
+- **Comprehensive Benchmarks**: Create benchmarks that cover all critical capabilities
+- **Real-world Alignment**: Design evaluation scenarios that reflect actual usage
+- **Objective Metrics**: Define clear, measurable criteria for success
+- **Human-in-the-loop**: Combine automated evaluation with human assessment
+- **Progressive Standards**: Gradually increase quality thresholds as capabilities improve
+
+### Deployment Strategy
+
+- **Staged Rollout**: Use progressive deployment to limit risk
+- **Rollback Readiness**: Maintain capability to quickly revert to previous versions
+- **Monitoring Plan**: Define key metrics to watch during and after deployment
+- **Feedback Mechanisms**: Implement channels for collecting user feedback on changes
+- **Documentation**: Maintain clear records of changes and their expected effects
+
+### Continuous Improvement
+
+- **Regular Review Cycles**: Establish scheduled reviews of agent performance
+- **Targeted Improvements**: Focus on specific capabilities rather than general changes
+- **Impact Measurement**: Quantify the effect of each improvement
+- **Learning Documentation**: Maintain knowledge base of what works and what doesn't
+- **Cross-functional Input**: Incorporate perspectives from multiple stakeholders
+
+## Additional Resources
+
+- [Agent Development Lifecycle](/agents/developer-guide/lifecycle)
+- [Evaluation Framework Documentation](/agents/quality-assurance/evaluation-framework)
+- [Training Dataset Management](/platform-services/data-management)
+- [A/B Testing Implementation](/agents/developer-guide/ab-testing)
+- [Performance Monitoring](/operations/monitoring)

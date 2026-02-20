@@ -1,0 +1,494 @@
+---
+title: 'n8n Endpoints'
+description: 'Detailed documentation of the n8n service endpoints and webhooks in the MOOD MNKY ecosystem'
+---
+
+# n8n Endpoints
+
+This document provides a comprehensive reference for the n8n service endpoints and webhooks available in the MOOD MNKY ecosystem. These endpoints allow you to interact with workflows, trigger automations, and manage integrations.
+
+## Base URLs
+
+- **Production**: `https://mnky-mind-n8n.moodmnky.com`
+- **Development**: `http://localhost:5678`
+
+## Authentication
+
+All n8n API requests require authentication. There are two authentication methods available:
+
+### API Key Authentication
+
+Include your API key in the request headers:
+
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+To obtain an API key:
+1. Navigate to the n8n dashboard
+2. Go to Settings > API Keys
+3. Create a new API key with appropriate permissions
+
+### Session Authentication
+
+For browser-based access, use session authentication by logging in through the n8n interface.
+
+## Core API Endpoints
+
+### Workflows API
+
+#### List All Workflows
+
+```
+GET /api/v1/workflows
+```
+
+Returns a list of all workflows available to the authenticated user.
+
+**Example Request:**
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "data": [
+    {
+      "id": "1",
+      "name": "User Onboarding Flow",
+      "active": true,
+      "createdAt": "2023-01-15T12:30:45.000Z",
+      "updatedAt": "2023-04-20T09:15:30.000Z"
+    },
+    {
+      "id": "2",
+      "name": "Order Processing",
+      "active": true,
+      "createdAt": "2023-02-22T14:20:10.000Z",
+      "updatedAt": "2023-05-10T11:05:25.000Z"
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+#### Get Workflow Details
+
+```
+GET /api/v1/workflows/{id}
+```
+
+Returns detailed information about a specific workflow.
+
+**Parameters:**
+- `id` (path parameter): The ID of the workflow
+
+**Example Request:**
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/1" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "id": "1",
+  "name": "User Onboarding Flow",
+  "nodes": [
+    {
+      "id": "node1",
+      "name": "Start",
+      "type": "n8n-nodes-base.webhook",
+      "position": [100, 200],
+      "parameters": {
+        // node parameters
+      }
+    },
+    // additional nodes
+  ],
+  "connections": {
+    // workflow connections
+  },
+  "active": true,
+  "createdAt": "2023-01-15T12:30:45.000Z",
+  "updatedAt": "2023-04-20T09:15:30.000Z"
+}
+```
+
+#### Activate Workflow
+
+```
+POST /api/v1/workflows/{id}/activate
+```
+
+Activates a workflow, enabling it to respond to triggers.
+
+**Parameters:**
+- `id` (path parameter): The ID of the workflow
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/1/activate" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "id": "1",
+  "name": "User Onboarding Flow",
+  "active": true,
+  "updatedAt": "2023-06-15T10:45:22.000Z"
+}
+```
+
+#### Deactivate Workflow
+
+```
+POST /api/v1/workflows/{id}/deactivate
+```
+
+Deactivates a workflow, preventing it from responding to triggers.
+
+**Parameters:**
+- `id` (path parameter): The ID of the workflow
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/1/deactivate" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "id": "1",
+  "name": "User Onboarding Flow",
+  "active": false,
+  "updatedAt": "2023-06-15T11:05:17.000Z"
+}
+```
+
+### Executions API
+
+#### List Workflow Executions
+
+```
+GET /api/v1/executions
+```
+
+Returns a list of workflow executions.
+
+**Query Parameters:**
+- `workflowId` (optional): Filter by workflow ID
+- `status` (optional): Filter by execution status (`success`, `error`, `waiting`)
+- `limit` (optional): Maximum number of results to return (default: 20)
+
+**Example Request:**
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/api/v1/executions?workflowId=1&status=success&limit=10" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "data": [
+    {
+      "id": "100",
+      "workflowId": "1",
+      "finished": true,
+      "mode": "trigger",
+      "status": "success",
+      "startedAt": "2023-06-10T15:30:45.000Z",
+      "stoppedAt": "2023-06-10T15:30:50.000Z"
+    },
+    // additional executions
+  ],
+  "nextCursor": null
+}
+```
+
+#### Get Execution Details
+
+```
+GET /api/v1/executions/{id}
+```
+
+Returns detailed information about a specific execution.
+
+**Parameters:**
+- `id` (path parameter): The ID of the execution
+
+**Example Request:**
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/api/v1/executions/100" \
+  -H "X-N8N-API-KEY: your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "id": "100",
+  "workflowId": "1",
+  "workflowData": {
+    // workflow structure
+  },
+  "data": {
+    // execution data and results
+  },
+  "mode": "trigger",
+  "finished": true,
+  "status": "success",
+  "startedAt": "2023-06-10T15:30:45.000Z",
+  "stoppedAt": "2023-06-10T15:30:50.000Z"
+}
+```
+
+### Webhook Endpoints
+
+n8n can create webhook endpoints that serve as triggers for workflows. These webhooks are automatically generated when creating a webhook node in a workflow.
+
+#### Workflow Webhook
+
+```
+POST /webhook/{path}
+```
+
+Triggers a workflow with a webhook node configured with the specified path.
+
+**Parameters:**
+- `path` (path parameter): The unique webhook path for the workflow
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/user-onboarding" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "12345",
+    "email": "user@example.com",
+    "name": "John Doe"
+  }'
+```
+
+**Example Response:**
+Depends on the workflow configuration. The webhook may return:
+- Data produced by the workflow
+- A simple acknowledgment
+- An empty response with a status code
+
+#### Webhook Authentication
+
+For secure webhooks, you can add authentication:
+- Basic Auth
+- Header-based authentication
+- Query parameter-based authentication
+
+Example with header authentication:
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/secure-process" \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Key: your_webhook_key_here" \
+  -d '{
+    "data": "your payload here"
+  }'
+```
+
+## MOOD MNKY Specific Endpoints
+
+### Content Synchronization Webhook
+
+```
+POST /webhook/notion-to-mintlify
+```
+
+Triggers the workflow that synchronizes content from Notion to Mintlify documentation.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/notion-to-mintlify" \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Key: your_webhook_key_here" \
+  -d '{
+    "pageId": "notion-page-id",
+    "destination": "docs/api/path"
+  }'
+```
+
+### Order Processing Webhook
+
+```
+POST /webhook/shopify-order-processing
+```
+
+Triggers the workflow for processing new orders from Shopify.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/shopify-order-processing" \
+  -H "Content-Type: application/json" \
+  -H "X-Shopify-Hmac-SHA256: hmac_signature" \
+  -d '{
+    "id": "order_id",
+    "customer": {},
+    "line_items": []
+  }'
+```
+
+### User Onboarding Webhook
+
+```
+POST /webhook/user-registration
+```
+
+Triggers the user onboarding workflow when a new user registers.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/user-registration" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "userId": "12345",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "registrationSource": "website"
+  }'
+```
+
+## Integration with Other Services
+
+### Ollama Integration
+
+```
+POST /webhook/ollama-completion-processor
+```
+
+Processes the results of Ollama completions and routes them to appropriate services.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/ollama-completion-processor" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "completionId": "comp_123",
+    "model": "llama2",
+    "result": "The generated text response",
+    "destination": "user_chat"
+  }'
+```
+
+### Flowise Integration
+
+```
+POST /webhook/flowise-flow-trigger
+```
+
+Triggers a Flowise flow from an n8n workflow.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/flowise-flow-trigger" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "flowId": "flow_123",
+    "input": {
+      "question": "How does this product work?",
+      "context": "Product documentation"
+    }
+  }'
+```
+
+### Langchain Integration
+
+```
+POST /webhook/document-processing
+```
+
+Triggers the document processing workflow using Langchain.
+
+**Example Request:**
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/webhook/document-processing" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "documentId": "doc_123",
+    "operations": ["chunk", "embed", "index"],
+    "chunkSize": 1000,
+    "embeddingModel": "text-embedding-ada-002"
+  }'
+```
+
+## Health Check Endpoint
+
+```
+GET /health
+```
+
+Returns the health status of the n8n service.
+
+**Example Request:**
+```bash
+curl -X GET "https://mnky-mind-n8n.moodmnky.com/health"
+```
+
+**Example Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2023-06-15T12:00:00.000Z",
+  "version": "1.5.0",
+  "databaseStatus": "connected"
+}
+```
+
+## Best Practices
+
+### Rate Limiting
+
+The n8n API implements rate limiting to protect the service from abuse. Limits apply based on:
+- API key
+- IP address
+- Endpoint
+
+If rate limits are exceeded, the API returns a `429 Too Many Requests` response.
+
+### Webhook Security
+
+When creating webhooks:
+1. Use authentication mechanisms (API keys, HMAC validation)
+2. Validate request payload schemas
+3. Implement retry mechanisms for failed webhook deliveries
+4. Use HTTPS for all production webhooks
+
+### Error Handling
+
+API errors follow a consistent format:
+
+```json
+{
+  "error": true,
+  "message": "Error description",
+  "code": "ERROR_CODE"
+}
+```
+
+Common error codes:
+- `UNAUTHORIZED`: Authentication failed
+- `FORBIDDEN`: Insufficient permissions
+- `WORKFLOW_NOT_FOUND`: Requested workflow doesn't exist
+- `EXECUTION_NOT_FOUND`: Requested execution doesn't exist
+- `RATE_LIMIT_EXCEEDED`: Too many requests
+
+## Support Resources
+
+- [MOOD MNKY Developer Portal](https://developers.moodmnky.com)
+- [n8n API Documentation](https://docs.n8n.io/api)
+- [n8n Webhook Documentation](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook)
+- [Support Contact](mailto:support@moodmnky.com) 

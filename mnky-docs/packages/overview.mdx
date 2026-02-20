@@ -1,0 +1,185 @@
+---
+title: "Packages Overview"
+description: "Shared packages and libraries used across the MOOD MNKY monorepo"
+icon: "cube"
+---
+
+# Packages Overview
+
+The MOOD MNKY monorepo includes several shared packages that enable code reuse, maintainability, and consistency across applications. These packages provide common functionality, UI components, and configuration that all applications can leverage.
+
+<Info>
+All packages follow consistent structure and are published as workspace dependencies. See [Monorepo Structure](/technology-stack/mono-repo-structure) for details on package organization.
+</Info>
+
+## Package Architecture
+
+Shared packages are organized to maximize reuse while maintaining clear boundaries:
+
+<CardGroup cols={2}>
+  <Card title="UI Components" icon="palette" href="/packages/ui">
+    ShadCN-based component library for consistent design
+  </Card>
+  <Card title="Supabase Client" icon="database" href="/packages/supabase-client">
+    Wrapped Supabase client with SSL support and type safety
+  </Card>
+  <Card title="ESLint Config" icon="code" href="/packages/eslint-config">
+    Shared linting configurations for code consistency
+  </Card>
+  <Card title="TypeScript Config" icon="file-code" href="/packages/typescript-config">
+    Shared TypeScript configurations and compiler options
+  </Card>
+</CardGroup>
+
+## Package Comparison
+
+| Package | Purpose | Used By | Key Features |
+|---------|---------|---------|--------------|
+| **@repo/ui** | UI Components | All apps | ShadCN components, theming, accessibility |
+| **@repo/supabase-client** | Database Client | All apps | SSL support, type safety, singleton pattern |
+| **@repo/eslint-config** | Linting | All apps | Consistent code style, shared rules |
+| **@repo/typescript-config** | Type Safety | All apps | Shared TS config, strict mode |
+
+## Using Shared Packages
+
+### Installation
+
+Packages are automatically available as workspace dependencies:
+
+```typescript
+// In any app's package.json
+{
+  "dependencies": {
+    "@repo/ui": "workspace:*",
+    "@repo/supabase-client": "workspace:*"
+  }
+}
+```
+
+### Importing Packages
+
+```typescript
+// Import UI components
+import { Button, Card } from '@repo/ui';
+
+// Import Supabase client
+import { createSupabaseClient } from '@repo/supabase-client';
+
+// Import shared types
+import type { User } from '@repo/types';
+```
+
+### Package Development
+
+1. **Create Package**: Add new package to `packages/` directory
+2. **Configure**: Set up `package.json` with workspace reference
+3. **Build**: Package builds automatically with monorepo build
+4. **Use**: Import in applications as workspace dependency
+
+## Package Structure
+
+All packages follow a consistent structure:
+
+```
+packages/[package-name]/
+├── src/
+│   └── index.ts            # Main entry point
+├── dist/                   # Built output (generated)
+├── tests/                  # Tests
+├── package.json            # Package metadata
+└── tsconfig.json           # TypeScript configuration
+```
+
+## Creating New Packages
+
+### When to Create a Package
+
+Create a new package when:
+- Code is used by multiple applications
+- Functionality is self-contained and reusable
+- You want to enforce consistent APIs
+- Code represents a distinct domain or capability
+
+### Package Creation Steps
+
+1. **Create Directory**:
+   ```bash
+   mkdir -p packages/new-package/src
+   ```
+
+2. **Initialize Package**:
+   ```bash
+   cd packages/new-package
+   pnpm init
+   ```
+
+3. **Configure Workspace**:
+   ```json
+   {
+     "name": "@repo/new-package",
+     "version": "0.1.0",
+     "main": "./dist/index.js",
+     "types": "./dist/index.d.ts"
+   }
+   ```
+
+4. **Add to Workspace**:
+   Ensure `pnpm-workspace.yaml` includes `packages/*`
+
+5. **Build Configuration**:
+   Set up TypeScript and build scripts
+
+## Package Best Practices
+
+### API Design
+
+- **Clear Exports**: Export only what's needed
+- **Type Safety**: Provide TypeScript types
+- **Documentation**: Document public APIs
+- **Versioning**: Follow SemVer for breaking changes
+
+### Testing
+
+- **Unit Tests**: Test package functionality in isolation
+- **Integration Tests**: Test package usage in apps
+- **Type Tests**: Ensure TypeScript types are correct
+
+### Maintenance
+
+- **Keep Updated**: Update dependencies regularly
+- **Document Changes**: Maintain changelog
+- **Breaking Changes**: Communicate breaking changes clearly
+
+## Package Usage by Application
+
+| Package | Used By | Purpose |
+|---------|---------|---------|
+| **@repo/ui** | All apps | Consistent UI components |
+| **@repo/supabase-client** | All apps | Database access and auth |
+| **@repo/eslint-config** | All apps | Code quality and consistency |
+| **@repo/typescript-config** | All apps | Type safety and compilation |
+
+## Package Dependencies
+
+```
+@repo/ui
+  └── Uses: Tailwind CSS, ShadCN UI
+
+@repo/supabase-client
+  └── Uses: @supabase/supabase-js
+
+@repo/eslint-config
+  └── Uses: ESLint, TypeScript ESLint
+
+@repo/typescript-config
+  └── Uses: TypeScript compiler
+```
+
+## Related Resources
+
+- [Monorepo Structure](/technology-stack/mono-repo-structure) - Overall architecture
+- [Applications](/applications/overview) - Applications using packages
+- [Development Guides](/developer-resources/environment-setup) - Setup and workflows
+- [MNKY VERSE](/applications/mnky-verse) - See UI components in action
+- [TRVLR Sync](/applications/trvlr-sync) - See Supabase client usage
+

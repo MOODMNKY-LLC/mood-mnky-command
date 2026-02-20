@@ -1,0 +1,561 @@
+---
+title: 'Mono Repo Structure'
+description: 'Architecture and organization of the MOOD MNKY mono repository'
+---
+
+# Mono Repo Structure
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/monorepo-structure.svg"
+  alt="Mono Repository Structure"
+/>
+
+## Overview
+
+The MOOD MNKY ecosystem uses a mono repository architecture to organize all codebase components and ensure consistency across our digital products. This approach allows us to share code, maintain unified standards, and streamline development workflows.
+
+<Note>
+  Our mono repo is managed with Turborepo, providing parallel execution, incremental builds, and a structured development experience.
+</Note>
+
+## Repository Organization
+
+<CardGroup cols={3}>
+  <Card title="Apps" icon="window">
+    Complete applications that are deployed independently
+  </Card>
+  <Card title="Packages" icon="cube">
+    Shared libraries used across multiple applications
+  </Card>
+  <Card title="Infra" icon="server">
+    Infrastructure configuration and deployment resources
+  </Card>
+  <Card title="Data" icon="database">
+    Data models and schema definitions
+  </Card>
+  <Card title="Config" icon="gear">
+    Configuration files shared across the codebase
+  </Card>
+</CardGroup>
+
+## Directory Structure
+
+```bash
+MNKY-REPO/
+├── apps/
+│   ├── web/                 # Primary MOOD MNKY website (Next.js)
+│   ├── dojo/                # Dojo platform (Next.js)
+│   ├── admin/               # Admin dashboard (Next.js)
+│   ├── mobile/              # Mobile app (React Native)
+│   └── docs/                # Documentation (Mintlify)
+│
+├── packages/
+│   ├── ui/                  # Shared UI components
+│   ├── utils/               # Utility functions
+│   ├── hooks/               # Shared React hooks
+│   ├── api/                 # API client libraries
+│   ├── config/              # Shared configuration
+│   ├── supabase-client/     # Supabase client and utilities
+│   ├── analytics/           # Analytics implementation
+│   ├── scent-engine/        # Fragrance creation logic
+│   ├── agent-core/          # Shared agent infrastructure
+│   ├── token-economy/       # Token system implementation
+│   └── types/               # Shared TypeScript types
+│
+├── infra/
+│   ├── supabase/            # Supabase infrastructure
+│   │   ├── migrations/      # Database migration scripts
+│   │   ├── functions/       # Edge functions
+│   │   └── seed-data/       # Seed data for development
+│   ├── deployment/          # Deployment configurations
+│   └── docker/              # Docker configurations
+│
+├── data/
+│   ├── models/              # TypeScript data models
+│   └── schemas/             # Database schema definitions
+│
+├── agents/                  # Agent definitions and configurations
+│   ├── mood-mnky/           # MOOD MNKY agent
+│   ├── code-mnky/           # CODE MNKY agent
+│   └── sage-mnky/           # SAGE MNKY agent
+│
+├── content/                 # Content libraries and assets
+├── docs/                    # Documentation (Mintlify)
+├── scripts/                 # Repository scripts
+├── config/                  # Shared configurations
+├── .github/                 # GitHub workflows
+├── turbo.json               # Turborepo configuration
+└── package.json             # Root package.json
+```
+
+## Application Structure
+
+Each application follows a consistent structure to ensure predictability across the codebase:
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    ```bash
+    apps/[app-name]/
+    ├── src/
+    │   ├── app/             # App router components and routes
+    │   ├── components/      # React components
+    │   │   ├── ui/          # Presentational components
+    │   │   └── features/    # Feature-specific components
+    │   ├── hooks/           # Custom React hooks
+    │   ├── lib/             # Utilities and helpers
+    │   ├── styles/          # Global styles
+    │   └── types/           # TypeScript types
+    ├── public/              # Static assets
+    ├── tests/               # Tests
+    ├── next.config.js       # Next.js configuration
+    ├── package.json         # App-specific dependencies
+    └── tsconfig.json        # TypeScript configuration
+    ```
+  </Tab>
+  <Tab title="React Native">
+    ```bash
+    apps/mobile/
+    ├── src/
+    │   ├── screens/         # Screen components
+    │   ├── components/      # React components
+    │   │   ├── ui/          # Presentational components
+    │   │   └── features/    # Feature-specific components
+    │   ├── navigation/      # Navigation configuration
+    │   ├── hooks/           # Custom React hooks
+    │   ├── utils/           # Utilities and helpers
+    │   ├── styles/          # Global styles
+    │   └── types/           # TypeScript types
+    ├── assets/              # Static assets
+    ├── tests/               # Tests
+    ├── app.json             # App configuration
+    ├── package.json         # App-specific dependencies
+    └── tsconfig.json        # TypeScript configuration
+    ```
+  </Tab>
+</Tabs>
+
+## Package Structure
+
+Shared packages follow a consistent structure to make them easy to consume:
+
+```bash
+packages/[package-name]/
+├── src/
+│   └── index.ts            # Main entry point
+├── dist/                   # Built output (generated)
+├── tests/                  # Tests
+├── package.json            # Package metadata and dependencies
+└── tsconfig.json           # TypeScript configuration
+```
+
+## Infrastructure and Data Organization
+
+Our infrastructure and data follow a clear organization:
+
+<Tabs>
+  <Tab title="Supabase">
+    ```bash
+    # Infrastructure configuration
+    infra/supabase/
+    ├── migrations/           # Database migration scripts
+    │   ├── 20240101000000_   # Timestamp-prefixed migrations
+    │   └── README.md         # Migration documentation
+    ├── functions/            # Edge and database functions
+    ├── config.toml           # Supabase configuration
+    └── seed-data/            # Development seed data
+    
+    # Data definitions
+    data/
+    ├── schemas/              # SQL schema definitions
+    │   ├── users.sql         # Users table schema
+    │   └── products.sql      # Products table schema
+    ├── models/               # TypeScript data models
+    │   ├── user.model.ts     # User model definition
+    │   └── product.model.ts  # Product model definition
+    ```
+  </Tab>
+  <Tab title="Agents">
+    ```bash
+    agents/
+    ├── mood-mnky/            # MOOD MNKY agent
+    │   ├── prompts/          # Agent prompt templates
+    │   ├── capabilities/     # Specialized capabilities
+    │   └── config.ts         # Agent configuration
+    ├── code-mnky/            # CODE MNKY agent
+    │   └── ...
+    ├── sage-mnky/            # SAGE MNKY agent
+    │   └── ...
+    └── internal/             # Shared agent utilities
+        └── ...
+    ```
+  </Tab>
+</Tabs>
+
+## Dependency Management
+
+We use a combination of tools to manage dependencies in our mono repo:
+
+<Steps>
+  <Step title="Package Manager">
+    pnpm is our primary package manager, chosen for its efficient handling of dependencies in a mono repo structure.
+    
+    ```bash
+    # Installing a dependency in a specific package or app
+    pnpm --filter @mood-mnky/web add react-query
+    
+    # Installing a dependency for all packages and apps
+    pnpm add -w typescript
+    
+    # Installing a workspace package as a dependency
+    pnpm --filter @mood-mnky/dojo add @mood-mnky/ui
+    ```
+  </Step>
+  <Step title="Workspace Configuration">
+    Our workspaces are configured in pnpm-workspace.yaml:
+    
+    ```yaml
+    packages:
+      - 'apps/*'
+      - 'packages/*'
+      - 'infra/*'
+      - 'data'
+    ```
+    
+    And the root package.json:
+    
+    ```json
+    {
+      "name": "mood-mnky",
+      "private": true,
+      "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build",
+        "test": "turbo run test",
+        "lint": "turbo run lint"
+      }
+    }
+    ```
+  </Step>
+  <Step title="Build System">
+    Turborepo orchestrates our build process, enabling incremental builds and task caching.
+    
+    ```json
+    // turbo.json
+    {
+      "$schema": "https://turbo.build/schema.json",
+      "pipeline": {
+        "build": {
+          "dependsOn": ["^build"],
+          "outputs": ["dist/**", ".next/**", "public/dist/**"]
+        },
+        "test": {
+          "dependsOn": ["^build"],
+          "outputs": []
+        },
+        "lint": {
+          "outputs": []
+        },
+        "dev": {
+          "cache": false,
+          "persistent": true
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Supabase Integration
+
+The Supabase integration follows our structured organization:
+
+<AccordionGroup>
+  <Accordion title="Database Schema" icon="database">
+    Database schemas are defined in SQL files within the `data/schemas` directory:
+    
+    ```sql
+    -- data/schemas/users.sql
+    CREATE TABLE public.users (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      full_name TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+      scent_profile JSONB,
+      preferences JSONB
+    );
+    
+    -- Add indexes for common query patterns
+    CREATE INDEX users_email_idx ON public.users (email);
+    
+    -- Add RLS policies
+    ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+    
+    CREATE POLICY "Users can view their own data" ON public.users
+      FOR SELECT USING (auth.uid() = id);
+      
+    CREATE POLICY "Users can update their own data" ON public.users
+      FOR UPDATE USING (auth.uid() = id);
+    ```
+    
+    These schema files are the source of truth for table definitions and are used to generate migrations.
+  </Accordion>
+  
+  <Accordion title="Data Models" icon="code">
+    TypeScript data models provide type safety for database interactions:
+    
+    ```typescript
+    // data/models/user.model.ts
+    import { Database } from './supabase.types';
+    
+    export interface User {
+      id: string;
+      email: string;
+      fullName: string | null;
+      createdAt: string;
+      updatedAt: string;
+      scentProfile: ScentProfile | null;
+      preferences: UserPreferences | null;
+    }
+    
+    export interface ScentProfile {
+      favoriteNotes: string[];
+      intensity: number;
+      preferences: {
+        floral: number;
+        woody: number;
+        citrus: number;
+        oriental: number;
+        fresh: number;
+      };
+    }
+    
+    export interface UserPreferences {
+      theme: 'light' | 'dark' | 'system';
+      notifications: boolean;
+      newsletter: boolean;
+    }
+    
+    // Type-safe helper to convert from DB model to application model
+    export function fromDBUser(
+      dbUser: Database['public']['Tables']['users']['Row']
+    ): User {
+      return {
+        id: dbUser.id,
+        email: dbUser.email,
+        fullName: dbUser.full_name,
+        createdAt: dbUser.created_at,
+        updatedAt: dbUser.updated_at,
+        scentProfile: dbUser.scent_profile,
+        preferences: dbUser.preferences
+      };
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Migrations" icon="code-branch">
+    Migrations in the `infra/supabase/migrations` directory reflect changes to the database schema:
+    
+    ```sql
+    -- infra/supabase/migrations/20240401000000_create_users_table.sql
+    CREATE TABLE public.users (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      full_name TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    );
+    
+    -- infra/supabase/migrations/20240402000000_add_scent_profile.sql
+    ALTER TABLE public.users ADD COLUMN scent_profile JSONB;
+    ALTER TABLE public.users ADD COLUMN preferences JSONB;
+    ```
+    
+    Each migration is a timestamped file that can be applied in sequence to build the database structure.
+  </Accordion>
+  
+  <Accordion title="Supabase Client" icon="plug">
+    The `packages/supabase-client` package provides a consistent way to interact with Supabase:
+    
+    ```typescript
+    // packages/supabase-client/src/index.ts
+    import { createClient } from '@supabase/supabase-js';
+    import type { Database } from '@repo/types';
+    
+    let supabaseInstance: ReturnType<typeof createClient> | null = null;
+    
+    export function getSupabaseClient() {
+      if (!supabaseInstance) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey) {
+          throw new Error('Missing Supabase environment variables');
+        }
+        
+        supabaseInstance = createClient<Database>(supabaseUrl, supabaseKey);
+      }
+      
+      return supabaseInstance;
+    }
+    
+    export function getSupabaseServerClient() {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Missing Supabase environment variables for server client');
+      }
+      
+      return createClient<Database>(supabaseUrl, supabaseServiceKey);
+    }
+    ```
+    
+    This client is used across all applications to ensure consistent API access.
+  </Accordion>
+</AccordionGroup>
+
+## Development Workflow
+
+Developing in our mono repo follows these principles:
+
+1. **Task Isolation**: Work on isolated features or bugfixes in dedicated branches
+2. **Local Development**: Use Turborepo's filtering to run only relevant applications and packages
+3. **Dependency Management**: Add shared code to appropriate packages rather than duplicating across apps
+4. **Testing**: Write tests for shared packages to ensure reliability across applications
+5. **Documentation**: Document shared components and utilities to facilitate reuse
+
+### Setting Up Supabase for Development
+
+To set up Supabase for local development:
+
+<Steps>
+  <Step title="Install the Supabase CLI">
+    ```bash
+    npm install -g supabase
+    ```
+  </Step>
+  <Step title="Start Supabase Local Development">
+    ```bash
+    # Navigate to the infrastructure directory
+    cd infra/supabase
+    
+    # Start Supabase local development
+    supabase start
+    ```
+    
+    This will start a local Supabase instance with PostgreSQL, Auth, Storage, and other services.
+  </Step>
+  <Step title="Apply Migrations">
+    ```bash
+    # Apply all migrations to the local database
+    supabase db reset
+    ```
+    
+    This will apply all migrations in the `migrations` directory and reset the database to a clean state.
+  </Step>
+  <Step title="Seed Data (Optional)">
+    ```bash
+    # Seed the database with test data
+    supabase db reset --seed-data
+    ```
+    
+    This will populate the database with seed data for development and testing.
+  </Step>
+</Steps>
+
+### Typical Development Commands
+
+```bash
+# Start development server for a specific app
+pnpm --filter @mood-mnky/web dev
+
+# Start development servers for multiple apps
+pnpm --filter "@mood-mnky/web..." dev
+
+# Build a specific package and its dependencies
+pnpm --filter "@mood-mnky/ui..." build
+
+# Run tests for all packages and apps
+pnpm test
+
+# Create a new migration
+cd infra/supabase
+supabase migration new add_new_feature
+```
+
+## CI/CD Integration
+
+Our continuous integration pipeline is configured to handle our mono repo structure efficiently:
+
+<Steps>
+  <Step title="Change Detection">
+    The pipeline detects which packages and apps have changed to determine what needs to be built and tested.
+  </Step>
+  <Step title="Dependency Analysis">
+    It analyzes dependencies to ensure that changes to shared packages trigger builds and tests for dependent apps.
+  </Step>
+  <Step title="Parallel Execution">
+    Build and test jobs run in parallel for independent packages and apps to minimize pipeline time.
+  </Step>
+  <Step title="Deployment">
+    After successful tests, affected applications are deployed to their respective environments.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<CardGroup cols={3}>
+  <Card title="Code Organization" icon="folder-tree">
+    - Keep apps and packages focused on specific concerns
+    - Extract shared code into dedicated packages
+    - Maintain consistent file structure across apps
+  </Card>
+  <Card title="Dependencies" icon="diagram-project">
+    - Minimize dependencies between packages
+    - Avoid circular dependencies
+    - Properly declare all dependencies in package.json
+  </Card>
+  <Card title="Performance" icon="gauge-high">
+    - Use Turborepo's caching for faster builds
+    - Implement code splitting within apps
+    - Optimize package sizes
+  </Card>
+  <Card title="Testing" icon="vial">
+    - Write tests for shared packages
+    - Use mocks for complex dependencies
+    - Ensure tests run in isolation
+  </Card>
+  <Card title="Documentation" icon="book">
+    - Document package APIs and component usage
+    - Maintain README files for all packages
+    - Use TypeScript for type safety
+  </Card>
+  <Card title="Versioning" icon="code-compare">
+    - Follow SemVer for all packages
+    - Document breaking changes
+    - Keep package versions in sync when appropriate
+  </Card>
+</CardGroup>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Turborepo Documentation" icon="book" href="https://turbo.build/repo/docs" target="_blank">
+    Official documentation for our build system
+  </Card>
+  <Card title="pnpm Workspaces" icon="book" href="https://pnpm.io/workspaces" target="_blank">
+    Documentation for pnpm workspace features
+  </Card>
+  <Card title="Internal Architecture Docs" icon="diagram-project" href="/developer-resources/architecture">
+    Detailed architecture documentation for the MOOD MNKY ecosystem
+  </Card>
+  <Card title="Supabase Documentation" icon="database" href="https://supabase.com/docs" target="_blank">
+    Official Supabase documentation
+  </Card>
+</CardGroup>
+
+---
+
+For questions about our mono repo structure, please contact the MOOD MNKY development team.

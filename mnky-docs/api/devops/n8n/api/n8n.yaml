@@ -1,0 +1,828 @@
+openapi: 3.0.3
+info:
+  title: n8n API
+  description: |
+    Official API documentation for the MOOD MNKY n8n integration.
+    n8n is a workflow automation platform that connects various services and APIs.
+    This API allows you to manage workflows, executions, and credentials in the n8n instance.
+    
+    Based on n8n Public API version 1.1.1.
+  version: 1.1.1
+  contact:
+    name: MOOD MNKY Support
+    email: support@moodmnky.com
+    url: https://moodmnky.com/support
+
+servers:
+  - url: http://localhost:5678/api
+    description: Local Development
+  - url: https://mnky-mind-n8n.moodmnky.com/api
+    description: Production
+
+tags:
+  - name: Workflows
+    description: Operations for managing workflows
+  - name: Executions
+    description: Operations for managing workflow executions
+  - name: Credentials
+    description: Operations for managing credentials
+  - name: Users
+    description: Operations for managing users
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /v1/workflows:
+    get:
+      tags:
+        - Workflows
+      summary: Get all workflows
+      description: Returns a list of all workflows
+      operationId: getWorkflows
+      parameters:
+        - name: active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: tags
+          in: query
+          description: Filter by tags
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workflow'
+                  nextCursor:
+                    type: string
+                    description: Cursor for pagination
+        '401':
+          description: Unauthorized
+
+    post:
+      tags:
+        - Workflows
+      summary: Create a workflow
+      description: Creates a new workflow
+      operationId: createWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowCreate'
+      responses:
+        '200':
+          description: Workflow created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+
+  /v1/workflows/{id}:
+    get:
+      tags:
+        - Workflows
+      summary: Get a workflow
+      description: Returns a single workflow by ID
+      operationId: getWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+    put:
+      tags:
+        - Workflows
+      summary: Update a workflow
+      description: Updates an existing workflow
+      operationId: updateWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdate'
+      responses:
+        '200':
+          description: Workflow updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+    delete:
+      tags:
+        - Workflows
+      summary: Delete a workflow
+      description: Deletes a workflow
+      operationId: deleteWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+  /v1/workflows/{id}/activate:
+    post:
+      tags:
+        - Workflows
+      summary: Activate a workflow
+      description: Activates a workflow to run on triggers
+      operationId: activateWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to activate
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+  /v1/workflows/{id}/deactivate:
+    post:
+      tags:
+        - Workflows
+      summary: Deactivate a workflow
+      description: Deactivates a workflow to stop running on triggers
+      operationId: deactivateWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to deactivate
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+  /v1/workflows/{id}/execute:
+    post:
+      tags:
+        - Executions
+      summary: Execute a workflow
+      description: Executes a workflow
+      operationId: executeWorkflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the workflow to execute
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflowData:
+                  type: object
+                  description: Data to pass to the workflow
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Workflow executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Execution'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Workflow not found
+
+  /v1/executions:
+    get:
+      tags:
+        - Executions
+      summary: Get all executions
+      description: Returns a list of workflow executions
+      operationId: getExecutions
+      parameters:
+        - name: workflowId
+          in: query
+          description: Filter by workflow ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by execution status
+          schema:
+            type: string
+            enum: [success, error, waiting, running]
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Execution'
+                  nextCursor:
+                    type: string
+                    description: Cursor for pagination
+        '401':
+          description: Unauthorized
+
+  /v1/executions/{id}:
+    get:
+      tags:
+        - Executions
+      summary: Get an execution
+      description: Returns a single workflow execution
+      operationId: getExecution
+      parameters:
+        - name: id
+          in: path
+          description: ID of the execution to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Execution'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Execution not found
+
+    delete:
+      tags:
+        - Executions
+      summary: Delete an execution
+      description: Deletes an execution
+      operationId: deleteExecution
+      parameters:
+        - name: id
+          in: path
+          description: ID of the execution to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Execution not found
+
+  /v1/credentials:
+    get:
+      tags:
+        - Credentials
+      summary: Get all credentials
+      description: Returns a list of credentials
+      operationId: getCredentials
+      parameters:
+        - name: type
+          in: query
+          description: Filter by credential type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Credential'
+        '401':
+          description: Unauthorized
+
+    post:
+      tags:
+        - Credentials
+      summary: Create credential
+      description: Creates a new credential
+      operationId: createCredential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialCreate'
+      responses:
+        '200':
+          description: Credential created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+
+  /v1/credentials/{id}:
+    get:
+      tags:
+        - Credentials
+      summary: Get a credential
+      description: Returns a single credential
+      operationId: getCredential
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credential to retrieve
+          required: true
+          schema:
+            type: string
+        - name: includeData
+          in: query
+          description: Whether to include the decrypted credential data
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Credential not found
+
+    delete:
+      tags:
+        - Credentials
+      summary: Delete a credential
+      description: Deletes a credential
+      operationId: deleteCredential
+      parameters:
+        - name: id
+          in: path
+          description: ID of the credential to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credential deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Credential not found
+
+  /v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Checks the health of the n8n API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+components:
+  schemas:
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the workflow
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Name of the workflow
+          example: "Customer Onboarding"
+        active:
+          type: boolean
+          description: Whether the workflow is active
+          example: true
+        tags:
+          type: array
+          description: Tags for the workflow
+          items:
+            type: string
+          example: ["customer", "onboarding"]
+        nodes:
+          type: array
+          description: Nodes that make up the workflow
+          items:
+            $ref: '#/components/schemas/WorkflowNode'
+        connections:
+          type: object
+          description: Connections between workflow nodes
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+        settings:
+          type: object
+          description: Workflow settings
+          properties:
+            saveExecutionProgress:
+              type: boolean
+              description: Whether to save execution progress
+            saveManualExecutions:
+              type: boolean
+              description: Whether to save manual executions
+            saveDataErrorExecution:
+              type: boolean
+              description: Whether to save data when execution errors occur
+            executionTimeout:
+              type: integer
+              description: Execution timeout in seconds
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    WorkflowCreate:
+      type: object
+      required:
+        - name
+        - nodes
+      properties:
+        name:
+          type: string
+          description: Name of the workflow
+          example: "Customer Onboarding"
+        active:
+          type: boolean
+          description: Whether the workflow should be active
+          default: false
+        tags:
+          type: array
+          description: Tags for the workflow
+          items:
+            type: string
+          example: ["customer", "onboarding"]
+        nodes:
+          type: array
+          description: Nodes that make up the workflow
+          items:
+            $ref: '#/components/schemas/WorkflowNode'
+        connections:
+          type: object
+          description: Connections between workflow nodes
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+        settings:
+          type: object
+          description: Workflow settings
+          properties:
+            saveExecutionProgress:
+              type: boolean
+              description: Whether to save execution progress
+            saveManualExecutions:
+              type: boolean
+              description: Whether to save manual executions
+            saveDataErrorExecution:
+              type: boolean
+              description: Whether to save data when execution errors occur
+            executionTimeout:
+              type: integer
+              description: Execution timeout in seconds
+
+    WorkflowUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the workflow
+        active:
+          type: boolean
+          description: Whether the workflow should be active
+        tags:
+          type: array
+          description: Tags for the workflow
+          items:
+            type: string
+        nodes:
+          type: array
+          description: Nodes that make up the workflow
+          items:
+            $ref: '#/components/schemas/WorkflowNode'
+        connections:
+          type: object
+          description: Connections between workflow nodes
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+        settings:
+          type: object
+          description: Workflow settings
+          properties:
+            saveExecutionProgress:
+              type: boolean
+              description: Whether to save execution progress
+            saveManualExecutions:
+              type: boolean
+              description: Whether to save manual executions
+            saveDataErrorExecution:
+              type: boolean
+              description: Whether to save data when execution errors occur
+            executionTimeout:
+              type: integer
+              description: Execution timeout in seconds
+
+    WorkflowNode:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the node
+          example: "abc123def456"
+        name:
+          type: string
+          description: Name of the node
+          example: "Send Welcome Email"
+        type:
+          type: string
+          description: Type of the node
+          example: "n8n-nodes-base.emailSend"
+        typeVersion:
+          type: integer
+          description: Version of the node type
+          example: 1
+        position:
+          type: array
+          description: Position of the node in the editor
+          items:
+            type: integer
+          example: [100, 200]
+        parameters:
+          type: object
+          description: Parameters for the node
+          additionalProperties: true
+          example:
+            to:
+              value: "={{$json.email}}"
+            subject:
+              value: "Welcome to MOOD MNKY!"
+            text:
+              value: "Hi {{$json.firstName}}, welcome to MOOD MNKY!"
+        credentials:
+          type: object
+          description: Credentials used by the node
+          additionalProperties:
+            type: string
+          example:
+            smtp: "smtp-account"
+
+    Execution:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the execution
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        finished:
+          type: boolean
+          description: Whether the execution has finished
+          example: true
+        mode:
+          type: string
+          description: Execution mode
+          enum: [manual, trigger]
+          example: "manual"
+        startedAt:
+          type: string
+          format: date-time
+          description: Timestamp when execution started
+        stoppedAt:
+          type: string
+          format: date-time
+          description: Timestamp when execution stopped
+        workflowId:
+          type: string
+          description: ID of the workflow that was executed
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        workflowData:
+          type: object
+          description: Data used in the workflow execution
+          properties:
+            name:
+              type: string
+              description: Name of the workflow
+            active:
+              type: boolean
+              description: Whether the workflow is active
+            nodes:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkflowNode'
+            connections:
+              type: object
+              additionalProperties: true
+        status:
+          type: string
+          description: Execution status
+          enum: [success, error, waiting, running]
+          example: "success"
+        data:
+          type: object
+          description: Execution results data
+          properties:
+            resultData:
+              type: object
+              properties:
+                runData:
+                  type: object
+                  additionalProperties: true
+                lastNodeExecuted:
+                  type: string
+                  description: The last node that was executed
+
+    Credential:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the credential
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Name of the credential
+          example: "SMTP Account"
+        type:
+          type: string
+          description: Type of the credential
+          example: "smtp"
+        data:
+          type: object
+          description: Credential data (available when includeData=true)
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    CredentialCreate:
+      type: object
+      required:
+        - name
+        - type
+        - data
+      properties:
+        name:
+          type: string
+          description: Name of the credential
+          example: "SMTP Account"
+        type:
+          type: string
+          description: Type of the credential
+          example: "smtp"
+        data:
+          type: object
+          description: Credential data
+          additionalProperties: true
+          example:
+            host: "smtp.example.com"
+            port: 587
+            user: "user@example.com"
+            password: "password123"
+            ssl: true
+
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-N8N-API-KEY
+      description: API key for authentication
+
+security:
+  - apiKeyAuth: [] 

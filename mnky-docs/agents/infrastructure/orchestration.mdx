@@ -1,0 +1,96 @@
+---
+title: "Agent Orchestration"
+description: "How multiple agents coordinate and work together"
+---
+
+# Agent Orchestration
+
+Agent orchestration manages the coordination, communication, and workflow between multiple AI agents in the MOOD MNKY ecosystem.
+
+## Overview
+
+The orchestration system enables:
+- **Multi-agent collaboration** - Agents working together on complex tasks
+- **Workflow management** - Coordinated task execution
+- **Load balancing** - Optimal agent assignment
+- **Conflict resolution** - Handling agent disagreements
+
+## Architecture
+
+### Orchestration Engine
+
+The central orchestration engine coordinates agent activities:
+
+- **Task Routing**: Directs tasks to appropriate agents
+- **State Management**: Tracks multi-agent conversation state
+- **Event Bus**: Facilitates inter-agent communication
+- **Scheduler**: Manages asynchronous task execution
+
+### Agent Communication
+
+Agents communicate through:
+
+- **Message Passing**: Direct agent-to-agent messages
+- **Shared Context**: Common knowledge base access
+- **Event System**: Pub/sub event notifications
+- **API Gateway**: Standardized communication protocols
+
+## Agent Roles
+
+### MOOD MNKY
+- Primary customer interaction agent
+- Coordinates with SAGE and CODE for complex requests
+- Manages customer journey orchestration
+
+### CODE MNKY
+- Technical task execution
+- Receives technical requests from MOOD
+- Provides automation and development support
+
+### SAGE MNKY
+- Emotional intelligence support
+- Assists MOOD with empathy and understanding
+- Provides psychological insights
+
+## Workflow Patterns
+
+### Sequential Workflow
+Tasks flow from one agent to another in sequence:
+```
+User → MOOD → CODE → Result → MOOD → User
+```
+
+### Parallel Processing
+Multiple agents work simultaneously:
+```
+User Request → MOOD (orchestrates)
+              ├─→ CODE (technical analysis)
+              └─→ SAGE (emotional context)
+              → MOOD (synthesizes) → User
+```
+
+### Hierarchical Delegation
+MOOD delegates to specialized agents:
+```
+MOOD (receives request)
+  ├─→ CODE (if technical)
+  └─→ SAGE (if emotional)
+```
+
+## Configuration
+
+Orchestration is configured through the agent infrastructure:
+
+```yaml
+orchestration:
+  engine: "langchain"
+  max_agents: 3
+  timeout: 30s
+  retry_policy: "exponential_backoff"
+```
+
+## Related Documentation
+
+- [Agent Database](/agents/agent-database/overview) - Agent registry
+- [Memory System](/agents/infrastructure/memory-system) - Shared memory
+- [Knowledge Base](/agents/infrastructure/knowledge-base) - Shared knowledge

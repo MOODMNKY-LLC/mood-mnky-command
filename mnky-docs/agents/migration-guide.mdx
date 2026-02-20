@@ -1,0 +1,103 @@
+---
+title: 'Agent System Migration Guide'
+description: 'Guide for migrating from legacy agent APIs to the current version'
+---
+
+# Agent System Migration Guide
+
+<Note>
+**Under Construction**
+
+This documentation is currently being developed and will be available soon. This placeholder outlines the planned content.
+</Note>
+
+## Overview
+
+This guide provides comprehensive instructions for migrating from the legacy v0.9 agent APIs to the current v1.x system. It covers breaking changes, new features, deprecated functionality, and step-by-step migration processes.
+
+## Planned Content
+
+### Migration Timeline
+- v0.9 deprecation schedule
+- v1.0 feature support
+- v1.1 & v1.2 enhancements
+- Support and assistance options
+
+### Breaking Changes
+
+<AccordionGroup>
+  <Accordion title="Authentication Changes">
+    Migration from API keys to JWT-based authentication
+    - New token generation process
+    - Updated authentication headers
+    - Scopes and permissions changes
+  </Accordion>
+  <Accordion title="Response Format Updates">
+    New standardized response structure
+    - Additional metadata fields
+    - Changed field names
+    - New error formats
+  </Accordion>
+  <Accordion title="Endpoint Restructuring">
+    Reorganization of API endpoints
+    - URL path changes
+    - New versioning structure
+    - Consolidated functionality
+  </Accordion>
+  <Accordion title="Memory API Changes">
+    Updated memory system architecture
+    - Multi-tier memory interfaces
+    - New required profile fields
+    - Cache configuration updates
+  </Accordion>
+</AccordionGroup>
+
+### Migration Steps
+
+<Steps>
+  <Step title="Audit Current Implementation">
+    Identify all areas in your codebase that interact with the agent system.
+  </Step>
+  <Step title="Update Authentication">
+    Implement the new JWT-based authentication flow.
+  </Step>
+  <Step title="Adapt to New Response Format">
+    Update code to handle the new standardized response structure.
+  </Step>
+  <Step title="Update Endpoint References">
+    Replace deprecated endpoint paths with new ones.
+  </Step>
+  <Step title="Implement New Features">
+    Take advantage of new capabilities in the v1.x API.
+  </Step>
+  <Step title="Testing">
+    Thoroughly test all interactions with the agent system.
+  </Step>
+</Steps>
+
+### Compatibility Layers
+
+For applications that cannot immediately complete a full migration, this guide will include:
+
+- Temporary compatibility middleware
+- Hybrid mode operation
+- Progressive migration approaches
+- Legacy endpoint forwarding options
+
+### Feature Comparison
+
+A comprehensive table comparing features between v0.9 and v1.x versions, including:
+
+- Supported agent capabilities
+- Performance characteristics
+- Security features
+- Integration options
+- Scalability improvements
+
+## Implementation Timeline
+
+This migration guide is scheduled for completion before the v0.9 API deprecation date on August 1, 2023. For immediate migration assistance, please contact the development team.
+
+<Warning>
+The legacy agent interface (v0.9) will be deprecated on August 1, 2023. All integrations should migrate to the v1.0+ API by that date.
+</Warning> 

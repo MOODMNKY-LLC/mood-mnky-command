@@ -1,0 +1,197 @@
+---
+title: "Docker Setup & Infrastructure"
+description: "Comprehensive guide to Docker and containerized services in the MOOD MNKY ecosystem"
+icon: "docker"
+---
+
+# Docker Setup & Infrastructure
+
+The MOOD MNKY ecosystem uses Docker and Docker Compose for containerized services and development environments. This guide covers setting up, managing, and deploying containerized services.
+
+## Overview
+
+Docker is used for:
+- **Development Services**: Local development environments (n8n, Supabase)
+- **Service Templates**: Standardized Docker Compose configurations
+- **Application Containers**: Containerized applications (MNKY Agents Demo)
+
+## Docker Compose Templates
+
+Standardized Docker Compose templates are located in `infra/docker-compose/`:
+
+### Available Templates
+
+<CardGroup cols={2}>
+  <Card title="n8n Development" icon="workflow" href="#n8n-development">
+    Workflow automation with AI integration
+  </Card>
+  <Card title="MNKY Agents Demo" icon="flask" href="/applications/mnky-agents-demo">
+    Python FastAPI demo application
+  </Card>
+</CardGroup>
+
+## n8n Development Instance
+
+### Quick Start
+
+1. **Navigate to template directory**:
+   ```bash
+   cd infra/docker-compose/n8n
+   ```
+
+2. **Copy environment template**:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Configure environment variables**:
+   Edit `.env` with your values:
+   ```env
+   N8N_BASIC_AUTH_USER=admin
+   N8N_BASIC_AUTH_PASSWORD=your-secure-password
+   N8N_AI_OPENAI_API_KEY=your-openai-key
+   N8N_SMTP_HOST=smtp.example.com
+   N8N_SMTP_PORT=587
+   N8N_SMTP_USER=your-smtp-user
+   N8N_SMTP_PASS=your-smtp-password
+   WEBHOOK_URL=http://localhost:5678
+   ```
+
+4. **Start the service**:
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **Access n8n**: [http://localhost:5678](http://localhost:5678)
+
+### Features
+
+- **AI Integration**: OpenAI integration for AI capabilities
+- **SMTP Configuration**: Email actions via SMTP
+- **Data Persistence**: Named volumes for workflow storage
+- **Basic Authentication**: Secure access control
+- **Development Settings**: Optimized for local development
+
+### Management Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart service
+docker-compose restart
+
+# Stop service
+docker-compose down
+
+# Update image
+docker-compose pull && docker-compose up -d
+```
+
+## MNKY Agents Demo Container
+
+The MNKY Agents Demo application includes Docker support:
+
+### Setup
+
+1. **Navigate to application**:
+   ```bash
+   cd apps/mnky-agents-demo
+   ```
+
+2. **Build and run**:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Access API**: [http://localhost:8000](http://localhost:8000)
+4. **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Dockerfile Configuration
+
+The application uses a multi-stage build:
+- **Build stage**: Installs dependencies and builds application
+- **Runtime stage**: Minimal image with only runtime dependencies
+
+## Best Practices
+
+### Security
+
+1. **Change Default Credentials**: Always change default usernames/passwords
+2. **Use Environment Variables**: Never hardcode secrets in Docker Compose files
+3. **Network Isolation**: Use Docker networks to isolate services
+4. **Volume Permissions**: Set appropriate volume permissions
+
+### Data Persistence
+
+- **Named Volumes**: Use named volumes for data persistence
+- **Backup Strategy**: Regularly backup volume data
+- **Volume Management**: Clean up unused volumes periodically
+
+### Resource Management
+
+- **Resource Limits**: Set CPU and memory limits for containers
+- **Health Checks**: Configure health checks for services
+- **Restart Policies**: Use appropriate restart policies (`unless-stopped`)
+
+## Adding New Templates
+
+When creating a new Docker Compose template:
+
+1. **Create directory structure**:
+   ```
+   infra/docker-compose/new-service/
+   ├── docker-compose.yml
+   ├── .env.example
+   └── README.md
+   ```
+
+2. **Follow template structure**:
+   - Use environment variables for configuration
+   - Include proper container naming
+   - Document all configuration options
+   - Provide example environment file
+
+3. **Update main README**: Add new template to `infra/docker-compose/README.md`
+
+## Troubleshooting
+
+### Common Issues
+
+#### Port Conflicts
+- **Issue**: Port already in use
+- **Solution**: Change port mapping in `docker-compose.yml` or stop conflicting service
+
+#### Volume Permissions
+- **Issue**: Permission denied errors accessing volumes
+- **Solution**: Check volume ownership and permissions. Use `docker-compose down -v` to remove volumes if needed.
+
+#### Container Won't Start
+- **Issue**: Container exits immediately
+- **Solution**: Check logs with `docker-compose logs`. Verify environment variables and configuration.
+
+### Debugging
+
+```bash
+# View container logs
+docker-compose logs -f [service-name]
+
+# Execute command in running container
+docker-compose exec [service-name] [command]
+
+# Inspect container configuration
+docker-compose config
+
+# Check container status
+docker-compose ps
+```
+
+## Related Resources
+
+- [n8n Workflows](/api/devops/n8n/workflows) - Workflow management guide
+- [MNKY Agents Demo](/applications/mnky-agents-demo) - Demo application documentation
+- [Supabase Local Development](/developer-resources/supabase-local-development) - Local Supabase setup
+- [Environment Setup](/developer-resources/environment-setup) - Development environment guide
+
+
+

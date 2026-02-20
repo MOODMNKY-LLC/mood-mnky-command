@@ -1,0 +1,547 @@
+---
+title: 'Documentation Guide'
+description: 'Guidelines for creating and maintaining MNKY MIND documentation'
+---
+
+# Documentation Guide
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/documentation-guide.svg"
+  alt="Documentation Guide"
+/>
+
+## Overview
+
+This guide provides standards and best practices for creating and maintaining documentation in the MNKY MIND system. Following these guidelines ensures consistency, clarity, and quality across all documentation.
+
+<Note>
+  Good documentation is essential for both internal teams and external developers. It should be comprehensive, clear, consistent, correct, and accessible.
+</Note>
+
+## Documentation Structure
+
+All documentation in MNKY MIND follows a hierarchical structure:
+
+<CardGroup cols={2}>
+  <Card title="Categories" icon="folder">
+    Top-level sections (Brand Overview, Technology Stack, etc.)
+  </Card>
+  <Card title="Groups" icon="folder-tree">
+    Sub-sections within categories (Core Technologies, Infrastructure, etc.)
+  </Card>
+  <Card title="Pages" icon="file-lines">
+    Individual documentation files (.mdx files)
+  </Card>
+  <Card title="Sections" icon="heading">
+    Content divisions within pages (headings and content blocks)
+  </Card>
+</CardGroup>
+
+### Standard Page Structure
+
+Each documentation page should follow this general structure:
+
+```markdown
+---
+title: 'Page Title'
+description: 'Brief description of page content (1-2 sentences)'
+---
+
+# Page Title
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/page-specific-image.svg"
+  alt="Alt text for image"
+/>
+
+## Overview
+
+Brief introduction to the topic (2-4 paragraphs).
+
+<Note>
+  Important information or key takeaways.
+</Note>
+
+## Main Sections
+
+Content organized into logical sections with H2 (##) headings.
+
+### Subsections
+
+Further division with H3 (###) headings when needed.
+
+## Resources
+
+Links to related documentation, tools, or external resources.
+
+---
+
+Footer information if applicable.
+```
+
+## Mintlify Components
+
+MNKY MIND documentation uses Mintlify components to enhance readability and user experience. Here are the most commonly used components:
+
+### Cards
+
+<Tabs>
+  <Tab title="Single Card">
+```markdown
+<Card title="Card Title" icon="icon-name">
+  Card content goes here
+</Card>
+```
+  </Tab>
+  <Tab title="Card Group">
+```markdown
+<CardGroup cols={2}>
+  <Card title="First Card" icon="icon-name">
+    First card content
+  </Card>
+  <Card title="Second Card" icon="icon-name">
+    Second card content
+  </Card>
+</CardGroup>
+```
+  </Tab>
+</Tabs>
+
+### Tabs
+
+```markdown
+<Tabs>
+  <Tab title="First Tab">
+    Content for first tab
+  </Tab>
+  <Tab title="Second Tab">
+    Content for second tab
+  </Tab>
+</Tabs>
+```
+
+### Steps
+
+```markdown
+<Steps>
+  <Step title="First Step">
+    Content for first step
+  </Step>
+  <Step title="Second Step">
+    Content for second step
+  </Step>
+</Steps>
+```
+
+### Accordions
+
+```markdown
+<AccordionGroup>
+  <Accordion title="First Section" icon="icon-name">
+    Content for first accordion
+  </Accordion>
+  <Accordion title="Second Section" icon="icon-name">
+    Content for second accordion
+  </Accordion>
+</AccordionGroup>
+```
+
+### Notes and Callouts
+
+```markdown
+<Note>
+  Important information that should stand out.
+</Note>
+
+<Warning>
+  Critical warning that users should pay attention to.
+</Warning>
+
+<Info>
+  Helpful information that isn't critical but might be useful.
+</Info>
+```
+
+### Code Blocks
+
+```markdown
+\`\`\`typescript
+// Code goes here
+const example = "This is a code block";
+console.log(example);
+\`\`\`
+```
+
+### Images
+
+```markdown
+<img
+  className="rounded-lg shadow-lg border border-gray-200"
+  src="/images/example-image.svg"
+  alt="Alt text for image"
+/>
+```
+
+### Diagrams
+
+```markdown
+\`\`\`mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+\`\`\`
+```
+
+## Writing Guidelines
+
+### Voice and Tone
+
+<CardGroup cols={2}>
+  <Card title="Be Clear" icon="clarity">
+    Use plain language and avoid unnecessary jargon. Define technical terms when they first appear.
+  </Card>
+  <Card title="Be Concise" icon="scissors">
+    Keep sentences and paragraphs brief. Use bullet points for lists of items or steps.
+  </Card>
+  <Card title="Be Consistent" icon="repeat">
+    Use the same terminology and capitalization throughout the documentation.
+  </Card>
+  <Card title="Be Helpful" icon="hand-holding">
+    Focus on solving the reader's problems. Provide examples and use cases.
+  </Card>
+</CardGroup>
+
+### Style Conventions
+
+<AccordionGroup>
+  <Accordion title="Terminology" icon="book">
+    - Use "MOOD MNKY" (all caps) when referring to the brand
+    - Use "Dojo" (capitalized) when referring to the platform
+    - Use proper capitalization for technologies (JavaScript, TypeScript, Supabase, etc.)
+    - Be consistent with product names and features
+    
+    Maintain a glossary of terms for reference to ensure consistency.
+  </Accordion>
+  
+  <Accordion title="Formatting" icon="text-width">
+    - Use **bold** for emphasis
+    - Use *italics* for introduced terms or UI elements
+    - Use \`code formatting\` for code snippets, file names, and technical values
+    - Use > blockquotes for quoted material
+    
+    Avoid underlining text as it can be confused with links.
+  </Accordion>
+  
+  <Accordion title="Links" icon="link">
+    - Use descriptive link text (not "click here" or "this link")
+    - Link to relevant documentation when referencing other topics
+    - Use relative links for internal documentation
+    - Use absolute links for external resources
+    
+    Example: [Supabase documentation](/technology-stack/supabase) provides more details.
+  </Accordion>
+  
+  <Accordion title="Images and Media" icon="image">
+    - Use meaningful alt text for all images
+    - Keep images under 500KB when possible
+    - Use SVG format for diagrams and icons
+    - Use PNG or WebP for screenshots and photos
+    - Include captions for complex images
+    
+    All images should be stored in the `/images` directory, organized by section.
+  </Accordion>
+</AccordionGroup>
+
+## Code Examples
+
+Code examples should be clear, concise, and follow MOOD MNKY coding standards.
+
+### Best Practices for Code Examples
+
+<Steps>
+  <Step title="Keep It Simple">
+    Focus on illustrating the concept without unnecessary complexity. Remove code that isn't directly relevant to the example.
+  </Step>
+  
+  <Step title="Include Comments">
+    Add comments to explain non-obvious parts of the code. Comments should explain "why" rather than "what."
+    
+```typescript
+// Good comment
+// Use setTimeout to avoid blocking the main thread during heavy computation
+setTimeout(() => processLargeDataset(data), 0);
+
+// Not so good comment
+// Setting a timeout
+setTimeout(() => processLargeDataset(data), 0);
+```
+  </Step>
+  
+  <Step title="Show Complete Examples">
+    Include imports and necessary setup to make the example work. Avoid partial code that can't be used directly.
+    
+```typescript
+// Complete example
+import { useState, useEffect } from 'react';
+import { fetchUserData } from '@moodmnky/api';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const userData = await fetchUserData(userId);
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to load user:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadUser();
+  }, [userId]);
+  
+  if (loading) return <LoadingSpinner />;
+  if (!user) return <ErrorMessage message="User not found" />;
+  
+  return (
+    <div className="user-profile">
+      <h2>{user.name}</h2>
+      <p>{user.bio}</p>
+    </div>
+  );
+}
+```
+  </Step>
+  
+  <Step title="Use TypeScript">
+    All code examples should use TypeScript to show proper typing.
+    
+```typescript
+// With proper typing
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  preferences: UserPreferences;
+}
+
+interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  notifications: boolean;
+  language: string;
+}
+
+function updateUserPreferences(userId: string, preferences: Partial<UserPreferences>): Promise<User> {
+  // Implementation
+}
+```
+  </Step>
+</Steps>
+
+## Documentation Workflow
+
+<Steps>
+  <Step title="Plan">
+    - Identify the purpose and audience for the documentation
+    - Outline the main sections and content
+    - Gather necessary information and resources
+  </Step>
+  
+  <Step title="Write">
+    - Create the first draft following the structure guidelines
+    - Include all necessary components and examples
+    - Focus on clarity and completeness
+  </Step>
+  
+  <Step title="Review">
+    - Self-review for clarity, correctness, and completeness
+    - Technical review by subject matter experts
+    - Editorial review for style and consistency
+  </Step>
+  
+  <Step title="Publish">
+    - Merge the documentation into the main branch
+    - Verify proper rendering in the documentation site
+    - Announce new or updated documentation if significant
+  </Step>
+  
+  <Step title="Maintain">
+    - Regularly review and update documentation
+    - Address feedback and clarify confusing sections
+    - Keep examples and information current
+  </Step>
+</Steps>
+
+## Navigation Structure
+
+When working with the Mintlify navigation structure in `docs.json`, follow these guidelines to ensure proper functionality:
+
+### Dropdown Configuration
+
+<Note>
+  Dropdown navigation requires specific structure to ensure proper linking when users click on dropdown titles.
+</Note>
+
+<AccordionGroup>
+  <Accordion title="Dropdown Structure Options" icon="sitemap">
+    Mintlify dropdowns can be structured in two ways:
+    
+    1. **Direct Pages at Dropdown Level**: Include a `pages` array directly in the dropdown object
+    ```json
+    {
+      "group": "AI Agent Ecosystem",
+      "pages": ["agents/agent-overview"],
+      "groups": [
+        {
+          "group": "Agent Framework",
+          "pages": ["agents/agent-schema-reference", "agents/agent-capabilities"]
+        }
+      ]
+    }
+    ```
+    
+    2. **Groups Only**: Structure with only `groups` without a `pages` array
+    ```json
+    {
+      "group": "Brand & Company",
+      "groups": [
+        {
+          "group": "Brand Overview",
+          "pages": ["brand-overview/vision", "brand-overview/values"]
+        }
+      ]
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Best Practices" icon="check-double">
+    - For dropdowns with an index/overview page, use the first approach (direct pages)
+    - For dropdowns without a dedicated overview, use the second approach
+    - Ensure the first page in the dropdown is a high-level overview
+    - Maintain consistent structure across similar dropdowns
+    - Test navigation after changes to ensure proper linking
+  </Accordion>
+  
+  <Accordion title="Common Issues" icon="exclamation-triangle">
+    - **Dropdown not linking**: Ensure dropdown has either direct `pages` or its first group has pages
+    - **Missing index page**: Create dedicated overview pages for major sections
+    - **Inconsistent behavior**: Review dropdown structure and align with one of the patterns above
+    - **Navigation depth**: Limit to 3 levels (dropdown → group → pages) for usability
+  </Accordion>
+</AccordionGroup>
+
+### Example Configuration
+
+```json
+// Example of properly structured navigation
+{
+  "topbarLinks": [
+    {
+      "name": "Sign In",
+      "url": "https://app.moodmnky.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Join Now",
+    "url": "https://app.moodmnky.com/signup"
+  },
+  "groups": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart", "structure"]
+    },
+    {
+      "group": "AI Agent Ecosystem",
+      "pages": ["agents/index"],
+      "groups": [
+        {
+          "group": "Agent Framework",
+          "pages": ["agents/agent-schema-reference", "agents/agent-capabilities"]
+        },
+        {
+          "group": "Specialized Agents",
+          "pages": ["agents/mood-mnky", "agents/sage-mnky", "agents/code-mnky"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Documentation Review Checklist
+
+<AccordionGroup>
+  <Accordion title="Content Quality" icon="check-square">
+    - [ ] Content is technically accurate
+    - [ ] All necessary topics are covered
+    - [ ] Examples are correct and working
+    - [ ] No outdated information is present
+    - [ ] Content is appropriate for the target audience
+  </Accordion>
+  
+  <Accordion title="Structure and Organization" icon="sitemap">
+    - [ ] Logical flow of information
+    - [ ] Appropriate use of headings and subheadings
+    - [ ] Consistent page structure
+    - [ ] Navigation and cross-links are correct
+    - [ ] Related content is properly connected
+  </Accordion>
+  
+  <Accordion title="Style and Formatting" icon="paint-brush">
+    - [ ] Follows writing guidelines
+    - [ ] Consistent terminology
+    - [ ] Proper grammar and spelling
+    - [ ] Effective use of Mintlify components
+    - [ ] Visual elements enhance understanding
+  </Accordion>
+  
+  <Accordion title="Technical Elements" icon="code">
+    - [ ] Code examples are correct and follow standards
+    - [ ] API references are accurate
+    - [ ] Frontmatter is properly formatted
+    - [ ] All links work correctly
+    - [ ] Images have proper alt text
+  </Accordion>
+</AccordionGroup>
+
+## Tools and Resources
+
+<CardGroup cols={3}>
+  <Card title="Mintlify Docs" icon="book" href="https://mintlify.com/docs">
+    Official Mintlify documentation
+  </Card>
+  <Card title="MDX Guide" icon="markdown" href="https://mdxjs.com/docs/">
+    MDX syntax and features
+  </Card>
+  <Card title="MOOD MNKY Style Guide" icon="palette" href="/brand-overview/design-guidelines">
+    Brand styling guidelines
+  </Card>
+  <Card title="Code Standards" icon="code" href="/developer-resources/coding-standards">
+    Development standards for code examples
+  </Card>
+  <Card title="Icon Library" icon="icons" href="https://fontawesome.com/icons">
+    Font Awesome icons used in components
+  </Card>
+  <Card title="Image Resources" icon="images" href="/brand-overview/design-guidelines#images">
+    Brand-approved images and graphics
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+If you have questions or need assistance with documentation:
+
+- **Documentation Team**: [docs@moodmnky.co](mailto:docs@moodmnky.co)
+- **Slack Channel**: #documentation-support
+- **Office Hours**: Wednesdays 10-11am (GMT) for documentation consultation
+
+---
+
+This guide is a living document and will be updated as our documentation practices evolve. Last updated: April 2025.

@@ -1,0 +1,251 @@
+# Monitoring
+
+This guide covers monitoring capabilities of the Ollama service.
+
+## Monitoring Endpoint
+
+Monitor system health, performance, and model usage.
+
+## Monitoring Overview
+
+Ollama provides comprehensive monitoring capabilities to help you track the performance, health, and usage of your AI models and service deployments.
+
+```bash
+GET /api/metrics
+
+curl "https://ollama.moodmnky.com/api/metrics" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "system": {
+    "cpu_usage": 12.4,
+    "memory_usage": 2048,
+    "gpu_usage": 45.2,
+    "uptime": 259200
+  },
+  "requests": {
+    "total": 12543,
+    "success": 12432,
+    "failed": 111,
+    "average_latency": 345
+  },
+  "models": [
+    {
+      "name": "llama2",
+      "requests": 8745,
+      "average_tokens_per_request": 324,
+      "average_latency": 298
+    },
+    {
+      "name": "mistral",
+      "requests": 3798,
+      "average_tokens_per_request": 412,
+      "average_latency": 368
+    }
+  ]
+}
+```
+
+## Health Check Endpoint
+
+```bash
+GET /api/health
+
+curl "https://ollama.moodmnky.com/api/health" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "version": "0.1.14",
+  "uptime": 259200,
+  "models_loaded": 3,
+  "cuda_available": true,
+  "cuda_devices": 1
+}
+```
+
+## Available Metrics
+
+| Metric Category | Metric | Type | Description |
+|-----------------|--------|------|-------------|
+| System | cpu_usage | float | CPU usage percentage |
+| System | memory_usage | integer | Memory usage in MB |
+| System | gpu_usage | float | GPU usage percentage |
+| System | uptime | integer | Service uptime in seconds |
+| Requests | total | integer | Total requests received |
+| Requests | success | integer | Successful requests |
+| Requests | failed | integer | Failed requests |
+| Requests | average_latency | integer | Average latency in ms |
+| Model-specific | requests | integer | Requests per model |
+| Model-specific | average_tokens_per_request | integer | Average tokens generated per request |
+| Model-specific | average_latency | integer | Average latency per model in ms |
+
+## Logging Configuration
+
+Ollama provides configurable logging levels that can be adjusted based on your monitoring needs.
+
+```bash
+POST /api/admin/logging
+
+curl -X POST "https://ollama.moodmnky.com/api/admin/logging" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "level": "info",
+    "format": "json",
+    "destination": "file",
+    "file_path": "/var/log/ollama.log"
+  }'
+```
+
+### Logging Levels
+
+| Level | Description |
+|-------|-------------|
+| debug | Most verbose, includes all details for debugging |
+| info | General operational information |
+| warn | Potential issues that don't affect operation |
+| error | Errors that affect operation but don't cause service failure |
+| critical | Critical issues that may cause service failure |
+
+## Usage Examples
+
+### Monitor System Health
+
+```typescript
+// Check system health
+const health = await client.ollama.getHealth();
+
+// Log system status
+console.log(`System status: ${health.status}`);
+console.log(`Uptime: ${health.uptime} seconds`);
+console.log(`Models loaded: ${health.models_loaded}`);
+
+// Alert if not healthy
+if (health.status !== "healthy") {
+  sendAlert("System health check failed", health);
+}
+```
+
+### Track Model Performance
+
+```typescript
+// Get metrics data
+const metrics = await client.ollama.getMetrics();
+
+// Analyze model performance
+const modelMetrics = metrics.models.reduce((acc, model) => {
+  acc[model.name] = {
+    requests: model.requests,
+    averageLatency: model.average_latency,
+    averageTokens: model.average_tokens_per_request
+  };
+  return acc;
+}, {});
+
+// Log performance metrics
+console.log("Model performance metrics:", modelMetrics);
+
+// Alert on high latency
+for (const model of metrics.models) {
+  if (model.average_latency > 500) {
+    sendAlert(`High latency detected for model ${model.name}`, model);
+  }
+}
+```
+
+### Monitor Request Patterns
+
+```typescript
+// Track request patterns over time
+let previousMetrics = null;
+const monitorInterval = 300000; // 5 minutes
+
+async function monitorRequests() {
+  const metrics = await client.ollama.getMetrics();
+  
+  if (previousMetrics) {
+    const requestDelta = metrics.requests.total - previousMetrics.requests.total;
+    const failureDelta = metrics.requests.failed - previousMetrics.requests.failed;
+    const failureRate = failureDelta / requestDelta * 100;
+    
+    console.log(`Requests in last 5 minutes: ${requestDelta}`);
+    console.log(`Failure rate: ${failureRate.toFixed(2)}%`);
+    
+    // Alert on high failure rate
+    if (failureRate > 5) {
+      sendAlert("High failure rate detected", { 
+        failureRate, 
+        requestDelta, 
+        failureDelta 
+      });
+    }
+  }
+  
+  previousMetrics = metrics;
+}
+
+// Set up monitoring interval
+setInterval(monitorRequests, monitorInterval);
+```
+
+## Best Practices
+
+1. **Health Monitoring**
+   - Implement regular health checks
+   - Set up automated alerting for unhealthy status
+   - Monitor system resource usage trends
+   - Track model load status
+
+2. **Performance Tracking**
+   - Monitor latency across different models
+   - Track token throughput
+   - Analyze request patterns
+   - Identify performance bottlenecks
+
+3. **Error Monitoring**
+   - Track error rates by endpoint
+   - Categorize errors by type
+   - Set up alerts for unusual error patterns
+   - Maintain error logs for troubleshooting
+
+4. **Resource Optimization**
+   - Monitor GPU/CPU utilization
+   - Track memory usage patterns
+   - Implement resource-based auto-scaling
+   - Optimize model loading based on usage patterns
+
+## Integration with Monitoring Tools
+
+Ollama's metrics can be integrated with standard monitoring platforms:
+
+1. **Prometheus Integration**
+   - Export metrics in Prometheus format
+   - Set up scrape configuration
+   - Create Grafana dashboards
+   - Configure alerting rules
+
+2. **Centralized Logging**
+   - Forward logs to ELK stack
+   - Configure log parsing
+   - Set up log-based alerts
+   - Implement log retention policies
+
+3. **Custom Dashboards**
+   - Aggregate metrics across instances
+   - Visualize performance trends
+   - Create service-level dashboards
+   - Implement custom alerting
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/ollama)
+- [Monitoring Guide](https://docs.moodmnky.com/guides/monitoring)
+- [Scaling Guide](https://docs.moodmnky.com/guides/scaling)
+- [Support](mailto:support@moodmnky.com) 

@@ -1,0 +1,295 @@
+---
+title: "Data Modeling with Supabase"
+description: "Best practices for modeling data in the MOOD MNKY ecosystem using Supabase"
+---
+
+# Data Modeling with Supabase
+
+## Overview
+
+This guide covers the approach to data modeling in the MOOD MNKY ecosystem, focusing on Supabase's PostgreSQL foundation and how we structure data for optimal performance, scalability, and type safety.
+
+## Core Principles
+
+Our data modeling approach follows these key principles:
+
+1. **Schema-first development**: Define database schemas explicitly before implementing application logic
+2. **Strong typing**: Leverage TypeScript for type-safe data access across the application
+3. **Relational integrity**: Use PostgreSQL's robust relational features for data consistency
+4. **Performance optimization**: Design schemas with query patterns in mind
+5. **Security by design**: Apply Row Level Security (RLS) policies from the start
+
+## Directory Structure
+
+Data models in the MOOD MNKY ecosystem are organized as follows:
+
+```
+data/
+├── schemas/             # SQL schema definitions for database tables
+│   ├── users.sql        # Users table schema
+│   └── ...              # Other table schemas
+├── models/              # TypeScript data models
+│   ├── user.model.ts    # User model definition
+│   └── ...              # Other model definitions
+```
+
+## Schema Definitions
+
+Database schemas are defined in SQL files located in `/data/schemas/`. Each table has its own file named after the table.
+
+### Example Schema
+
+```sql
+-- schemas/users.sql
+CREATE TABLE public.users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Add indexes for common query patterns
+CREATE INDEX users_email_idx ON public.users (email);
+
+-- Add RLS policies
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own data" ON public.users
+  FOR SELECT USING (auth.uid() = id);
+```
+
+## TypeScript Models
+
+TypeScript models provide type-safe access to database tables. Each model is defined in its own file in `/data/models/`.
+
+### Example Model
+
+```typescript
+// models/user.model.ts
+export interface User {
+  id: string;
+  email: string;
+  fullName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Helper functions for type conversion
+export function fromDbUser(dbUser: any): User {
+  return {
+    id: dbUser.id,
+    email: dbUser.email,
+    fullName: dbUser.full_name,
+    createdAt: dbUser.created_at,
+    updatedAt: dbUser.updated_at,
+  };
+}
+
+export function toDbUser(user: User): any {
+  return {
+    id: user.id,
+    email: user.email,
+    full_name: user.fullName,
+    created_at: user.createdAt,
+    updated_at: user.updatedAt,
+  };
+}
+```
+
+## Common Data Patterns
+
+### User Authentication and Profiles
+
+We separate authentication data (managed by Supabase Auth) from user profile data:
+
+```sql
+-- Authentication is handled by Supabase Auth
+
+-- User profiles store additional user information
+CREATE TABLE public.profiles (
+  id UUID REFERENCES auth.users(id) PRIMARY KEY,
+  display_name TEXT,
+  avatar_url TEXT,
+  bio TEXT,
+  preferences JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+```
+
+### Many-to-Many Relationships
+
+For many-to-many relationships, we use junction tables with composite primary keys:
+
+```sql
+CREATE TABLE public.user_groups (
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  group_id UUID REFERENCES public.groups(id) ON DELETE CASCADE,
+  role TEXT DEFAULT 'member',
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  PRIMARY KEY (user_id, group_id)
+);
+```
+
+### Hierarchical Data
+
+For hierarchical data, we use either adjacency lists or path enumeration:
+
+```sql
+-- Adjacency list approach
+CREATE TABLE public.categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  parent_id UUID REFERENCES public.categories(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Path enumeration approach
+CREATE TABLE public.categories_path (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  path TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+```
+
+## Row Level Security (RLS)
+
+All tables should have appropriate RLS policies defined to control access:
+
+```sql
+-- Enable RLS
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+
+-- Define policies
+CREATE POLICY "Users can view own documents" ON public.documents
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own documents" ON public.documents
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own documents" ON public.documents
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own documents" ON public.documents
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+## Schema Evolution
+
+When evolving schemas, follow these guidelines:
+
+1. Create a new migration file using `supabase migration new`
+2. Make additive changes when possible (add columns, tables)
+3. For destructive changes, use a multi-step migration approach:
+   - Add new structure
+   - Migrate data
+   - Remove old structure (in a later migration)
+4. Update TypeScript models to reflect schema changes
+
+## Type Generation
+
+To maintain type safety, generate TypeScript types from your database schema:
+
+```bash
+pnpm supabase gen types typescript --local > ./packages/supabase-client/src/types/database.types.ts
+```
+
+## Performance Considerations
+
+### Indexing Strategy
+
+Create indexes for columns that are frequently used in:
+- WHERE clauses
+- JOIN conditions
+- ORDER BY clauses
+
+```sql
+-- Create index for frequently filtered column
+CREATE INDEX products_category_id_idx ON public.products (category_id);
+
+-- Create composite index for combined filtering
+CREATE INDEX products_category_price_idx ON public.products (category_id, price);
+```
+
+### Pagination
+
+For large datasets, implement keyset-based pagination instead of offset pagination:
+
+```sql
+-- Keyset pagination example
+SELECT * FROM products
+WHERE category_id = '123'
+AND (created_at, id) < (last_seen_timestamp, last_seen_id)
+ORDER BY created_at DESC, id DESC
+LIMIT 20;
+```
+
+## Best Practices
+
+1. **Use UUIDs for primary keys**: Provides better security and distribution for large datasets
+2. **Add created_at/updated_at timestamps**: Helps with debugging and audit trails
+3. **Normalize data appropriately**: Balance between normalization and query performance
+4. **Use appropriate data types**: Leverage PostgreSQL's rich type system
+5. **Document complex schemas**: Add comments to explain relationships and constraints
+6. **Version control schema changes**: Keep all migrations in version control
+7. **Test migrations**: Verify that migrations work correctly before deployment
+8. **Use transactions**: Wrap related changes in transactions for atomicity
+
+## Examples
+
+### E-commerce Product Catalog
+
+```sql
+CREATE TABLE public.products (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  category_id UUID REFERENCES public.categories(id),
+  is_active BOOLEAN DEFAULT true,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE public.product_variants (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  sku TEXT UNIQUE NOT NULL,
+  price_adjustment DECIMAL(10, 2) DEFAULT 0,
+  inventory_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+```
+
+### Content Management
+
+```sql
+CREATE TABLE public.content_items (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT,
+  content_type TEXT NOT NULL,
+  status TEXT DEFAULT 'draft',
+  author_id UUID REFERENCES public.users(id),
+  published_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE public.content_tags (
+  content_id UUID REFERENCES public.content_items(id) ON DELETE CASCADE,
+  tag TEXT NOT NULL,
+  PRIMARY KEY (content_id, tag)
+);
+```
+
+## Further Resources
+
+- [Supabase Schema Documentation](https://supabase.com/docs/guides/database/tables)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [TypeScript Type Generation](https://supabase.com/docs/reference/javascript/typescript-support)

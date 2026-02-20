@@ -1,0 +1,278 @@
+---
+title: 'Supabase Local Development'
+description: 'Setting up and working with Supabase locally'
+---
+
+# Supabase Local Development
+
+This guide will help you set up and work with Supabase in your local development environment.
+
+## Prerequisites
+
+Before getting started, ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (v18 or later)
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (This can be installed automatically by our setup script)
+
+## Quick Setup
+
+The monorepo includes a setup script to quickly get Supabase running locally:
+
+```bash
+# Run the automated setup script
+pnpm supabase:setup
+```
+
+This script will:
+1. Check for prerequisites
+2. Configure your environment variables
+3. Start Supabase locally
+4. Optionally reset and seed the database
+
+## Manual Setup
+
+If you prefer to set up Supabase manually, follow these steps:
+
+<Steps>
+  <Step title="Install the Supabase CLI">
+    ```bash
+    # Install the Supabase CLI globally
+    npm install -g supabase
+    ```
+  </Step>
+  <Step title="Configure Environment Variables">
+    Create or update your `.env.local` file in the root of the repo with these variables:
+    
+    ```
+    NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+    SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+    ```
+    
+    These are the default keys for local Supabase development.
+  </Step>
+  <Step title="Start Supabase">
+    ```bash
+    # Navigate to the Supabase directory
+    cd infra/supabase
+    
+    # Start Supabase
+    supabase start
+    ```
+    
+    This will start the Supabase services in Docker containers.
+  </Step>
+  <Step title="Apply Migrations">
+    ```bash
+    # Reset the database and apply all migrations
+    supabase db reset
+    ```
+    
+    This will apply all migrations in the `migrations` directory.
+  </Step>
+</Steps>
+
+## Accessing Supabase Studio
+
+Once Supabase is running, you can access the Supabase Studio at:
+
+```
+http://localhost:54323
+```
+
+This provides a web interface for:
+- Browsing and editing your database tables
+- Managing authentication settings
+- Configuring storage buckets
+- Testing edge functions
+- Running SQL queries
+- Viewing logs
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full my-6"
+  src="/images/supabase-studio.png"
+  alt="Supabase Studio Interface"
+/>
+
+## Common Tasks
+
+### Managing the Database
+
+<AccordionGroup>
+  <Accordion title="Viewing and Editing Data" icon="table">
+    You can view and edit data directly in the Supabase Studio:
+    
+    1. Open Supabase Studio at `http://localhost:54323`
+    2. Click on "Table Editor" in the sidebar
+    3. Select a table to view or edit its data
+    
+    For more advanced operations, you can use the SQL Editor in Supabase Studio.
+  </Accordion>
+  
+  <Accordion title="Creating a Migration" icon="code-branch">
+    When making schema changes:
+    
+    ```bash
+    # Create a new migration file
+    cd infra/supabase
+    supabase migration new add_new_feature
+    
+    # Edit the generated file in migrations/[timestamp]_add_new_feature.sql
+    # Then apply the migration
+    supabase db reset
+    ```
+    
+    Alternatively, you can use the schema-first approach:
+    
+    1. Update or create schema files in `/data/schemas/`
+    2. Generate a migration from the differences:
+    
+    ```bash
+    cd infra/supabase
+    supabase db diff --schema public --file add_new_feature
+    ```
+  </Accordion>
+  
+  <Accordion title="Resetting the Database" icon="refresh">
+    To reset your database to a clean state:
+    
+    ```bash
+    # From the root of the repository
+    pnpm supabase:reset
+    
+    # Or manually
+    cd infra/supabase
+    supabase db reset
+    ```
+    
+    This will apply all migrations in sequence to rebuild the database.
+  </Accordion>
+</AccordionGroup>
+
+### Working with Authentication
+
+<AccordionGroup>
+  <Accordion title="Creating a User" icon="user-plus">
+    You can create test users through the Supabase Studio:
+    
+    1. Open Supabase Studio at `http://localhost:54323`
+    2. Go to "Authentication" → "Users"
+    3. Click "Add User" and enter the user details
+    
+    Or through code:
+    
+    ```typescript
+    import { getSupabaseClient } from '@repo/supabase-client';
+    
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: 'test@example.com',
+      password: 'password123'
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Testing Authentication" icon="lock">
+    To test auth flows in your application:
+    
+    1. Create a test user as described above
+    2. Use the user credentials to sign in
+    3. Auth state should persist between page reloads
+    
+    For OAuth providers, you'll need to configure them in Supabase Studio under "Authentication" → "Providers".
+  </Accordion>
+</AccordionGroup>
+
+### Working with Storage
+
+<AccordionGroup>
+  <Accordion title="Creating a Bucket" icon="folder-plus">
+    Storage buckets can be created through the Supabase Studio:
+    
+    1. Open Supabase Studio at `http://localhost:54323`
+    2. Go to "Storage" 
+    3. Click "New Bucket" and enter a name
+    4. Configure public/private access as needed
+  </Accordion>
+  
+  <Accordion title="Upload and Manage Files" icon="file-upload">
+    You can upload files through the Supabase Studio or via code:
+    
+    ```typescript
+    import { getSupabaseClient } from '@repo/supabase-client';
+    
+    const supabase = getSupabaseClient();
+    
+    // Upload a file
+    const { data, error } = await supabase.storage
+      .from('bucket-name')
+      .upload('file-path.jpg', fileData);
+      
+    // Get a public URL
+    const { data } = supabase.storage
+      .from('bucket-name')
+      .getPublicUrl('file-path.jpg');
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues and Solutions
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+  <div className="p-4 border rounded-lg">
+    <h4 className="font-medium">Docker Not Running</h4>
+    <p>If you see errors about Docker not running, make sure Docker Desktop is started before running Supabase commands.</p>
+  </div>
+  
+  <div className="p-4 border rounded-lg">
+    <h4 className="font-medium">Port Conflicts</h4>
+    <p>If Supabase fails to start due to port conflicts, check for other services using ports 54321-54325 and stop them.</p>
+  </div>
+  
+  <div className="p-4 border rounded-lg">
+    <h4 className="font-medium">Database Reset Errors</h4>
+    <p>If database reset fails, try stopping and restarting Supabase:</p>
+    <pre className="bg-gray-100 p-2 mt-2 rounded overflow-x-auto">
+      <code>supabase stop && supabase start</code>
+    </pre>
+  </div>
+  
+  <div className="p-4 border rounded-lg">
+    <h4 className="font-medium">Auth Not Working</h4>
+    <p>If authentication isn't working, check that your environment variables are correctly set in both the .env.local file and your application.</p>
+  </div>
+</div>
+
+## Best Practices
+
+<CardGroup cols={3}>
+  <Card title="Use Migrations" icon="code-branch" color="#3ECF8E">
+    Always use migrations for schema changes to keep development and production in sync
+  </Card>
+  <Card title="Schema First" icon="sitemap" color="#3ECF8E">
+    Define schemas in the `/data/schemas/` directory first, then generate migrations
+  </Card>
+  <Card title="Local Only" icon="laptop-code" color="#3ECF8E">
+    Never connect to production databases from your local development environment
+  </Card>
+  <Card title="RLS Policies" icon="shield-alt" color="#3ECF8E">
+    Always implement Row Level Security (RLS) policies for tables
+  </Card>
+  <Card title="Types First" icon="code" color="#3ECF8E">
+    Keep TypeScript models in sync with database schema changes
+  </Card>
+  <Card title="Test Data Reset" icon="redo" color="#3ECF8E">
+    Regularly reset your local database to ensure your migrations work correctly
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+Now that you have Supabase running locally, you can:
+
+- Explore the [Database Schema](/developer-resources/database-schemas)
+- Learn about [Supabase Integration](/technology-stack/supabase) in our stack
+- Read the [official Supabase documentation](https://supabase.com/docs) for more advanced topics
+
+If you encounter any issues with the local development setup, please reach out to the development team.

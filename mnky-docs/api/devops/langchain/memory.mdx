@@ -1,0 +1,872 @@
+---
+title: 'Memory API'
+description: 'Store and retrieve conversation history and context in your Langchain applications'
+---
+
+# Memory Systems
+
+Memory in Langchain allows your applications to maintain context across interactions, enabling more natural conversations and coherent responses over time. The Memory API provides various ways to store, retrieve, and manage conversation history and contextual information.
+
+## Overview
+
+Langchain's memory systems serve several important purposes:
+
+- Maintaining conversation history between users and AI assistants
+- Storing key-value information for later retrieval
+- Persisting important context across multiple interactions
+- Enabling summarization of past interactions
+- Supporting personalization based on user history
+
+## Memory Types
+
+Langchain offers several memory types to address different use cases:
+
+| Memory Type | Description | Best For |
+| --- | --- | --- |
+| `conversation` | Stores complete conversation history | Chat applications |
+| `buffer` | Maintains a simple list of recent messages | Limited context applications |
+| `summary` | Keeps a compressed summary of conversation history | Long-running conversations |
+| `token_buffer` | Manages conversation history within token limits | Token-sensitive applications |
+| `entity` | Tracks and stores entity information | Entity-focused conversations |
+| `vector` | Stores embeddings of conversation for semantic retrieval | Knowledge-intensive applications |
+| `combined` | Combines multiple memory types | Complex applications with varied needs |
+
+## API Reference
+
+### Create Memory
+
+```http
+POST https://langchain.moodmnky.com/api/memories
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body:
+
+```json
+{
+  "name": "Customer Support Memory",
+  "type": "conversation",
+  "config": {
+    "maxMessages": 10,
+    "returnMessages": true,
+    "inputKey": "input",
+    "outputKey": "output"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "memoryId": "mem_01h9f5zj3q8r6k2y7t1x",
+  "name": "Customer Support Memory",
+  "type": "conversation",
+  "created": "2023-10-15T14:30:00Z",
+  "lastAccessed": "2023-10-15T14:30:00Z",
+  "config": {
+    "maxMessages": 10,
+    "returnMessages": true,
+    "inputKey": "input",
+    "outputKey": "output"
+  }
+}
+```
+
+### Get Memory
+
+```http
+GET https://langchain.moodmnky.com/api/memories/{memoryId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "memoryId": "mem_01h9f5zj3q8r6k2y7t1x",
+  "name": "Customer Support Memory",
+  "type": "conversation",
+  "created": "2023-10-15T14:30:00Z",
+  "lastAccessed": "2023-10-15T14:45:12Z",
+  "config": {
+    "maxMessages": 10,
+    "returnMessages": true,
+    "inputKey": "input",
+    "outputKey": "output"
+  }
+}
+```
+
+### List Memories
+
+```http
+GET https://langchain.moodmnky.com/api/memories
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "memories": [
+    {
+      "memoryId": "mem_01h9f5zj3q8r6k2y7t1x",
+      "name": "Customer Support Memory",
+      "type": "conversation",
+      "created": "2023-10-15T14:30:00Z",
+      "lastAccessed": "2023-10-15T14:45:12Z"
+    },
+    {
+      "memoryId": "mem_02h9g6ak4r9s7l3z8u2y",
+      "name": "Product Recommendation Memory",
+      "type": "entity",
+      "created": "2023-10-14T09:15:23Z",
+      "lastAccessed": "2023-10-15T11:22:45Z"
+    }
+  ],
+  "pagination": {
+    "total": 8,
+    "limit": 10,
+    "offset": 0,
+    "nextOffset": null
+  }
+}
+```
+
+### Get Memory Contents
+
+```http
+GET https://langchain.moodmnky.com/api/memories/{memoryId}/contents
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response (for conversation memory):
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, I'm having trouble with my account.",
+      "timestamp": "2023-10-15T14:35:22Z"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm sorry to hear that. Could you please tell me what specific issue you're experiencing with your account?",
+      "timestamp": "2023-10-15T14:35:30Z"
+    },
+    {
+      "role": "user",
+      "content": "I can't reset my password. The reset email never arrives.",
+      "timestamp": "2023-10-15T14:36:15Z"
+    }
+  ],
+  "variables": {}
+}
+```
+
+Response (for entity memory):
+
+```json
+{
+  "entities": {
+    "user": {
+      "email_issue": true,
+      "password_reset": true,
+      "account_access": true
+    }
+  },
+  "messages": []
+}
+```
+
+### Add Memory
+
+```http
+POST https://langchain.moodmnky.com/api/memories/{memoryId}/add
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body (for conversation memory):
+
+```json
+{
+  "input": "I've tried clearing my cache and using a different browser, but still no reset email.",
+  "output": "Thank you for trying those troubleshooting steps. Let me check if there's an issue with our email delivery system. Could you please provide the email address you're trying to use for the reset?"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "currentSize": 3,
+  "maxSize": 10
+}
+```
+
+### Clear Memory
+
+```http
+POST https://langchain.moodmnky.com/api/memories/{memoryId}/clear
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Memory cleared successfully"
+}
+```
+
+### Delete Memory
+
+```http
+DELETE https://langchain.moodmnky.com/api/memories/{memoryId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Memory deleted successfully"
+}
+```
+
+### Update Memory Configuration
+
+```http
+PATCH https://langchain.moodmnky.com/api/memories/{memoryId}
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body:
+
+```json
+{
+  "name": "Updated Memory Name",
+  "config": {
+    "maxMessages": 20
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "memoryId": "mem_01h9f5zj3q8r6k2y7t1x",
+  "name": "Updated Memory Name",
+  "type": "conversation",
+  "created": "2023-10-15T14:30:00Z",
+  "lastAccessed": "2023-10-15T14:45:12Z",
+  "config": {
+    "maxMessages": 20,
+    "returnMessages": true,
+    "inputKey": "input",
+    "outputKey": "output"
+  }
+}
+```
+
+## Implementation Examples
+
+### Conversation Memory
+
+```typescript
+// Creating a conversation memory
+async function createConversationMemory() {
+  const response = await fetch('https://langchain.moodmnky.com/api/memories', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: 'Customer Chat Memory',
+      type: 'conversation',
+      config: {
+        maxMessages: 10,
+        returnMessages: true,
+        inputKey: 'human',
+        outputKey: 'ai'
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Adding messages to conversation memory
+async function addToMemory(memoryId, userMessage, aiMessage) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/memories/${memoryId}/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      human: userMessage,
+      ai: aiMessage
+    })
+  });
+  
+  return await response.json();
+}
+
+// Retrieving memory contents
+async function getMemoryContents(memoryId) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/memories/${memoryId}/contents`, {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  });
+  
+  return await response.json();
+}
+
+// Example usage
+async function conversationMemoryExample() {
+  // Create a new memory
+  const memory = await createConversationMemory();
+  console.log('Created memory:', memory.memoryId);
+  
+  // Add some conversation turns
+  await addToMemory(
+    memory.memoryId, 
+    "Hi, I'm interested in your scented candles. What options do you have?",
+    "Hello! We have several scented candle collections including Lavender Dreams, Ocean Breeze, and Forest Walk. Each comes in different sizes and burn times. Do any of these interest you?"
+  );
+  
+  await addToMemory(
+    memory.memoryId,
+    "The Lavender Dreams sounds nice. How much do they cost?",
+    "The Lavender Dreams candles are priced as follows: Small (15 hours) - $12.99, Medium (30 hours) - $19.99, and Large (50 hours) - $29.99. They're made with natural soy wax and essential oils."
+  );
+  
+  // Retrieve the conversation history
+  const contents = await getMemoryContents(memory.memoryId);
+  console.log('Memory contents:');
+  contents.messages.forEach(msg => {
+    console.log(`${msg.role}: ${msg.content}`);
+  });
+}
+```
+
+### Summary Memory
+
+```typescript
+// Creating a summary memory
+async function createSummaryMemory() {
+  const response = await fetch('https://langchain.moodmnky.com/api/memories', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: 'Customer Interaction Summary',
+      type: 'summary',
+      config: {
+        llm: {
+          provider: 'openai',
+          model: 'gpt-3.5-turbo',
+          temperature: 0.5
+        },
+        promptTemplate: "Summarize the following conversation between a customer and support agent, focusing on key details, issues, and resolutions:\n\n{chat_history}\n\nSummary:",
+        summaryInputKey: 'chat_history',
+        summaryOutputKey: 'summary',
+        maxTokens: 2000
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Adding conversation to summary memory
+async function addToSummaryMemory(memoryId, conversation) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/memories/${memoryId}/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      chat_history: conversation
+    })
+  });
+  
+  return await response.json();
+}
+
+// Example usage
+async function summaryMemoryExample() {
+  // Create a summary memory
+  const memory = await createSummaryMemory();
+  console.log('Created summary memory:', memory.memoryId);
+  
+  // Add a lengthy conversation
+  const conversation = `
+Customer: Hi, I recently purchased your premium candle set but I'm having an issue with one of them not burning properly.
+Agent: I'm sorry to hear that. Could you tell me which specific candle in the set is causing problems?
+Customer: It's the Lavender Dreams one. The wick seems to be buried too deep in the wax.
+Agent: Thank you for that information. That shouldn't happen with our candles. How long have you had the candle, and have you burned it before?
+Customer: I've had it for about a week, and this is the first time I'm trying to use it.
+Agent: I understand. For a brand new candle, this is definitely a manufacturing issue. I'd be happy to send you a replacement right away.
+Customer: That would be great, thank you.
+Agent: Could you please confirm your shipping address so I can arrange the replacement?
+Customer: Yes, it's 123 Main Street, Apt 4B, New York, NY 10001.
+Agent: Perfect. I've created a replacement order for the Lavender Dreams candle. You should receive it within 3-5 business days. I'm also including a small gift as an apology for the inconvenience.
+Customer: That's very kind of you, thank you for the excellent customer service.
+Agent: You're welcome! Is there anything else I can help you with today?
+Customer: No, that's all. Thanks again.
+Agent: Thank you for being a valued customer. Your replacement is on its way, and you'll receive a confirmation email shortly. Have a wonderful day!
+  `;
+  
+  await addToSummaryMemory(memory.memoryId, conversation);
+  
+  // Retrieve the summary
+  const contents = await getMemoryContents(memory.memoryId);
+  console.log('Memory summary:', contents.summary);
+}
+```
+
+### Entity Memory
+
+```typescript
+// Creating an entity memory
+async function createEntityMemory() {
+  const response = await fetch('https://langchain.moodmnky.com/api/memories', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: 'Customer Preferences Memory',
+      type: 'entity',
+      config: {
+        llm: {
+          provider: 'openai',
+          model: 'gpt-3.5-turbo',
+          temperature: 0.2
+        },
+        entityExtractorPrompt: "Extract entities and their attributes from the following conversation. Focus on preferences, interests, issues, and personal details:\n\n{text}\n\nEntities:",
+        knownEntities: ["customer", "products"],
+        maxTokens: 1000
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Adding text to entity memory for extraction
+async function addToEntityMemory(memoryId, text) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/memories/${memoryId}/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      text: text
+    })
+  });
+  
+  return await response.json();
+}
+
+// Example usage
+async function entityMemoryExample() {
+  // Create an entity memory
+  const memory = await createEntityMemory();
+  console.log('Created entity memory:', memory.memoryId);
+  
+  // Add some text with entities to extract
+  await addToEntityMemory(
+    memory.memoryId,
+    "Customer: I prefer lavender and citrus scents, but I'm allergic to cinnamon. I'm looking for something for my bedroom that helps with sleep."
+  );
+  
+  await addToEntityMemory(
+    memory.memoryId,
+    "Customer: I usually burn candles in the evening for about 2 hours. I prefer soy-based candles over paraffin because they're better for air quality."
+  );
+  
+  // Retrieve the extracted entities
+  const contents = await getMemoryContents(memory.memoryId);
+  console.log('Extracted entities:');
+  console.log(JSON.stringify(contents.entities, null, 2));
+}
+```
+
+### Combined Memory
+
+```typescript
+// Creating a combined memory
+async function createCombinedMemory() {
+  const response = await fetch('https://langchain.moodmnky.com/api/memories', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: "Advanced Customer Memory",
+      type: "combined",
+      config: {
+        memories: [
+          {
+            type: "conversation",
+            config: {
+              maxMessages: 5,
+              returnMessages: true,
+              inputKey: "input",
+              outputKey: "output",
+              memoryKey: "chat_history"
+            }
+          },
+          {
+            type: "summary",
+            config: {
+              llm: {
+                provider: "openai",
+                model: "gpt-3.5-turbo",
+                temperature: 0.5
+              },
+              promptTemplate: "Summarize the key points from this conversation, focusing on customer needs and preferences:\n\n{chat_history}\n\nSummary:",
+              summaryInputKey: "chat_history",
+              summaryOutputKey: "summary",
+              memoryKey: "conversation_summary"
+            }
+          },
+          {
+            type: "entity",
+            config: {
+              llm: {
+                provider: "openai",
+                model: "gpt-3.5-turbo",
+                temperature: 0.2
+              },
+              entityExtractorPrompt: "Extract entities and their attributes from the text. Focus on products, preferences, and personal details:\n\n{text}\n\nEntities:",
+              knownEntities: ["customer", "products"],
+              memoryKey: "entities"
+            }
+          }
+        ]
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Using combined memory with a chain
+async function useCombinedMemoryWithChain() {
+  // Create the combined memory
+  const memory = await createCombinedMemory();
+  console.log('Created combined memory:', memory.memoryId);
+  
+  // Create a chain
+  const chainResponse = await fetch('https://langchain.moodmnky.com/api/chains', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: "Customer Support Chain",
+      type: "llm",
+      config: {
+        llm: {
+          provider: "openai",
+          model: "gpt-4",
+          temperature: 0.7
+        },
+        prompt: `You are a customer support agent for MOOD MNKY, a premium self-care and fragrance company.
+
+Recent conversation: {chat_history}
+
+Overall conversation summary: {conversation_summary}
+
+What we know about the customer: {entities}
+
+Customer: {input}
+
+Respond in a helpful, friendly way that references their preferences and history when relevant.`,
+        outputKey: "response"
+      }
+    })
+  });
+  
+  const chain = await chainResponse.json();
+  
+  // Connect the memory to the chain
+  await fetch(`https://langchain.moodmnky.com/api/chains/${chain.chainId}/memories`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      memoryId: memory.memoryId
+    })
+  });
+  
+  // Now use the chain with connected memory
+  const messages = [
+    "Hi there, I'm looking for some new candles for my home.",
+    "I prefer floral scents, especially lavender and jasmine. Nothing too strong though.",
+    "Do you have any recommendations for candles that would help with relaxation before bed?",
+    "That sounds perfect. Are they made with natural ingredients? I'm trying to avoid synthetic fragrances."
+  ];
+  
+  for (const message of messages) {
+    const response = await fetch(`https://langchain.moodmnky.com/api/chains/${chain.chainId}/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_API_KEY'
+      },
+      body: JSON.stringify({
+        inputs: {
+          input: message
+        }
+      })
+    });
+    
+    const result = await response.json();
+    console.log('Customer:', message);
+    console.log('Agent:', result.output.response);
+    console.log('---');
+  }
+  
+  // Check memory contents after conversation
+  const contents = await getMemoryContents(memory.memoryId);
+  console.log('Final memory state:');
+  console.log('Chat history:', contents.chat_history);
+  console.log('Conversation summary:', contents.conversation_summary);
+  console.log('Entities:', contents.entities);
+}
+```
+
+## Best Practices
+
+### Memory Selection
+
+- **Choose the right memory type** for your application:
+  - Use `conversation` for simple chat applications
+  - Use `summary` for long-running conversations that might exceed context windows
+  - Use `entity` for tracking specific information mentioned by users
+  - Use `token_buffer` for applications with strict token limits
+  - Use `combined` for complex applications that need multiple memory capabilities
+
+- **Configure memory size appropriately**:
+  - Balance between context retention and token usage
+  - Consider the typical conversation length in your application
+  - For models with smaller context windows, use summary memory to compress history
+
+### Memory Usage
+
+- **Connect memory to chains** for persistent context across interactions:
+  ```typescript
+  // Connect memory to a chain
+  async function connectMemoryToChain(chainId, memoryId, memoryKey = null) {
+    const payload = { memoryId };
+    if (memoryKey) {
+      payload.key = memoryKey;
+    }
+    
+    const response = await fetch(`https://langchain.moodmnky.com/api/chains/${chainId}/memories`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_API_KEY'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    return await response.json();
+  }
+  ```
+
+- **Clear memory when appropriate**:
+  - At the end of a support session
+  - When the user explicitly requests to start over
+  - When the conversation context significantly changes
+  - When hitting token limits with critical new information
+
+- **Implement memory management strategies**:
+  ```typescript
+  // Memory management utility
+  class MemoryManager {
+    constructor(apiKey) {
+      this.apiKey = apiKey;
+      this.baseUrl = 'https://langchain.moodmnky.com/api';
+    }
+    
+    async createMemory(config) {
+      const response = await fetch(`${this.baseUrl}/memories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify(config)
+      });
+      
+      return await response.json();
+    }
+    
+    async getMemorySize(memoryId) {
+      const contents = await this.getContents(memoryId);
+      if (contents.messages) {
+        return contents.messages.length;
+      }
+      return 0;
+    }
+    
+    async getContents(memoryId) {
+      const response = await fetch(`${this.baseUrl}/memories/${memoryId}/contents`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`
+        }
+      });
+      
+      return await response.json();
+    }
+    
+    async clearIfNeeded(memoryId, threshold = 20) {
+      const size = await this.getMemorySize(memoryId);
+      if (size >= threshold) {
+        await this.clear(memoryId);
+        return true;
+      }
+      return false;
+    }
+    
+    async clear(memoryId) {
+      const response = await fetch(`${this.baseUrl}/memories/${memoryId}/clear`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`
+        }
+      });
+      
+      return await response.json();
+    }
+    
+    async addInteraction(memoryId, input, output) {
+      const response = await fetch(`${this.baseUrl}/memories/${memoryId}/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({ input, output })
+      });
+      
+      return await response.json();
+    }
+  }
+  ```
+
+### Performance and Cost Optimization
+
+- **Monitor token usage** to manage costs:
+  - Use token-aware memories like `token_buffer` to stay within limits
+  - Implement automatic summarization when conversations get long
+  - Clear unnecessary memory when it's no longer needed
+
+- **Use memory selectively**:
+  - Not all chains need memory - use it only when context matters
+  - For stateless operations, avoid memory to reduce overhead
+  - Consider the cost-benefit of maintaining extensive memory
+
+- **Optimize for latency**:
+  - Pre-fetch memory contents for critical paths
+  - Use caching where appropriate
+  - Consider async memory updates for non-critical information
+
+### Error Handling
+
+- **Implement robust error handling**:
+  ```typescript
+  async function addToMemoryWithErrorHandling(memoryId, input, output) {
+    try {
+      const response = await fetch(`https://langchain.moodmnky.com/api/memories/${memoryId}/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_API_KEY'
+        },
+        body: JSON.stringify({ input, output })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Memory update error:', errorData);
+        
+        // Handle specific errors
+        if (response.status === 404) {
+          // Memory not found - create a new one
+          const newMemory = await createConversationMemory();
+          console.log('Created new memory:', newMemory.memoryId);
+          return addToMemoryWithErrorHandling(newMemory.memoryId, input, output);
+        } else if (response.status === 429) {
+          // Rate limited - retry after delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return addToMemoryWithErrorHandling(memoryId, input, output);
+        }
+        
+        throw new Error(`Memory update failed: ${errorData.message}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating memory:', error);
+      // Implement fallback behavior
+      return { success: false, error: error.message };
+    }
+  }
+  ```
+
+- **Have fallback strategies**:
+  - Continue with empty memory if retrieval fails
+  - Create a new memory if the original is corrupted
+  - Use simplified memory types as fallbacks
+
+### Security Considerations
+
+- **Never store sensitive information** in memories:
+  - Implement content filtering for PII
+  - Have clear data retention policies
+  - Provide users with options to clear their memory
+
+- **Implement proper access controls**:
+  - Ensure memories are accessible only to authorized users
+  - Use session-based memory access
+  - Implement timeout policies for inactive memories
+
+## Support & Resources
+
+- [Memory API Reference](/api/reference/langchain#tag/Memories)
+- [Memory Types Guide](/api/guides/langchain/memory-types)
+- [Advanced Memory Patterns](/api/guides/langchain/advanced-memory)
+- [Chains with Memory Tutorial](/api/tutorials/langchain/chains-with-memory)
+
+For additional support:
+- Email: api-support@moodmnky.com
+- Discord: [MOOD MNKY Developer Community](https://discord.gg/moodmnky-dev)
+- GitHub: [Issue Tracker](https://github.com/moodmnkyllc/api-issues) 

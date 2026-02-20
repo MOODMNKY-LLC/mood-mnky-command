@@ -1,0 +1,60 @@
+graph LR
+    %% Main Profile Components
+    Profile((User Profile))
+    Explicit[Explicit Preferences]
+    Implicit[Implicit Preferences]
+    Behavior[Behavior Patterns]
+    Learning[Learning Profile]
+    Products[Product Affinity]
+
+    %% Data Sources
+    Questionnaire[Onboarding Questionnaire]
+    Interaction[Platform Interactions]
+    Purchase[Purchase History]
+    Progress[Learning Progress]
+    Feedback[User Feedback]
+
+    %% Profile Connections
+    Profile --- Explicit
+    Profile --- Implicit
+    Profile --- Behavior
+    Profile --- Learning
+    Profile --- Products
+
+    %% Data Flow to Explicit Preferences
+    Questionnaire --> Explicit
+    Feedback --> Explicit
+
+    %% Data Flow to Implicit Preferences
+    Interaction --> Implicit
+    Purchase --> Implicit
+
+    %% Data Flow to Behavior Patterns
+    Interaction --> Behavior
+    Progress --> Behavior
+
+    %% Data Flow to Learning Profile
+    Progress --> Learning
+    Feedback --> Learning
+
+    %% Data Flow to Product Affinity
+    Purchase --> Products
+    Feedback --> Products
+
+    %% Personalization Outputs
+    Explicit --> Recommendations[Product Recommendations]
+    Implicit --> Content[Content Personalization]
+    Behavior --> Interface[Interface Adaptation]
+    Learning --> Path[Learning Path]
+    Products --> Marketing[Marketing Content]
+
+    %% Styling
+    classDef core fill:#f9f,stroke:#333,stroke-width:4px
+    classDef component fill:#cfc,stroke:#333,stroke-width:2px
+    classDef source fill:#9cf,stroke:#333,stroke-width:2px
+    classDef output fill:#fcf,stroke:#333,stroke-width:2px
+
+    class Profile core
+    class Explicit,Implicit,Behavior,Learning,Products component
+    class Questionnaire,Interaction,Purchase,Progress,Feedback source
+    class Recommendations,Content,Interface,Path,Marketing output

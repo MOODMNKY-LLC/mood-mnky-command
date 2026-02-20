@@ -1,0 +1,332 @@
+---
+title: "Database Migration Patterns"
+description: "Guidelines for implementing and managing database migrations in the MOOD MNKY ecosystem"
+---
+
+# Database Migration Patterns
+
+## Overview
+
+This guide outlines the patterns and best practices for implementing database migrations in the MOOD MNKY ecosystem. Effective migration strategies ensure that database schema changes are applied consistently across all environments without data loss or application downtime.
+
+## Migration Principles
+
+Our approach to database migrations follows these key principles:
+
+1. **Version control**: All migrations are tracked in version control
+2. **Forward-only**: Migrations should generally only move forward, not roll back
+3. **Incremental changes**: Small, focused migrations are preferable to large schema changes
+4. **Backward compatibility**: Where possible, maintain compatibility with existing code
+5. **Data integrity**: Preserve data during schema changes
+6. **Testing**: Test migrations thoroughly before applying to production
+
+## Migration Workflow
+
+### Development Process
+
+1. **Schema Design**:
+   - Define required schema changes in `/data/schemas/`
+   - Update TypeScript models in `/data/models/`
+   - Document changes in relevant READMEs
+
+2. **Migration Creation**:
+   - Create a new migration file:
+     ```bash
+     supabase migration new my_migration_name
+     ```
+   - The migration file will be created in `/infra/supabase/migrations/`
+
+3. **Migration Development**:
+   - Implement SQL commands in the migration file
+   - Include both schema changes and data migrations as needed
+   - Add comments explaining complex changes
+
+4. **Local Testing**:
+   - Apply the migration to your local development database:
+     ```bash
+     supabase migration up
+     ```
+   - Verify that the migration works as expected
+   - Test application functionality with the new schema
+
+5. **Commit and Review**:
+   - Commit the migration file to version control
+   - Have team members review the migration
+   - Ensure that related application code changes are also reviewed
+
+### Deployment Process
+
+1. **Staging Deployment**:
+   - Apply migrations to staging environment
+   - Run comprehensive tests against the updated schema
+   - Verify application functionality
+
+2. **Production Deployment**:
+   - Schedule migration for low-traffic period if possible
+   - Apply migration using Supabase migration tools
+   - Monitor application performance after migration
+   - Be prepared to quickly address any issues
+
+## Migration Types
+
+### Schema Migrations
+
+Schema migrations modify the structure of the database:
+
+```sql
+-- Create a new table
+CREATE TABLE public.comments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  content TEXT NOT NULL,
+  user_id UUID REFERENCES public.users(id),
+  post_id UUID REFERENCES public.posts(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Add a new column to an existing table
+ALTER TABLE public.users ADD COLUMN phone_number TEXT;
+
+-- Modify a column
+ALTER TABLE public.products ALTER COLUMN price TYPE DECIMAL(12, 2);
+
+-- Add constraints
+ALTER TABLE public.orders ADD CONSTRAINT orders_total_check CHECK (total >= 0);
+```
+
+### Data Migrations
+
+Data migrations modify existing data to match new schema requirements:
+
+```sql
+-- Update existing data
+UPDATE public.users SET status = 'active' WHERE status IS NULL;
+
+-- Transform data format
+UPDATE public.products SET 
+  dimensions = jsonb_build_object(
+    'width', dimensions->>'width', 
+    'height', dimensions->>'height',
+    'unit', 'cm'
+  )
+WHERE dimensions->>'unit' IS NULL;
+
+-- Migrate data from old structure to new
+INSERT INTO public.user_profiles (user_id, display_name, avatar_url)
+SELECT id, name, avatar FROM public.users;
+```
+
+### Combined Migrations
+
+Many migrations involve both schema and data changes:
+
+```sql
+-- Add new column with default value
+ALTER TABLE public.products ADD COLUMN is_featured BOOLEAN DEFAULT false;
+
+-- Update some records with the new field
+UPDATE public.products SET is_featured = true 
+WHERE category = 'featured' OR promoted = true;
+
+-- Remove old columns that are no longer needed
+ALTER TABLE public.products DROP COLUMN promoted;
+```
+
+## Complex Migration Patterns
+
+### Safe Column Removal
+
+To safely remove columns:
+
+1. **Step 1**: Mark as deprecated in application code
+   ```sql
+   COMMENT ON COLUMN public.users.old_field IS 'DEPRECATED: Will be removed in future release';
+   ```
+
+2. **Step 2**: Ensure application no longer uses the column
+
+3. **Step 3**: Remove the column in a later migration
+   ```sql
+   ALTER TABLE public.users DROP COLUMN old_field;
+   ```
+
+### Table Renaming
+
+To rename tables safely:
+
+1. **Step 1**: Create the new table
+   ```sql
+   CREATE TABLE public.team_members (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     team_id UUID REFERENCES public.teams(id),
+     user_id UUID REFERENCES public.users(id),
+     role TEXT NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+   );
+   ```
+
+2. **Step 2**: Migrate data from old table
+   ```sql
+   INSERT INTO public.team_members (team_id, user_id, role, created_at)
+   SELECT team_id, user_id, role, created_at FROM public.team_users;
+   ```
+
+3. **Step 3**: Update references and remove old table in a later migration
+   ```sql
+   DROP TABLE public.team_users;
+   ```
+
+### Schema Refactoring
+
+For major schema refactoring:
+
+1. **Step 1**: Create new tables with the desired structure
+2. **Step 2**: Create views that match the old structure but use the new tables
+3. **Step 3**: Migrate data to the new structure
+4. **Step 4**: Switch application to use new tables
+5. **Step 5**: Remove views and old tables when no longer needed
+
+## Row Level Security (RLS) Migrations
+
+When adding or modifying RLS policies:
+
+```sql
+-- Enable RLS on a table
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+
+-- Add policies
+CREATE POLICY "Users can view own documents" ON public.documents
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Update existing policy
+DROP POLICY "Users can update own documents" ON public.documents;
+CREATE POLICY "Users can update own documents" ON public.documents
+  FOR UPDATE USING (auth.uid() = user_id AND status <> 'locked');
+```
+
+## Function and Trigger Migrations
+
+For database functions and triggers:
+
+```sql
+-- Create or replace a function
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name)
+  VALUES (NEW.id, NEW.email);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create a trigger
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+
+## Migration Best Practices
+
+1. **Use transactions**: Wrap migrations in transactions to ensure atomicity
+   ```sql
+   BEGIN;
+   -- migration commands
+   COMMIT;
+   ```
+
+2. **Include rollback commands**: Add commented rollback commands as reference
+   ```sql
+   -- Migration commands
+   CREATE TABLE public.new_feature(...);
+   
+   -- Rollback commands (commented)
+   -- DROP TABLE public.new_feature;
+   ```
+
+3. **Avoid long locks**: Structure migrations to minimize table locking
+   ```sql
+   -- Add column without default (fast)
+   ALTER TABLE large_table ADD COLUMN new_column TEXT;
+   
+   -- Update data in batches
+   -- ... batch update logic
+   
+   -- Add constraint after data is updated
+   ALTER TABLE large_table ALTER COLUMN new_column SET NOT NULL;
+   ```
+
+4. **Use IF EXISTS / IF NOT EXISTS clauses**: Make migrations more robust
+   ```sql
+   CREATE TABLE IF NOT EXISTS public.audit_logs (...);
+   DROP TABLE IF EXISTS public.old_logs;
+   ```
+
+5. **Document migrations**: Add comments explaining the purpose
+   ```sql
+   -- Migration: Add user preferences
+   -- Purpose: Support personalization features in v2.3
+   -- Date: 2023-05-15
+   ```
+
+## Handling Production Data
+
+Special considerations for production databases:
+
+1. **Backup before migrating**: Always have a recent backup before applying migrations
+2. **Test with production-like data**: Test migrations with a copy of production data
+3. **Consider volume**: What works quickly in development may be slow with millions of rows
+4. **Schedule appropriately**: Plan migrations during low-traffic periods
+5. **Monitor performance**: Watch for unexpected performance impacts
+
+## Supabase-Specific Patterns
+
+### Using Supabase Migrations
+
+With Supabase, we use the Supabase CLI for migration management:
+
+```bash
+# Create a new migration
+supabase migration new add_user_preferences
+
+# Apply migrations
+supabase migration up
+
+# Verify status
+supabase migration list
+```
+
+### Generating Types After Migration
+
+After applying migrations, regenerate TypeScript types:
+
+```bash
+pnpm supabase gen types typescript --local > ./packages/supabase-client/src/types/database.types.ts
+```
+
+## Troubleshooting Migrations
+
+Common issues and solutions:
+
+1. **Migration fails to apply**: Check for dependencies on objects that don't exist
+2. **Data conversion issues**: Test data migration with representative data samples
+3. **Performance problems**: Add appropriate indexes before large data migrations
+4. **Constraint violations**: Query for violating records before adding constraints
+
+Example of checking for constraint violations before migration:
+
+```sql
+-- Check for records that would violate a new constraint
+SELECT * FROM public.orders WHERE total < 0;
+
+-- Fix violations before adding constraint
+UPDATE public.orders SET total = 0 WHERE total < 0;
+
+-- Now safe to add constraint
+ALTER TABLE public.orders ADD CONSTRAINT orders_total_check CHECK (total >= 0);
+```
+
+## Further Resources
+
+- [Supabase Migration Documentation](https://supabase.com/docs/guides/database/migrations)
+- [PostgreSQL Alter Table Documentation](https://www.postgresql.org/docs/current/sql-altertable.html)
+- [Database Refactoring Patterns](https://databaserefactoring.com/)
+- [PostgreSQL Concurrency Considerations](https://www.postgresql.org/docs/current/explicit-locking.html)

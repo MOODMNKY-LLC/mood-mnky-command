@@ -1,0 +1,708 @@
+---
+title: "Ecosystem Blueprint"
+description: "Architectural overview of the MOOD MNKY integrated ecosystem and its key components"
+icon: "diagram-project"
+---
+
+# MOOD MNKY Ecosystem Blueprint
+
+<Info>
+This blueprint provides a comprehensive overview of the MOOD MNKY ecosystem architecture, component relationships, and integration points. It serves as a reference for understanding how our physical products, digital platforms, AI agents, and community elements work together.
+</Info>
+
+## Ecosystem Architecture Overview
+
+The MOOD MNKY ecosystem is designed as an integrated network of physical and digital experiences, supported by a robust technical architecture and AI-driven personalization. This ecosystem enables seamless customer journeys across touchpoints while maintaining a consistent brand experience.
+
+<Frame>
+  ```mermaid
+  graph TD
+    subgraph PhysicalProducts[Physical Products]
+      FragranceSystem[Custom Fragrance System]
+      BathBody[Bath & Body Products]
+      HomeAmbiance[Home Ambiance Collection]
+    end
+
+    subgraph DigitalPlatforms[Digital Platforms]
+      WebPlatform[Web Platform]
+      MobileApp[Mobile Application]
+      DojoEnvironment[Dojo Learning Environment]
+    end
+
+    subgraph AgentSystem[Agent System]
+      MoodMnky[MOOD MNKY Agent]
+      CodeMnky[CODE MNKY Agent]
+      SageMnky[SAGE MNKY Agent]
+      AgentInfra[Agent Infrastructure]
+    end
+
+    subgraph CommPlatform[Community Platform]
+      Community[Community Hub]
+      TokenEconomy[Token Economy]
+      ContentHub[Content Hub]
+    end
+
+    subgraph CoreServices[Core Services]
+      PersonalizationEngine[Personalization Engine]
+      EcommerceServices[E-commerce Services]
+      MemorySystem[Memory System]
+      AnalyticsEngine[Analytics Engine]
+    end
+
+    WebPlatform <--> EcommerceServices
+    WebPlatform <--> PersonalizationEngine
+    WebPlatform <--> AgentSystem
+    MobileApp <--> WebPlatform
+    DojoEnvironment <--> WebPlatform
+    
+    AgentSystem <--> PersonalizationEngine
+    AgentSystem <--> MemorySystem
+    AgentSystem <--> Community
+    
+    FragranceSystem --> EcommerceServices
+    BathBody --> EcommerceServices
+    HomeAmbiance --> EcommerceServices
+    
+    Community <--> TokenEconomy
+    Community <--> ContentHub
+    
+    PersonalizationEngine <--> MemorySystem
+    PersonalizationEngine <--> AnalyticsEngine
+    EcommerceServices <--> AnalyticsEngine
+  ```
+</Frame>
+
+## Core System Components
+
+### Physical Product Ecosystem
+
+<CardGroup cols={3}>
+  <Card title="Custom Fragrance System" icon="flask">
+    The foundation of our personalized sensory experience, enabling bespoke scent creation
+  </Card>
+  <Card title="Bath & Body Products" icon="droplet">
+    Self-care essentials with personalized formulations and sensory elements
+  </Card>
+  <Card title="Home Ambiance" icon="house">
+    Products that transform living spaces into personalized sensory environments
+  </Card>
+</CardGroup>
+
+<Accordion title="Physical Product Integration Points">
+  - **Digital-Physical Bridge**: QR codes, NFC tags, and other technologies that connect physical products to digital experiences
+  - **Formulation Database**: System that stores custom formulations and enables reproduction
+  - **Production Systems**: Manufacturing and fulfillment processes for custom products
+  - **Quality Assurance**: Testing and validation systems for consistent product experiences
+  - **Sustainable Materials**: Environmentally responsible packaging and ingredients
+</Accordion>
+
+### Digital Platform Architecture
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+  <div className="p-5 border border-gray-200 rounded-lg">
+    <h3 className="text-lg font-medium mb-3">Web Platform</h3>
+    <p className="text-sm mb-3">Primary digital touchpoint built on Next.js with App Router.</p>
+    <ul className="list-disc pl-5 text-sm">
+      <li>User authentication & profiles</li>
+      <li>E-commerce integration</li>
+      <li>Custom product builder</li>
+      <li>Content delivery</li>
+      <li>Agent interfaces</li>
+    </ul>
+  </div>
+  
+  <div className="p-5 border border-gray-200 rounded-lg">
+    <h3 className="text-lg font-medium mb-3">Mobile Application</h3>
+    <p className="text-sm mb-3">On-the-go experience for members with location-aware features.</p>
+    <ul className="list-disc pl-5 text-sm">
+      <li>Personalized dashboard</li>
+      <li>Product scanning & recognition</li>
+      <li>Usage tracking & reminders</li>
+      <li>Community participation</li>
+      <li>Offline experience capabilities</li>
+    </ul>
+  </div>
+  
+  <div className="p-5 border border-gray-200 rounded-lg">
+    <h3 className="text-lg font-medium mb-3">Dojo Environment</h3>
+    <p className="text-sm mb-3">Learning and development platform for personalized growth.</p>
+    <ul className="list-disc pl-5 text-sm">
+      <li>Customizable learning paths</li>
+      <li>Content delivery system</li>
+      <li>Progress tracking</li>
+      <li>Interactive exercises</li>
+      <li>Community learning spaces</li>
+    </ul>
+  </div>
+</div>
+
+<Accordion title="Technical Architecture">
+  The MOOD MNKY digital platform is built on a modern, scalable technical architecture:
+  
+  - **Frontend**: Next.js with App Router, TypeScript, and Tailwind CSS
+  - **Backend Services**: Serverless functions, Edge computing, and dedicated services
+  - **Authentication**: Supabase Auth with social login integration
+  - **Data Storage**: Supabase PostgreSQL with real-time capabilities
+  - **Media Management**: Content delivery network for global performance
+  - **API Layer**: GraphQL and REST endpoints with proper authorization
+  - **Monitoring**: Comprehensive logging, error tracking, and performance monitoring
+</Accordion>
+
+### Agent System
+
+The intelligent agent system forms the core of our personalized assistance, content creation, and technical support capabilities:
+
+<div className="mb-8">
+  <h3 className="font-medium text-xl mb-4">Agent Architecture</h3>
+  
+  <Frame>
+    ```mermaid
+    graph TD
+      subgraph AgentInfrastructure[Shared Agent Infrastructure]
+        Memory[Memory System]
+        Knowledge[Knowledge Base]
+        Context[Context Management]
+        Orchestration[Agent Orchestration]
+      end
+      
+      subgraph SpecializedAgents[Specialized Agents]
+        MoodMnky[MOOD MNKY Agent]
+        CodeMnky[CODE MNKY Agent]
+        SageMnky[SAGE MNKY Agent]
+      end
+      
+      subgraph AgentCapabilities[Agent Capabilities]
+        NLU[Natural Language Understanding]
+        ContentGen[Content Generation]
+        Personalization[Personalization]
+        TaskExecution[Task Execution]
+      end
+      
+      User --> Orchestration
+      Orchestration --> MoodMnky
+      Orchestration --> CodeMnky
+      Orchestration --> SageMnky
+      
+      MoodMnky --> Memory
+      CodeMnky --> Memory
+      SageMnky --> Memory
+      
+      MoodMnky --> Knowledge
+      CodeMnky --> Knowledge
+      SageMnky --> Knowledge
+      
+      MoodMnky <--> Personalization
+      MoodMnky <--> NLU
+      MoodMnky <--> ContentGen
+      
+      CodeMnky <--> NLU
+      CodeMnky <--> TaskExecution
+      CodeMnky <--> ContentGen
+      
+      SageMnky <--> NLU
+      SageMnky <--> ContentGen
+      SageMnky <--> Knowledge
+    ```
+  </Frame>
+  
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <div className="p-4 bg-violet-50 rounded-lg">
+      <h4 className="font-medium mb-2 text-violet-700">MOOD MNKY Agent</h4>
+      <p className="text-sm">Customer experience specialist focusing on personalization, product guidance, and relationship building.</p>
+    </div>
+    
+    <div className="p-4 bg-blue-50 rounded-lg">
+      <h4 className="font-medium mb-2 text-blue-700">CODE MNKY Agent</h4>
+      <p className="text-sm">Technical expert handling development, infrastructure, and technical documentation needs.</p>
+    </div>
+    
+    <div className="p-4 bg-emerald-50 rounded-lg">
+      <h4 className="font-medium mb-2 text-emerald-700">SAGE MNKY Agent</h4>
+      <p className="text-sm">Knowledge specialist creating educational content, guiding learning, and facilitating community interactions.</p>
+    </div>
+  </div>
+</div>
+
+<Accordion title="Agent Integration Points">
+  - **Web Platform Integration**: Embedded chat interfaces, contextual assistance, and proactive suggestions
+  - **Mobile Integration**: Native agent interfaces with voice and visual input capabilities
+  - **Dojo Integration**: Learning guidance, content creation, and progress assessment
+  - **E-commerce Integration**: Product recommendations, custom product configuration, and order support
+  - **Community Integration**: Discussion moderation, content curation, and engagement facilitation
+  - **API Access**: External service access for task execution and data retrieval
+</Accordion>
+
+### Core Services
+
+The backbone of the MOOD MNKY ecosystem consists of several critical services:
+
+<div className="overflow-x-auto">
+  <table className="min-w-full bg-white">
+    <thead>
+      <tr>
+        <th className="border p-2">Service</th>
+        <th className="border p-2">Primary Function</th>
+        <th className="border p-2">Key Components</th>
+        <th className="border p-2">Integration Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border p-2">Personalization Engine</td>
+        <td className="border p-2">Creates tailored experiences based on user preferences, behavior, and context</td>
+        <td className="border p-2">Preference Graph, Recommendation System, Context Manager, Behavioral Analytics</td>
+        <td className="border p-2">All customer-facing interfaces, Agent System, Product Creation</td>
+      </tr>
+      <tr>
+        <td className="border p-2">E-commerce Services</td>
+        <td className="border p-2">Manages product catalog, inventory, orders, and customer accounts</td>
+        <td className="border p-2">Shopify Integration, Custom Product Builder, Order Management, Subscription System</td>
+        <td className="border p-2">Web Platform, Mobile App, Personalization Engine, Analytics</td>
+      </tr>
+      <tr>
+        <td className="border p-2">Memory System</td>
+        <td className="border p-2">Stores and retrieves contextual information about users and interactions</td>
+        <td className="border p-2">Vector Database, Conversation Memory, User Preferences, Interaction History</td>
+        <td className="border p-2">Agent System, Personalization Engine, Content Delivery</td>
+      </tr>
+      <tr>
+        <td className="border p-2">Analytics Engine</td>
+        <td className="border p-2">Collects, processes, and visualizes data for business intelligence</td>
+        <td className="border p-2">Event Tracking, Data Warehouse, Visualization Tools, Machine Learning Models</td>
+        <td className="border p-2">All platform components, Executive Dashboard, Optimization Tools</td>
+      </tr>
+      <tr>
+        <td className="border p-2">Content Management</td>
+        <td className="border p-2">Organizes, delivers, and personalizes content across the ecosystem</td>
+        <td className="border p-2">Content Repository, Delivery Network, Personalization Rules, Creation Tools</td>
+        <td className="border p-2">Dojo, Web Platform, Mobile App, Community</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Community Platform
+
+The community platform connects members, facilitates engagement, and enables collaborative creation:
+
+<CardGroup cols={2}>
+  <Card title="Community Hub" icon="users">
+    <div className="text-sm">
+      <p className="mb-2">Central gathering space for members to connect, share, and collaborate.</p>
+      <ul className="list-disc pl-5">
+        <li>Discussion forums</li>
+        <li>Member profiles</li>
+        <li>Activity feeds</li>
+        <li>Event management</li>
+        <li>Resource sharing</li>
+      </ul>
+    </div>
+  </Card>
+  <Card title="Token Economy" icon="coins">
+    <div className="text-sm">
+      <p className="mb-2">System that rewards engagement and enables value exchange in the community.</p>
+      <ul className="list-disc pl-5">
+        <li>Token earning mechanisms</li>
+        <li>Redemption marketplace</li>
+        <li>Value exchange system</li>
+        <li>Status and recognition</li>
+        <li>Engagement incentives</li>
+      </ul>
+    </div>
+  </Card>
+</CardGroup>
+
+## Data Architecture
+
+The MOOD MNKY ecosystem is built on a sophisticated data architecture that enables personalization, analytics, and seamless experiences:
+
+<div className="mb-10">
+  <h3 className="font-medium text-xl mb-4">Data Flow Architecture</h3>
+  
+  <Frame>
+    ```mermaid
+    graph TD
+      subgraph DataSources[Data Sources]
+        UserInteractions[User Interactions]
+        ProductUsage[Product Usage]
+        ExplicitPreferences[Explicit Preferences]
+        PurchaseHistory[Purchase History]
+        CommunityActivity[Community Activity]
+      end
+      
+      subgraph DataProcessing[Data Processing]
+        ETL[ETL Processes]
+        EventStreaming[Event Streaming]
+        RealTimeProcessing[Real-time Processing]
+        BatchProcessing[Batch Processing]
+      end
+      
+      subgraph DataStorage[Data Storage]
+        OperationalDB[Operational Database]
+        AnalyticsDB[Analytics Database]
+        VectorDB[Vector Database]
+        DataWarehouse[Data Warehouse]
+      end
+      
+      subgraph DataConsumers[Data Consumers]
+        PersonalizationEngine[Personalization Engine]
+        AnalyticsDashboards[Analytics Dashboards]
+        AgentSystem[Agent System]
+        MLModels[Machine Learning Models]
+        APIServices[API Services]
+      end
+      
+      UserInteractions --> EventStreaming
+      ProductUsage --> EventStreaming
+      ExplicitPreferences --> ETL
+      PurchaseHistory --> ETL
+      CommunityActivity --> EventStreaming
+      
+      EventStreaming --> RealTimeProcessing
+      ETL --> BatchProcessing
+      
+      RealTimeProcessing --> OperationalDB
+      RealTimeProcessing --> VectorDB
+      BatchProcessing --> AnalyticsDB
+      BatchProcessing --> DataWarehouse
+      
+      OperationalDB --> APIServices
+      VectorDB --> AgentSystem
+      VectorDB --> PersonalizationEngine
+      AnalyticsDB --> AnalyticsDashboards
+      AnalyticsDB --> MLModels
+      DataWarehouse --> AnalyticsDashboards
+      
+      MLModels --> PersonalizationEngine
+    ```
+  </Frame>
+</div>
+
+<Accordion title="Data Models">
+  The MOOD MNKY ecosystem uses several core data models:
+  
+  - **User Profile Model**: Comprehensive representation of member preferences, history, and relationships
+  - **Product Model**: Detailed product information including composition, attributes, and relationships
+  - **Content Model**: Structured representation of educational and community content
+  - **Interaction Model**: Record of user engagements across all touchpoints
+  - **Memory Model**: Contextual information for personalized experiences
+  - **Transaction Model**: Record of economic activity including purchases and token transactions
+</Accordion>
+
+<Accordion title="Data Privacy and Security">
+  Our approach to data privacy and security includes:
+  
+  - **Privacy by Design**: Built-in privacy considerations at every stage
+  - **Consent Management**: Granular user control over data usage
+  - **Data Minimization**: Collecting only what's necessary
+  - **Secure Storage**: Encryption at rest and in transit
+  - **Access Controls**: Role-based access with least privilege
+  - **Retention Policies**: Clear timelines for data usage and deletion
+  - **Compliance Framework**: Adherence to regulations including GDPR and CCPA
+</Accordion>
+
+## Integration Points and APIs
+
+<div className="mb-10">
+  <h3 className="font-medium text-xl mb-4">API Architecture</h3>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="p-5 border border-gray-200 rounded-lg">
+      <h4 className="font-medium mb-3">External APIs</h4>
+      <p className="text-sm mb-3">Interfaces for third-party integration with the MOOD MNKY ecosystem:</p>
+      <ul className="list-disc pl-5 text-sm">
+        <li>Shopify Storefront API</li>
+        <li>Shopify Admin API</li>
+        <li>User Management API</li>
+        <li>Content Access API</li>
+        <li>Analytics API</li>
+        <li>Agent Interaction API</li>
+      </ul>
+    </div>
+    
+    <div className="p-5 border border-gray-200 rounded-lg">
+      <h4 className="font-medium mb-3">Internal APIs</h4>
+      <p className="text-sm mb-3">Service-to-service communication within the ecosystem:</p>
+      <ul className="list-disc pl-5 text-sm">
+        <li>Personalization Service API</li>
+        <li>Memory System API</li>
+        <li>Agent Orchestration API</li>
+        <li>Token Economy API</li>
+        <li>Analytics Service API</li>
+        <li>Content Management API</li>
+      </ul>
+    </div>
+  </div>
+  
+  <h3 className="font-medium text-xl mt-8 mb-4">Integration Patterns</h3>
+  
+  <div className="overflow-x-auto">
+    <table className="min-w-full bg-white">
+      <thead>
+        <tr>
+          <th className="border p-2">Pattern</th>
+          <th className="border p-2">Use Cases</th>
+          <th className="border p-2">Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td className="border p-2">Event-Driven Architecture</td>
+          <td className="border p-2">Real-time updates, system notifications, activity tracking</td>
+          <td className="border p-2">Event bus, webhooks, Supabase real-time subscriptions</td>
+        </tr>
+        <tr>
+          <td className="border p-2">RESTful APIs</td>
+          <td className="border p-2">CRUD operations, resource management, simple integrations</td>
+          <td className="border p-2">Standard HTTP methods, consistent endpoints, proper status codes</td>
+        </tr>
+        <tr>
+          <td className="border p-2">GraphQL</td>
+          <td className="border p-2">Complex data requirements, flexible queries, reduced network load</td>
+          <td className="border p-2">Apollo Server, type definitions, resolvers</td>
+        </tr>
+        <tr>
+          <td className="border p-2">Webhook Notifications</td>
+          <td className="border p-2">External system notifications, e-commerce events, async processing</td>
+          <td className="border p-2">Subscription endpoints, verification, retry logic</td>
+        </tr>
+        <tr>
+          <td className="border p-2">Batch Processing</td>
+          <td className="border p-2">Analytics, reporting, bulk operations</td>
+          <td className="border p-2">Scheduled jobs, ETL processes, data pipelines</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+## Ecosystem Experience Flows
+
+<div className="mb-10">
+  <h3 className="font-medium text-xl mb-4">Core User Journeys</h3>
+  
+  <Tabs>
+    <Tab title="Discovery & Onboarding">
+      <div className="p-4">
+        <h4 className="font-medium mb-2">Customer Journey</h4>
+        <Frame>
+          ```mermaid
+          graph LR
+            A[Initial Discovery] --> B[Website Exploration]
+            B --> C[Profile Creation]
+            C --> D[Preference Collection]
+            D --> E[Agent Introduction]
+            E --> F[First Product Recommendation]
+            F --> G[Custom Product Creation]
+            G --> H[Purchase & Welcome]
+          ```
+        </Frame>
+        
+        <h4 className="font-medium mt-4 mb-2">System Touchpoints</h4>
+        <ul className="list-disc pl-5 text-sm">
+          <li>Web Platform with progressive disclosure of features</li>
+          <li>MOOD MNKY Agent for guided onboarding</li>
+          <li>Personalization Engine for preference collection</li>
+          <li>E-commerce integration for first purchase</li>
+          <li>Welcome sequence through email and in-platform notification</li>
+        </ul>
+      </div>
+    </Tab>
+    <Tab title="Product Creation">
+      <div className="p-4">
+        <h4 className="font-medium mb-2">Customer Journey</h4>
+        <Frame>
+          ```mermaid
+          graph LR
+            A[Product Discovery] --> B[Scent Profile Development]
+            B --> C[Interactive Customization]
+            C --> D[Preview & Refinement]
+            D --> E[Finalization & Naming]
+            E --> F[Purchase]
+            F --> G[Production Updates]
+            G --> H[Delivery & Experience]
+            H --> I[Feedback & Iteration]
+          ```
+        </Frame>
+        
+        <h4 className="font-medium mt-4 mb-2">System Touchpoints</h4>
+        <ul className="list-disc pl-5 text-sm">
+          <li>Custom Product Builder interface</li>
+          <li>MOOD MNKY Agent for consultation</li>
+          <li>Personalization Engine for preference-based suggestions</li>
+          <li>E-commerce system for order processing</li>
+          <li>Production system for custom formulation</li>
+          <li>Follow-up sequence for experience enhancement</li>
+        </ul>
+      </div>
+    </Tab>
+    <Tab title="Learning Journey">
+      <div className="p-4">
+        <h4 className="font-medium mb-2">Customer Journey</h4>
+        <Frame>
+          ```mermaid
+          graph LR
+            A[Interest Identification] --> B[Dojo Environment Creation]
+            B --> C[Content Exploration]
+            C --> D[Guided Learning]
+            D --> E[Practice & Application]
+            E --> F[Community Sharing]
+            F --> G[Progress Recognition]
+            G --> H[Advanced Content]
+          ```
+        </Frame>
+        
+        <h4 className="font-medium mt-4 mb-2">System Touchpoints</h4>
+        <ul className="list-disc pl-5 text-sm">
+          <li>Dojo Platform interface</li>
+          <li>SAGE MNKY Agent for guidance</li>
+          <li>Content Management System for material delivery</li>
+          <li>Community Hub for shared learning</li>
+          <li>Token Economy for progress recognition</li>
+          <li>Personalization Engine for adaptive content</li>
+        </ul>
+      </div>
+    </Tab>
+    <Tab title="Community Engagement">
+      <div className="p-4">
+        <h4 className="font-medium mb-2">Customer Journey</h4>
+        <Frame>
+          ```mermaid
+          graph LR
+            A[Community Discovery] --> B[Profile Creation]
+            B --> C[Content Exploration]
+            C --> D[First Interaction]
+            D --> E[Regular Participation]
+            E --> F[Content Creation]
+            F --> G[Relationship Building]
+            G --> H[Leadership Opportunities]
+          ```
+        </Frame>
+        
+        <h4 className="font-medium mt-4 mb-2">System Touchpoints</h4>
+        <ul className="list-disc pl-5 text-sm">
+          <li>Community Hub interface</li>
+          <li>SAGE MNKY Agent for facilitation</li>
+          <li>Content Creation tools</li>
+          <li>Token Economy for contribution recognition</li>
+          <li>Personalization Engine for relevant connections</li>
+          <li>Event system for real-time engagement</li>
+        </ul>
+      </div>
+    </Tab>
+  </Tabs>
+</div>
+
+## Technical Implementation Reference
+
+<div className="mb-10">
+  <h3 className="font-medium text-xl mb-4">Technology Stack</h3>
+  
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="p-4 bg-gray-50 rounded-lg">
+      <h4 className="font-medium mb-2">Frontend Technologies</h4>
+      <ul className="list-disc pl-5 text-sm">
+        <li>Next.js with App Router</li>
+        <li>TypeScript</li>
+        <li>Tailwind CSS</li>
+        <li>ShadCN UI components</li>
+        <li>React Query</li>
+        <li>Zustand for state management</li>
+      </ul>
+    </div>
+    
+    <div className="p-4 bg-gray-50 rounded-lg">
+      <h4 className="font-medium mb-2">Backend Technologies</h4>
+      <ul className="list-disc pl-5 text-sm">
+        <li>Supabase (PostgreSQL)</li>
+        <li>Serverless Functions</li>
+        <li>Edge Functions</li>
+        <li>Node.js services</li>
+        <li>GraphQL (where appropriate)</li>
+        <li>Redis for caching</li>
+      </ul>
+    </div>
+    
+    <div className="p-4 bg-gray-50 rounded-lg">
+      <h4 className="font-medium mb-2">AI & Data Technologies</h4>
+      <ul className="list-disc pl-5 text-sm">
+        <li>LLM integration</li>
+        <li>Vector databases</li>
+        <li>Embedding models</li>
+        <li>Data ETL pipelines</li>
+        <li>Analytics platforms</li>
+        <li>Machine learning frameworks</li>
+      </ul>
+    </div>
+  </div>
+  
+  <h3 className="font-medium text-xl mt-8 mb-4">Development Infrastructure</h3>
+  
+  <CardGroup cols={2}>
+    <Card title="Monorepo Structure" icon="code-branch">
+      <div className="text-sm">
+        Turborepo-based monorepo organization with clear boundaries between packages and applications:
+        
+        - apps/ - User-facing applications
+        - packages/ - Shared libraries and utilities
+        - agents/ - Agent definitions and configurations
+        - content/ - Content libraries and assets
+        - docs/ - Documentation (Mintlify)
+      </div>
+    </Card>
+    <Card title="DevOps Pipeline" icon="gears">
+      <div className="text-sm">
+        Comprehensive CI/CD workflow for reliable deployment:
+        
+        - GitHub Actions for CI/CD
+        - Automated testing and linting
+        - Environment-specific deployments
+        - Vercel for frontend hosting
+        - Docker containerization for services
+        - Infrastructure as Code with Terraform
+      </div>
+    </Card>
+  </CardGroup>
+</div>
+
+## Implementation Guidelines
+
+<div className="mb-8">
+  <h3 className="font-medium text-xl mb-4">Key Architecture Principles</h3>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="p-5 border border-gray-200 rounded-lg">
+      <h4 className="font-medium mb-3">Design Principles</h4>
+      <ul className="list-disc pl-5 text-sm">
+        <li><strong>Privacy by Design</strong>: Privacy considerations built into every component</li>
+        <li><strong>Modularity</strong>: Clear boundaries between components for independent evolution</li>
+        <li><strong>Composability</strong>: Building blocks that can be combined in various ways</li>
+        <li><strong>Scalability</strong>: Systems that grow efficiently with user base and features</li>
+        <li><strong>Resilience</strong>: Fault tolerance and graceful degradation</li>
+        <li><strong>Accessibility</strong>: Inclusive design for all users</li>
+      </ul>
+    </div>
+    
+    <div className="p-5 border border-gray-200 rounded-lg">
+      <h4 className="font-medium mb-3">Implementation Guidelines</h4>
+      <ul className="list-disc pl-5 text-sm">
+        <li><strong>API-First Development</strong>: Define interfaces before implementation</li>
+        <li><strong>Event-Driven Architecture</strong>: Loose coupling through events</li>
+        <li><strong>Progressive Enhancement</strong>: Core functionality first, enhancements after</li>
+        <li><strong>Performance Budgets</strong>: Strict limits on size and speed</li>
+        <li><strong>Continuous Optimization</strong>: Regular performance review and improvement</li>
+        <li><strong>Documentation as Code</strong>: Documentation maintained alongside codebase</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<Warning>
+This blueprint represents the current architectural vision and will evolve as the ecosystem grows. Implementation details may vary, while the core principles and design goals remain consistent.
+</Warning>
+
+## Related Resources
+
+- [Ecosystem Roadmap](/brand-overview/ecosystem-roadmap) for the strategic evolution timeline
+- [Technical Standards](/developer-resources/technical-standards) for implementation details
+- [API Documentation](/developer-resources/api-documentation) for interface specifications 

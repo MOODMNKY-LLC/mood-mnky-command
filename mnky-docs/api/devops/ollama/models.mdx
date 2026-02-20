@@ -1,0 +1,220 @@
+# Models
+
+This guide covers the model management capabilities of the Ollama service.
+
+## Models Endpoint
+
+Manage and query available AI models.
+
+## List Models Endpoint
+
+```bash
+GET /api/models
+
+curl "https://ollama.moodmnky.com/api/models" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "models": [
+    {
+      "name": "llama2",
+      "size": 3791730718,
+      "modified_at": "2024-03-20T15:23:44Z",
+      "details": {
+        "format": "gguf",
+        "family": "llama",
+        "parameter_size": "7B",
+        "quantization_level": "Q4_K_M"
+      }
+    }
+  ]
+}
+```
+
+## Show Model Info Endpoint
+
+```bash
+GET /api/models/{model}
+
+curl "https://ollama.moodmnky.com/api/models/llama2" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "name": "llama2",
+  "size": 3791730718,
+  "modified_at": "2024-03-20T15:23:44Z",
+  "details": {
+    "format": "gguf",
+    "family": "llama",
+    "parameter_size": "7B",
+    "quantization_level": "Q4_K_M",
+    "license": "llama2",
+    "system_prompt": "You are a helpful AI assistant.",
+    "context_window": 4096,
+    "default_generation_params": {
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "top_k": 40
+    }
+  }
+}
+```
+
+## Pull Model Endpoint
+
+```bash
+POST /api/models/pull
+
+curl -X POST "https://ollama.moodmnky.com/api/models/pull" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "llama2",
+    "insecure": false
+  }'
+```
+
+Response (streaming):
+```json
+{"status":"pulling manifest"}
+{"status":"pulling layers","digest":"sha256:..."}
+{"status":"verifying sha256 digest"}
+{"status":"writing manifest"}
+{"status":"removing any unused layers"}
+{"status":"success"}
+```
+
+## Delete Model Endpoint
+
+```bash
+DELETE /api/models/{model}
+
+curl -X DELETE "https://ollama.moodmnky.com/api/models/llama2" \
+  -H "x-api-key: your_api_key"
+```
+
+## Available Models
+
+| Model | Size | Description | Use Cases |
+|-------|------|-------------|-----------|
+| llama2 | 7B | General purpose model | Text generation, chat, Q&A |
+| codellama | 7B | Code-specialized model | Code completion, explanation |
+| mistral | 7B | Instruction-tuned model | Task completion, reasoning |
+| orca-mini | 3B | Lightweight model | Quick responses, testing |
+
+## Usage Examples
+
+### List Available Models
+
+```typescript
+const response = await client.ollama.listModels();
+console.log("Available models:", response.models);
+```
+
+### Get Model Information
+
+```typescript
+const response = await client.ollama.getModel("llama2");
+console.log("Model details:", response.details);
+```
+
+### Pull New Model
+
+```typescript
+const response = await client.ollama.pullModel({
+  name: "codellama",
+  insecure: false
+});
+
+// Handle streaming response
+for await (const chunk of response) {
+  console.log("Pull status:", chunk.status);
+}
+```
+
+### Delete Model
+
+```typescript
+await client.ollama.deleteModel("unused-model");
+```
+
+## Model Management Best Practices
+
+1. **Model Selection**
+   - Choose appropriate model size for task
+   - Consider memory and performance requirements
+   - Test models before production use
+   - Monitor model performance metrics
+
+2. **Resource Management**
+   - Clean up unused models regularly
+   - Monitor disk space usage
+   - Implement model rotation policies
+   - Cache frequently used models
+
+3. **Security Considerations**
+   - Verify model checksums
+   - Use secure connections for pulls
+   - Implement access controls
+   - Monitor model usage patterns
+
+4. **Performance Optimization**
+   - Pre-load frequently used models
+   - Use appropriate quantization levels
+   - Monitor memory usage
+   - Implement model warm-up strategies
+
+## Error Handling
+
+```typescript
+try {
+  const response = await client.ollama.pullModel({
+    name: "llama2"
+  });
+} catch (error) {
+  switch (error.code) {
+    case "MODEL_NOT_FOUND":
+      console.error("Model not found in registry");
+      break;
+    case "INSUFFICIENT_SPACE":
+      console.error("Not enough disk space");
+      break;
+    case "PULL_ERROR":
+      console.error("Error pulling model:", error.message);
+      break;
+  }
+}
+```
+
+## Model Lifecycle Management
+
+1. **Initial Setup**
+   - Model selection and testing
+   - Performance benchmarking
+   - Resource allocation
+   - Access control configuration
+
+2. **Maintenance**
+   - Regular updates
+   - Performance monitoring
+   - Usage analytics
+   - Health checks
+
+3. **Retirement**
+   - Usage evaluation
+   - Replacement planning
+   - Data migration
+   - Clean removal
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/ollama)
+- [Model Registry](https://docs.moodmnky.com/models)
+- [Performance Guide](https://docs.moodmnky.com/guides/performance)
+- [Support](mailto:support@moodmnky.com) 

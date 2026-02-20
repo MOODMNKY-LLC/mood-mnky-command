@@ -1,0 +1,42 @@
+---
+title: 'Notion API'
+description: 'OpenAPI documentation for the Notion API'
+---
+
+# Notion API Reference
+
+This documentation provides a reference for the Notion API, which allows you to connect and build with Notion programmatically.
+
+## Introduction
+
+The Notion API enables you to connect Notion with other tools and build new integrations that help people use Notion to get their work done. 
+
+The API follows RESTful conventions where applicable, with most endpoints accepting and returning JSON. Authentication is handled through bearer tokens. The API provides comprehensive access to Notion's database, page, and block functionalities.
+
+## Key Concepts
+
+- **Users**: All actions in a Notion workspace are associated to a user, whether it be a bot via a Notion integration or a person interacting with Notion's UI.
+- **Databases**: Databases represent collections of Notion pages that can be sorted and queried.
+- **Pages**: Pages represent documents in Notion workspaces that can be created in a workspace directly or organized within a Notion database.
+- **Blocks**: A block represents a piece of content in a Notion workspace. All Notion pages are composed of a series of blocks.
+- **Comments**: Comments can be added to a page or inline to blocks.
+
+## Authentication
+
+The Notion API uses bearer tokens for authentication. You'll need to create an integration to get an API token.
+
+```
+Authorization: Bearer {token}
+```
+
+## API Versioning
+
+All API requests require a `Notion-Version` header which specifies the version of the API you're using.
+
+```
+Notion-Version: 2022-06-28
+```
+
+## Resources
+
+For more information about using the Notion API, refer to the [official Notion API documentation](https://developers.notion.com/). 

@@ -1,0 +1,205 @@
+# Text Generation
+
+This guide covers text generation capabilities of the Ollama service.
+
+## Generation Endpoint
+
+Generate text using AI models.
+
+## Generation Endpoints
+
+### Generate Text
+
+```bash
+POST /api/generate
+
+curl -X POST "https://ollama.moodmnky.com/api/generate" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2",
+    "prompt": "Write a story about a robot learning to paint.",
+    "parameters": {
+      "temperature": 0.7,
+      "max_tokens": 500
+    }
+  }'
+```
+
+### Stream Generation
+
+```bash
+POST /api/generate/stream
+
+curl -X POST "https://ollama.moodmnky.com/api/generate/stream" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2",
+    "prompt": "Write a story about a robot learning to paint.",
+    "parameters": {
+      "temperature": 0.7,
+      "max_tokens": 500
+    }
+  }'
+```
+
+## Generation Parameters
+
+### Core Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| model | string | Model to use | Required |
+| prompt | string | Input text | Required |
+| temperature | float | Randomness (0.0-1.0) | 0.8 |
+| max_tokens | integer | Maximum tokens to generate | 2048 |
+| top_p | float | Nucleus sampling threshold | 0.9 |
+| top_k | integer | Top-k sampling threshold | 40 |
+| repeat_penalty | float | Repetition penalty | 1.1 |
+| presence_penalty | float | Presence penalty | 0.0 |
+| frequency_penalty | float | Frequency penalty | 0.0 |
+
+### Advanced Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| stop_sequences | string[] | Sequences to stop generation | [] |
+| seed | integer | Random seed for reproducibility | null |
+| num_ctx | integer | Context window size | 2048 |
+| num_predict | integer | Number of tokens to predict | -1 |
+
+## Response Format
+
+### Standard Response
+
+```json
+{
+  "text": "Generated text response",
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 100,
+    "total_tokens": 110
+  },
+  "model": "llama2",
+  "created_at": "2024-04-05T12:00:00Z"
+}
+```
+
+### Stream Response
+
+```json
+{
+  "text": "Partial",
+  "usage": {
+    "completion_tokens": 1
+  }
+}
+// ... more chunks ...
+{
+  "text": " response.",
+  "usage": {
+    "completion_tokens": 1
+  },
+  "done": true
+}
+```
+
+## Generation Examples
+
+### Basic Text Generation
+
+```typescript
+const response = await client.ollama.generate({
+  model: "llama2",
+  prompt: "Write a story about a robot learning to paint.",
+  parameters: {
+    temperature: 0.7,
+    max_tokens: 500
+  }
+});
+
+console.log(response.text);
+```
+
+### Streaming Generation
+
+```typescript
+const stream = await client.ollama.generateStream({
+  model: "llama2",
+  prompt: "Write a story about a robot learning to paint.",
+  parameters: {
+    temperature: 0.7,
+    max_tokens: 500
+  }
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.text);
+}
+```
+
+### Chat Completion
+
+```typescript
+const response = await client.ollama.generate({
+  model: "llama2",
+  prompt: [
+    { role: "system", content: "You are a helpful assistant." },
+    { role: "user", content: "Tell me about painting techniques." }
+  ],
+  parameters: {
+    temperature: 0.7
+  }
+});
+```
+
+## Best Practices
+
+1. **Prompt Engineering**
+   - Be specific and clear in prompts
+   - Provide context when needed
+   - Use system messages for behavior control
+   - Structure multi-turn conversations properly
+
+2. **Parameter Tuning**
+   - Lower temperature for factual responses
+   - Higher temperature for creative tasks
+   - Adjust max_tokens based on expected length
+   - Use stop sequences to control output
+
+3. **Performance Optimization**
+   - Use streaming for long responses
+   - Batch similar requests when possible
+   - Cache frequently used responses
+   - Monitor token usage
+
+## Error Handling
+
+```typescript
+try {
+  const response = await client.ollama.generate({
+    model: "llama2",
+    prompt: "Hello, world!"
+  });
+} catch (error) {
+  switch (error.code) {
+    case "CONTEXT_LENGTH_EXCEEDED":
+      // Handle prompt too long
+      break;
+    case "RATE_LIMIT_EXCEEDED":
+      // Handle rate limiting
+      break;
+    case "INVALID_PARAMETERS":
+      // Handle invalid parameters
+      break;
+  }
+}
+```
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/ollama)
+- [Prompt Engineering Guide](https://docs.moodmnky.com/guides/prompts)
+- [Parameter Optimization](https://docs.moodmnky.com/guides/parameters)
+- [Support](mailto:support@moodmnky.com) 

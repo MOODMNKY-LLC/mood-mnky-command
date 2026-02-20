@@ -1,0 +1,1010 @@
+---
+title: 'Documents API'
+description: 'Upload, embed, index, and retrieve documents in your knowledge-powered applications'
+---
+
+# Documents API
+
+The Documents API allows you to manage, index, and query unstructured data in your Langchain applications. This enables powerful knowledge retrieval, question answering, and content generation based on your custom document collections.
+
+## Overview
+
+The Documents API provides a complete solution for:
+
+- Uploading and storing documents in various formats
+- Processing and chunking documents into manageable pieces
+- Creating and managing document collections
+- Generating embeddings for semantic search
+- Retrieving relevant documents based on queries
+- Building knowledge-powered applications
+
+## Document Concepts
+
+### Documents
+
+In Langchain, a document is a unit of text with associated metadata. Documents are the basic building blocks for knowledge retrieval. Each document has:
+
+- **Content**: The text content of the document
+- **Metadata**: Additional information about the document (source, author, date, etc.)
+- **ID**: A unique identifier
+
+### Collections
+
+Collections are groups of related documents that have been processed, chunked, and indexed for retrieval. Collections allow you to:
+
+- Organize documents by topic, source, or purpose
+- Apply specific embedding and retrieval settings
+- Query across related documents efficiently
+- Manage access and permissions
+
+### Embeddings
+
+Embeddings are vector representations of document content that capture semantic meaning. The Langchain API:
+
+- Generates embeddings for documents
+- Stores embeddings in vector databases
+- Enables semantic similarity search
+- Supports multiple embedding models
+
+### Retrievers
+
+Retrievers are components that fetch relevant documents from collections based on queries. They:
+
+- Transform queries into the same vector space as documents
+- Find semantically similar documents to the query
+- Apply filters and ranking to results
+- Return relevant documents with their content and metadata
+
+## API Reference
+
+### Create Collection
+
+```http
+POST https://langchain.moodmnky.com/api/collections
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body:
+
+```json
+{
+  "name": "Product Documentation",
+  "description": "Technical documentation for MOOD MNKY products",
+  "embeddingModel": "text-embedding-ada-002",
+  "metadata": {
+    "category": "technical",
+    "department": "support"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "collectionId": "col_01h9f5zk4r9s7l3z8u2y",
+  "name": "Product Documentation",
+  "description": "Technical documentation for MOOD MNKY products",
+  "embeddingModel": "text-embedding-ada-002",
+  "documentCount": 0,
+  "created": "2023-10-15T14:30:00Z",
+  "metadata": {
+    "category": "technical",
+    "department": "support"
+  }
+}
+```
+
+### Get Collection
+
+```http
+GET https://langchain.moodmnky.com/api/collections/{collectionId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "collectionId": "col_01h9f5zk4r9s7l3z8u2y",
+  "name": "Product Documentation",
+  "description": "Technical documentation for MOOD MNKY products",
+  "embeddingModel": "text-embedding-ada-002",
+  "documentCount": 12,
+  "created": "2023-10-15T14:30:00Z",
+  "lastUpdated": "2023-10-15T16:45:22Z",
+  "metadata": {
+    "category": "technical",
+    "department": "support"
+  }
+}
+```
+
+### List Collections
+
+```http
+GET https://langchain.moodmnky.com/api/collections
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "collections": [
+    {
+      "collectionId": "col_01h9f5zk4r9s7l3z8u2y",
+      "name": "Product Documentation",
+      "description": "Technical documentation for MOOD MNKY products",
+      "documentCount": 12,
+      "created": "2023-10-15T14:30:00Z"
+    },
+    {
+      "collectionId": "col_02h9g6al5s0t8m4a9v3z",
+      "name": "Customer FAQs",
+      "description": "Frequently asked questions and answers",
+      "documentCount": 45,
+      "created": "2023-10-10T09:15:23Z"
+    }
+  ],
+  "pagination": {
+    "total": 5,
+    "limit": 10,
+    "offset": 0,
+    "nextOffset": null
+  }
+}
+```
+
+### Upload Document
+
+```http
+POST https://langchain.moodmnky.com/api/collections/{collectionId}/documents
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_API_KEY
+```
+
+Form data:
+- `file`: The document file (PDF, DOCX, TXT, etc.)
+- `metadata` (optional): JSON string of metadata
+- `chunkSize` (optional): Size of chunks in tokens (default: 1000)
+- `chunkOverlap` (optional): Overlap between chunks in tokens (default: 200)
+
+Response:
+
+```json
+{
+  "documentId": "doc_03j0h7bm6t1u9n5c0w4d",
+  "originalFilename": "product_manual.pdf",
+  "mimeType": "application/pdf",
+  "chunkCount": 15,
+  "status": "processing",
+  "metadata": {
+    "source": "internal",
+    "product": "scented_candle",
+    "version": "2.1"
+  }
+}
+```
+
+### Add Text Document
+
+```http
+POST https://langchain.moodmnky.com/api/collections/{collectionId}/texts
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body:
+
+```json
+{
+  "text": "MOOD MNKY scented candles are made with 100% natural soy wax and premium essential oils. Each candle is hand-poured and designed to provide an exceptional fragrance experience with a clean, long-lasting burn.",
+  "metadata": {
+    "source": "product_description",
+    "category": "candles",
+    "author": "marketing_team"
+  },
+  "chunkSize": 500,
+  "chunkOverlap": 50
+}
+```
+
+Response:
+
+```json
+{
+  "documentId": "doc_04k1i8cn7u2v0o6d1x5e",
+  "chunks": 1,
+  "status": "complete",
+  "metadata": {
+    "source": "product_description",
+    "category": "candles",
+    "author": "marketing_team"
+  }
+}
+```
+
+### Get Document
+
+```http
+GET https://langchain.moodmnky.com/api/documents/{documentId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "documentId": "doc_03j0h7bm6t1u9n5c0w4d",
+  "collectionId": "col_01h9f5zk4r9s7l3z8u2y",
+  "originalFilename": "product_manual.pdf",
+  "mimeType": "application/pdf",
+  "chunkCount": 15,
+  "status": "complete",
+  "created": "2023-10-15T15:12:33Z",
+  "lastUpdated": "2023-10-15T15:13:45Z",
+  "metadata": {
+    "source": "internal",
+    "product": "scented_candle",
+    "version": "2.1"
+  }
+}
+```
+
+### List Documents in Collection
+
+```http
+GET https://langchain.moodmnky.com/api/collections/{collectionId}/documents
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "documents": [
+    {
+      "documentId": "doc_03j0h7bm6t1u9n5c0w4d",
+      "originalFilename": "product_manual.pdf",
+      "chunkCount": 15,
+      "status": "complete",
+      "created": "2023-10-15T15:12:33Z"
+    },
+    {
+      "documentId": "doc_04k1i8cn7u2v0o6d1x5e",
+      "originalFilename": null,
+      "chunkCount": 1,
+      "status": "complete",
+      "created": "2023-10-15T16:20:15Z"
+    }
+  ],
+  "pagination": {
+    "total": 12,
+    "limit": 10,
+    "offset": 0,
+    "nextOffset": 10
+  }
+}
+```
+
+### Delete Document
+
+```http
+DELETE https://langchain.moodmnky.com/api/documents/{documentId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Document deleted successfully"
+}
+```
+
+### Query Collection
+
+```http
+POST https://langchain.moodmnky.com/api/collections/{collectionId}/query
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+```
+
+Request body:
+
+```json
+{
+  "query": "How are the scented candles made?",
+  "topK": 3,
+  "filter": {
+    "metadata": {
+      "category": "candles"
+    }
+  },
+  "includeMetadata": true
+}
+```
+
+Response:
+
+```json
+{
+  "results": [
+    {
+      "documentId": "doc_04k1i8cn7u2v0o6d1x5e",
+      "content": "MOOD MNKY scented candles are made with 100% natural soy wax and premium essential oils. Each candle is hand-poured and designed to provide an exceptional fragrance experience with a clean, long-lasting burn.",
+      "score": 0.89,
+      "metadata": {
+        "source": "product_description",
+        "category": "candles",
+        "author": "marketing_team"
+      }
+    },
+    {
+      "documentId": "doc_03j0h7bm6t1u9n5c0w4d",
+      "content": "Production Process: Our artisanal candles are crafted through a meticulous 8-step process. First, natural soy wax is melted to precisely 180°F. Next, premium essential oils are carefully blended according to our perfumer's formulas to create signature scents.",
+      "score": 0.78,
+      "metadata": {
+        "source": "internal",
+        "product": "scented_candle",
+        "version": "2.1"
+      }
+    },
+    {
+      "documentId": "doc_03j0h7bm6t1u9n5c0w4d",
+      "content": "Materials: MOOD MNKY uses only the highest quality materials in our candles. The wax is 100% natural soy, sourced from sustainable American farms. The wicks are cotton, lead-free, and designed for an even burn. Our essential oils are premium grade and sourced from global suppliers known for their quality and ethical practices.",
+      "score": 0.72,
+      "metadata": {
+        "source": "internal",
+        "product": "scented_candle",
+        "version": "2.1"
+      }
+    }
+  ]
+}
+```
+
+### Delete Collection
+
+```http
+DELETE https://langchain.moodmnky.com/api/collections/{collectionId}
+Authorization: Bearer YOUR_API_KEY
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Collection deleted successfully"
+}
+```
+
+## Implementation Examples
+
+### Creating and Populating a Collection
+
+```typescript
+// Creating a document collection
+async function createProductCollection() {
+  const response = await fetch('https://langchain.moodmnky.com/api/collections', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: "Candle Product Knowledge Base",
+      description: "Documentation about our candle products, manufacturing, and care instructions",
+      embeddingModel: "text-embedding-ada-002",
+      metadata: {
+        department: "product",
+        category: "candles",
+        purpose: "customer_support"
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Adding a text document to a collection
+async function addTextToCollection(collectionId, text, metadata) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/collections/${collectionId}/texts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      text: text,
+      metadata: metadata,
+      chunkSize: 500,
+      chunkOverlap: 50
+    })
+  });
+  
+  return await response.json();
+}
+
+// Uploading a file to a collection
+async function uploadFileToCollection(collectionId, file, metadata) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('metadata', JSON.stringify(metadata));
+  formData.append('chunkSize', '1000');
+  formData.append('chunkOverlap', '200');
+  
+  const response = await fetch(`https://langchain.moodmnky.com/api/collections/${collectionId}/documents`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: formData
+  });
+  
+  return await response.json();
+}
+
+// Example usage
+async function setupProductKnowledgeBase() {
+  // Create a new collection
+  const collection = await createProductCollection();
+  console.log('Created collection:', collection.collectionId);
+  
+  // Add product descriptions as text
+  const productDescriptions = [
+    {
+      text: "Lavender Dreams Candle: Our bestselling candle combines the soothing essence of lavender with subtle notes of vanilla and bergamot. Made with 100% soy wax and essential oils, this candle offers 50+ hours of burn time and promotes relaxation and stress relief.",
+      metadata: {
+        product_id: "LD-100",
+        category: "relaxation",
+        scent_family: "floral",
+        price_range: "premium"
+      }
+    },
+    {
+      text: "Ocean Breeze Candle: Transform your space with the fresh, clean scent of ocean air. This invigorating blend combines sea salt, citrus, and light floral notes to create a refreshing atmosphere. Each candle is hand-poured using sustainable soy wax and cotton wicks.",
+      metadata: {
+        product_id: "OB-200",
+        category: "refreshing",
+        scent_family: "fresh",
+        price_range: "standard"
+      }
+    }
+  ];
+  
+  for (const product of productDescriptions) {
+    await addTextToCollection(collection.collectionId, product.text, product.metadata);
+  }
+  
+  // Upload care instructions PDF
+  const careGuideFile = new File(
+    // You would typically get this from a file input element
+    [/* file content */], 
+    "candle_care_guide.pdf", 
+    { type: "application/pdf" }
+  );
+  
+  await uploadFileToCollection(
+    collection.collectionId,
+    careGuideFile,
+    {
+      document_type: "care_instructions",
+      applies_to: "all_candles",
+      version: "2023.1"
+    }
+  );
+  
+  console.log('Knowledge base setup complete');
+}
+```
+
+### Querying a Collection
+
+```typescript
+// Querying a collection for relevant documents
+async function queryCollection(collectionId, queryText, filters = {}, topK = 3) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/collections/${collectionId}/query`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      query: queryText,
+      topK: topK,
+      filter: filters,
+      includeMetadata: true
+    })
+  });
+  
+  return await response.json();
+}
+
+// Example usage in a customer support chatbot
+async function answerProductQuestion(collectionId, question) {
+  // Step 1: Retrieve relevant documents
+  const queryResults = await queryCollection(collectionId, question);
+  
+  // Step 2: Format the retrieved contexts for the LLM
+  let context = "Information about our products:\n\n";
+  queryResults.results.forEach((result, index) => {
+    context += `[${index + 1}] ${result.content}\n\n`;
+  });
+  
+  // Step 3: Generate an answer using the retrieved information
+  const response = await fetch('https://langchain.moodmnky.com/api/chains/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      chainId: 'chain_qa_with_sources',
+      inputs: {
+        question: question,
+        context: context
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Example: Answer a customer question
+async function handleCustomerQuery() {
+  const question = "What ingredients are in the Lavender Dreams candle?";
+  const collectionId = "col_01h9f5zk4r9s7l3z8u2y"; // Product Knowledge Base
+  
+  const answer = await answerProductQuestion(collectionId, question);
+  console.log('Customer question:', question);
+  console.log('Answer:', answer.outputs.answer);
+  console.log('Sources:', answer.outputs.sources);
+}
+```
+
+### Building a Document Search Interface
+
+```typescript
+// Class for managing document search
+class DocumentSearchManager {
+  private apiKey: string;
+  private baseUrl: string;
+  
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://langchain.moodmnky.com/api';
+  }
+  
+  async getCollections() {
+    const response = await fetch(`${this.baseUrl}/collections`, {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      }
+    });
+    
+    return await response.json();
+  }
+  
+  async search(collectionId: string, query: string, filters: any = {}, topK: number = 5) {
+    const response = await fetch(`${this.baseUrl}/collections/${collectionId}/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`
+      },
+      body: JSON.stringify({
+        query: query,
+        topK: topK,
+        filter: filters,
+        includeMetadata: true
+      })
+    });
+    
+    return await response.json();
+  }
+  
+  async uploadDocument(collectionId: string, file: File, metadata: any = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('metadata', JSON.stringify(metadata));
+    
+    const response = await fetch(`${this.baseUrl}/collections/${collectionId}/documents`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`
+      },
+      body: formData
+    });
+    
+    return await response.json();
+  }
+}
+
+// Example usage in a web application
+async function initializeSearchInterface() {
+  const searchManager = new DocumentSearchManager('YOUR_API_KEY');
+  
+  // Get available collections for dropdown
+  const collections = await searchManager.getCollections();
+  const collectionSelect = document.getElementById('collection-select');
+  
+  collections.collections.forEach(collection => {
+    const option = document.createElement('option');
+    option.value = collection.collectionId;
+    option.textContent = collection.name;
+    collectionSelect.appendChild(option);
+  });
+  
+  // Set up search form
+  const searchForm = document.getElementById('search-form');
+  const resultsContainer = document.getElementById('search-results');
+  
+  searchForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const collectionId = document.getElementById('collection-select').value;
+    const query = document.getElementById('search-query').value;
+    const categoryFilter = document.getElementById('category-filter').value;
+    
+    // Create filter object if category is selected
+    const filters = categoryFilter ? { metadata: { category: categoryFilter } } : {};
+    
+    // Perform search
+    resultsContainer.innerHTML = '<p>Searching...</p>';
+    const results = await searchManager.search(collectionId, query, filters);
+    
+    // Display results
+    resultsContainer.innerHTML = '';
+    if (results.results.length === 0) {
+      resultsContainer.innerHTML = '<p>No results found</p>';
+      return;
+    }
+    
+    results.results.forEach(result => {
+      const resultEl = document.createElement('div');
+      resultEl.className = 'search-result';
+      resultEl.innerHTML = `
+        <div class="result-content">${result.content}</div>
+        <div class="result-metadata">
+          <span class="relevance">Relevance: ${(result.score * 100).toFixed(1)}%</span>
+          <span class="source">Source: ${result.metadata.source || 'Unknown'}</span>
+          ${result.metadata.product_id ? `<span class="product">Product: ${result.metadata.product_id}</span>` : ''}
+        </div>
+      `;
+      resultsContainer.appendChild(resultEl);
+    });
+  });
+  
+  // Set up document upload
+  const uploadForm = document.getElementById('upload-form');
+  uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const collectionId = document.getElementById('upload-collection-select').value;
+    const file = document.getElementById('document-file').files[0];
+    const source = document.getElementById('document-source').value;
+    const category = document.getElementById('document-category').value;
+    
+    if (!file) {
+      alert('Please select a file to upload');
+      return;
+    }
+    
+    const metadata = { source, category };
+    const uploadResult = await searchManager.uploadDocument(collectionId, file, metadata);
+    
+    alert(`Document uploaded successfully. Document ID: ${uploadResult.documentId}`);
+    uploadForm.reset();
+  });
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeSearchInterface);
+```
+
+### Using Documents with an Agent
+
+```typescript
+// Create an agent that can search document collections
+async function createDocumentAgent(collectionIds) {
+  const response = await fetch('https://langchain.moodmnky.com/api/chains', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      name: "Document Search Agent",
+      type: "agent",
+      config: {
+        llm: {
+          provider: "openai",
+          model: "gpt-4",
+          temperature: 0.2
+        },
+        tools: [
+          {
+            name: "search_documents",
+            description: "Search document collections for relevant information",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The search query"
+                },
+                collection_id: {
+                  type: "string",
+                  description: "The ID of the collection to search",
+                  enum: collectionIds
+                },
+                top_k: {
+                  type: "integer",
+                  description: "Number of results to return",
+                  default: 3
+                }
+              },
+              required: ["query", "collection_id"]
+            },
+            function: async ({ query, collection_id, top_k = 3 }) => {
+              const results = await fetch(`https://langchain.moodmnky.com/api/collections/${collection_id}/query`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer YOUR_API_KEY'
+                },
+                body: JSON.stringify({
+                  query: query,
+                  topK: top_k,
+                  includeMetadata: true
+                })
+              }).then(r => r.json());
+              
+              return {
+                results: results.results.map(r => ({
+                  content: r.content,
+                  metadata: r.metadata,
+                  relevance: r.score
+                }))
+              };
+            }
+          }
+        ],
+        memory: {
+          type: "conversation",
+          config: {
+            maxMessages: 10
+          }
+        },
+        systemPrompt: `You are a helpful assistant for MOOD MNKY, a premium self-care and fragrance company. You can search the company's document collections to find accurate information about products, services, and policies.
+
+When answering questions:
+1. Search relevant document collections using the search_documents tool
+2. Cite your sources by referencing the documents you found
+3. If you can't find information, be honest about it
+4. Always maintain a helpful, friendly tone aligned with the MOOD MNKY brand
+
+Available document collections:
+${collectionIds.join(', ')}`,
+        maxIterations: 5
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Using the document agent to answer questions
+async function askDocumentAgent(chainId, question) {
+  const response = await fetch(`https://langchain.moodmnky.com/api/chains/${chainId}/run`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      inputs: {
+        input: question
+      }
+    })
+  });
+  
+  return await response.json();
+}
+
+// Example usage
+async function documentAgentDemo() {
+  // Available collections
+  const collectionIds = [
+    "col_01h9f5zk4r9s7l3z8u2y", // Product Knowledge Base
+    "col_02h9g6al5s0t8m4a9v3z"  // Customer FAQs
+  ];
+  
+  // Create the agent
+  const agent = await createDocumentAgent(collectionIds);
+  console.log('Created document agent:', agent.chainId);
+  
+  // Ask questions
+  const questions = [
+    "What are the ingredients in your candles?",
+    "How long do your candles typically burn?",
+    "Do you offer any pet-friendly fragrances?"
+  ];
+  
+  for (const question of questions) {
+    console.log(`\nQuestion: ${question}`);
+    const response = await askDocumentAgent(agent.chainId, question);
+    console.log(`Answer: ${response.outputs.output}`);
+  }
+}
+```
+
+## Best Practices
+
+### Document Preparation
+
+- **Optimize chunking strategies** for your content type:
+  - For articles and documentation: 800-1000 tokens with 100-200 token overlap
+  - For code snippets: smaller chunks (300-500 tokens) with minimal overlap
+  - For legal documents: chunk by sections or paragraphs with headers
+
+- **Structure metadata thoughtfully**:
+  - Include source, author, date, and version information
+  - Add categorical information for filtering (product type, department, etc.)
+  - Consider adding importance or priority rankings
+  - Include relationships to other documents when relevant
+
+- **Pre-process documents** for better results:
+  - Remove unnecessary boilerplate text
+  - Clean up formatting artifacts
+  - Ensure proper encoding and special character handling
+  - Break up very large documents appropriately
+
+### Collection Management
+
+- **Organize collections logically**:
+  - Create separate collections for significantly different content types
+  - Use metadata for finer-grained filtering within collections
+  - Consider the query patterns when structuring collections
+
+- **Monitor collection size and performance**:
+  - Large collections may require more optimized querying strategies
+  - Consider periodically reviewing and cleaning up outdated documents
+  - Monitor query latency and adjust collection structure if needed
+
+- **Implement versioning strategies**:
+  - Include version information in document metadata
+  - Consider collection snapshots for major content overhauls
+  - Maintain an audit trail of document changes
+
+### Retrieval Optimization
+
+- **Craft effective queries**:
+  - Be specific and clear in query formulation
+  - Include relevant keywords from your domain
+  - Test different query phrasings to optimize retrieval
+
+- **Balance precision and recall**:
+  - Adjust `topK` based on your application needs
+  - Use filters to narrow down results when appropriate
+  - Implement re-ranking strategies for better relevance
+
+- **Implement query preprocessing**:
+  ```typescript
+  function optimizeQuery(userQuery: string): string {
+    // Remove filler words
+    let optimized = userQuery.replace(/please|could you|i want to know|tell me about/gi, '');
+    
+    // Expand common acronyms
+    const acronyms: Record<string, string> = {
+      'FAQ': 'frequently asked questions',
+      'SDS': 'safety data sheet',
+      // Add domain-specific acronyms
+    };
+    
+    for (const [acronym, expansion] of Object.entries(acronyms)) {
+      const regex = new RegExp(`\\b${acronym}\\b`, 'g');
+      optimized = optimized.replace(regex, `${acronym} ${expansion}`);
+    }
+    
+    return optimized.trim();
+  }
+  ```
+
+### Security and Compliance
+
+- **Implement proper access controls**:
+  - Restrict collection access based on user roles
+  - Consider document-level access control for sensitive information
+  - Audit access to sensitive collections
+
+- **Handle sensitive information appropriately**:
+  - Don't store PII or confidential data unless necessary
+  - Implement data retention policies
+  - Consider content filtering for uploaded documents
+
+- **Maintain data lineage**:
+  - Track document sources and modifications
+  - Implement citation capabilities for retrieved information
+  - Ensure proper attribution for copyrighted material
+
+### Performance Considerations
+
+- **Optimize embedding generation**:
+  - Batch document processing for efficiency
+  - Monitor token usage for embeddings
+  - Consider caching frequently used embeddings
+
+- **Implement efficient retrieval patterns**:
+  ```typescript
+  class OptimizedRetriever {
+    private collectionId: string;
+    private apiKey: string;
+    private cache: Map<string, any>;
+    
+    constructor(collectionId: string, apiKey: string) {
+      this.collectionId = collectionId;
+      this.apiKey = apiKey;
+      this.cache = new Map();
+    }
+    
+    async retrieve(query: string, filters: any = {}, topK: number = 3) {
+      // Generate cache key
+      const cacheKey = JSON.stringify({ query, filters, topK });
+      
+      // Check cache first
+      if (this.cache.has(cacheKey)) {
+        return this.cache.get(cacheKey);
+      }
+      
+      // Optimize query
+      const optimizedQuery = this.optimizeQuery(query);
+      
+      // Perform retrieval
+      const results = await fetch(`https://langchain.moodmnky.com/api/collections/${this.collectionId}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          query: optimizedQuery,
+          topK: topK,
+          filter: filters,
+          includeMetadata: true
+        })
+      }).then(r => r.json());
+      
+      // Cache results (with expiration)
+      this.cache.set(cacheKey, results);
+      setTimeout(() => this.cache.delete(cacheKey), 1000 * 60 * 15); // 15 minute cache
+      
+      return results;
+    }
+    
+    private optimizeQuery(query: string): string {
+      // Implement query optimization
+      return query.trim();
+    }
+  }
+  ```
+
+- **Implement smart rate limiting**:
+  - Prioritize critical queries
+  - Implement request queuing for bulk operations
+  - Consider using webhooks for large document processing
+
+## Support & Resources
+
+- [Documents API Reference](/api/reference/langchain#tag/Documents)
+- [Collection Management Guide](/api/guides/langchain/collection-management)
+- [Document Processing Tutorial](/api/tutorials/langchain/document-processing)
+- [Advanced Retrieval Patterns](/api/guides/langchain/advanced-retrieval)
+
+For additional support:
+- Email: api-support@moodmnky.com
+- Discord: [MOOD MNKY Developer Community](https://discord.gg/moodmnky-dev)
+- GitHub: [Issue Tracker](https://github.com/moodmnkyllc/api-issues) 

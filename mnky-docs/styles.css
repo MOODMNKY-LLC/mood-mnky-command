@@ -1,0 +1,530 @@
+/* 
+ * MOOD MNKY Documentation Theme
+ * ----------------------------
+ * This CSS file customizes the Mintlify documentation with:
+ * 1. Monochromatic black/white color scheme
+ * 2. Helvetica font family styling
+ * 3. Agent-specific accent colors
+ * 4. Enhanced UI components
+ */
+
+/* Font declarations for Helvetica */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/Helvetica.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/Helvetica-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/Helvetica-Oblique.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/Helvetica-BoldOblique.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Rounded';
+  src: url('/fonts/helvetica-rounded-bold-5871d05ead8de.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Compressed';
+  src: url('/fonts/helvetica-compressed-5871d14b6903a.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Light';
+  src: url('/fonts/helvetica-light-587ebe5a59211.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import fonts */
+@font-face {
+  font-family: "Helvetica";
+  src: url("https://db.onlinewebfonts.com/t/31411056aff99ce42b8ff52cad3c9b9c.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica";
+  src: url("https://db.onlinewebfonts.com/t/81d867cba94cc58a991d9e9718978ce7.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica";
+  src: url("https://db.onlinewebfonts.com/t/9b4f00cb15c16797b92c6d55f75ad6aa.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/HelveticaNowDisplay-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/HelveticaNowDisplay-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/HelveticaNowDisplay-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* Logo sizing in the sidebar/navbar */
+.sidebar-logo, 
+.dark .sidebar-logo,
+nav a[href="/"] img,
+header a[href="/"] img,
+img[alt="MOOD MNKY"],
+.navbar img,
+.navbar-logo,
+aside a[href="/"] img {
+  width: auto;
+  height: 40px !important;
+  max-width: none;
+  max-height: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .sidebar-logo,
+  .dark .sidebar-logo,
+  nav a[href="/"] img,
+  header a[href="/"] img,
+  img[alt="MOOD MNKY"],
+  .navbar img,
+  .navbar-logo,
+  aside a[href="/"] img {
+    height: 36px !important;
+  }
+}
+
+/* Default typography enhancements */
+body {
+  font-family: Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Agent-specific color variables */
+:root {
+  /* MOOD MNKY colors - gold/ember tones */
+  --mood-mnky-light: #D4A04E;  /* Ember Gold */
+  --mood-mnky-medium: #B87532; /* Molten Amber */
+  --mood-mnky-dark: #8C5524;   /* Burnished Bronze */
+  
+  /* CODE MNKY colors - navy/steel blue tones */
+  --code-mnky-light: #9FB8CC;  /* Frosted Byte */
+  --code-mnky-medium: #3A4C66; /* Steelcore Blue */
+  --code-mnky-dark: #1A2A3A;   /* Navy Depths */
+  
+  /* SAGE MNKY colors - forest/emerald tones */
+  --sage-mnky-light: #2A9D6B;  /* Emerald Veil */
+  --sage-mnky-medium: #3B7D75; /* Teal Whisper */
+  --sage-mnky-dark: #1E4D3A;   /* Deep Forest */
+
+  /* Agent Color Variables */
+  --mood-mnky-color: #D4A04E;  /* Updated to Ember Gold */
+  --sage-mnky-color: #2A9D6B;  /* Updated to Emerald Veil */
+  --code-mnky-color: #2F60C1;  /* Updated to Royal Circuit */
+  
+  /* Additional MOOD MNKY color variables */
+  --mood-mnky-smolder: #5A3B1F;  /* Smolder Umber */
+  --mood-mnky-ashen: #A28B6A;    /* Ashen Gold */
+  
+  /* Additional SAGE MNKY color variables */
+  --sage-mnky-moss: #5E665C;     /* Moss Grey */
+  --sage-mnky-mist: #A6C3B5;     /* Eucalyptus Mist */
+  
+  /* Additional CODE MNKY color variables */
+  --code-mnky-royal: #2F60C1;    /* Royal Circuit */
+  --code-mnky-carbon: #4E6C78;   /* Carbon Azure */
+  
+  /* Card backgrounds */
+  --card-bg-dark: #1E1E2E;
+  --card-bg-darker: #181825;
+  --card-highlight: #2D2D3A;
+  --card-border-dark: #333333;
+  
+  /* Other colors */
+  --sidebar-border-color: #2D2D3A;
+  
+  /* MNKY Brand Colors */
+  --ifm-color-primary: #6E58F8;
+  --ifm-color-primary-dark: #5843E4;
+  --ifm-color-primary-light: #8A78FF;
+}
+
+/* UI component styling */
+.card {
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--card-bg-dark) !important;
+  border: 1px solid var(--sidebar-border-color) !important;
+  color: #fff !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  background-color: var(--card-highlight) !important;
+}
+
+/* Dark-themed content cards for homepage */
+.content-card,
+.homepage-card,
+.feature-card,
+.value-prop-card,
+[class*="value-prop"],
+[class*="feature-section"] {
+  background-color: var(--card-bg-dark) !important;
+  border: 1px solid var(--card-border-dark) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Agent cards */
+.agent-card {
+  background-color: var(--card-bg-darker) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--sidebar-border-color) !important;
+  padding: 1.5rem !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.agent-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Agent image styling */
+.agent-image {
+  width: 120px !important;
+  height: 120px !important;
+  margin: 0 auto 1rem !important;
+  display: block !important;
+  transition: transform 0.3s ease !important;
+}
+
+.agent-image:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Agent card color accents */
+.mood-mnky-agent {
+  border-left: 4px solid var(--mood-mnky-color) !important;
+  box-shadow: 0 4px 12px rgba(212, 160, 78, 0.2) !important;
+}
+
+.code-mnky-agent {
+  border-left: 4px solid var(--code-mnky-color) !important;
+  box-shadow: 0 4px 12px rgba(100, 186, 255, 0.2) !important;
+}
+
+.sage-mnky-agent {
+  border-left: 4px solid var(--sage-mnky-color) !important;
+  box-shadow: 0 4px 12px rgba(160, 217, 180, 0.2) !important;
+}
+
+/* 
+ * AGENT-SPECIFIC STYLING
+ * ----------------------
+ * Each agent has its own color scheme:
+ * - MOOD MNKY: Amber/gold (#FCD34D)
+ * - CODE MNKY: Blue (#93C5FD)
+ * - SAGE MNKY: Green (#86EFAC)
+ *
+ * To use these styles, add the appropriate class to your content:
+ * - For MOOD MNKY: class="mood-mnky-section" or class="mood-mnky-card"
+ * - For CODE MNKY: class="code-mnky-section" or class="code-mnky-card"
+ * - For SAGE MNKY: class="sage-mnky-section" or class="sage-mnky-card"
+ */
+
+/* MOOD MNKY - amber */
+.mood-mnky-section h1,
+.mood-mnky-section h2,
+.mood-mnky-section h3,
+.mood-mnky-section h4 {
+  color: var(--mood-mnky-medium) !important;
+  border-bottom: 2px solid var(--mood-mnky-light) !important;
+}
+
+.mood-mnky-card {
+  border-left: 4px solid var(--mood-mnky-medium) !important;
+  background-color: rgba(212, 160, 78, 0.1) !important;
+  padding: 1rem !important;
+  border-radius: 0.375rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.mood-mnky-border {
+  border: 2px solid var(--mood-mnky-light) !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+}
+
+/* CODE MNKY - blue */
+.code-mnky-section h1,
+.code-mnky-section h2,
+.code-mnky-section h3 {
+  color: var(--code-mnky-medium) !important;
+  border-bottom: 2px solid var(--code-mnky-light) !important;
+}
+
+.code-mnky-card {
+  border-left: 4px solid var(--code-mnky-medium) !important;
+  background-color: rgba(159, 184, 204, 0.1) !important; /* Frosted Byte with transparency */
+  padding: 1rem !important;
+  border-radius: 0.375rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.code-mnky-border {
+  border: 2px solid var(--code-mnky-light) !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+}
+
+/* SAGE MNKY - green */
+.sage-mnky-section h1,
+.sage-mnky-section h2,
+.sage-mnky-section h3,
+.sage-mnky-section h4 {
+  color: var(--sage-mnky-medium) !important;
+  border-bottom: 2px solid var(--sage-mnky-light) !important;
+}
+
+.sage-mnky-card {
+  border-left: 4px solid var(--sage-mnky-medium) !important;
+  background-color: rgba(166, 195, 181, 0.1) !important; /* Eucalyptus Mist with transparency */
+  padding: 1rem !important;
+  border-radius: 0.375rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.sage-mnky-border {
+  border: 2px solid var(--sage-mnky-light) !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+}
+
+/* Agent avatar styling */
+img.agent-avatar {
+  border-radius: 50%;
+  border-width: 3px;
+  border-style: solid;
+  width: 120px !important;
+  height: 120px !important;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 0 auto 1.5rem !important;
+  display: block;
+}
+
+img.agent-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+img.mood-mnky-avatar {
+  border: 3px solid var(--mood-mnky-medium) !important;
+  box-shadow: 0 2px 8px rgba(212, 160, 78, 0.3) !important;
+}
+
+img.code-mnky-avatar {
+  border: 3px solid var(--code-mnky-medium) !important;
+  box-shadow: 0 2px 8px rgba(47, 96, 193, 0.3) !important; /* Royal Circuit with transparency */
+}
+
+img.sage-mnky-avatar {
+  border: 3px solid var(--sage-mnky-medium) !important;
+  box-shadow: 0 2px 8px rgba(42, 157, 107, 0.3) !important; /* Emerald Veil with transparency */
+}
+
+/* Force dark backgrounds on any content cards or feature cards */
+.light-card,
+.white-card,
+.feature-box,
+div[class*="Card"],
+div[class*="card"],
+section[class*="feature"],
+.callout,
+.highlight-box {
+  background-color: var(--card-bg-dark) !important;
+  color: #fff !important;
+  border-color: var(--card-border-dark) !important;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Force light text on dark backgrounds */
+  .card p,
+  .card span,
+  .card li,
+  .card h1,
+  .card h2,
+  .card h3,
+  .card h4,
+  .card h5,
+  .card h6 {
+    color: #fff !important;
+  }
+}
+
+/* Override any Mintlify default light backgrounds */
+.dark .card,
+.dark [class*="Card"],
+.dark [class*="card"],
+.dark .content-wrapper .card {
+  background-color: var(--card-bg-dark) !important;
+  color: #fff !important;
+}
+
+/* Logo Sizing in Navigation and Sidebar */
+.logo-container,
+.sticky-logo,
+.sticky-nav-logo {
+  height: 36px !important;
+  width: auto !important; 
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .logo-container,
+  .sticky-logo,
+  .sticky-nav-logo {
+    height: 32px !important;
+  }
+}
+
+/* Dark Card Styles */
+.card {
+  background-color: var(--card-bg-dark);
+  border: 1px solid var(--sidebar-border-color);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background-color: var(--card-highlight);
+  border-color: var(--ifm-color-primary);
+}
+
+/* Value Proposition Cards */
+.value-prop-card {
+  background-color: var(--card-bg-darker);
+  border: 1px solid var(--sidebar-border-color);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.value-prop-card:hover {
+  background-color: var(--card-bg-dark);
+  transform: translateY(-2px);
+}
+
+/* Agent Cards */
+.agent-card {
+  background-color: var(--card-bg-darker);
+  border: 1px solid var(--sidebar-border-color);
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.mood-mnky-agent:hover {
+  border-left-color: var(--mood-mnky-dark) !important;
+  box-shadow: 0 8px 16px rgba(184, 117, 50, 0.3) !important;
+}
+
+.code-mnky-agent:hover {
+  border-left-color: var(--code-mnky-royal) !important;
+  box-shadow: 0 8px 16px rgba(58, 76, 102, 0.3) !important; /* Steelcore Blue with transparency */
+}
+
+.sage-mnky-agent:hover {
+  border-left-color: var(--sage-mnky-dark) !important;
+  box-shadow: 0 8px 16px rgba(59, 125, 117, 0.3) !important; /* Teal Whisper with transparency */
+}
+
+/* Agent Images */
+.agent-avatar {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1.5rem;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.4));
+}
+
+.agent-card:hover .agent-avatar {
+  transform: scale(1.05);
+}
+
+.mood-mnky-avatar {
+  filter: drop-shadow(0 10px 8px rgba(255, 150, 80, 0.3));
+}
+
+.code-mnky-avatar {
+  filter: drop-shadow(0 10px 8px rgba(47, 96, 193, 0.3)); /* Royal Circuit */
+}
+
+.sage-mnky-avatar {
+  filter: drop-shadow(0 10px 8px rgba(80, 200, 120, 0.3));
+}

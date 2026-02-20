@@ -1,0 +1,149 @@
+---
+title: 'E-commerce API'
+description: 'API reference for the MOOD MNKY e-commerce system'
+---
+
+# E-commerce API
+
+The MOOD MNKY E-commerce API provides a comprehensive set of endpoints for interacting with our e-commerce system. These APIs enable seamless integration with our shopping experience, custom product creation, and personalized customer management.
+
+## Overview
+
+The E-commerce API is organized into several logical sections, each focusing on a specific aspect of the e-commerce experience:
+
+<CardGroup cols={2}>
+  <Card title="Products API" icon="box" href="/api/e-commerce/products">
+    Manage and retrieve product information, including details, variants, inventory, and media assets.
+  </Card>
+  <Card title="Orders API" icon="receipt" href="/api/e-commerce/orders">
+    Create, manage, and track orders, including order processing, fulfillment, and history.
+  </Card>
+  <Card title="Cart API" icon="cart-shopping" href="/api/e-commerce/cart">
+    Manage shopping carts, add/remove items, apply discounts, and prepare for checkout.
+  </Card>
+  <Card title="Customers API" icon="user" href="/api/e-commerce/customers">
+    Manage customer accounts, profiles, addresses, and preferences for a personalized experience.
+  </Card>
+  <Card title="Custom Blends API" icon="flask" href="/api/e-commerce/custom-blends">
+    Create and manage personalized fragrance blends, scent profiles, and custom product formulations.
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Seamless Storefront Integration
+
+The E-commerce API provides all the functionality needed to build a complete custom shopping experience, while leveraging our robust backend systems for inventory management, payment processing, and order fulfillment.
+
+### Custom Product Creation
+
+Our API includes specialized endpoints for creating and managing custom fragrance blends, allowing customers to design personalized products that meet their unique preferences and needs.
+
+### Customer Profile Management
+
+Comprehensive customer management capabilities allow for storing detailed customer profiles, preferences, and order history to enable highly personalized shopping experiences.
+
+### Order Processing and Fulfillment
+
+End-to-end order management from creation through fulfillment, with detailed status tracking and notifications at each step.
+
+## Common Patterns
+
+All E-commerce APIs follow consistent patterns and conventions:
+
+### Authentication
+
+All E-commerce API endpoints require authentication using either:
+
+- **Customer Authentication**: For customer-facing applications using JWT tokens
+- **Admin Authentication**: For administrative access using API keys with appropriate permissions
+
+### Response Format
+
+Responses follow a consistent JSON format:
+
+```json
+{
+  // Primary response data
+  "data": { ... },
+  
+  // Optional metadata for pagination, etc.
+  "meta": {
+    "pagination": {
+      "total": 48,
+      "pages": 3,
+      "page": 1,
+      "limit": 20
+    }
+  },
+  
+  // Links for HATEOAS-style navigation
+  "links": {
+    "self": "https://api.moodmnky.com/products?page=1&limit=20",
+    "next": "https://api.moodmnky.com/products?page=2&limit=20",
+    "last": "https://api.moodmnky.com/products?page=3&limit=20"
+  }
+}
+```
+
+### Error Handling
+
+Errors follow a consistent format with appropriate HTTP status codes:
+
+```json
+{
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "The request contains invalid parameters",
+    "details": [
+      {
+        "field": "email",
+        "message": "Must be a valid email address"
+      }
+    ]
+  }
+}
+```
+
+### Pagination
+
+List endpoints support standard pagination parameters:
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| page | Page number (1-based) | 1 |
+| limit | Items per page | Varies by endpoint |
+
+## Getting Started
+
+To get started with the E-commerce API:
+
+1. [Create an API key](/api/authentication#creating-api-keys) in your developer dashboard
+2. Review the [authentication documentation](/api/authentication)
+3. Explore the specific API sections for detailed endpoint information
+
+## Rate Limits
+
+The E-commerce API implements rate limiting to ensure system stability:
+
+| Authentication Type | Rate Limit |
+|---------------------|------------|
+| Anonymous | 60 requests per hour |
+| Customer | 1000 requests per hour |
+| Admin | 5000 requests per hour |
+
+Rate limit headers are included in all responses:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 995
+X-RateLimit-Reset: 1618675200
+```
+
+## Best Practices
+
+- Use appropriate scopes for API keys to limit access to only the required functionality
+- Implement webhook listeners for real-time updates instead of polling
+- Cache product information when appropriate
+- Use the bulk endpoints for batch operations when available
+- Implement proper error handling for a smooth user experience 

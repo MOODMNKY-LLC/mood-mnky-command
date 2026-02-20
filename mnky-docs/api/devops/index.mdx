@@ -1,0 +1,177 @@
+---
+title: API Documentation
+description: MOOD MNKY APIs and Integration Points
+---
+
+# MOOD MNKY API Documentation
+
+Welcome to the MOOD MNKY API documentation. This section provides comprehensive information about our APIs, integration points, and developer resources.
+
+## Available APIs
+
+MOOD MNKY offers several specialized APIs for different purposes:
+
+| API | Description | Documentation | API Playground |
+|-----|-------------|---------------|---------------|
+| Ollama API | LLM model serving and inference | [Documentation](/api/devops/ollama/index) | [Playground](/api/devops/ollama/playground) |
+| Flowise API | Visual AI workflow orchestration | [Documentation](/api/devops/flowise/index) | [Playground](/api/devops/flowise/playground) |
+| Langchain API | AI chain and agent management | [Documentation](/api/devops/langchain/index) | [Playground](/api/devops/langchain/playground) |
+| n8n API | Workflow automation and integration | [Documentation](/api/devops/n8n/index) | [Playground](/api/devops/n8n/playground) |
+
+## Service Documentation
+
+Each service includes comprehensive documentation and an interactive API playground:
+
+<CardGroup>
+  <Card title="Ollama" icon="brain" href="/api/devops/ollama/index">
+    Documentation and interactive playground for LLM model serving
+  </Card>
+  <Card title="Flowise" icon="diagram-project" href="/api/devops/flowise/index">
+    Documentation and interactive playground for AI workflow orchestration
+  </Card>
+  <Card title="Langchain" icon="link" href="/api/devops/langchain/index">
+    Documentation and interactive playground for AI chains and agents
+  </Card>
+  <Card title="n8n" icon="robot" href="/api/devops/n8n/index">
+    Documentation and interactive playground for workflow automation
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+To get started with our APIs:
+
+1. Review the [Authentication](/api/devops/authentication) documentation
+2. Set up your [Development Environment](/api/devops/environments/local-setup)
+3. Navigate to the service documentation you're interested in
+4. Explore the API documentation and try out calls in the service's playground
+5. Implement your integration following our [Best Practices](/api/devops/best-practices)
+
+## API Integration Resources
+
+<CardGroup>
+  <Card title="Authentication" icon="lock" href="/api/devops/authentication">
+    Learn about API keys, tokens, and authorization
+  </Card>
+  <Card title="Rate Limiting" icon="gauge" href="/api/devops/rate-limiting">
+    Understand usage limits and quota management
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/api/devops/error-handling">
+    Standardized error responses and handling strategies
+  </Card>
+  <Card title="Monitoring" icon="chart-line" href="/api/devops/monitoring">
+    API usage metrics and performance monitoring
+  </Card>
+</CardGroup>
+
+# DevOps API Reference
+
+Welcome to the comprehensive API reference for MOOD MNKY's DevOps microservices. This documentation provides detailed information about our core infrastructure services, including Ollama and Flowise, their endpoints, authentication methods, and integration patterns.
+
+## Service Overview
+
+### Ollama Service
+
+Our Ollama service is hosted at `https://ollama.moodmnky.com` and provides:
+
+<Card title="Model Management" icon="cube" href="/api/devops/ollama/models">
+  Model creation, deletion, and management endpoints
+</Card>
+
+<Card title="Generation & Inference" icon="wand-magic-sparkles" href="/api/devops/ollama/generation">
+  Text generation, chat completion, and embedding endpoints
+</Card>
+
+<Card title="Monitoring & Health" icon="chart-line" href="/api/devops/ollama/monitoring">
+  Service health, metrics, and monitoring endpoints
+</Card>
+
+### Flowise Service
+
+Our Flowise service is hosted at `https://mnky-mind-flowise.moodmnky.com` and provides:
+
+<Card title="Chatflow Management" icon="diagram-project" href="/api/devops/flowise/chatflows">
+  Chatflow creation, management, and execution endpoints
+</Card>
+
+<Card title="Analytics & Telemetry" icon="chart-mixed" href="/api/devops/flowise/analytics">
+  Usage analytics, performance metrics, and telemetry data
+</Card>
+
+<Card title="Service Health" icon="heart-pulse" href="/api/devops/flowise/monitoring">
+  Health checks, diagnostics, and monitoring endpoints
+</Card>
+
+## Authentication
+
+All DevOps API endpoints require authentication. We support two authentication methods:
+
+1. **API Key Authentication**
+   - Required for all production endpoints
+   - Keys are managed through our secure key management system
+   - Include the API key in the `Authorization` header:
+     ```bash
+     Authorization: Bearer your-api-key
+     ```
+
+2. **JWT Token Authentication**
+   - Used for internal service-to-service communication
+   - Tokens are automatically managed by our service mesh
+   - Short-lived tokens with automatic rotation
+
+## Rate Limiting
+
+To ensure service stability and fair usage:
+
+- **Ollama Service**
+  - 100 requests per minute per API key for generation endpoints
+  - 1000 requests per minute per API key for other endpoints
+  - Burst limits may apply
+
+- **Flowise Service**
+  - 60 requests per minute per API key for chatflow execution
+  - 300 requests per minute per API key for management endpoints
+  - Additional limits based on subscription tier
+
+## Error Handling
+
+All API endpoints follow consistent error response formats:
+
+```json
+{
+  "error": {
+    "code": "error_code",
+    "message": "Human-readable error message",
+    "details": {
+      "additional": "error specific details"
+    }
+  }
+}
+```
+
+Common HTTP status codes:
+- `400` - Bad Request
+- `401` - Unauthorized
+- `403` - Forbidden
+- `404` - Not Found
+- `429` - Too Many Requests
+- `500` - Internal Server Error
+
+## Monitoring & Observability
+
+Both services expose metrics endpoints compatible with Prometheus and provide:
+
+- Real-time health status
+- Resource utilization metrics
+- Request/response latencies
+- Error rates and types
+- Custom business metrics
+
+## Getting Started
+
+1. [Request API credentials](#) from the DevOps team
+2. Review the service-specific documentation:
+   - [Ollama API Reference](/api/devops/ollama)
+   - [Flowise API Reference](/api/devops/flowise)
+3. Set up monitoring and alerting using our [observability guide](#)
+4. Join our [developer community](#) for support 

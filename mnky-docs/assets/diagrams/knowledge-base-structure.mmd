@@ -1,0 +1,52 @@
+graph TB
+    %% Main Knowledge Categories
+    KB[Knowledge Base]
+    Brand[Brand Knowledge]
+    Domain[Domain Expertise]
+    User[User Context]
+    System[System Knowledge]
+
+    %% Brand Knowledge Components
+    Brand --> |contains| History[Company History]
+    Brand --> |contains| Products[Product Information]
+    Brand --> |contains| Voice[Brand Voice]
+    Brand --> |contains| Marketing[Marketing Materials]
+
+    %% Domain Expertise Components
+    Domain --> |contains| Fragrance[Fragrance Science]
+    Domain --> |contains| Wellness[Wellness Principles]
+    Domain --> |contains| Learning[Learning Methods]
+    Domain --> |contains| Community[Community Building]
+
+    %% User Context Components
+    User --> |contains| Preferences[User Preferences]
+    User --> |contains| History2[Interaction History]
+    User --> |contains| Segments[User Segments]
+    User --> |contains| Insights[Behavioral Insights]
+
+    %% System Knowledge Components
+    System --> |contains| Tech[Technical Standards]
+    System --> |contains| APIs[API Documentation]
+    System --> |contains| Processes[System Processes]
+    System --> |contains| Config[Configuration Data]
+
+    %% Knowledge Base Connections
+    KB --> Brand
+    KB --> Domain
+    KB --> User
+    KB --> System
+
+    %% Cross-Category Relationships
+    Fragrance -.-> Products
+    Wellness -.-> Insights
+    Learning -.-> History2
+    Voice -.-> Marketing
+
+    %% Styling
+    classDef category fill:#f9f,stroke:#333,stroke-width:2px
+    classDef component fill:#cfc,stroke:#333,stroke-width:2px
+    classDef main fill:#9cf,stroke:#333,stroke-width:4px
+
+    class KB main
+    class Brand,Domain,User,System category
+    class History,Products,Voice,Marketing,Fragrance,Wellness,Learning,Community,Preferences,History2,Segments,Insights,Tech,APIs,Processes,Config component

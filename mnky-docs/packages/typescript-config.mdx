@@ -1,0 +1,185 @@
+---
+title: "TypeScript Config Package"
+description: "Shared TypeScript configurations and compiler options"
+icon: "file-code"
+---
+
+# TypeScript Config Package (@repo/typescript-config)
+
+The TypeScript Config package provides shared TypeScript compiler configurations that ensure consistent type checking and compilation across all MOOD MNKY applications and packages.
+
+## Overview
+
+`@repo/typescript-config` standardizes TypeScript compiler options, ensuring consistent type safety, compilation behavior, and developer experience across the monorepo.
+
+### Key Features
+
+- **Strict Mode**: Enforces strict type checking
+- **Consistent Options**: Same compiler options across projects
+- **Path Mapping**: Shared path aliases
+- **Modern Target**: ES2020+ compilation target
+
+## Installation
+
+The package is automatically available as a workspace dependency:
+
+```json
+{
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}
+```
+
+## Usage
+
+### Base Configuration
+
+Extend the base config in your `tsconfig.json`:
+
+```json
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}
+```
+
+### Next.js Applications
+
+For Next.js apps, use the Next.js-specific config:
+
+```json
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### React Library
+
+For React component libraries:
+
+```json
+{
+  "extends": "@repo/typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true
+  }
+}
+```
+
+## Configuration Options
+
+### Base Config
+
+Standard TypeScript configuration:
+
+- Strict mode enabled
+- ES2020 target
+- CommonJS or ESNext module
+- Source maps enabled
+
+### Next.js Config
+
+Next.js-optimized configuration:
+
+- React JSX support
+- Next.js path aliases
+- App Router optimizations
+- Image optimization types
+
+### React Library Config
+
+Library-specific configuration:
+
+- Declaration files generation
+- External dependencies handling
+- Bundle optimization
+
+## Compiler Options
+
+### Strict Type Checking
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
+  }
+}
+```
+
+### Path Mapping
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@repo/*": ["../../packages/*"]
+    }
+  }
+}
+```
+
+## Type Definitions
+
+### Shared Types
+
+Import shared types from the types package:
+
+```typescript
+import type { User, Product } from '@repo/types';
+```
+
+### Database Types
+
+Use generated database types:
+
+```typescript
+import type { Database } from '@repo/types';
+
+type User = Database['public']['Tables']['users']['Row'];
+```
+
+## Best Practices
+
+### Type Safety
+
+- ✅ Use strict mode
+- ✅ Avoid `any` types
+- ✅ Use proper type imports
+- ✅ Keep types synchronized
+
+### Configuration
+
+- ✅ Extend base configs
+- ✅ Override only when necessary
+- ✅ Document custom options
+- ✅ Keep configs consistent
+
+## Related Resources
+
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/) - Official TypeScript docs
+- [ESLint Config](/packages/eslint-config) - Linting configuration
+- [Coding Standards](/developer-resources/coding-standards) - Code style guide
+
+
+

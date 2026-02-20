@@ -1,0 +1,240 @@
+---
+title: 'Platform Services: Memory Systems'
+description: 'How agent memory systems enhance user experiences across the platform'
+---
+
+# Memory Systems in Platform Services
+
+<Frame caption="Interconnected Memory Across the MNKY VERSE">
+  <img src="/images/memory-system.png" alt="Memory Systems Architecture" className="rounded-lg shadow-lg my-4" />
+</Frame>
+
+Memory systems provide the foundation for personalized experiences throughout the MNKY VERSE. These systems enable agents to retain context, learn from interactions, and deliver increasingly relevant experiences to users over time.
+
+## Core Memory Components
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+  <div className="p-6 border rounded-lg shadow-md">
+    <h3 className="text-xl font-semibold text-amber-600">User Profile Memory</h3>
+    <p className="mt-2">Persistent storage of user preferences, behavior patterns, and historical interactions that inform personalization across touchpoints.</p>
+    <ul className="mt-4 list-disc pl-5 space-y-1">
+      <li>Preference vectors</li>
+      <li>Behavioral patterns</li>
+      <li>Interaction history</li>
+      <li>Explicit feedback</li>
+    </ul>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md">
+    <h3 className="text-xl font-semibold text-blue-600">Conversational Memory</h3>
+    <p className="mt-2">Short and medium-term memory systems that maintain context during and between user conversations with agents.</p>
+    <ul className="mt-4 list-disc pl-5 space-y-1">
+      <li>Short-term context</li>
+      <li>Conversation history</li>
+      <li>Multi-session continuity</li>
+      <li>Intent tracking</li>
+    </ul>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md">
+    <h3 className="text-xl font-semibold text-green-600">Knowledge Memory</h3>
+    <p className="mt-2">Structured repositories of domain knowledge, content, and information used by agents to provide accurate and relevant responses.</p>
+    <ul className="mt-4 list-disc pl-5 space-y-1">
+      <li>Product information</li>
+      <li>Educational content</li>
+      <li>Community resources</li>
+      <li>Procedural knowledge</li>
+    </ul>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md">
+    <h3 className="text-xl font-semibold text-purple-600">Collective Memory</h3>
+    <p className="mt-2">Aggregated insights and patterns derived from broader user population that inform general improvements without compromising individual privacy.</p>
+    <ul className="mt-4 list-disc pl-5 space-y-1">
+      <li>Trend identification</li>
+      <li>Common questions</li>
+      <li>Usage patterns</li>
+      <li>Effectiveness metrics</li>
+    </ul>
+  </div>
+</div>
+
+## Platform Integration Points
+
+<CardGroup cols={2}>
+  <Card title="Web Platform" icon="globe">
+    How memory systems enhance web experiences
+    - Personalized content delivery
+    - Contextual navigation suggestions
+    - Preference-based product recommendations
+    - Continuous session handling
+  </Card>
+  <Card title="Dojo Platform" icon="graduation-cap">
+    Memory integration in learning environments
+    - Progress tracking across sessions
+    - Adaptive learning path creation
+    - Knowledge gap identification
+    - Learning style adaptation
+  </Card>
+  <Card title="E-commerce" icon="shopping-cart">
+    Memory-powered shopping experiences
+    - Purchase history integration
+    - Preference-based filtering
+    - Cart persistence
+    - Product affinity analysis
+  </Card>
+  <Card title="Community" icon="users">
+    Memory systems for community features
+    - Interest matching
+    - Content relevance scoring
+    - Connection recommendations
+    - Engagement pattern recognition
+  </Card>
+</CardGroup>
+
+## Memory Architecture
+
+<Tabs>
+  <Tab title="Storage Layer">
+    <div className="flex items-start">
+      <div className="bg-blue-100 dark:bg-blue-900 p-8 rounded-lg text-center mr-8">
+        <span className="text-5xl">🗄️</span>
+      </div>
+      <div>
+        <h4 className="text-lg font-semibold text-blue-700">Optimized for Different Memory Types</h4>
+        <p className="mb-2">The storage layer utilizes different technologies optimized for specific memory requirements:</p>
+        <ul className="list-disc pl-5">
+          <li><strong>Vector Database:</strong> For semantic search and similarity matching</li>
+          <li><strong>Graph Database:</strong> For relationship mapping and network analysis</li>
+          <li><strong>Document Store:</strong> For structured knowledge and content</li>
+          <li><strong>Time-Series Database:</strong> For sequential and temporal data</li>
+        </ul>
+      </div>
+    </div>
+  </Tab>
+  <Tab title="Processing Layer">
+    <div className="flex items-start">
+      <div className="bg-green-100 dark:bg-green-900 p-8 rounded-lg text-center mr-8">
+        <span className="text-5xl">⚙️</span>
+      </div>
+      <div>
+        <h4 className="text-lg font-semibold text-green-700">Transformation and Analysis</h4>
+        <p className="mb-2">The processing layer converts raw data into meaningful insights:</p>
+        <ul className="list-disc pl-5">
+          <li><strong>Event Processing:</strong> Real-time analysis of user actions</li>
+          <li><strong>Pattern Recognition:</strong> Identification of behavioral trends</li>
+          <li><strong>Inference Engine:</strong> Drawing conclusions from observed data</li>
+          <li><strong>Anonymization Pipeline:</strong> Privacy-preserving data processing</li>
+        </ul>
+      </div>
+    </div>
+  </Tab>
+  <Tab title="Access Layer">
+    <div className="flex items-start">
+      <div className="bg-purple-100 dark:bg-purple-900 p-8 rounded-lg text-center mr-8">
+        <span className="text-5xl">🔐</span>
+      </div>
+      <div>
+        <h4 className="text-lg font-semibold text-purple-700">Secure and Efficient Retrieval</h4>
+        <p className="mb-2">The access layer manages how memory is retrieved and used:</p>
+        <ul className="list-disc pl-5">
+          <li><strong>Context-Aware Retrieval:</strong> Pulling relevant memories based on current context</li>
+          <li><strong>Permission Management:</strong> Enforcing privacy and access controls</li>
+          <li><strong>Caching System:</strong> Optimizing performance for frequently accessed memories</li>
+          <li><strong>Query Optimization:</strong> Ensuring efficient memory retrieval</li>
+        </ul>
+      </div>
+    </div>
+  </Tab>
+</Tabs>
+
+## Memory System Capabilities
+
+<AccordionGroup>
+  <Accordion title="Personalization Engine">
+    How memory systems drive personalization
+    - Preference learning from explicit and implicit signals
+    - Personalization vector creation and maintenance
+    - Cross-platform preference synchronization
+    - Adaptive experience delivery based on historical context
+  </Accordion>
+  <Accordion title="Contextual Awareness">
+    Maintaining context across interactions
+    - Session state persistence
+    - Cross-session continuity
+    - Multi-channel context integration
+    - Intent and goal tracking
+  </Accordion>
+  <Accordion title="Learning Systems">
+    How memory systems improve over time
+    - Feedback incorporation mechanisms
+    - Performance monitoring and optimization
+    - Pattern identification and recognition
+    - Continuous model improvement
+  </Accordion>
+  <Accordion title="Privacy Framework">
+    Protecting user privacy in memory systems
+    - Consent management integration
+    - Data minimization principles
+    - Anonymization and aggregation techniques
+    - Retention policies and user controls
+  </Accordion>
+</AccordionGroup>
+
+## Implementation Considerations
+
+<div className="p-6 bg-amber-50 dark:bg-amber-900/30 rounded-lg my-8">
+  <h3 className="text-xl font-semibold text-amber-800 dark:text-amber-300">Implementation Guidelines</h3>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+    <div>
+      <h4 className="font-medium text-amber-700 dark:text-amber-400">Technical Considerations</h4>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>Memory persistence strategy</li>
+        <li>Synchronization mechanisms</li>
+        <li>Failover and redundancy</li>
+        <li>Performance optimization</li>
+      </ul>
+    </div>
+    <div>
+      <h4 className="font-medium text-amber-700 dark:text-amber-400">User Experience Considerations</h4>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>Transparency about memory usage</li>
+        <li>User control mechanisms</li>
+        <li>Feedback loops for correction</li>
+        <li>Progressive personalization</li>
+      </ul>
+    </div>
+    <div>
+      <h4 className="font-medium text-amber-700 dark:text-amber-400">Privacy Considerations</h4>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>Consent management</li>
+        <li>Data minimization</li>
+        <li>Retention policies</li>
+        <li>Right to be forgotten</li>
+      </ul>
+    </div>
+    <div>
+      <h4 className="font-medium text-amber-700 dark:text-amber-400">Integration Considerations</h4>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        <li>API design for memory access</li>
+        <li>Event-driven architecture</li>
+        <li>Cross-service consistency</li>
+        <li>Versioning strategy</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+## Related Documentation
+
+For more detailed information about memory systems, please refer to:
+
+<CardGroup cols={3}>
+  <Card title="Agent Memory" icon="brain" href="/agents/memory-systems">
+    Complete memory system documentation
+  </Card>
+  <Card title="User Profiling" icon="user-gear" href="/data-platform/user-profiling">
+    How user profiles are built and maintained
+  </Card>
+  <Card title="Privacy Framework" icon="shield-check" href="/platform-services/privacy-framework">
+    Privacy protections in the MNKY VERSE
+  </Card>
+</CardGroup>

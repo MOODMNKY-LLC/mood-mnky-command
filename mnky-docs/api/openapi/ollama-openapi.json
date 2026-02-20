@@ -1,0 +1,1126 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "Ollama API",
+      "version": "1.0.0",
+      "description": "This API supports generating completions, chat completions, model creation, management, embedding generation and more. It follows conventions such as model names in a 'model:tag' format and durations returned in nanoseconds. Streaming responses are used on many endpoints unless explicitly disabled."
+    },
+    "servers": [
+      {
+        "url": "http://localhost:11434",
+        "description": "Local Ollama server"
+      }
+    ],
+    "paths": {
+      "/api/generate": {
+        "post": {
+          "summary": "Generate a completion",
+          "description": "Generates a response for a given prompt using a specified model. Supports streaming responses and advanced options.",
+          "requestBody": {
+            "description": "Request to generate a completion.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful generation response (streaming or single response based on the 'stream' parameter).",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GenerateResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/chat": {
+        "post": {
+          "summary": "Generate a chat completion",
+          "description": "Generates the next chat message given a conversation history. Can stream responses and support structured outputs.",
+          "requestBody": {
+            "description": "Chat completion request containing model, messages and optional tools, options and formatting parameters.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful chat completion response (streaming or single response based on the 'stream' parameter).",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ChatResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/create": {
+        "post": {
+          "summary": "Create a Model",
+          "description": "Creates a new model. A model may be built from an existing model, a safetensors directory, or a GGUF file. The request body includes files and optional adapter information.",
+          "requestBody": {
+            "description": "Model creation request",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Streaming status messages during model creation.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StatusResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/blobs/{digest}": {
+        "head": {
+          "summary": "Check if a Blob Exists",
+          "description": "Verifies if a blob (Binary Large Object) with the provided SHA256 digest exists on the server.",
+          "parameters": [
+            {
+              "name": "digest",
+              "in": "path",
+              "description": "The SHA256 digest of the blob, e.g. sha256:XXXXXXXXXX...",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Blob exists"
+            },
+            "404": {
+              "description": "Blob not found"
+            }
+          }
+        },
+        "post": {
+          "summary": "Push a Blob",
+          "description": "Uploads a file as a blob to the server. The URL parameter should match the expected SHA256 digest.",
+          "parameters": [
+            {
+              "name": "digest",
+              "in": "path",
+              "description": "The expected SHA256 digest of the file",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Binary file data",
+            "required": true,
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Blob successfully created"
+            },
+            "400": {
+              "description": "Bad Request - Digest does not match expected"
+            }
+          }
+        }
+      },
+      "/api/tags": {
+        "get": {
+          "summary": "List Local Models",
+          "description": "Returns a list of models available locally on the server.",
+          "responses": {
+            "200": {
+              "description": "List of local models.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LocalModelsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/show": {
+        "post": {
+          "summary": "Show Model Information",
+          "description": "Displays detailed information about a model including its modelfile, parameters, and capabilities.",
+          "requestBody": {
+            "description": "Request to show model information",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Detailed model information",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ShowModelResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/copy": {
+        "post": {
+          "summary": "Copy a Model",
+          "description": "Copies an existing model into a new model with a different name.",
+          "requestBody": {
+            "description": "Request to copy a model",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopyModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Model copied successfully.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StatusResponse"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Source model not found."
+            }
+          }
+        }
+      },
+      "/api/delete": {
+        "delete": {
+          "summary": "Delete a Model",
+          "description": "Deletes the specified model and its associated data.",
+          "requestBody": {
+            "description": "Model deletion request",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Model deleted successfully.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StatusResponse"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Model not found."
+            }
+          }
+        }
+      },
+      "/api/pull": {
+        "post": {
+          "summary": "Pull a Model",
+          "description": "Downloads a model from the Ollama library. Supports resuming and progress streaming.",
+          "requestBody": {
+            "description": "Model pull request",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Pull progress or success status.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StatusResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/push": {
+        "post": {
+          "summary": "Push a Model",
+          "description": "Uploads a model to a model library. Supports streaming progress status.",
+          "requestBody": {
+            "description": "Model push request",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushModelRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Push progress or success status.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StatusResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/embed": {
+        "post": {
+          "summary": "Generate Embeddings",
+          "description": "Generates embeddings from the model for a given input. (This endpoint supersedes /api/embeddings.)",
+          "requestBody": {
+            "description": "Embedding request with text input (or array of text).",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbedRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Embedding results.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmbedResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/embeddings": {
+        "post": {
+          "summary": "Generate Embedding (Legacy)",
+          "description": "Generates embeddings from the model for a provided prompt. This endpoint is superseded by /api/embed.",
+          "requestBody": {
+            "description": "Legacy embedding request",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbedLegacyRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Legacy embedding result.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmbedLegacyResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/ps": {
+        "get": {
+          "summary": "List Running Models",
+          "description": "Lists models currently loaded in memory along with details such as size and expiration time.",
+          "responses": {
+            "200": {
+              "description": "List of currently running models.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/RunningModelsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/version": {
+        "get": {
+          "summary": "API Version",
+          "description": "Retrieves the current version of the Ollama server.",
+          "responses": {
+            "200": {
+              "description": "Version information",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/VersionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "GenerateRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "The model name (format: model:tag)."
+            },
+            "prompt": {
+              "type": "string",
+              "description": "The prompt to generate a response for."
+            },
+            "suffix": {
+              "type": "string",
+              "description": "Text to be appended after the model response."
+            },
+            "images": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Base64-encoded image string."
+              },
+              "description": "For multimodal models (e.g. llava)."
+            },
+            "format": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "json"
+                  ],
+                  "description": "Output format type."
+                },
+                {
+                  "type": "object",
+                  "description": "A JSON Schema to structure the output."
+                }
+              ],
+              "description": "Specify output format or schema for structured outputs."
+            },
+            "options": {
+              "type": "object",
+              "description": "Additional model parameters (e.g. temperature, seed, etc.)."
+            },
+            "system": {
+              "type": "string",
+              "description": "Overrides the system message defined in the model configuration."
+            },
+            "template": {
+              "type": "string",
+              "description": "Overrides the prompt template defined in the model configuration."
+            },
+            "stream": {
+              "type": "boolean",
+              "default": true,
+              "description": "If false, the response is returned as a single JSON object."
+            },
+            "raw": {
+              "type": "boolean",
+              "default": false,
+              "description": "If true, disables prompt templating."
+            },
+            "keep_alive": {
+              "type": "string",
+              "default": "5m",
+              "description": "Controls how long the model stays loaded after the request."
+            },
+            "context": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Deprecated. Provides context from previous interactions."
+            }
+          },
+          "required": [
+            "model",
+            "prompt"
+          ]
+        },
+        "GenerateResponse": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "The model used for generation."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the response was generated."
+            },
+            "response": {
+              "type": "string",
+              "description": "The generated text response."
+            },
+            "done": {
+              "type": "boolean",
+              "description": "Indicates if this is the final message."
+            },
+            "context": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Deprecated. Context tokens for continued generation."
+            },
+            "total_duration": {
+              "type": "integer",
+              "description": "Time in nanoseconds for the entire operation."
+            },
+            "load_duration": {
+              "type": "integer",
+              "description": "Time in nanoseconds spent loading the model."
+            },
+            "prompt_eval_count": {
+              "type": "integer",
+              "description": "Number of tokens in the prompt."
+            },
+            "prompt_eval_duration": {
+              "type": "integer",
+              "description": "Time in nanoseconds spent processing the prompt."
+            },
+            "eval_count": {
+              "type": "integer",
+              "description": "Number of tokens generated."
+            },
+            "eval_duration": {
+              "type": "integer",
+              "description": "Time in nanoseconds spent generating tokens."
+            },
+            "done_reason": {
+              "type": "string",
+              "description": "Optional reason for completion (e.g. 'stop', 'unload')."
+            }
+          }
+        },
+        "Message": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "string",
+              "enum": [
+                "system",
+                "user",
+                "assistant",
+                "tool"
+              ],
+              "description": "The role of the message sender"
+            },
+            "content": {
+              "type": "string",
+              "description": "The content of the message"
+            },
+            "images": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              },
+              "description": "Optional list of base64-encoded images for multimodal messages."
+            },
+            "tool_calls": {
+              "type": ["array", "null"],
+              "items": {
+                "$ref": "#/components/schemas/ToolCall"
+              },
+              "description": "Optional list of tool calls that the model requests."
+            }
+          },
+          "required": [
+            "role",
+            "content"
+          ]
+        },
+        "Tool": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "function": {
+              "$ref": "#/components/schemas/FunctionDefinition"
+            }
+          },
+          "required": [
+            "type",
+            "function"
+          ]
+        },
+        "FunctionDefinition": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "parameters": {
+              "type": "object",
+              "description": "JSON Schema definition for the function parameters."
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "parameters"
+          ]
+        },
+        "ToolCall": {
+          "type": "object",
+          "properties": {
+            "function": {
+              "$ref": "#/components/schemas/FunctionCall"
+            }
+          },
+          "required": [
+            "function"
+          ]
+        },
+        "FunctionCall": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "arguments": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "arguments"
+          ]
+        },
+        "ChatRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "messages": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Message"
+              },
+              "description": "The conversation history."
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Tool"
+              },
+              "description": "Optional list of tools for the model to use."
+            },
+            "format": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "json"
+                  ]
+                },
+                {
+                  "type": "object"
+                }
+              ],
+              "description": "Output format type or JSON schema for structured output."
+            },
+            "options": {
+              "type": "object",
+              "description": "Additional model parameters."
+            },
+            "stream": {
+              "type": "boolean",
+              "default": true
+            },
+            "keep_alive": {
+              "type": "string",
+              "default": "5m"
+            }
+          },
+          "required": [
+            "model",
+            "messages"
+          ]
+        },
+        "ChatResponse": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "message": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "done": {
+              "type": "boolean"
+            },
+            "total_duration": {
+              "type": "integer"
+            },
+            "load_duration": {
+              "type": "integer"
+            },
+            "prompt_eval_count": {
+              "type": "integer"
+            },
+            "prompt_eval_duration": {
+              "type": "integer"
+            },
+            "eval_count": {
+              "type": "integer"
+            },
+            "eval_duration": {
+              "type": "integer"
+            },
+            "done_reason": {
+              "type": "string"
+            }
+          }
+        },
+        "CreateModelRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Name of the model to create."
+            },
+            "from": {
+              "type": "string",
+              "description": "An existing model to create the new model from."
+            },
+            "files": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Dictionary mapping file names to their SHA256 digests."
+            },
+            "adapters": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Dictionary for LORA adapter files."
+            },
+            "template": {
+              "type": "string",
+              "description": "Prompt template for the new model."
+            },
+            "license": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "description": "License or list of licenses for the model."
+            },
+            "system": {
+              "type": "string",
+              "description": "System prompt for the model."
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Parameters for the model (see Modelfile documentation)."
+            },
+            "messages": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Message"
+              },
+              "description": "Optional conversation messages for initializing the model."
+            },
+            "stream": {
+              "type": "boolean",
+              "default": true,
+              "description": "If false, returns a single final response rather than streaming status messages."
+            },
+            "quantize": {
+              "type": "string",
+              "description": "Quantization type if quantizing a non-quantized model."
+            }
+          },
+          "required": [
+            "model"
+          ]
+        },
+        "StatusResponse": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "Status message (e.g. 'success', 'writing manifest', etc.)."
+            }
+          }
+        },
+        "ShowModelRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Name of the model to show."
+            },
+            "verbose": {
+              "type": "boolean",
+              "default": false,
+              "description": "If true, returns verbose model details."
+            }
+          },
+          "required": [
+            "model"
+          ]
+        },
+        "ShowModelResponse": {
+          "type": "object",
+          "properties": {
+            "modelfile": {
+              "type": "string",
+              "description": "The model file details."
+            },
+            "parameters": {
+              "type": "string",
+              "description": "The parameter settings for the model."
+            },
+            "template": {
+              "type": "string"
+            },
+            "details": {
+              "type": "object",
+              "description": "Additional details such as parent_model, format, family, and quantization information."
+            },
+            "model_info": {
+              "type": "object",
+              "description": "Technical model information (architecture, parameter count, etc.)."
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of model capabilities (e.g. completion, vision)."
+            }
+          }
+        },
+        "CopyModelRequest": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "The existing model to copy."
+            },
+            "destination": {
+              "type": "string",
+              "description": "The new model name."
+            }
+          },
+          "required": [
+            "source",
+            "destination"
+          ]
+        },
+        "DeleteModelRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "The name of the model to delete."
+            }
+          },
+          "required": [
+            "model"
+          ]
+        },
+        "PullModelRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "insecure": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow insecure connections (for development use)."
+            },
+            "stream": {
+              "type": "boolean",
+              "default": true,
+              "description": "If false, returns a single response rather than streaming progress messages."
+            }
+          },
+          "required": [
+            "model"
+          ]
+        },
+        "PushModelRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Name of the model to push in <namespace>/<model>:<tag> format."
+            },
+            "insecure": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow insecure connections (for development use)."
+            },
+            "stream": {
+              "type": "boolean",
+              "default": true,
+              "description": "If false, returns a single response rather than streaming progress messages."
+            }
+          },
+          "required": [
+            "model"
+          ]
+        },
+        "EmbedRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "input": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "description": "A single text input or an array of text inputs."
+            },
+            "truncate": {
+              "type": "boolean",
+              "default": true,
+              "description": "Truncate inputs to fit within context length if needed."
+            },
+            "options": {
+              "type": "object",
+              "description": "Additional parameters (e.g. temperature)."
+            },
+            "keep_alive": {
+              "type": "string",
+              "default": "5m",
+              "description": "Duration for which the model is kept loaded."
+            }
+          },
+          "required": [
+            "model",
+            "input"
+          ]
+        },
+        "EmbedResponse": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "embeddings": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "total_duration": {
+              "type": "integer"
+            },
+            "load_duration": {
+              "type": "integer"
+            },
+            "prompt_eval_count": {
+              "type": "integer"
+            }
+          }
+        },
+        "EmbedLegacyRequest": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string",
+              "description": "Text to generate embeddings for."
+            },
+            "options": {
+              "type": "object"
+            },
+            "keep_alive": {
+              "type": "string",
+              "default": "5m"
+            }
+          },
+          "required": [
+            "model",
+            "prompt"
+          ]
+        },
+        "EmbedLegacyResponse": {
+          "type": "object",
+          "properties": {
+            "embedding": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "RunningModelsResponse": {
+          "type": "object",
+          "properties": {
+            "models": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/RunningModel"
+              }
+            }
+          }
+        },
+        "RunningModel": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "size": {
+              "type": "integer"
+            },
+            "digest": {
+              "type": "string"
+            },
+            "details": {
+              "$ref": "#/components/schemas/ModelDetails"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "size_vram": {
+              "type": "integer"
+            }
+          }
+        },
+        "ModelDetails": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "string"
+            },
+            "family": {
+              "type": "string"
+            },
+            "families": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "parameter_size": {
+              "type": "string"
+            },
+            "quantization_level": {
+              "type": "string"
+            }
+          }
+        },
+        "VersionResponse": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+  

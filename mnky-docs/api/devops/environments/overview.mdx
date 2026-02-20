@@ -1,0 +1,153 @@
+# API Environments
+
+This guide provides information about the different environments available for MOOD MNKY API services and how to use them effectively.
+
+## Available Environments
+
+### Development Environment
+
+Local development environment for testing and development:
+
+| Service    | Local URL                  | Default Port |
+|------------|---------------------------|--------------|
+| Ollama     | http://localhost:11434    | 11434       |
+| Flowise    | http://localhost:3000     | 3000        |
+| Langchain  | http://localhost:8000     | 8000        |
+| n8n        | http://localhost:5678     | 5678        |
+
+### Production Environment
+
+Production servers for live applications:
+
+| Service    | Production URL                           |
+|------------|----------------------------------------|
+| Ollama     | https://ollama.moodmnky.com            |
+| Flowise    | https://flowise.moodmnky.com           |
+| Langchain  | https://langchain.moodmnky.com         |
+| n8n        | https://mnky-mind-n8n.moodmnky.com     |
+
+## Environment Configuration
+
+### API Keys
+
+Different API keys are required for each environment:
+
+1. **Development Keys**
+   - Prefix: `dev_`
+   - Rate limits: 100 requests/hour
+   - For local testing only
+
+2. **Production Keys**
+   - Prefix: `prod_`
+   - Rate limits: Based on subscription tier
+   - Required for production access
+
+### Environment Variables
+
+Example environment configuration:
+
+```bash
+# Development
+OLLAMA_API_URL=http://localhost:11434
+FLOWISE_API_URL=http://localhost:3000
+LANGCHAIN_API_URL=http://localhost:8000
+N8N_API_URL=http://localhost:5678
+
+# Production
+OLLAMA_API_URL=https://ollama.moodmnky.com
+FLOWISE_API_URL=https://flowise.moodmnky.com
+LANGCHAIN_API_URL=https://langchain.moodmnky.com
+N8N_API_URL=https://mnky-mind-n8n.moodmnky.com
+```
+
+## Environment-Specific Features
+
+### Development Environment
+
+- Full access to all API endpoints
+- Unlimited model management
+- Debug logging enabled
+- No rate limiting between services
+- Mock data available
+- Webhook testing tools
+
+### Production Environment
+
+- Rate limiting enforced
+- Authentication required
+- SSL/TLS encryption
+- Monitoring and analytics
+- High availability
+- Automatic scaling
+- Data persistence
+- Regular backups
+
+## Testing in Different Environments
+
+### Using the API Playground
+
+1. Select the environment from the server dropdown
+2. Use appropriate API key for the environment
+3. Test endpoints with environment-specific data
+
+### Using SDK
+
+```typescript
+import { MoodMnkyClient } from '@moodmnky/sdk';
+
+// Development
+const devClient = new MoodMnkyClient({
+  environment: 'development',
+  apiKey: 'dev_your_api_key'
+});
+
+// Production
+const prodClient = new MoodMnkyClient({
+  environment: 'production',
+  apiKey: 'prod_your_api_key'
+});
+```
+
+### Using cURL
+
+```bash
+# Development
+curl -X POST "http://localhost:11434/api/generate" \
+  -H "x-api-key: dev_your_api_key" \
+  -d '{"prompt": "Hello, world!"}'
+
+# Production
+curl -X POST "https://ollama.moodmnky.com/api/generate" \
+  -H "x-api-key: prod_your_api_key" \
+  -d '{"prompt": "Hello, world!"}'
+```
+
+## Best Practices
+
+1. **Environment Separation**
+   - Use different API keys for each environment
+   - Never use production keys in development
+   - Keep environment configurations separate
+
+2. **Testing**
+   - Test thoroughly in development before production
+   - Use environment-specific test data
+   - Validate environment-specific features
+
+3. **Security**
+   - Secure API keys for each environment
+   - Use environment-specific security measures
+   - Monitor access patterns in each environment
+
+4. **Debugging**
+   - Use detailed logging in development
+   - Monitor rate limits in production
+   - Track environment-specific metrics
+
+## Support & Resources
+
+- [Local Setup Guide](/api/devops/environments/local-setup)
+- [Production Guide](/api/devops/environments/production)
+- [API Status](https://status.moodmnky.com)
+- [Developer Portal](https://developers.moodmnky.com)
+- [Support](mailto:support@moodmnky.com) 

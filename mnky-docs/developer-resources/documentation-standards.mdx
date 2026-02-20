@@ -1,0 +1,343 @@
+---
+title: 'Documentation Standards'
+description: 'Standards for maintaining and updating documentation in the MOOD MNKY ecosystem'
+---
+
+# Documentation Standards
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/documentation-standards.svg"
+  alt="Documentation Standards"
+/>
+
+## Overview
+
+This document defines the standards for maintaining and updating documentation in the MOOD MNKY ecosystem. Following these standards ensures that documentation remains up-to-date, comprehensive, and aligned with code changes.
+
+<Note>
+  Documentation should be treated as a first-class citizen in the development process. Code changes are not complete until the corresponding documentation is updated.
+</Note>
+
+## Documentation Change Process
+
+### When to Update Documentation
+
+Documentation should be updated in the following scenarios:
+
+<CardGroup cols={2}>
+  <Card title="New Features" icon="plus-circle">
+    When adding new functionality, components, or services to the system.
+  </Card>
+  <Card title="Changes to Existing Features" icon="edit">
+    When modifying existing functionality, APIs, or interfaces.
+  </Card>
+  <Card title="Deprecations or Removals" icon="trash-alt">
+    When deprecating or removing features, APIs, or components.
+  </Card>
+  <Card title="Best Practices Updates" icon="star">
+    When recommended approaches or best practices change.
+  </Card>
+  <Card title="Bug Fixes" icon="bug">
+    When fixing bugs that affect documented behavior.
+  </Card>
+  <Card title="Infrastructure Changes" icon="server">
+    When changing how systems are deployed, configured, or operated.
+  </Card>
+</CardGroup>
+
+### Documentation Change Checklist
+
+<Steps>
+  <Step title="Identify Affected Documentation">
+    Determine which documentation files need to be updated based on the code changes:
+    - README files in affected directories
+    - API documentation
+    - Developer guides
+    - End-user documentation
+    - Architecture documentation
+  </Step>
+  
+  <Step title="Update Documentation Files">
+    Make necessary changes to documentation:
+    - Update technical details to match new implementation
+    - Revise examples to reflect current API or behavior
+    - Add new sections for new features
+    - Mark deprecated features appropriately
+    - Update screenshots or diagrams if UI/UX changes
+  </Step>
+  
+  <Step title="Add Changelog Entries">
+    Document the changes in appropriate changelog files:
+    - Add entries to the root CHANGELOG.md for significant changes
+    - Update component-specific changelog sections in README files
+    - Follow the standard format: [date] title, then Added/Changed/Deprecated/Removed sections
+  </Step>
+  
+  <Step title="Update DOCUMENTATION-AUDIT.md">
+    If creating new documentation files or significantly changing structure:
+    - Update the DOCUMENTATION-AUDIT.md file with the new files
+    - Mark completed documentation with checkmarks
+    - Note any documentation that still needs work
+  </Step>
+  
+  <Step title="Review Documentation Changes">
+    Before submitting your PR:
+    - Verify technical accuracy
+    - Check for consistent terminology
+    - Ensure proper formatting
+    - Test any included code examples
+    - Validate links to other documentation
+  </Step>
+</Steps>
+
+## Changelog Standards
+
+### Changelog Location
+
+<CardGroup cols={3}>
+  <Card title="Root Changelog" icon="file-alt">
+    `CHANGELOG.md` in the repository root for project-wide changes
+  </Card>
+  <Card title="Component Changelogs" icon="puzzle-piece">
+    Changelog section in component README files
+  </Card>
+  <Card title="Package Changelogs" icon="box">
+    Changelog section in package README files
+  </Card>
+</CardGroup>
+
+### Changelog Format
+
+Changelogs should follow this format:
+
+```markdown
+## Changelog
+
+### [YYYY-MM-DD] Title of Change or Release
+
+#### Added
+- New features or capabilities added
+
+#### Changed
+- Modifications to existing functionality
+
+#### Deprecated
+- Features that are still available but planned for removal
+
+#### Removed
+- Features or capabilities that have been removed
+
+#### Fixed
+- Bug fixes
+
+### [Previous Date] Previous Change
+...
+```
+
+<Warning>
+  Always include a date with each changelog entry to help track when changes were made.
+</Warning>
+
+### Example Changelog Entry
+
+```markdown
+### [2024-04-05] Supabase Restructuring
+
+#### Added
+- Initial `/infra/supabase` directory structure
+- Shared client package in `/packages/supabase-client`
+- Database schema definitions in `/data/schemas`
+- Local development setup script
+
+#### Changed
+- Relocated Supabase configuration from root `/supabase` to `/infra/supabase`
+- Created clear separation between infrastructure and data components
+- Updated client implementation to use TypeScript types
+
+#### Deprecated
+- Root `/supabase` directory - will be removed in a future update
+```
+
+## README Standards
+
+### README File Locations
+
+Every significant directory in the codebase should have a README.md file that explains:
+
+<CardGroup cols={2}>
+  <Card title="Purpose" icon="bullseye">
+    What the directory contains and why it exists
+  </Card>
+  <Card title="Structure" icon="sitemap">
+    The organization of files and subdirectories
+  </Card>
+  <Card title="Usage" icon="hands">
+    How to use the components or services
+  </Card>
+  <Card title="Configuration" icon="sliders-h">
+    How to configure the components (if applicable)
+  </Card>
+  <Card title="Dependencies" icon="link">
+    Relationships with other parts of the system
+  </Card>
+  <Card title="Changelog" icon="history">
+    History of significant changes
+  </Card>
+</CardGroup>
+
+### README Structure Template
+
+```markdown
+# Component Name
+
+Brief description of the component's purpose and function.
+
+## Directory Structure
+
+```
+directory/
+├── subdirectory1/       # Description of subdirectory1
+├── subdirectory2/       # Description of subdirectory2
+├── file1.ext            # Description of file1
+└── file2.ext            # Description of file2
+```
+
+## Purpose
+
+Detailed explanation of what this component does and why it exists.
+
+## Usage
+
+Instructions for how to use this component, with examples.
+
+```typescript
+// Example code
+import { someFunction } from './path/to/component';
+
+const result = someFunction();
+```
+
+## Configuration
+
+Explanation of configuration options, environment variables, etc.
+
+## Dependencies
+
+List of dependencies and relationships with other components.
+
+## Changelog
+
+### [YYYY-MM-DD] Change Title
+
+#### Added
+- New features
+
+#### Changed
+- Modified features
+
+... etc.
+```
+
+## Documentation Audit
+
+The `DOCUMENTATION-AUDIT.md` file serves as a central registry of all documentation in the system. It helps track documentation completeness and identify areas needing improvement.
+
+### Audit File Format
+
+```markdown
+# Documentation Audit
+
+## Overview
+This document provides an audit of the current documentation site structure, identifying missing files and inconsistencies.
+
+## Audit Date: YYYY-MM-DD (Updated)
+
+## Status
+
+✅ **All referenced documentation pages now exist as at least placeholder files.**
+Or
+❌ **Some documentation pages are missing or incomplete.**
+
+## Recent Updates (YYYY-MM-DD)
+
+### Feature or Section Name
+- ✅ Updated `path/to/doc.mdx` with changes
+- ✅ Created `path/to/new-doc.mdx` as a new guide
+- ❌ Need to update `path/to/outdated-doc.mdx`
+
+## Navigation Structure
+
+### Section Name
+- ✅ docs/section/file1.md - Exists
+- ✅ docs/section/file2.md - Exists (placeholder)
+- ❌ docs/section/file3.md - Missing
+
+## Recommendations
+
+### Next Steps
+1. Prioritized list of documentation work
+```
+
+<Note>
+  The Documentation Audit should be updated whenever significant documentation changes are made or when new documentation needs are identified.
+</Note>
+
+## Documentation Review Process
+
+<Steps>
+  <Step title="Self-Review">
+    Before submitting documentation changes:
+    - Check for technical accuracy
+    - Verify code examples work
+    - Check for grammar and spelling
+    - Ensure consistent formatting
+  </Step>
+  
+  <Step title="Technical Review">
+    Have a technical expert review the documentation for:
+    - Correctness of technical information
+    - Completeness of coverage
+    - Clarity of explanations
+    - Accuracy of examples
+  </Step>
+  
+  <Step title="Documentation Review">
+    Have a documentation expert review for:
+    - Adherence to documentation standards
+    - Consistency with existing documentation
+    - Writing quality and clarity
+    - Proper use of documentation components
+  </Step>
+  
+  <Step title="Approval and Publishing">
+    Once reviews are complete:
+    - Address any feedback
+    - Get final approval
+    - Merge documentation changes
+    - Update the Documentation Audit
+  </Step>
+</Steps>
+
+## Tools and Documentation Guidelines
+
+For detailed information on writing documentation, using Mintlify components, and documentation best practices, refer to:
+
+<CardGroup cols={2}>
+  <Card title="Documentation Guide" icon="book" href="/developer-resources/documentation-guide">
+    Comprehensive guide to writing documentation
+  </Card>
+  <Card title="Style Guide" icon="palette" href="/brand-overview/design-guidelines">
+    Brand styling guidelines for documentation
+  </Card>
+  <Card title="Component Library" icon="cubes" href="/developer-resources/component-library">
+    UI components for documentation
+  </Card>
+  <Card title="API Documentation" icon="code" href="/developer-resources/api-documentation">
+    Standards for API documentation
+  </Card>
+</CardGroup>
+
+---
+
+This standards document is maintained by the Documentation Team. Last updated: April 2025.

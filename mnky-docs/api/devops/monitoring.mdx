@@ -1,0 +1,330 @@
+---
+title: 'Platform Monitoring & Observability'
+description: 'Comprehensive monitoring and observability for the MOOD MNKY API services'
+---
+
+# Platform Monitoring & Observability
+
+This documentation provides a comprehensive guide to monitoring and observability across all MOOD MNKY API services, helping you ensure optimal performance, troubleshoot issues, and maintain service health.
+
+## Monitoring Overview
+
+The MOOD MNKY platform implements a multi-layered monitoring approach covering all key services:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 Centralized Monitoring                  │
+│                                                         │
+│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐  │
+│  │ Metrics │   │  Logs   │   │ Traces  │   │ Alerts  │  │
+│  └─────────┘   └─────────┘   └─────────┘   └─────────┘  │
+└─────────────────────────────────────────────────────────┘
+               ▲           ▲           ▲           ▲
+               │           │           │           │
+┌──────────────┴───┐ ┌─────┴──────────┐ ┌─────────┴────────┐ ┌──────────┴─────────┐
+│   Ollama Service  │ │ Flowise Service │ │ Langchain Service │ │    n8n Service    │
+└──────────────────┘ └────────────────┘ └──────────────────┘ └────────────────────┘
+```
+
+## Monitoring Dashboards
+
+### Accessing Monitoring Dashboards
+
+- **Production Environment**: [https://monitor.moodmnky.com](https://monitor.moodmnky.com)
+- **Development Environment**: [http://localhost:3030](http://localhost:3030)
+
+Authentication is required using your MOOD MNKY developer credentials.
+
+### Available Dashboards
+
+| Dashboard | Description | URL Path |
+|-----------|-------------|----------|
+| Service Overview | High-level status of all services | `/overview` |
+| Ollama Metrics | Detailed metrics for Ollama service | `/service/ollama` |
+| Flowise Metrics | Detailed metrics for Flowise service | `/service/flowise` |
+| Langchain Metrics | Detailed metrics for Langchain service | `/service/langchain` |
+| n8n Metrics | Detailed metrics for n8n service | `/service/n8n` |
+| API Performance | API latency and throughput metrics | `/api/performance` |
+| Error Tracking | Error rates and details across services | `/errors` |
+| Resource Usage | CPU, memory, and disk usage metrics | `/resources` |
+
+## Key Metrics
+
+### Service Health Metrics
+
+| Metric | Description | Critical Threshold |
+|--------|-------------|-------------------|
+| Service Uptime | Percentage of time service is available | < 99.9% |
+| Error Rate | Percentage of requests resulting in errors | > 1% |
+| Response Time | Average time to respond to requests | > 500ms |
+| Request Rate | Number of requests per minute | Varies by service |
+| Success Rate | Percentage of successful responses | < 99% |
+
+### Resource Utilization Metrics
+
+| Metric | Description | Warning Threshold |
+|--------|-------------|-------------------|
+| CPU Usage | Percentage of CPU resources used | > 80% |
+| Memory Usage | Amount of RAM consumed | > 85% capacity |
+| Disk Usage | Storage space utilized | > 80% capacity |
+| Network I/O | Data transferred over network | > 80% capacity |
+| Database Connections | Number of active database connections | > 80% of max |
+
+### Service-Specific Metrics
+
+#### Ollama Service
+
+- Model loading time
+- Inference latency
+- Token generation rate
+- Cache hit ratio
+- Concurrent requests
+
+#### Flowise Service
+
+- Workflow execution time
+- Node processing time
+- Queue length
+- Memory consumption per workflow
+- Error rates by node type
+
+#### Langchain Service
+
+- Document processing time
+- Embedding generation rate
+- Vector search latency
+- Retrieval accuracy
+- Memory usage by collection
+
+#### n8n Service
+
+- Workflow execution time
+- Queue length
+- Node execution metrics
+- External service latency
+- Error rates by workflow
+
+## Logging System
+
+### Log Collection
+
+All services implement structured logging with the following components:
+
+- **Log Format**: JSON structured logs
+- **Log Levels**: ERROR, WARN, INFO, DEBUG, TRACE
+- **Contextual Information**: Request ID, service name, timestamp, user ID (when available)
+- **Centralized Storage**: Logs are aggregated in a centralized logging system
+
+### Accessing Logs
+
+#### Centralized Logging UI
+
+Access logs through the centralized logging interface:
+
+- **Production**: [https://logs.moodmnky.com](https://logs.moodmnky.com)
+- **Development**: [http://localhost:5601](http://localhost:5601)
+
+#### Service-Specific Logs
+
+For direct access to service logs in development:
+
+```bash
+# Ollama logs
+docker logs ollama-service
+
+# Flowise logs
+tail -f ./flowise/logs/app.log
+
+# Langchain logs
+tail -f ./langchain/logs/server.log
+
+# n8n logs
+tail -f ~/.n8n/logs/n8n.log
+```
+
+### Log Querying
+
+Example query to search for error logs across all services:
+
+```
+level:ERROR AND timestamp:[now-1h TO now]
+```
+
+Example query to find logs related to a specific request:
+
+```
+requestId:"req_12345abcde" 
+```
+
+## Tracing System
+
+The platform implements distributed tracing to monitor request flow across services:
+
+### Trace Components
+
+- **Trace ID**: Unique identifier for each request flow
+- **Spans**: Individual operations within a trace
+- **Span Attributes**: Context data for each span
+- **Service Map**: Visual representation of service dependencies
+
+### Accessing Traces
+
+Traces can be accessed through the tracing UI:
+
+- **Production**: [https://traces.moodmnky.com](https://traces.moodmnky.com)
+- **Development**: [http://localhost:16686](http://localhost:16686)
+
+## Alerting System
+
+### Alert Configuration
+
+The platform has preconfigured alerts for critical conditions:
+
+| Alert | Condition | Severity | Notification |
+|-------|-----------|----------|-------------|
+| Service Down | Service unreachable for >1 minute | Critical | Email, SMS, Slack |
+| High Error Rate | Error rate >5% for 5 minutes | Critical | Email, Slack |
+| API Latency | Response time >1s for 5 minutes | Warning | Email, Slack |
+| Resource Saturation | CPU/Memory >90% for 10 minutes | Warning | Email, Slack |
+| Disk Space Low | Disk usage >90% | Warning | Email, Slack |
+
+### Alert Notifications
+
+Alerts are delivered through multiple channels:
+
+- **Email**: Sent to registered developer and operations emails
+- **Slack**: Posted to the #service-alerts channel
+- **SMS**: Sent to on-call personnel for critical alerts
+- **Dashboard**: Visible on monitoring dashboards
+
+## Monitoring API
+
+You can access monitoring data programmatically through the Monitoring API:
+
+```typescript
+import axios from 'axios';
+
+// Configuration
+const baseUrl = 'https://api.moodmnky.com/monitoring';
+const apiKey = 'your_api_key';
+
+// Get service health status
+async function getServiceHealth(serviceName: string) {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/services/${serviceName}/health`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error retrieving service health:', error);
+    throw error;
+  }
+}
+
+// Get recent errors for a service
+async function getServiceErrors(serviceName: string, limit = 20) {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/services/${serviceName}/errors?limit=${limit}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error retrieving service errors:', error);
+    throw error;
+  }
+}
+```
+
+## Health Check Endpoints
+
+Each service exposes a health check endpoint that returns the current service status:
+
+| Service | Health Check URL | Expected Response |
+|---------|------------------|-------------------|
+| Ollama | `https://ollama.moodmnky.com/health` | `{"status":"healthy"}` |
+| Flowise | `https://flowise.moodmnky.com/api/v1/health` | `{"status":"healthy"}` |
+| Langchain | `https://langchain.moodmnky.com/health` | `{"status":"healthy"}` |
+| n8n | `https://mnky-mind-n8n.moodmnky.com/healthz` | `{"status":"ok"}` |
+
+## Troubleshooting Guide
+
+### Common Issues
+
+#### Service Unreachable
+
+1. Check service health endpoint
+2. Verify network connectivity
+3. Check for recent deployments
+4. Review error logs
+5. Check resource utilization
+
+#### High Latency
+
+1. Monitor request volume
+2. Check database performance
+3. Review resource utilization
+4. Check for long-running processes
+5. Identify slow dependencies
+
+#### Increased Error Rate
+
+1. Identify error patterns
+2. Check for recent code changes
+3. Review dependency health
+4. Check for rate limiting issues
+5. Verify configuration settings
+
+### Diagnostic Commands
+
+Useful commands for troubleshooting in development:
+
+```bash
+# Check service status
+curl http://localhost:{port}/health
+
+# View resource usage
+docker stats
+
+# Check network connectivity
+curl -v http://localhost:{port}
+
+# View recent logs
+tail -n 100 ./logs/service.log
+```
+
+## Best Practices
+
+### Monitoring Implementation
+
+1. **Standard Metrics**: Implement the same core metrics across all services
+2. **Contextual Logging**: Include request IDs in all logs
+3. **Alert Tuning**: Regularly review and adjust alert thresholds
+4. **Correlation**: Correlate metrics, logs, and traces
+5. **Historical Data**: Maintain historical data for trend analysis
+
+### Operational Procedures
+
+1. **Regular Review**: Schedule monitoring review sessions
+2. **Runbooks**: Create standard procedures for common issues
+3. **Post-Incident Analysis**: Conduct post-mortems after incidents
+4. **Continuous Improvement**: Refine monitoring based on incidents
+5. **Documentation**: Keep monitoring documentation updated
+
+## Support Resources
+
+- [Monitoring System Documentation](https://docs.moodmnky.com/monitoring)
+- [Service Status Page](https://status.moodmnky.com)
+- [Developer Portal](https://developers.moodmnky.com)
+- [Support Email](mailto:support@moodmnky.com) 

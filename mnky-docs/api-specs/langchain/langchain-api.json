@@ -1,0 +1,1161 @@
+{
+  "components": {
+    "schemas": {
+      "RetrieveDocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata"
+          },
+          "query": {
+            "type": "string",
+            "description": "Original query"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Namespace searched in"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RetrievalResult"
+            },
+            "description": "Retrieved documents"
+          }
+        }
+      },
+      "AgentExecuteResponse": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata"
+          },
+          "intermediateSteps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentStep"
+            },
+            "description": "Intermediate steps taken by the agent"
+          },
+          "response": {
+            "type": "string",
+            "description": "Final response from the agent"
+          }
+        }
+      },
+      "LoadDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL to fetch document from (when source is 'url')"
+          },
+          "text": {
+            "type": "string",
+            "description": "Raw text content (when source is 'text')"
+          },
+          "content": {
+            "type": "string",
+            "description": "Base64-encoded file content (when source is 'file')"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata for the document"
+          },
+          "mimeType": {
+            "type": "string",
+            "example": "application/pdf",
+            "description": "MIME type of the document"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source type ('text', 'url', 'file')"
+          }
+        }
+      },
+      "ChunkDocumentRequest": {
+        "required": [
+          "documentId"
+        ],
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata to add to chunks"
+          },
+          "documentId": {
+            "type": "string",
+            "description": "Document ID to chunk"
+          },
+          "chunkOverlap": {
+            "type": "integer",
+            "default": 200,
+            "description": "Number of tokens of overlap between chunks"
+          },
+          "chunkingStrategy": {
+            "type": "string",
+            "default": "recursive",
+            "description": "Strategy for chunking",
+            "enum": [
+              "recursive",
+              "sentence",
+              "paragraph",
+              "token",
+              "character"
+            ]
+          },
+          "chunkSize": {
+            "type": "integer",
+            "default": 1000,
+            "description": "Maximum size of each chunk in tokens"
+          }
+        },
+        "type": "object"
+      },
+      "RetrieveDocumentsRequest": {
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "includeSimilarity": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to include similarity scores"
+          },
+          "includeContent": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to include document content"
+          },
+          "embeddingModel": {
+            "type": "string",
+            "default": "text-embedding-ada-002",
+            "description": "Model to use for query embedding"
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata filters to apply"
+          },
+          "topK": {
+            "type": "integer",
+            "default": 5,
+            "description": "Number of results to return"
+          },
+          "namespace": {
+            "type": "string",
+            "default": "default",
+            "description": "Namespace to search in"
+          },
+          "query": {
+            "type": "string",
+            "description": "Query text to search for"
+          }
+        },
+        "type": "object"
+      },
+      "Message": {
+        "required": [
+          "role",
+          "content"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "Role of the message sender",
+            "enum": [
+              "human",
+              "ai",
+              "system"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "Content of the message"
+          }
+        },
+        "type": "object"
+      },
+      "EmbeddingResponse": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata associated with these embeddings"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Namespace embeddings were stored in"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs of embedded chunks"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of chunks embedded"
+          }
+        }
+      },
+      "Chunk": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata associated with this chunk"
+          },
+          "id": {
+            "type": "string",
+            "description": "Chunk ID"
+          },
+          "tokenCount": {
+            "type": "integer",
+            "description": "Number of tokens in this chunk"
+          },
+          "text": {
+            "type": "string",
+            "description": "Chunk text content"
+          }
+        }
+      },
+      "DocumentChatRequest": {
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "includeMetadata": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to include metadata in response"
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.7,
+            "description": "Temperature for model generation"
+          },
+          "includeSourceDocuments": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to include source documents in response"
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata filters to apply"
+          },
+          "topK": {
+            "type": "integer",
+            "default": 5,
+            "description": "Number of documents to retrieve"
+          },
+          "namespace": {
+            "type": "string",
+            "default": "default",
+            "description": "Namespace to search in"
+          },
+          "query": {
+            "type": "string",
+            "description": "Question or query to ask"
+          },
+          "model": {
+            "type": "string",
+            "default": "gpt-3.5-turbo",
+            "description": "Language model to use"
+          },
+          "conversation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "description": "Previous conversation history"
+          }
+        },
+        "type": "object"
+      },
+      "ListDocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of documents matching criteria"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentResponse"
+            },
+            "description": "List of documents"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Limit used for query"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset used for query"
+          }
+        }
+      },
+      "ChunkResponse": {
+        "type": "object",
+        "properties": {
+          "chunks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chunk"
+            }
+          },
+          "documentId": {
+            "type": "string",
+            "description": "Original document ID"
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "avgChunkSize": {
+                "type": "number",
+                "description": "Average chunk size in tokens"
+              },
+              "chunkCount": {
+                "type": "integer",
+                "description": "Total number of chunks"
+              }
+            }
+          }
+        }
+      },
+      "DocumentResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Document processing status",
+            "enum": [
+              "loaded",
+              "processing",
+              "chunked",
+              "embedded",
+              "failed"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "example": "doc_1a2b3c4d",
+            "description": "Document ID"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Document metadata"
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "pages": {
+                "type": "integer",
+                "description": "Page count (if applicable)"
+              },
+              "characters": {
+                "type": "integer",
+                "description": "Character count"
+              },
+              "tokens": {
+                "type": "integer",
+                "description": "Token count estimate"
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message (if status is 'failed')"
+          }
+        }
+      },
+      "AgentStep": {
+        "type": "object",
+        "properties": {
+          "actionInput": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Input to the action"
+          },
+          "thought": {
+            "type": "string",
+            "description": "Agent's thought process"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action taken"
+          },
+          "observation": {
+            "type": "string",
+            "description": "Result of the action"
+          }
+        }
+      },
+      "RetrievalResult": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata associated with this chunk"
+          },
+          "id": {
+            "type": "string",
+            "description": "Chunk ID"
+          },
+          "similarity": {
+            "type": "number",
+            "format": "float",
+            "description": "Similarity score"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content of the chunk"
+          }
+        }
+      },
+      "EmbedDocumentRequest": {
+        "required": [
+          "chunks"
+        ],
+        "properties": {
+          "embeddingModel": {
+            "type": "string",
+            "default": "text-embedding-ada-002",
+            "description": "Model to use for embeddings"
+          },
+          "chunks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chunk"
+            },
+            "description": "Chunks to embed"
+          },
+          "namespace": {
+            "type": "string",
+            "default": "default",
+            "description": "Namespace to store embeddings in"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata to store with embeddings"
+          }
+        },
+        "type": "object"
+      },
+      "DocumentChatResponse": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Additional metadata"
+          },
+          "conversation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "description": "Updated conversation history"
+          },
+          "response": {
+            "type": "string",
+            "description": "Generated response text"
+          },
+          "sourceDocuments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RetrievalResult"
+            },
+            "description": "Source documents used for response"
+          }
+        }
+      },
+      "AgentExecuteRequest": {
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "maxIterations": {
+            "type": "integer",
+            "default": 10,
+            "description": "Maximum number of iterations"
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.7,
+            "description": "Temperature for model generation"
+          },
+          "returnIntermediateSteps": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to return intermediate steps"
+          },
+          "namespace": {
+            "type": "string",
+            "default": "default",
+            "description": "Document namespace to use"
+          },
+          "query": {
+            "type": "string",
+            "description": "Task or question for the agent"
+          },
+          "model": {
+            "type": "string",
+            "default": "gpt-3.5-turbo",
+            "description": "Language model to use"
+          },
+          "tools": {
+            "type": "array",
+            "default": [
+              "DocumentRetrieval"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Tools the agent can use"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "description": "API key for authentication (format - 'Bearer YOUR_API_KEY')",
+        "in": "header"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development"
+    },
+    {
+      "url": "https://langchain.moodmnky.com",
+      "description": "Production"
+    }
+  ],
+  "openapi": "3.0.3",
+  "tags": [
+    {
+      "description": "Endpoints for document management",
+      "name": "Documents"
+    },
+    {
+      "description": "Endpoints for vector embedding operations",
+      "name": "Embeddings"
+    },
+    {
+      "description": "Endpoints for vector retrieval",
+      "name": "Retrieval"
+    },
+    {
+      "description": "Endpoints for chat-based document QA",
+      "name": "Chat"
+    },
+    {
+      "description": "Endpoints for AI agent operations",
+      "name": "Agents"
+    },
+    {
+      "description": "Health check endpoints",
+      "name": "Health"
+    }
+  ],
+  "paths": {
+    "/api/chat/document": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Chat with documents",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentChatResponse"
+                }
+              }
+            },
+            "description": "Chat response generated successfully"
+          }
+        },
+        "operationId": "chatWithDocuments",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "simpleQuestion": {
+                  "summary": "Simple document question",
+                  "value": {
+                    "model": "gpt-3.5-turbo",
+                    "query": "How do I reset my password?",
+                    "namespace": "customer-support"
+                  }
+                },
+                "followupQuestion": {
+                  "summary": "Follow-up question with conversation history",
+                  "value": {
+                    "model": "gpt-3.5-turbo",
+                    "query": "What if that doesn't work?",
+                    "namespace": "customer-support",
+                    "conversation": [
+                      {
+                        "role": "human",
+                        "content": "How do I reset my password?"
+                      },
+                      {
+                        "role": "ai",
+                        "content": "To reset your password, go to the login page and click on 'Forgot Password'..."
+                      }
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DocumentChatRequest"
+              }
+            }
+          }
+        },
+        "description": "Have a conversation with context from retrieved documents"
+      }
+    },
+    "/api/documents/{id}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get document",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentResponse"
+                }
+              }
+            },
+            "description": "Document retrieved successfully"
+          },
+          "404": {
+            "description": "Document not found"
+          }
+        },
+        "operationId": "getDocument",
+        "parameters": [
+          {
+            "required": true,
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Document ID",
+            "in": "path"
+          }
+        ],
+        "description": "Get document by ID"
+      },
+      "delete": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Delete document",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "200": {
+            "description": "Document deleted successfully"
+          },
+          "404": {
+            "description": "Document not found"
+          }
+        },
+        "operationId": "deleteDocument",
+        "parameters": [
+          {
+            "required": true,
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Document ID",
+            "in": "path"
+          }
+        ],
+        "description": "Delete document by ID"
+      }
+    },
+    "/api/documents": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "List documents",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDocumentsResponse"
+                }
+              }
+            },
+            "description": "Documents retrieved successfully"
+          }
+        },
+        "operationId": "listDocuments",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "description": "Maximum number of documents to return",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "description": "Number of documents to skip",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "name": "filter",
+            "description": "Filter criteria in JSON format",
+            "in": "query"
+          }
+        ],
+        "description": "List all documents"
+      }
+    },
+    "/api/agent/execute": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Execute agent",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentExecuteResponse"
+                }
+              }
+            },
+            "description": "Agent execution completed successfully"
+          }
+        },
+        "operationId": "executeAgent",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "researchTask": {
+                  "summary": "Research task with document access",
+                  "value": {
+                    "model": "gpt-4",
+                    "tools": [
+                      "DocumentRetrieval",
+                      "TextSummarization"
+                    ],
+                    "query": "Prepare a summary of our refund policy for international orders",
+                    "namespace": "policies"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentExecuteRequest"
+              }
+            }
+          }
+        },
+        "description": "Execute an agent with specific tools to perform a task"
+      }
+    },
+    "/api/documents/upload": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Upload document",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentResponse"
+                }
+              }
+            },
+            "description": "Document uploaded successfully"
+          }
+        },
+        "operationId": "uploadDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metadata": {
+                    "type": "string",
+                    "description": "JSON string of metadata to attach to the document"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Document file to upload"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Upload a document file directly"
+      }
+    },
+    "/api/documents/load": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Load a document",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentResponse"
+                }
+              }
+            },
+            "description": "Document loaded successfully"
+          }
+        },
+        "operationId": "loadDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "fromText": {
+                  "summary": "Load from text",
+                  "value": {
+                    "metadata": {
+                      "created": "2023-08-15",
+                      "source": "user-input"
+                    },
+                    "text": "This is a sample document that will be loaded into the system."
+                  }
+                },
+                "fromFile": {
+                  "summary": "Load from file content",
+                  "value": {
+                    "mimeType": "application/pdf",
+                    "filename": "sample.pdf",
+                    "content": "base64-encoded-file-content"
+                  }
+                },
+                "fromURL": {
+                  "summary": "Load from URL",
+                  "value": {
+                    "mimeType": "application/pdf",
+                    "url": "https://example.com/sample.pdf"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LoadDocumentRequest"
+              }
+            }
+          }
+        },
+        "description": "Load a document from various sources"
+      }
+    },
+    "/api/documents/retrieve": {
+      "post": {
+        "tags": [
+          "Retrieval"
+        ],
+        "summary": "Retrieve documents",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrieveDocumentsResponse"
+                }
+              }
+            },
+            "description": "Documents retrieved successfully"
+          }
+        },
+        "operationId": "retrieveDocuments",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "filteredRetrieval": {
+                  "summary": "Filtered document retrieval",
+                  "value": {
+                    "query": "How do I reset my password?",
+                    "namespace": "customer-support",
+                    "filters": {
+                      "metadata.updated": {
+                        "$gt": "2023-01-01"
+                      },
+                      "metadata.category": "authentication"
+                    },
+                    "topK": 5
+                  }
+                },
+                "basicRetrieval": {
+                  "summary": "Basic document retrieval",
+                  "value": {
+                    "query": "How do I reset my password?",
+                    "namespace": "customer-support",
+                    "topK": 5
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RetrieveDocumentsRequest"
+              }
+            }
+          }
+        },
+        "description": "Retrieve document chunks based on semantic similarity"
+      }
+    },
+    "/api/documents/embed": {
+      "post": {
+        "tags": [
+          "Embeddings"
+        ],
+        "summary": "Create embeddings",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingResponse"
+                }
+              }
+            },
+            "description": "Embeddings created successfully"
+          }
+        },
+        "operationId": "createEmbeddings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "basicEmbedding": {
+                  "summary": "Basic embedding creation",
+                  "value": {
+                    "embeddingModel": "text-embedding-ada-002",
+                    "chunks": [
+                      {
+                        "metadata": {
+                          "page": 1,
+                          "source": "sample-document.pdf"
+                        },
+                        "id": "chunk_1a2b3c4d",
+                        "text": "This is a sample chunk of text."
+                      }
+                    ],
+                    "namespace": "customer-support"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EmbedDocumentRequest"
+              }
+            }
+          }
+        },
+        "description": "Create vector embeddings for document chunks"
+      }
+    },
+    "/api/documents/chunk": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Chunk a document",
+        "responses": {
+          "500": {
+            "description": "Server error"
+          },
+          "404": {
+            "description": "Document not found"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChunkResponse"
+                }
+              }
+            },
+            "description": "Document chunked successfully"
+          }
+        },
+        "operationId": "chunkDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "withStrategy": {
+                  "summary": "With specific chunking strategy",
+                  "value": {
+                    "documentId": "doc_1a2b3c4d",
+                    "chunkOverlap": 200,
+                    "chunkingStrategy": "recursive",
+                    "chunkSize": 1000
+                  }
+                },
+                "basicChunking": {
+                  "summary": "Basic document chunking",
+                  "value": {
+                    "documentId": "doc_1a2b3c4d",
+                    "chunkOverlap": 200,
+                    "chunkSize": 1000
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ChunkDocumentRequest"
+              }
+            }
+          }
+        },
+        "description": "Split a document into manageable chunks"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "0.1.0"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "API is healthy"
+          }
+        },
+        "operationId": "healthCheck",
+        "description": "Check API health status",
+        "summary": "Health check"
+      }
+    }
+  },
+  "info": {
+    "version": "0.1.0",
+    "title": "Langchain API",
+    "contact": {
+      "url": "https://moodmnky.com/support",
+      "name": "MOOD MNKY Support",
+      "email": "support@moodmnky.com"
+    },
+    "description": "Official API documentation for the MOOD MNKY Langchain integration.\nLangchain provides powerful document processing, embedding, and retrieval capabilities.\nThis API allows you to manage documents, create embeddings, perform retrieval, and build AI agents.\n"
+  }
+}

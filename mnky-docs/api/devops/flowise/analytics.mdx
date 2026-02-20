@@ -1,0 +1,459 @@
+# Analytics
+
+This guide covers the analytics capabilities of the Flowise service for tracking and analyzing chatflow usage and performance.
+
+## Analytics Overview
+
+Flowise provides built-in analytics to help you understand how your chatflows are performing, identify usage patterns, and optimize your conversational AI experiences. The analytics system tracks various metrics including usage statistics, user interactions, and performance data.
+
+## Analytics Endpoints
+
+### Usage Analytics
+
+Get usage analytics for chatflows. The following endpoints provide comprehensive analytics data for monitoring chatflow performance and user engagement.
+
+### Get Chatflow Analytics
+
+Retrieve analytics data for a specific chatflow.
+
+```bash
+GET /api/v1/analytics/chatflows/{chatflowId}
+
+curl "https://flowise.moodmnky.com/api/v1/analytics/chatflows/chatflow-1234" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "chatflowId": "chatflow-1234",
+  "metrics": {
+    "totalInteractions": 1250,
+    "uniqueUsers": 325,
+    "averageResponseTime": 850,
+    "errorRate": 0.05,
+    "completionRate": 0.92
+  },
+  "timeframe": {
+    "start": "2024-03-01T00:00:00Z",
+    "end": "2024-03-31T23:59:59Z"
+  },
+  "dailyStats": [
+    {
+      "date": "2024-03-01",
+      "interactions": 42,
+      "uniqueUsers": 18,
+      "responseTime": 820
+    }
+    // ... more daily entries
+  ]
+}
+```
+
+### Get Global Analytics
+
+Retrieve analytics data across all chatflows.
+
+```bash
+GET /api/v1/analytics/global
+
+curl "https://flowise.moodmnky.com/api/v1/analytics/global" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "totalChatflows": 25,
+  "activeChatflows": 18,
+  "metrics": {
+    "totalInteractions": 28540,
+    "uniqueUsers": 3250,
+    "averageResponseTime": 875,
+    "errorRate": 0.04,
+    "topPerformingChatflow": "chatflow-5678"
+  },
+  "timeframe": {
+    "start": "2024-03-01T00:00:00Z",
+    "end": "2024-03-31T23:59:59Z"
+  },
+  "chatflowRankings": [
+    {
+      "chatflowId": "chatflow-5678",
+      "name": "Product Recommender",
+      "interactions": 4250,
+      "uniqueUsers": 850
+    }
+    // ... more chatflow entries
+  ]
+}
+```
+
+### Get User Analytics
+
+Retrieve analytics data for a specific user.
+
+```bash
+GET /api/v1/analytics/users/{userId}
+
+curl "https://flowise.moodmnky.com/api/v1/analytics/users/user-9876" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "userId": "user-9876",
+  "metrics": {
+    "totalInteractions": 125,
+    "chatflowsUsed": 5,
+    "averageSessionLength": 480,
+    "mostUsedChatflow": "chatflow-1234"
+  },
+  "timeframe": {
+    "start": "2024-03-01T00:00:00Z",
+    "end": "2024-03-31T23:59:59Z"
+  },
+  "sessionHistory": [
+    {
+      "date": "2024-03-28T14:25:12Z",
+      "chatflowId": "chatflow-1234",
+      "duration": 520,
+      "interactions": 12
+    }
+    // ... more session entries
+  ]
+}
+```
+
+### Export Analytics Data
+
+Export analytics data in CSV format.
+
+```bash
+GET /api/v1/analytics/export?type=chatflow&id=chatflow-1234&format=csv
+
+curl "https://flowise.moodmnky.com/api/v1/analytics/export?type=chatflow&id=chatflow-1234&format=csv" \
+  -H "x-api-key: your_api_key" \
+  -H "Accept: text/csv"
+```
+
+Response:
+```
+date,interactions,uniqueUsers,responseTime,errorRate
+2024-03-01,42,18,820,0.02
+2024-03-02,38,20,835,0.03
+...
+```
+
+### Configure Analytics
+
+Configure analytics settings for a chatflow.
+
+```bash
+POST /api/v1/analytics/config/{chatflowId}
+
+curl -X POST "https://flowise.moodmnky.com/api/v1/analytics/config/chatflow-1234" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trackUserData": true,
+    "anonymizeIPs": true,
+    "retentionPeriod": 90,
+    "integrations": {
+      "langFuse": {
+        "enabled": true,
+        "apiKey": "your-langfuse-api-key",
+        "publicKey": "your-langfuse-public-key"
+      }
+    }
+  }'
+```
+
+Response:
+```json
+{
+  "chatflowId": "chatflow-1234",
+  "analyticsConfig": {
+    "trackUserData": true,
+    "anonymizeIPs": true,
+    "retentionPeriod": 90,
+    "integrations": {
+      "langFuse": {
+        "enabled": true
+      }
+    },
+    "updatedAt": "2024-04-01T12:00:00Z"
+  }
+}
+```
+
+## Analytics Parameters
+
+### Time Range Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| startDate | string | Start date in ISO format | Current month start |
+| endDate | string | End date in ISO format | Current date |
+| interval | string | Time interval (day, week, month) | day |
+
+### Filter Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| userId | string | Filter by specific user | null |
+| source | string | Filter by traffic source | null |
+| errorType | string | Filter by error type | null |
+| minInteractions | number | Minimum interaction count | 0 |
+
+### Export Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| type | string | Export type (chatflow, global, user) | Required |
+| id | string | ID for the selected type | Required for chatflow and user |
+| format | string | Export format (csv, json) | json |
+| fields | string | Comma-separated list of fields to include | All fields |
+
+## Analytics Metrics
+
+### Usage Metrics
+
+| Metric | Description |
+|--------|-------------|
+| totalInteractions | Total number of user interactions |
+| uniqueUsers | Count of unique users |
+| sessionsCount | Total number of user sessions |
+| averageSessionLength | Average session duration in seconds |
+| completionRate | Percentage of conversations completed |
+
+### Performance Metrics
+
+| Metric | Description |
+|--------|-------------|
+| averageResponseTime | Average time to generate response in ms |
+| tokenUsage | Total number of tokens used |
+| errorRate | Percentage of interactions with errors |
+| timeout | Percentage of requests that timed out |
+| p95ResponseTime | 95th percentile response time |
+
+### Error Tracking
+
+Track and analyze errors in chatflow executions.
+
+| Metric | Description |
+|--------|-------------|
+| errorCount | Total number of errors |
+| errorRate | Percentage of interactions with errors |
+| errorTypes | Breakdown of error types |
+| errorFrequency | Error frequency over time |
+| affectedChatflows | Chatflows affected by errors |
+
+### User Metrics
+
+| Metric | Description |
+|--------|-------------|
+| newUsers | Count of first-time users |
+| returningUsers | Count of returning users |
+| averageInteractionsPerUser | Average interactions per user |
+| userRetentionRate | Percentage of users who return |
+| mostActiveUsers | List of most active users |
+
+## Usage Examples
+
+### Basic Analytics Retrieval
+
+```typescript
+// Get chatflow analytics
+async function getChatflowAnalytics(chatflowId, startDate, endDate) {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  
+  const response = await client.flowise.getChatflowAnalytics(
+    chatflowId,
+    params.toString()
+  );
+  
+  console.log(`Analytics for chatflow ${chatflowId}:`);
+  console.log(`- Total interactions: ${response.metrics.totalInteractions}`);
+  console.log(`- Unique users: ${response.metrics.uniqueUsers}`);
+  console.log(`- Average response time: ${response.metrics.averageResponseTime}ms`);
+  
+  return response;
+}
+
+// Get global analytics
+async function getGlobalAnalytics(interval = 'day') {
+  const params = new URLSearchParams();
+  params.append('interval', interval);
+  
+  const response = await client.flowise.getGlobalAnalytics(params.toString());
+  
+  console.log('Global analytics:');
+  console.log(`- Total chatflows: ${response.totalChatflows}`);
+  console.log(`- Active chatflows: ${response.activeChatflows}`);
+  console.log(`- Total interactions: ${response.metrics.totalInteractions}`);
+  
+  return response;
+}
+```
+
+### Analytics Dashboard Data
+
+```typescript
+// Generate data for an analytics dashboard
+async function generateDashboardData() {
+  const startDate = '2024-03-01T00:00:00Z';
+  const endDate = '2024-03-31T23:59:59Z';
+  
+  // Get global analytics
+  const globalData = await client.flowise.getGlobalAnalytics(
+    `startDate=${startDate}&endDate=${endDate}&interval=day`
+  );
+  
+  // Get top performing chatflows
+  const topChatflows = globalData.chatflowRankings.slice(0, 5);
+  
+  // Get detailed analytics for top chatflows
+  const detailedAnalytics = await Promise.all(
+    topChatflows.map(cf => 
+      client.flowise.getChatflowAnalytics(
+        cf.chatflowId,
+        `startDate=${startDate}&endDate=${endDate}`
+      )
+    )
+  );
+  
+  // Compile dashboard data
+  const dashboardData = {
+    summary: {
+      totalInteractions: globalData.metrics.totalInteractions,
+      uniqueUsers: globalData.metrics.uniqueUsers,
+      averageResponseTime: globalData.metrics.averageResponseTime,
+      errorRate: globalData.metrics.errorRate
+    },
+    topChatflows: topChatflows,
+    dailyTrends: globalData.dailyStats,
+    detailedAnalytics: detailedAnalytics
+  };
+  
+  return dashboardData;
+}
+```
+
+### Analytics Export
+
+```typescript
+// Export chatflow analytics to CSV
+async function exportChatflowAnalytics(chatflowId, startDate, endDate) {
+  const params = new URLSearchParams();
+  params.append('type', 'chatflow');
+  params.append('id', chatflowId);
+  params.append('format', 'csv');
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  
+  const response = await client.flowise.exportAnalytics(params.toString());
+  
+  // Save to file or process CSV data
+  const csvData = response;
+  console.log(`Exported analytics data for chatflow ${chatflowId}`);
+  
+  return csvData;
+}
+```
+
+## Third-Party Analytics Integrations
+
+Flowise supports integration with several third-party analytics providers:
+
+### LangSmith Integration
+
+```typescript
+// Configure LangSmith integration
+const langSmithConfig = {
+  enabled: true,
+  apiKey: "your-langsmith-api-key",
+  projectName: "your-project-name"
+};
+
+await client.flowise.configureAnalytics(chatflowId, {
+  integrations: {
+    langSmith: langSmithConfig
+  }
+});
+```
+
+### LangFuse Integration
+
+```typescript
+// Configure LangFuse integration
+const langFuseConfig = {
+  enabled: true,
+  apiKey: "your-langfuse-api-key",
+  publicKey: "your-langfuse-public-key",
+  baseUrl: "https://cloud.langfuse.com" // Optional
+};
+
+await client.flowise.configureAnalytics(chatflowId, {
+  integrations: {
+    langFuse: langFuseConfig
+  }
+});
+```
+
+### Custom Webhook Integration
+
+```typescript
+// Configure webhook integration
+const webhookConfig = {
+  enabled: true,
+  url: "https://your-analytics-server.com/webhook",
+  headers: {
+    "Authorization": "Bearer your-secret-token"
+  },
+  events: ["interaction.created", "error.occurred"]
+};
+
+await client.flowise.configureAnalytics(chatflowId, {
+  integrations: {
+    webhook: webhookConfig
+  }
+});
+```
+
+## Best Practices
+
+1. **Analytics Planning**
+   - Define key metrics based on business goals
+   - Set up analytics early in development
+   - Balance data collection with privacy considerations
+   - Establish baselines for performance metrics
+
+2. **Data Management**
+   - Implement appropriate data retention policies
+   - Consider anonymizing sensitive user data
+   - Set up regular exports for long-term storage
+   - Monitor storage usage for analytics data
+
+3. **Performance Monitoring**
+   - Track response times across different chatflows
+   - Set up alerts for performance degradation
+   - Monitor error rates and identify patterns
+   - Analyze peak usage periods
+
+4. **User Insights**
+   - Track user engagement patterns
+   - Identify most valuable conversation paths
+   - Monitor user retention metrics
+   - Use insights to improve chatflow designs
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/flowise)
+- [Analytics Integration Guide](https://docs.moodmnky.com/guides/flowise-analytics)
+- [LangSmith Documentation](https://docs.smith.langchain.com/)
+- [LangFuse Documentation](https://langfuse.com/docs)
+- [Support](mailto:support@moodmnky.com) 

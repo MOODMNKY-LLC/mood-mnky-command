@@ -1,0 +1,389 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Flowise API - MOOD MNKY Integration",
+    "description": "This OpenAPI specification defines the comprehensive REST API interface for Flowise, customized for integration into the MOOD MNKY agent ecosystem. It includes endpoints for chatflow execution, flow management, node schema discovery, credential operations, deployment handling, and system metadata. Designed with first-principles engineering, this spec enables robust AI-assisted automation, integration with Supabase, n8n, LangChain, and CODE MNKY\u2019s virtual agents.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "description": "Development server for Flowise hosted by MOOD MNKY",
+      "url": "https://flowise-dev.moodmnky.com"
+    }
+  ],
+  "paths": {
+    "/api/v1/chatflows": {
+      "get": {
+        "operationId": "getChatflows",
+        "summary": "List all chatflows",
+        "tags": [
+          "Chatflows"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of all chatflows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createChatflow",
+        "summary": "Create a new chatflow",
+        "tags": [
+          "Chatflows"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chatflow created successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/chatflows/export/{id}": {
+      "get": {
+        "operationId": "exportChatflow",
+        "summary": "Export a chatflow as JSON",
+        "tags": [
+          "Chatflows"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chatflow JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chatflows/import": {
+      "post": {
+        "operationId": "importChatflow",
+        "summary": "Import a chatflow from file or JSON",
+        "tags": [
+          "Chatflows"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chatflow imported successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/chatflows/{id}": {
+      "get": {
+        "operationId": "getChatflowById",
+        "summary": "Get a specific chatflow by ID",
+        "tags": [
+          "Chatflows"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chatflow object"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateChatflow",
+        "summary": "Update a chatflow",
+        "tags": [
+          "Chatflows"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chatflow updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteChatflow",
+        "summary": "Delete a chatflow",
+        "tags": [
+          "Chatflows"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Chatflow deleted successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/chatflows/{id}/execute": {
+      "post": {
+        "operationId": "executeChatflow",
+        "summary": "Execute a chatflow with inputs",
+        "tags": [
+          "Chatflows"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "inputs"
+                ],
+                "properties": {
+                  "inputs": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chatflow executed successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/credentials": {
+      "get": {
+        "operationId": "getCredentials",
+        "summary": "Get all credential sets",
+        "tags": [
+          "Credentials"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of credentials"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCredential",
+        "summary": "Create new credential set",
+        "tags": [
+          "Credentials"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Credential created successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/credentials/{id}": {
+      "delete": {
+        "operationId": "deleteCredential",
+        "summary": "Delete a credential set",
+        "tags": [
+          "Credentials"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Credential deleted successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/deployments": {
+      "get": {
+        "operationId": "getDeployments",
+        "summary": "List all deployed chatflows",
+        "tags": [
+          "Deployments"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of deployed chatflows"
+          }
+        }
+      }
+    },
+    "/api/v1/nodes": {
+      "get": {
+        "operationId": "getNodes",
+        "summary": "Get all nodes available for chatflow creation",
+        "tags": [
+          "Nodes"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of nodes"
+          }
+        }
+      }
+    },
+    "/api/v1/system/info": {
+      "get": {
+        "operationId": "getSystemInfo",
+        "summary": "Get instance-level metadata and configuration",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "System info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Chatflows",
+      "description": "Endpoints related to executing and managing chatflows."
+    },
+    {
+      "name": "Nodes",
+      "description": "Endpoints for retrieving node information and schemas."
+    },
+    {
+      "name": "Credentials",
+      "description": "Endpoints for managing credential sets."
+    },
+    {
+      "name": "Deployments",
+      "description": "Endpoints for managing deployed flows."
+    },
+    {
+      "name": "System",
+      "description": "Endpoints for instance-level metadata and health checks."
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

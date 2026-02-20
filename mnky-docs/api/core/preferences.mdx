@@ -1,0 +1,205 @@
+---
+title: 'Preferences API'
+description: 'API for managing user preferences and settings across the MOOD MNKY platform'
+---
+
+# Preferences API
+
+The Preferences API allows for storage, retrieval, and management of user preferences across the MOOD MNKY ecosystem, including interface settings, notification preferences, and personalization options.
+
+## Endpoints
+
+### Get User Preferences
+
+```
+GET /api/users/{userId}/preferences
+```
+
+Retrieves all preferences for a specific user.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Response
+
+```json
+{
+  "userId": "user_123456",
+  "preferences": {
+    "theme": "dark",
+    "notifications": {
+      "email": true,
+      "push": false,
+      "sms": false
+    },
+    "privacy": {
+      "shareProfile": true,
+      "showActivity": false
+    },
+    "display": {
+      "language": "en-US",
+      "timezone": "America/New_York",
+      "dateFormat": "MM/DD/YYYY"
+    }
+  },
+  "updatedAt": "2023-03-20T15:30:00Z"
+}
+```
+
+### Update Preferences
+
+```
+PATCH /api/users/{userId}/preferences
+```
+
+Updates specific preferences for a user.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Request Body
+
+```json
+{
+  "theme": "light",
+  "notifications": {
+    "push": true
+  },
+  "display": {
+    "language": "fr-FR"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "userId": "user_123456",
+  "preferences": {
+    "theme": "light",
+    "notifications": {
+      "email": true,
+      "push": true,
+      "sms": false
+    },
+    "privacy": {
+      "shareProfile": true,
+      "showActivity": false
+    },
+    "display": {
+      "language": "fr-FR",
+      "timezone": "America/New_York",
+      "dateFormat": "MM/DD/YYYY"
+    }
+  },
+  "updatedAt": "2023-04-16T10:15:00Z"
+}
+```
+
+### Reset Preferences
+
+```
+POST /api/users/{userId}/preferences/reset
+```
+
+Resets all user preferences to system defaults.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Response
+
+```json
+{
+  "userId": "user_123456",
+  "preferences": {
+    "theme": "system",
+    "notifications": {
+      "email": true,
+      "push": true,
+      "sms": false
+    },
+    "privacy": {
+      "shareProfile": false,
+      "showActivity": false
+    },
+    "display": {
+      "language": "en-US",
+      "timezone": "UTC",
+      "dateFormat": "MM/DD/YYYY"
+    }
+  },
+  "updatedAt": "2023-04-16T10:20:00Z",
+  "message": "Preferences reset to system defaults"
+}
+```
+
+### Get Preference Category
+
+```
+GET /api/users/{userId}/preferences/{category}
+```
+
+Retrieves preferences for a specific category.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+| category | string | Yes | The preference category (e.g., notifications, privacy, display) |
+
+#### Response
+
+```json
+{
+  "userId": "user_123456",
+  "category": "notifications",
+  "preferences": {
+    "email": true,
+    "push": true,
+    "sms": false
+  },
+  "updatedAt": "2023-04-16T10:15:00Z"
+}
+```
+
+## Preference Categories
+
+The system supports the following preference categories:
+
+| Category | Description | Examples |
+|----------|-------------|----------|
+| theme | Visual theme settings | dark, light, system |
+| notifications | Communication preferences | email, push, sms |
+| privacy | Privacy and sharing settings | shareProfile, showActivity |
+| display | Display and localization | language, timezone, dateFormat |
+| scent | Fragrance preferences | notes, intensity, mood |
+| learning | Learning environment settings | difficulty, pace, mediaType |
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid preference data |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - User or preference category not found |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Only update the specific preferences that have changed
+- Validate preference values on the client before sending updates
+- Implement proper error handling for all responses
+- Consider cultural and accessibility implications when setting defaults 

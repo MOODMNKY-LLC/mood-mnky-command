@@ -1,0 +1,306 @@
+---
+title: 'Development'
+description: 'Essential resources for developing with the MOOD MNKY ecosystem'
+---
+
+# Development Overview
+
+<Info>
+  This guide provides an introduction to developing with the MOOD MNKY ecosystem, focusing on "THE VERSE" - our developer-facing, infrastructure-driven heart that treats code as ritual and development as an act of care.
+</Info>
+
+## THE VERSE: Infrastructure as Soul
+
+At MOOD MNKY, technology isn't just a tool; it's a living, breathing part of our ecosystem. Our development philosophy views code as ritual, deployment as healing, and structure as self-care. THE VERSE invites developers to see their contributions not as mere tasks, but as acts of cultivation in a digital garden of wellness.
+
+<div className="p-5 bg-teal-50 dark:bg-teal-900/20 rounded-lg my-6">
+  <p className="italic text-teal-700 dark:text-teal-400 mb-4">"Code is care. Dev is ritual. Every commit is a heartbeat."</p>
+  
+  <p className="mb-3">THE VERSE serves as the <strong>developer-facing, infrastructure-driven heart of MOOD MNKY</strong>. It is where the entire operational universe—<strong>infra-as-code, automation, AI, servers, and monorepos</strong>—converges. This domain reveals that MOOD MNKY isn't just powered by technology—it <strong>is</strong> technology: living, breathing, and deployable.</p>
+</div>
+
+## Getting Started with Development
+
+To begin contributing to or building with the MOOD MNKY ecosystem, follow these steps:
+
+### 1. Set Up Your Environment
+
+<CodeGroup>
+  ```bash Clone the repository
+  git clone https://github.com/mood-mnky/MNKY-REPO.git
+  cd MNKY-REPO
+  ```
+
+  ```bash Install dependencies
+  pnpm install
+  ```
+
+  ```bash Run initial build
+  pnpm build
+  ```
+
+  ```bash Start development server
+  pnpm dev
+  ```
+</CodeGroup>
+
+### 2. Monorepo Structure
+
+Our codebase follows a clean, organized monorepo structure using Turborepo:
+
+```
+MNKY-REPO/
+├── apps/                 # User-facing applications
+│   ├── web/              # Main web application (Next.js)
+│   ├── dashboard/        # User dashboard (Next.js)
+│   ├── docs/             # Documentation site (Mintlify)
+│   └── admin/            # Admin portal (Next.js)
+├── packages/             # Shared libraries and utilities
+│   ├── ui/               # Shared UI components
+│   ├── agent-core/       # Shared agent infrastructure
+│   ├── api-client/       # API client libraries
+│   └── utils/            # Shared utilities
+├── agents/               # Agent definitions and configurations
+├── content/              # Content libraries and assets
+├── docs/                 # Documentation (Mintlify)
+└── infra/                # Infrastructure and deployment
+```
+
+### 3. Key Technology Components
+
+<CardGroup cols={2}>
+  <Card title="Next.js Frontend" icon="react" href="/technology-stack/frontend-technologies">
+    Learn about our React-based frontend architecture using Next.js App Router
+  </Card>
+  <Card title="Supabase Backend" icon="database" href="/technology-stack/supabase">
+    Discover how we use Supabase for authentication, storage, and database
+  </Card>
+  <Card title="AI Agent Framework" icon="robot" href="/agents/agent-schema-reference">
+    Explore our custom AI agent system that powers personalization
+  </Card>
+  <Card title="Turborepo" icon="diagram-project" href="/technology-stack/mono-repo-structure">
+    Understanding our monorepo structure and build pipeline
+  </Card>
+</CardGroup>
+
+## Core Development Areas
+
+The MOOD MNKY development ecosystem is organized around these key areas:
+
+### Frontend Development
+
+Our frontend is built with Next.js, TypeScript, Tailwind CSS, and ShadCN UI components. We follow modern best practices including:
+
+- Server Components for improved performance
+- Type safety throughout the application
+- Component-driven development with reusable UI elements
+- Mobile-first responsive design
+- Accessibility as a core consideration
+
+<div className="flex justify-center my-6">
+  <a href="/technology-stack/frontend-technologies" className="px-4 py-2 rounded-lg bg-teal-100 dark:bg-teal-800 text-teal-800 dark:text-teal-100 text-sm font-medium hover:opacity-90">Frontend Development Guide →</a>
+</div>
+
+### Agent Development
+
+Our AI agents form a critical part of the MOOD MNKY ecosystem, providing personalized experiences across platforms:
+
+- MOOD MNKY Agent: Customer experience and personalization
+- CODE MNKY Agent: Development and infrastructure support
+- SAGE MNKY Agent: Content, learning, and community guidance
+
+Each agent integrates with our application architecture through standardized patterns.
+
+<div className="flex justify-center my-6">
+  <a href="/agents/developer-guide" className="px-4 py-2 rounded-lg bg-teal-100 dark:bg-teal-800 text-teal-800 dark:text-teal-100 text-sm font-medium hover:opacity-90">Agent Development Guide →</a>
+</div>
+
+### Backend & Infrastructure
+
+Our backend systems leverage Supabase for most core functionality, combined with specialized services:
+
+- Authentication and user management
+- Database design and optimization
+- Storage for user-generated content
+- Serverless functions for business logic
+- Real-time subscriptions for collaborative features
+
+<div className="flex justify-center my-6">
+  <a href="/technology-stack/supabase" className="px-4 py-2 rounded-lg bg-teal-100 dark:bg-teal-800 text-teal-800 dark:text-teal-100 text-sm font-medium hover:opacity-90">Backend Infrastructure Guide →</a>
+</div>
+
+## Development Workflows
+
+### Code Organization
+
+We follow these principles for code organization:
+
+<Steps>
+  <Step title="Feature-based organization">
+    Group related files by feature rather than by file type
+  </Step>
+  <Step title="Shared abstractions">
+    Extract common patterns into shared packages
+  </Step>
+  <Step title="Clear boundaries">
+    Maintain clear interfaces between system components
+  </Step>
+  <Step title="Progressive enhancement">
+    Build core functionality first, then enhance with advanced features
+  </Step>
+</Steps>
+
+### Development Process
+
+<Tabs>
+  <Tab title="Feature Development">
+    <div className="space-y-4 pt-4">
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">1. Feature Planning</h3>
+        <p className="text-sm">Begin with clear requirements and architectural decisions documented in your workspace.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">2. Implementation</h3>
+        <p className="text-sm">Develop features with a test-driven approach, working in small, focused commits.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">3. Code Review</h3>
+        <p className="text-sm">Submit PRs for review, addressing feedback collaboratively.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">4. Integration</h3>
+        <p className="text-sm">Merge to main after approval, with automated CI/CD handling deployment.</p>
+      </div>
+    </div>
+  </Tab>
+  
+  <Tab title="Bug Fixing">
+    <div className="space-y-4 pt-4">
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">1. Reproduction</h3>
+        <p className="text-sm">Create a reliable reproduction of the issue in a development environment.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">2. Root Cause Analysis</h3>
+        <p className="text-sm">Identify the underlying cause through debugging and investigation.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">3. Fix Implementation</h3>
+        <p className="text-sm">Implement the minimal necessary fix with appropriate tests.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">4. Verification</h3>
+        <p className="text-sm">Confirm the fix resolves the issue without introducing new problems.</p>
+      </div>
+    </div>
+  </Tab>
+  
+  <Tab title="Release Process">
+    <div className="space-y-4 pt-4">
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">1. Release Planning</h3>
+        <p className="text-sm">Determine scope and timing of release, with appropriate feature freeze.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">2. Testing</h3>
+        <p className="text-sm">Complete thorough testing across environments and use cases.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">3. Deployment</h3>
+        <p className="text-sm">Execute staged rollout from development to production.</p>
+      </div>
+      
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-2">4. Monitoring</h3>
+        <p className="text-sm">Closely monitor metrics and performance after release.</p>
+      </div>
+    </div>
+  </Tab>
+</Tabs>
+
+## Common Development Tasks
+
+Here are some common development tasks you might perform with the MOOD MNKY ecosystem:
+
+### Working with Apps
+
+<CodeGroup>
+  ```bash Start a specific app
+  pnpm dev --filter=web
+  ```
+
+  ```bash Build a specific app
+  pnpm build --filter=dashboard
+  ```
+
+  ```bash Run tests for an app
+  pnpm test --filter=web
+  ```
+</CodeGroup>
+
+### Working with Packages
+
+<CodeGroup>
+  ```bash Develop a shared package
+  pnpm dev --filter=@repo/ui
+  ```
+
+  ```bash Build all packages
+  pnpm build --filter='./packages/*'
+  ```
+
+  ```bash Update dependencies across workspace
+  pnpm update -r
+  ```
+</CodeGroup>
+
+### Working with Agents
+
+<CodeGroup>
+  ```bash Build agent flows
+  pnpm agent:build
+  ```
+
+  ```bash Test agent capabilities
+  pnpm agent:test
+  ```
+
+  ```bash Deploy agent updates
+  pnpm agent:deploy
+  ```
+</CodeGroup>
+
+## Resources and Support
+
+<CardGroup cols={2}>
+  <Card title="Developer Documentation" icon="book-open" href="/developer-resources/introduction">
+    Comprehensive guides for all aspects of MOOD MNKY development
+  </Card>
+  <Card title="API Reference" icon="code" href="/developer-resources/api-overview">
+    Detailed API specifications for integration and extension
+  </Card>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/mood-mnky">
+    Access our code repositories and contribute to our ecosystem
+  </Card>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/moodmnky">
+    Connect with other developers and get support
+  </Card>
+</CardGroup>
+
+<div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mt-6">
+  <h3 className="font-medium mb-2">Need Technical Help?</h3>
+  <p className="text-sm">If you encounter issues or have questions about development:</p>
+  <div className="flex flex-wrap gap-3 mt-3">
+    <a href="https://github.com/mood-mnky/issues" className="text-sm px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700">GitHub Issues</a>
+    <a href="https://discord.gg/moodmnky" className="text-sm px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700">Discord #dev Channel</a>
+    <a href="mailto:dev@moodmnky.com" className="text-sm px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700">Developer Support</a>
+  </div>
+</div>

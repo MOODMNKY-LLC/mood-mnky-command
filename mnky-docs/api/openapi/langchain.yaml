@@ -1,0 +1,813 @@
+openapi: 3.0.3
+info:
+  title: Langchain API
+  description: |
+    Official API documentation for the MOOD MNKY Langchain integration.
+    Langchain provides powerful document processing, embedding, and retrieval capabilities.
+    This API allows you to manage documents, create embeddings, perform retrieval, and build AI agents.
+  version: 0.1.0
+  contact:
+    name: MOOD MNKY Support
+    email: support@moodmnky.com
+    url: https://moodmnky.com/support
+
+servers:
+  - url: http://localhost:8000
+    description: Local Development
+  - url: https://langchain.moodmnky.com
+    description: Production
+
+tags:
+  - name: Documents
+    description: Endpoints for document management
+  - name: Embeddings
+    description: Endpoints for vector embedding operations
+  - name: Retrieval
+    description: Endpoints for vector retrieval
+  - name: Chat
+    description: Endpoints for chat-based document QA
+  - name: Agents
+    description: Endpoints for AI agent operations
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /api/documents/load:
+    post:
+      tags:
+        - Documents
+      summary: Load a document
+      description: Load a document from various sources
+      operationId: loadDocument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoadDocumentRequest'
+            examples:
+              fromText:
+                summary: Load from text
+                value:
+                  text: "This is a sample document that will be loaded into the system."
+                  metadata:
+                    source: "user-input"
+                    created: "2023-08-15"
+              fromURL:
+                summary: Load from URL
+                value:
+                  url: "https://example.com/sample.pdf"
+                  mimeType: "application/pdf"
+              fromFile:
+                summary: Load from file content
+                value:
+                  content: "base64-encoded-file-content"
+                  mimeType: "application/pdf"
+                  filename: "sample.pdf"
+      responses:
+        '200':
+          description: Document loaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/documents/chunk:
+    post:
+      tags:
+        - Documents
+      summary: Chunk a document
+      description: Split a document into manageable chunks
+      operationId: chunkDocument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChunkDocumentRequest'
+            examples:
+              basicChunking:
+                summary: Basic document chunking
+                value:
+                  documentId: "doc_1a2b3c4d"
+                  chunkSize: 1000
+                  chunkOverlap: 200
+              withStrategy:
+                summary: With specific chunking strategy
+                value:
+                  documentId: "doc_1a2b3c4d"
+                  chunkSize: 1000
+                  chunkOverlap: 200
+                  chunkingStrategy: "recursive"
+      responses:
+        '200':
+          description: Document chunked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Document not found
+        '500':
+          description: Server error
+
+  /api/documents/embed:
+    post:
+      tags:
+        - Embeddings
+      summary: Create embeddings
+      description: Create vector embeddings for document chunks
+      operationId: createEmbeddings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbedDocumentRequest'
+            examples:
+              basicEmbedding:
+                summary: Basic embedding creation
+                value:
+                  chunks: 
+                    - id: "chunk_1a2b3c4d"
+                      text: "This is a sample chunk of text."
+                      metadata:
+                        source: "sample-document.pdf"
+                        page: 1
+                  embeddingModel: "text-embedding-ada-002"
+                  namespace: "customer-support"
+      responses:
+        '200':
+          description: Embeddings created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/documents/retrieve:
+    post:
+      tags:
+        - Retrieval
+      summary: Retrieve documents
+      description: Retrieve document chunks based on semantic similarity
+      operationId: retrieveDocuments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveDocumentsRequest'
+            examples:
+              basicRetrieval:
+                summary: Basic document retrieval
+                value:
+                  query: "How do I reset my password?"
+                  namespace: "customer-support"
+                  topK: 5
+              filteredRetrieval:
+                summary: Filtered document retrieval
+                value:
+                  query: "How do I reset my password?"
+                  namespace: "customer-support"
+                  topK: 5
+                  filters: 
+                    "metadata.category": "authentication"
+                    "metadata.updated": 
+                      "$gt": "2023-01-01"
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrieveDocumentsResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/documents/upload:
+    post:
+      tags:
+        - Documents
+      summary: Upload document
+      description: Upload a document file directly
+      operationId: uploadDocument
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file to upload
+                metadata:
+                  type: string
+                  description: JSON string of metadata to attach to the document
+      responses:
+        '200':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/documents/{id}:
+    get:
+      tags:
+        - Documents
+      summary: Get document
+      description: Get document by ID
+      operationId: getDocument
+      parameters:
+        - name: id
+          in: path
+          description: Document ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          description: Document not found
+        '500':
+          description: Server error
+    delete:
+      tags:
+        - Documents
+      summary: Delete document
+      description: Delete document by ID
+      operationId: deleteDocument
+      parameters:
+        - name: id
+          in: path
+          description: Document ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document deleted successfully
+        '404':
+          description: Document not found
+        '500':
+          description: Server error
+
+  /api/documents:
+    get:
+      tags:
+        - Documents
+      summary: List documents
+      description: List all documents
+      operationId: listDocuments
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of documents to return
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          description: Number of documents to skip
+          schema:
+            type: integer
+            default: 0
+        - name: filter
+          in: query
+          description: Filter criteria in JSON format
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDocumentsResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/chat/document:
+    post:
+      tags:
+        - Chat
+      summary: Chat with documents
+      description: Have a conversation with context from retrieved documents
+      operationId: chatWithDocuments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentChatRequest'
+            examples:
+              simpleQuestion:
+                summary: Simple document question
+                value:
+                  query: "How do I reset my password?"
+                  namespace: "customer-support"
+                  model: "gpt-3.5-turbo"
+              followupQuestion:
+                summary: Follow-up question with conversation history
+                value:
+                  query: "What if that doesn't work?"
+                  namespace: "customer-support"
+                  model: "gpt-3.5-turbo"
+                  conversation: 
+                    - role: "human"
+                      content: "How do I reset my password?"
+                    - role: "ai" 
+                      content: "To reset your password, go to the login page and click on 'Forgot Password'..."
+      responses:
+        '200':
+          description: Chat response generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentChatResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/agent/execute:
+    post:
+      tags:
+        - Agents
+      summary: Execute agent
+      description: Execute an agent with specific tools to perform a task
+      operationId: executeAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentExecuteRequest'
+            examples:
+              researchTask:
+                summary: Research task with document access
+                value:
+                  query: "Prepare a summary of our refund policy for international orders"
+                  tools: ["DocumentRetrieval", "TextSummarization"]
+                  namespace: "policies"
+                  model: "gpt-4"
+      responses:
+        '200':
+          description: Agent execution completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentExecuteResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check API health status
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  version:
+                    type: string
+                    example: "0.1.0"
+
+components:
+  schemas:
+    LoadDocumentRequest:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source type ('text', 'url', 'file')
+        content:
+          type: string
+          description: Base64-encoded file content (when source is 'file')
+        url:
+          type: string
+          description: URL to fetch document from (when source is 'url')
+        text:
+          type: string
+          description: Raw text content (when source is 'text')
+        mimeType:
+          type: string
+          description: MIME type of the document
+          example: "application/pdf"
+        metadata:
+          type: object
+          description: Additional metadata for the document
+          additionalProperties: true
+
+    DocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Document ID
+          example: "doc_1a2b3c4d"
+        status:
+          type: string
+          description: Document processing status
+          enum: ["loaded", "processing", "chunked", "embedded", "failed"]
+        metadata:
+          type: object
+          description: Document metadata
+          additionalProperties: true
+        stats:
+          type: object
+          properties:
+            characters:
+              type: integer
+              description: Character count
+            tokens:
+              type: integer
+              description: Token count estimate
+            pages:
+              type: integer
+              description: Page count (if applicable)
+        error:
+          type: string
+          description: Error message (if status is 'failed')
+
+    ChunkDocumentRequest:
+      type: object
+      required:
+        - documentId
+      properties:
+        documentId:
+          type: string
+          description: Document ID to chunk
+        chunkSize:
+          type: integer
+          description: Maximum size of each chunk in tokens
+          default: 1000
+        chunkOverlap:
+          type: integer
+          description: Number of tokens of overlap between chunks
+          default: 200
+        chunkingStrategy:
+          type: string
+          description: Strategy for chunking
+          enum: ["recursive", "sentence", "paragraph", "token", "character"]
+          default: "recursive"
+        metadata:
+          type: object
+          description: Additional metadata to add to chunks
+          additionalProperties: true
+
+    ChunkResponse:
+      type: object
+      properties:
+        documentId:
+          type: string
+          description: Original document ID
+        chunks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chunk'
+        stats:
+          type: object
+          properties:
+            chunkCount:
+              type: integer
+              description: Total number of chunks
+            avgChunkSize:
+              type: number
+              description: Average chunk size in tokens
+
+    Chunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Chunk ID
+        text:
+          type: string
+          description: Chunk text content
+        metadata:
+          type: object
+          description: Metadata associated with this chunk
+          additionalProperties: true
+        tokenCount:
+          type: integer
+          description: Number of tokens in this chunk
+
+    EmbedDocumentRequest:
+      type: object
+      required:
+        - chunks
+      properties:
+        chunks:
+          type: array
+          description: Chunks to embed
+          items:
+            $ref: '#/components/schemas/Chunk'
+        embeddingModel:
+          type: string
+          description: Model to use for embeddings
+          default: "text-embedding-ada-002"
+        namespace:
+          type: string
+          description: Namespace to store embeddings in
+          default: "default"
+        metadata:
+          type: object
+          description: Additional metadata to store with embeddings
+          additionalProperties: true
+
+    EmbeddingResponse:
+      type: object
+      properties:
+        namespace:
+          type: string
+          description: Namespace embeddings were stored in
+        count:
+          type: integer
+          description: Number of chunks embedded
+        ids:
+          type: array
+          description: IDs of embedded chunks
+          items:
+            type: string
+        metadata:
+          type: object
+          description: Metadata associated with these embeddings
+          additionalProperties: true
+
+    RetrieveDocumentsRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Query text to search for
+        namespace:
+          type: string
+          description: Namespace to search in
+          default: "default"
+        filters:
+          type: object
+          description: Metadata filters to apply
+          additionalProperties: true
+        topK:
+          type: integer
+          description: Number of results to return
+          default: 5
+        includeSimilarity:
+          type: boolean
+          description: Whether to include similarity scores
+          default: true
+        includeContent:
+          type: boolean
+          description: Whether to include document content
+          default: true
+        embeddingModel:
+          type: string
+          description: Model to use for query embedding
+          default: "text-embedding-ada-002"
+
+    RetrieveDocumentsResponse:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Original query
+        namespace:
+          type: string
+          description: Namespace searched in
+        results:
+          type: array
+          description: Retrieved documents
+          items:
+            $ref: '#/components/schemas/RetrievalResult'
+        metadata:
+          type: object
+          description: Additional metadata
+          additionalProperties: true
+
+    RetrievalResult:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Chunk ID
+        similarity:
+          type: number
+          description: Similarity score
+          format: float
+        content:
+          type: string
+          description: Content of the chunk
+        metadata:
+          type: object
+          description: Metadata associated with this chunk
+          additionalProperties: true
+
+    ListDocumentsResponse:
+      type: object
+      properties:
+        documents:
+          type: array
+          description: List of documents
+          items:
+            $ref: '#/components/schemas/DocumentResponse'
+        total:
+          type: integer
+          description: Total number of documents matching criteria
+        limit:
+          type: integer
+          description: Limit used for query
+        offset:
+          type: integer
+          description: Offset used for query
+
+    DocumentChatRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Question or query to ask
+        namespace:
+          type: string
+          description: Namespace to search in
+          default: "default"
+        model:
+          type: string
+          description: Language model to use
+          default: "gpt-3.5-turbo"
+        temperature:
+          type: number
+          description: Temperature for model generation
+          default: 0.7
+        topK:
+          type: integer
+          description: Number of documents to retrieve
+          default: 5
+        filters:
+          type: object
+          description: Metadata filters to apply
+          additionalProperties: true
+        conversation:
+          type: array
+          description: Previous conversation history
+          items:
+            $ref: '#/components/schemas/Message'
+        includeMetadata:
+          type: boolean
+          description: Whether to include metadata in response
+          default: true
+        includeSourceDocuments:
+          type: boolean
+          description: Whether to include source documents in response
+          default: true
+
+    DocumentChatResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Generated response text
+        sourceDocuments:
+          type: array
+          description: Source documents used for response
+          items:
+            $ref: '#/components/schemas/RetrievalResult'
+        conversation:
+          type: array
+          description: Updated conversation history
+          items:
+            $ref: '#/components/schemas/Message'
+        metadata:
+          type: object
+          description: Additional metadata
+          additionalProperties: true
+
+    AgentExecuteRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Task or question for the agent
+        tools:
+          type: array
+          description: Tools the agent can use
+          items:
+            type: string
+          default: ["DocumentRetrieval"]
+        model:
+          type: string
+          description: Language model to use
+          default: "gpt-3.5-turbo"
+        namespace:
+          type: string
+          description: Document namespace to use
+          default: "default"
+        temperature:
+          type: number
+          description: Temperature for model generation
+          default: 0.7
+        maxIterations:
+          type: integer
+          description: Maximum number of iterations
+          default: 10
+        returnIntermediateSteps:
+          type: boolean
+          description: Whether to return intermediate steps
+          default: false
+
+    AgentExecuteResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Final response from the agent
+        intermediateSteps:
+          type: array
+          description: Intermediate steps taken by the agent
+          items:
+            $ref: '#/components/schemas/AgentStep'
+        metadata:
+          type: object
+          description: Additional metadata
+          additionalProperties: true
+
+    AgentStep:
+      type: object
+      properties:
+        thought:
+          type: string
+          description: Agent's thought process
+        action:
+          type: string
+          description: Action taken
+        actionInput:
+          type: object
+          description: Input to the action
+          additionalProperties: true
+        observation:
+          type: string
+          description: Result of the action
+
+    Message:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          description: Role of the message sender
+          enum: [human, ai, system]
+        content:
+          type: string
+          description: Content of the message
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication (format - 'Bearer YOUR_API_KEY') 

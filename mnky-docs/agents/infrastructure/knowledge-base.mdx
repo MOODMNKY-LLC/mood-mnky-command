@@ -1,0 +1,59 @@
+---
+title: "Knowledge Base Infrastructure"
+description: "Architecture and implementation of the agent knowledge base system"
+---
+
+# Knowledge Base Infrastructure
+
+The knowledge base infrastructure provides the foundation for agent memory, context management, and information retrieval across all MOOD MNKY agents.
+
+## Overview
+
+The knowledge base system enables agents to:
+- Store and retrieve contextual information
+- Maintain conversation history and user preferences
+- Access structured and unstructured data
+- Support RAG (Retrieval-Augmented Generation) capabilities
+
+## Architecture
+
+### Vector Database
+
+The knowledge base uses vector embeddings for semantic search:
+
+- **Storage**: Vector embeddings of documents and conversations
+- **Search**: Semantic similarity matching for context retrieval
+- **Indexing**: Automatic indexing of new content
+- **Updates**: Real-time synchronization across agents
+
+### Document Management
+
+- **Ingestion**: Automatic document processing and chunking
+- **Metadata**: Rich metadata tagging for enhanced search
+- **Versioning**: Document version control and history
+- **Access Control**: Permission-based access to knowledge
+
+## Integration Points
+
+- [Agent Database](/agents/agent-database/knowledge-base) - Central knowledge repository
+- [RAG Capabilities](/agents/capabilities/rag) - Retrieval-augmented generation
+- [Vector Search](/technology-stack/vector-search) - Search infrastructure
+- [Content Management](/platform-services/content-management) - Content services
+
+## Configuration
+
+Knowledge base configuration is managed through the agent infrastructure:
+
+```yaml
+knowledge_base:
+  vector_store: "pinecone"
+  embedding_model: "text-embedding-ada-002"
+  chunk_size: 1000
+  chunk_overlap: 200
+```
+
+## Related Documentation
+
+- [Memory Systems](/agents/infrastructure/memory-system) - Long-term memory architecture
+- [Orchestration](/agents/infrastructure/orchestration) - Agent coordination
+- [User Profiling](/agents/infrastructure/user-profiling) - User data management

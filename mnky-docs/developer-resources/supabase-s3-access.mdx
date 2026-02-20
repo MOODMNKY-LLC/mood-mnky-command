@@ -1,0 +1,526 @@
+---
+title: 'Supabase S3 Access'
+description: 'How to use Supabase Storage with S3-compatible protocol'
+---
+
+# Supabase S3-Compatible Storage Access
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/s3-storage.svg"
+  alt="S3 Storage"
+/>
+
+## Overview
+
+Supabase Storage provides a powerful object storage solution that supports both a standard REST API and an S3-compatible protocol. This guide explains how to use the S3 protocol to interact with Supabase Storage, enabling more advanced file operations and integration with existing S3 tooling.
+
+<Note>
+  S3-compatible access provides more flexibility than the standard Supabase Storage API, especially for advanced file operations, bulk transfers, and integration with existing tools.
+</Note>
+
+## Configuration
+
+### Environment Variables
+
+To use the S3-compatible protocol with Supabase Storage, you need to configure the following environment variables:
+
+```
+SUPABASE_S3_URL=https://your-project.supabase.co/storage/v1/s3
+SUPABASE_S3_REGION=us-east-1
+SUPABASE_S3_ACCESS_KEY_ID=your-access-key-id
+SUPABASE_S3_SECRET_ACCESS_KEY=your-secret-access-key
+```
+
+In the MOOD MNKY environment, these are already configured for production in `.env.production`.
+
+### Client Setup
+
+To access Supabase Storage via the S3 protocol, you can use the AWS SDK:
+
+```typescript
+import { S3Client } from '@aws-sdk/client-s3';
+
+function getS3Client() {
+  return new S3Client({
+    endpoint: process.env.SUPABASE_S3_URL,
+    region: process.env.SUPABASE_S3_REGION,
+    credentials: {
+      accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY,
+    },
+    forcePathStyle: true, // Required for Supabase Storage
+  });
+}
+```
+
+## Basic Operations
+
+### Uploading Files
+
+```typescript
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+async function uploadFile(bucketName, key, file, contentType) {
+  const s3Client = getS3Client();
+  
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    Body: file,
+    ContentType: contentType,
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    return { success: true, response };
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return { success: false, error };
+  }
+}
+
+// Example usage
+const fileBuffer = fs.readFileSync('path/to/local/file.jpg');
+await uploadFile('product-images', 'public/product-123.jpg', fileBuffer, 'image/jpeg');
+```
+
+### Downloading Files
+
+```typescript
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
+import fs from 'fs';
+
+async function downloadFile(bucketName, key, outputPath) {
+  const s3Client = getS3Client();
+  
+  const command = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    
+    // For in-memory processing
+    const bodyContents = await response.Body.transformToByteArray();
+    
+    // Or save to file
+    if (outputPath) {
+      const writeStream = fs.createWriteStream(outputPath);
+      const readableStream = Readable.from(response.Body);
+      readableStream.pipe(writeStream);
+      
+      return new Promise((resolve, reject) => {
+        writeStream.on('finish', () => resolve({ success: true }));
+        writeStream.on('error', reject);
+      });
+    }
+    
+    return { success: true, data: bodyContents, contentType: response.ContentType };
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    return { success: false, error };
+  }
+}
+
+// Example usage
+await downloadFile('product-images', 'public/product-123.jpg', 'local-copy.jpg');
+```
+
+### Listing Files
+
+```typescript
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
+
+async function listFiles(bucketName, prefix = '') {
+  const s3Client = getS3Client();
+  
+  const command = new ListObjectsV2Command({
+    Bucket: bucketName,
+    Prefix: prefix,
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    return {
+      success: true,
+      files: response.Contents.map(item => ({
+        key: item.Key,
+        size: item.Size,
+        lastModified: item.LastModified,
+      })),
+    };
+  } catch (error) {
+    console.error('Error listing files:', error);
+    return { success: false, error };
+  }
+}
+
+// Example usage
+const result = await listFiles('product-images', 'public/');
+console.log(`Found ${result.files.length} files`);
+```
+
+### Deleting Files
+
+```typescript
+import { S3Client, DeleteObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+
+// Delete a single file
+async function deleteFile(bucketName, key) {
+  const s3Client = getS3Client();
+  
+  const command = new DeleteObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    return { success: true, response };
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    return { success: false, error };
+  }
+}
+
+// Delete multiple files
+async function deleteMultipleFiles(bucketName, keys) {
+  const s3Client = getS3Client();
+  
+  const command = new DeleteObjectsCommand({
+    Bucket: bucketName,
+    Delete: {
+      Objects: keys.map(key => ({ Key: key })),
+    },
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    return {
+      success: true,
+      deleted: response.Deleted,
+      errors: response.Errors,
+    };
+  } catch (error) {
+    console.error('Error deleting files:', error);
+    return { success: false, error };
+  }
+}
+
+// Example usage
+await deleteFile('product-images', 'public/product-123.jpg');
+// Or delete multiple files
+await deleteMultipleFiles('product-images', [
+  'public/product-123.jpg',
+  'public/product-124.jpg',
+  'public/product-125.jpg',
+]);
+```
+
+## Advanced Operations
+
+### Multipart Uploads
+
+Multipart uploads are useful for large files and allow for better handling of upload failures:
+
+```typescript
+import {
+  S3Client,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
+} from '@aws-sdk/client-s3';
+
+async function multipartUpload(bucketName, key, fileBuffer, contentType) {
+  const s3Client = getS3Client();
+  const PART_SIZE = 5 * 1024 * 1024; // 5MB parts
+  let uploadId;
+  
+  try {
+    // Step 1: Create multipart upload
+    const createCommand = new CreateMultipartUploadCommand({
+      Bucket: bucketName,
+      Key: key,
+      ContentType: contentType,
+    });
+    
+    const { UploadId } = await s3Client.send(createCommand);
+    uploadId = UploadId;
+    
+    // Step 2: Upload parts
+    const partPromises = [];
+    const partCount = Math.ceil(fileBuffer.length / PART_SIZE);
+    
+    for (let i = 0; i < partCount; i++) {
+      const start = i * PART_SIZE;
+      const end = Math.min(start + PART_SIZE, fileBuffer.length);
+      const partBuffer = fileBuffer.slice(start, end);
+      
+      const uploadPartCommand = new UploadPartCommand({
+        Bucket: bucketName,
+        Key: key,
+        UploadId: uploadId,
+        PartNumber: i + 1,
+        Body: partBuffer,
+      });
+      
+      partPromises.push(
+        s3Client.send(uploadPartCommand)
+          .then(data => ({
+            PartNumber: i + 1,
+            ETag: data.ETag,
+          }))
+      );
+    }
+    
+    const parts = await Promise.all(partPromises);
+    
+    // Step 3: Complete multipart upload
+    const completeCommand = new CompleteMultipartUploadCommand({
+      Bucket: bucketName,
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: {
+        Parts: parts,
+      },
+    });
+    
+    await s3Client.send(completeCommand);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error in multipart upload:', error);
+    
+    // Abort the multipart upload if something went wrong
+    if (uploadId) {
+      try {
+        const abortCommand = new AbortMultipartUploadCommand({
+          Bucket: bucketName,
+          Key: key,
+          UploadId: uploadId,
+        });
+        
+        await s3Client.send(abortCommand);
+        console.log('Multipart upload aborted');
+      } catch (abortError) {
+        console.error('Error aborting multipart upload:', abortError);
+      }
+    }
+    
+    return { success: false, error };
+  }
+}
+```
+
+### Managing Bucket Policies
+
+```typescript
+import { S3Client, GetBucketPolicyCommand, PutBucketPolicyCommand } from '@aws-sdk/client-s3';
+
+// Get current bucket policy
+async function getBucketPolicy(bucketName) {
+  const s3Client = getS3Client();
+  
+  const command = new GetBucketPolicyCommand({
+    Bucket: bucketName,
+  });
+  
+  try {
+    const response = await s3Client.send(command);
+    return {
+      success: true,
+      policy: JSON.parse(response.Policy),
+    };
+  } catch (error) {
+    console.error('Error getting bucket policy:', error);
+    return { success: false, error };
+  }
+}
+
+// Update bucket policy
+async function setBucketPolicy(bucketName, policy) {
+  const s3Client = getS3Client();
+  
+  const command = new PutBucketPolicyCommand({
+    Bucket: bucketName,
+    Policy: JSON.stringify(policy),
+  });
+  
+  try {
+    await s3Client.send(command);
+    return { success: true };
+  } catch (error) {
+    console.error('Error setting bucket policy:', error);
+    return { success: false, error };
+  }
+}
+```
+
+## Integration with Supabase RLS
+
+When using the S3 protocol, Row Level Security (RLS) still applies. The S3 credentials use the service role key internally, so your custom bucket policies must be properly configured.
+
+### Recommended Approach
+
+1. Create appropriate RLS policies in Supabase
+2. Use server-side functions to generate pre-signed URLs for client-side operations
+3. Keep S3 credentials secure on the server side
+
+Example of a server function generating a pre-signed URL:
+
+```typescript
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+// In a Next.js API route or server component
+export async function generatePresignedUploadUrl(bucketName, key, contentType, expiresIn = 3600) {
+  const s3Client = getS3Client();
+  
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+    ContentType: contentType,
+  });
+  
+  try {
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
+    return { success: true, signedUrl };
+  } catch (error) {
+    console.error('Error generating presigned URL:', error);
+    return { success: false, error };
+  }
+}
+```
+
+## Utils Package
+
+For convenience, we've created a utility package in the monorepo for S3 operations. This package handles common S3 operations with appropriate error handling and logging:
+
+```typescript
+import { uploadFile, downloadFile, listFiles, deleteFile } from '@repo/s3-utils';
+
+// Simple usage
+await uploadFile('product-images', 'public/product-123.jpg', fileBuffer, 'image/jpeg');
+
+// With additional options
+await uploadFile('product-images', 'public/product-123.jpg', fileBuffer, 'image/jpeg', {
+  metadata: {
+    'x-product-id': '123',
+    'x-created-by': 'admin',
+  },
+  cacheControl: 'max-age=86400',
+});
+```
+
+## S3 vs Standard API Comparison
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Standard API</th>
+      <th>S3 Protocol</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ease of Use</td>
+      <td>Simple, integrated with Supabase client</td>
+      <td>More complex, requires AWS SDK</td>
+    </tr>
+    <tr>
+      <td>Client-Side Usage</td>
+      <td>✅ Safe to use in browser</td>
+      <td>⚠️ Credentials must be kept server-side</td>
+    </tr>
+    <tr>
+      <td>File Size Limits</td>
+      <td>Up to 50MB per upload</td>
+      <td>Virtually unlimited with multipart uploads</td>
+    </tr>
+    <tr>
+      <td>Bulk Operations</td>
+      <td>Limited</td>
+      <td>✅ Efficient bulk operations</td>
+    </tr>
+    <tr>
+      <td>Advanced Features</td>
+      <td>Limited</td>
+      <td>✅ Full S3 functionality</td>
+    </tr>
+    <tr>
+      <td>Third-Party Tool Integration</td>
+      <td>Limited</td>
+      <td>✅ Compatible with any S3 tool</td>
+    </tr>
+  </tbody>
+</table>
+
+## When to Use S3 Protocol
+
+Use the S3-compatible protocol when:
+
+1. **Handling large files** that exceed the standard API limits
+2. **Performing bulk operations** on many files at once
+3. **Integrating with existing tools** that support S3
+4. **Implementing complex workflows** like file processing pipelines
+5. **Needing advanced features** like multipart uploads, file versioning, etc.
+
+For simpler use cases, the standard Supabase Storage API remains the recommended approach.
+
+## Security Considerations
+
+When working with S3-compatible access:
+
+1. **Never expose credentials in client-side code**
+2. **Use pre-signed URLs** for client uploads/downloads
+3. **Implement proper access controls** with bucket policies
+4. **Apply the principle of least privilege** to all operations
+5. **Monitor usage** to detect unusual access patterns
+
+## Troubleshooting
+
+### Common Issues
+
+1. **403 Forbidden errors**: Check that your credentials are correct and have appropriate permissions
+2. **Region-related errors**: Ensure you're using the correct region
+3. **Path-style issues**: Make sure `forcePathStyle` is set to `true`
+4. **Content-Type problems**: Explicitly set the Content-Type when uploading files
+
+### Debugging
+
+For debugging S3 operations, you can enable logging:
+
+```typescript
+const s3Client = new S3Client({
+  endpoint: process.env.SUPABASE_S3_URL,
+  region: process.env.SUPABASE_S3_REGION,
+  credentials: {
+    accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: true,
+  logger: console, // Enable request logging
+});
+```
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Supabase Storage Docs" icon="book" href="https://supabase.com/docs/guides/storage" target="_blank">
+    Official Supabase Storage documentation
+  </Card>
+  <Card title="AWS S3 SDK Docs" icon="aws" href="https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-s3/" target="_blank">
+    AWS SDK for JavaScript S3 Client
+  </Card>
+  <Card title="Storage Services" icon="hard-drive" href="/developer-resources/storage">
+    MOOD MNKY Storage Services overview
+  </Card>
+  <Card title="Supabase Integration" icon="database" href="/technology-stack/supabase">
+    Supabase integration in MOOD MNKY
+  </Card>
+</CardGroup>

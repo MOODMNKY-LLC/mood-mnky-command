@@ -1,0 +1,155 @@
+---
+title: 'Users API'
+description: 'User management API reference for MOOD MNKY platform'
+---
+
+# Users API
+
+The Users API provides endpoints for managing user accounts, profiles, and related data across the MOOD MNKY ecosystem.
+
+## Endpoints
+
+### Get User
+
+```
+GET /api/users/{userId}
+```
+
+Retrieves a user by their unique identifier.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Response
+
+```json
+{
+  "id": "user_123456",
+  "email": "user@example.com",
+  "displayName": "Example User",
+  "createdAt": "2023-01-15T12:00:00Z",
+  "updatedAt": "2023-03-20T15:30:00Z",
+  "preferences": {
+    "theme": "dark",
+    "notifications": true
+  },
+  "profile": {
+    "bio": "MOOD MNKY enthusiast",
+    "avatarUrl": "https://example.com/avatar.jpg"
+  }
+}
+```
+
+### Create User
+
+```
+POST /api/users
+```
+
+Creates a new user account.
+
+#### Request Body
+
+```json
+{
+  "email": "newuser@example.com",
+  "password": "securePassword123",
+  "displayName": "New User"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "user_789012",
+  "email": "newuser@example.com",
+  "displayName": "New User",
+  "createdAt": "2023-04-15T10:00:00Z",
+  "updatedAt": "2023-04-15T10:00:00Z"
+}
+```
+
+### Update User
+
+```
+PATCH /api/users/{userId}
+```
+
+Updates an existing user's information.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Request Body
+
+```json
+{
+  "displayName": "Updated Name",
+  "profile": {
+    "bio": "Updated bio information"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "user_123456",
+  "email": "user@example.com",
+  "displayName": "Updated Name",
+  "updatedAt": "2023-04-16T09:30:00Z",
+  "profile": {
+    "bio": "Updated bio information",
+    "avatarUrl": "https://example.com/avatar.jpg"
+  }
+}
+```
+
+### Delete User
+
+```
+DELETE /api/users/{userId}
+```
+
+Permanently deletes a user account.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| userId | string | Yes | The unique identifier of the user |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "User successfully deleted"
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - User does not exist |
+| 409 | Conflict - Email already in use |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Always include the Authorization header with a valid JWT token
+- Use HTTPS for all API requests
+- Implement proper error handling for all responses
+- Cache user data where appropriate to reduce API calls 

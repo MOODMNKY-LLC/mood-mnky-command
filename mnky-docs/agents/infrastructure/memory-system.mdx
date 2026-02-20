@@ -1,0 +1,107 @@
+---
+title: "Memory System Infrastructure"
+description: "Long-term and short-term memory architecture for agents"
+---
+
+# Memory System Infrastructure
+
+The memory system provides both short-term and long-term memory capabilities for all MOOD MNKY agents, enabling context retention and personalized experiences.
+
+## Overview
+
+The memory system enables agents to:
+- **Remember conversations** - Maintain context across sessions
+- **Learn preferences** - Build user profiles over time
+- **Retain knowledge** - Store important information
+- **Personalize interactions** - Use historical data for customization
+
+## Architecture
+
+### Short-Term Memory
+
+Short-term memory handles immediate context:
+
+- **Conversation Buffer**: Current conversation context
+- **Working Memory**: Active task information
+- **Session State**: Temporary session data
+- **Cache**: Frequently accessed information
+
+### Long-Term Memory
+
+Long-term memory stores persistent information:
+
+- **User Profiles**: Comprehensive user data and preferences
+- **Conversation History**: Archived conversations
+- **Knowledge Base**: Learned facts and information
+- **Preferences**: User preferences and settings
+
+## Memory Types
+
+### Episodic Memory
+Stores specific events and experiences:
+- Conversation transcripts
+- User interactions
+- Event sequences
+- Temporal information
+
+### Semantic Memory
+Stores general knowledge:
+- Facts and concepts
+- Relationships
+- Patterns and rules
+- Domain knowledge
+
+### Procedural Memory
+Stores how-to information:
+- Task procedures
+- Workflow patterns
+- Best practices
+- Operational knowledge
+
+## Memory Processes
+
+<Frame caption="Memory Processing Flow">
+  <img src="/images/memory-processes.svg" alt="Memory processing flow diagram showing encoding, storage, and retrieval processes" />
+</Frame>
+
+### Encoding
+Information is processed and encoded:
+- **Extraction**: Key information extraction
+- **Normalization**: Data standardization
+- **Embedding**: Vector representation
+- **Indexing**: Search index creation
+
+### Storage
+Encoded information is stored:
+- **Vector Database**: Semantic embeddings
+- **Relational Database**: Structured data
+- **File Storage**: Documents and media
+- **Cache**: Fast access layer
+
+### Retrieval
+Information is retrieved when needed:
+- **Semantic Search**: Similarity-based retrieval
+- **Query Processing**: Structured queries
+- **Context Filtering**: Relevance filtering
+- **Ranking**: Result prioritization
+
+## Configuration
+
+Memory system configuration:
+
+```yaml
+memory:
+  short_term:
+    buffer_size: 4096
+    ttl: 3600  # 1 hour
+  long_term:
+    vector_store: "pinecone"
+    database: "postgresql"
+    retention_days: 365
+```
+
+## Related Documentation
+
+- [User Profiling](/agents/infrastructure/user-profiling) - User data management
+- [Knowledge Base](/agents/infrastructure/knowledge-base) - Knowledge storage
+- [Memory Optimization](/agents/capabilities/memory-optimization) - Performance tuning

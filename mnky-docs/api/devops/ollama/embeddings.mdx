@@ -1,0 +1,231 @@
+# Embeddings
+
+This guide covers the embeddings capabilities of the Ollama service.
+
+## Embeddings Endpoint
+
+```bash
+POST /api/embeddings
+
+curl -X POST "https://ollama.moodmnky.com/api/embeddings" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2",
+    "prompt": "The quick brown fox jumps over the lazy dog",
+    "options": {
+      "num_ctx": 4096
+    }
+  }'
+```
+
+Response:
+```json
+{
+  "embedding": [
+    0.5670816898345947,
+    -0.09932584315538406,
+    0.2147521972656250,
+    // ... (truncated for brevity)
+  ]
+}
+```
+
+## Request Parameters
+
+### Core Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| model | string | Yes | The model to use for embeddings |
+| prompt | string | Yes | The text to generate embeddings for |
+| options | object | No | Model parameters for generation |
+
+### Options Object
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| num_ctx | integer | 4096 | Context window size |
+
+## Usage Examples
+
+### Basic Embeddings
+
+```typescript
+const response = await client.ollama.embeddings({
+  model: "llama2",
+  prompt: "The quick brown fox jumps over the lazy dog"
+});
+
+console.log(response.embedding);
+```
+
+### Batch Embeddings
+
+```typescript
+const texts = [
+  "The quick brown fox jumps over the lazy dog",
+  "Lorem ipsum dolor sit amet",
+  "Hello, world!"
+];
+
+const embeddings = await Promise.all(
+  texts.map(text => 
+    client.ollama.embeddings({
+      model: "llama2",
+      prompt: text
+    })
+  )
+);
+
+const vectors = embeddings.map(e => e.embedding);
+```
+
+### Semantic Search
+
+```typescript
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const normA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const normB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dotProduct / (normA * normB);
+}
+
+// Generate embeddings for a query
+const queryEmbedding = await client.ollama.embeddings({
+  model: "llama2",
+  prompt: "search query"
+});
+
+// Compare with document embeddings
+const documents = [
+  { text: "Document 1", embedding: [...] },
+  { text: "Document 2", embedding: [...] },
+  // ...
+];
+
+const similarities = documents.map(doc => ({
+  text: doc.text,
+  similarity: cosineSimilarity(queryEmbedding.embedding, doc.embedding)
+}));
+
+// Sort by similarity
+similarities.sort((a, b) => b.similarity - a.similarity);
+```
+
+### Document Clustering
+
+```typescript
+interface Document {
+  text: string;
+  embedding: number[];
+}
+
+async function clusterDocuments(
+  documents: string[],
+  numClusters: number
+): Promise<Document[][]> {
+  // Generate embeddings for all documents
+  const docs: Document[] = await Promise.all(
+    documents.map(async text => ({
+      text,
+      embedding: (await client.ollama.embeddings({
+        model: "llama2",
+        prompt: text
+      })).embedding
+    }))
+  );
+
+  // Implement k-means clustering
+  // ... clustering logic here ...
+
+  return clusters;
+}
+```
+
+## Best Practices
+
+1. **Performance Optimization**
+   - Batch similar requests when possible
+   - Cache embeddings for frequently used text
+   - Monitor and optimize request rates
+   - Use appropriate context window size
+
+2. **Vector Operations**
+   - Normalize vectors before comparison
+   - Use efficient similarity metrics
+   - Implement vector indexing for large datasets
+   - Consider dimensionality reduction for storage
+
+3. **Error Handling**
+   - Implement retry logic for timeouts
+   - Handle rate limits appropriately
+   - Validate input text length
+   - Monitor embedding quality
+
+4. **Storage and Retrieval**
+   - Use vector databases for large collections
+   - Implement efficient search algorithms
+   - Consider compression techniques
+   - Maintain embedding-text mappings
+
+## Error Handling
+
+```typescript
+try {
+  const response = await client.ollama.embeddings({
+    model: "llama2",
+    prompt: "Example text"
+  });
+} catch (error) {
+  switch (error.code) {
+    case "MODEL_NOT_LOADED":
+      console.error("Model not loaded");
+      // Attempt to load model
+      break;
+    case "CONTEXT_LENGTH_EXCEEDED":
+      console.error("Context length exceeded");
+      // Truncate input text
+      break;
+    case "RATE_LIMIT_EXCEEDED":
+      console.error("Rate limit exceeded");
+      // Implement backoff strategy
+      break;
+    default:
+      console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Common Use Cases
+
+1. **Semantic Search**
+   - Document similarity matching
+   - Content recommendation
+   - Question answering
+   - Information retrieval
+
+2. **Document Clustering**
+   - Content organization
+   - Topic modeling
+   - Duplicate detection
+   - Trend analysis
+
+3. **Text Classification**
+   - Sentiment analysis
+   - Category prediction
+   - Intent classification
+   - Language detection
+
+4. **Feature Engineering**
+   - Machine learning input
+   - Data preprocessing
+   - Dimensionality reduction
+   - Pattern recognition
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/ollama)
+- [Embeddings Guide](https://docs.moodmnky.com/guides/embeddings)
+- [Best Practices](https://docs.moodmnky.com/guides/best-practices)
+- [Support](mailto:support@moodmnky.com) 

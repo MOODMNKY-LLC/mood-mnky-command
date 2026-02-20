@@ -1,0 +1,107 @@
+---
+title: "User Profiling Infrastructure"
+description: "User data collection, storage, and personalization system"
+---
+
+# User Profiling Infrastructure
+
+The user profiling system collects, stores, and utilizes user data to enable personalized experiences across all MOOD MNKY agents.
+
+## Overview
+
+User profiling enables:
+- **Personalization** - Tailored experiences based on user data
+- **Preference Learning** - Automatic preference detection
+- **Behavior Analysis** - Understanding user patterns
+- **Recommendation Engine** - Data-driven recommendations
+
+## Architecture
+
+### Profile Storage
+
+User profiles are stored in multiple layers:
+
+- **Core Profile**: Basic user information and preferences
+- **Behavioral Data**: Interaction patterns and history
+- **Preference Vectors**: Embeddings of user preferences
+- **Segmentation Tags**: User category assignments
+
+### Data Collection
+
+Profile data is collected from:
+
+- **Explicit Input**: User-provided information
+- **Implicit Signals**: Behavior and interaction patterns
+- **External Sources**: Integrated third-party data
+- **Inferred Data**: ML-predicted attributes
+
+## Profile Components
+
+### Demographics
+- Age, location, language
+- Cultural background
+- Communication preferences
+
+### Preferences
+- Product preferences (fragrances, styles)
+- Content preferences
+- Interaction style preferences
+- Communication channel preferences
+
+### Behavioral Patterns
+- Purchase history
+- Engagement patterns
+- Feature usage
+- Time-based patterns
+
+### Psychographic Data
+- Personality traits (Enneagram, MBTI)
+- Values and interests
+- Lifestyle characteristics
+- Emotional patterns
+
+## Personalization Vectors
+
+<Frame caption="Personalization Vector Architecture">
+  <img src="/images/personalization-vectors.svg" alt="Diagram showing how user preferences are converted to vectors for similarity matching" />
+</Frame>
+
+User preferences are converted to vectors for:
+- **Similarity Matching**: Finding similar users
+- **Recommendation**: Product and content recommendations
+- **Clustering**: User segmentation
+- **Prediction**: Behavior forecasting
+
+## Privacy & Governance
+
+### Data Privacy
+- **Consent Management**: User consent tracking
+- **Data Minimization**: Collect only necessary data
+- **Anonymization**: PII protection
+- **Right to Deletion**: User data removal
+
+### Data Governance
+- **Access Control**: Permission-based access
+- **Audit Logging**: Data access tracking
+- **Compliance**: GDPR, CCPA compliance
+- [Privacy Operations](/operations/privacy) - Privacy management
+
+## Configuration
+
+User profiling configuration:
+
+```yaml
+user_profiling:
+  storage: "postgresql"
+  vector_store: "pinecone"
+  update_frequency: "realtime"
+  retention_days: 1095  # 3 years
+  anonymization: true
+```
+
+## Related Documentation
+
+- [Personalization Services](/platform-services/personalization) - Personalization platform
+- [Vector Search](/technology-stack/vector-search) - Search infrastructure
+- [Privacy Operations](/operations/privacy) - Privacy management
+- [Analytics](/analytics/personalization-effectiveness) - Effectiveness tracking

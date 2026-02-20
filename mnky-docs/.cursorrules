@@ -1,0 +1,124 @@
+This is a context for AI editor/agent about the project. It's generated with a tool Airul (https://github.com/mitkury/airul) out of 2 sources. Feel free to edit .airul.json to change the sources and configure editors. Run `airul gen` to update the context after making changes to .airul.json or the sources. Remember to update TODO-AI.md after major changes in the project, keeping track of completed tasks and new developments.
+
+# From README.md:
+
+# MOOD MNKY Documentation
+
+This directory contains the documentation for the MOOD MNKY ecosystem, organized using Mintlify.
+
+## Directory Structure
+
+The documentation follows this structure:
+
+```
+docs/
+├── api/                  # API documentation
+│   ├── core/             # Core API endpoints
+│   ├── e-commerce/       # E-commerce API integration
+│   ├── agents/           # Agent API endpoints
+│   └── reference/        # API specifications
+│
+├── guides/               # User and developer guides
+│   ├── getting-started/  # Onboarding guides
+│   ├── development/      # Development guides
+│   ├── user/             # User guides
+│   └── admin/            # Admin guides
+│
+├── agents/               # Agent documentation
+│   ├── mood-mnky/        # MOOD MNKY agent
+│   ├── code-mnky/        # CODE MNKY agent
+│   ├── sage-mnky/        # SAGE MNKY agent
+│   └── infrastructure/   # Agent infrastructure
+│
+├── platform/             # Platform documentation
+│   ├── dojo/             # Dojo platform
+│   ├── e-commerce/       # E-commerce integration
+│   ├── personalization/  # Personalization systems
+│   └── token-economy/    # Token economy
+│
+├── reference/            # Technical reference
+│   ├── architecture/     # System architecture
+│   ├── data-models/      # Data models and schemas
+│   ├── integration/      # Integration points
+│   └── security/         # Security reference
+│
+├── tutorials/            # Step-by-step tutorials
+│   ├── development/      # Development tutorials
+│   ├── customization/    # Customization tutorials
+│   └── integration/      # Integration tutorials
+│
+├── brand/                # Brand documentation
+│   ├── vision/           # Brand vision and mission
+│   ├── design/           # Design guidelines
+│   ├── products/         # Product catalog
+│   └── strategy/         # Brand strategy
+│
+└── internal/             # Internal documentation
+    ├── processes/        # Internal processes
+    ├── development/      # Development practices
+    └── infrastructure/   # Infrastructure documentation
+```
+
+## Navigation Configuration
+
+Navigation is configured in the `docs.json` file, which organizes content into tabs and groups for the Mintlify interface.
+
+## Writing Documentation
+
+When writing documentation:
+
+1. Create .mdx files in the appropriate directory
+2. Use frontmatter to specify title and description
+3. Follow the documentation style guide
+4. Include appropriate cross-links to related content
+5. Use Mintlify components for enhanced content
+
+## Local Development
+
+To run the documentation locally:
+
+```bash
+npx mintlify dev
+```
+
+## Publishing
+
+Documentation is automatically published when changes are pushed to the main branch.
+
+## Contributing
+
+Please see the [Documentation Contribution Guide](./guides/development/documentation-guide.mdx) for information on how to contribute to the documentation.
+---
+
+# From TODO-AI.md:
+
+# AI Workspace
+
+## Active Task
+Complete remaining documentation sections for MNKY MIND
+
+## Status
+🚀 Significant Progress
+
+## Context & Progress
+- Created: 2025-04-01
+- We've established a comprehensive documentation structure for MOOD MNKY
+- We've created detailed product documentation for fragrances, candles, and bath & body products
+- We've documented platform services including mood tracking and virtual consulting
+- We've established developer resources including introduction, testing strategy, and deployment
+
+## Task History
+- ✅ Establish documentation structure
+- ✅ Configure Mintlify navigation
+- ✅ Create product catalog documentation
+- ✅ Document digital platform services
+- ✅ Build developer resources
+- ⏳ Complete brand overview documentation
+- ⏳ Finish technology stack documentation
+- ⏳ Create roadmap and planning documents
+
+## Notes
+- The documentation uses Mintlify's components extensively for rich presentation
+- Product documentation emphasizes the AI-powered personalization aspects
+- Digital services documentation highlights integration between physical and digital experiences
+- Developer documentation focuses on best practices and ease of contribution

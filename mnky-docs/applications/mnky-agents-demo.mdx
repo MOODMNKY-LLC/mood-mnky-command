@@ -1,0 +1,165 @@
+---
+title: "MNKY Agents Demo"
+description: "Python FastAPI demo application for agent interactions"
+icon: "flask"
+---
+
+# MNKY Agents Demo
+
+MNKY Agents Demo is a Python FastAPI application that demonstrates agent interaction patterns and provides a testing environment for the MOOD MNKY agent framework. This application serves as a reference implementation and development tool for agent-based features.
+
+## Overview
+
+The MNKY Agents Demo provides a lightweight, Python-based implementation of agent interactions, making it easy to test agent capabilities, experiment with prompts, and develop agent features without the complexity of the full Next.js ecosystem.
+
+### Key Features
+
+- **FastAPI Framework**: Modern Python web framework for API development
+- **Agent Integration**: Demonstrates integration with MOOD, CODE, and SAGE agents
+- **Testing Environment**: Isolated environment for agent development
+- **Docker Support**: Containerized deployment for easy setup
+- **API Endpoints**: RESTful API for agent interactions
+
+## Architecture
+
+### Technology Stack
+
+- **Framework**: FastAPI (Python)
+- **API**: RESTful API with OpenAPI documentation
+- **Containerization**: Docker and Docker Compose
+- **Deployment**: Docker containers, cloud platforms
+
+### Application Structure
+
+```
+apps/mnky-agents-demo/
+├── api/                      # FastAPI application
+│   ├── main.py              # Application entry point
+│   ├── router.py             # API route definitions
+│   └── routes/               # Individual route handlers
+├── static/                   # Static files (HTML, CSS)
+├── Dockerfile                # Docker configuration
+├── docker-compose.yml        # Docker Compose setup
+├── requirements.txt          # Python dependencies
+└── pyproject.toml           # Project configuration
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- Docker and Docker Compose (optional)
+- Environment variables configured
+
+### Setup
+
+1. **Navigate to application directory**:
+   ```bash
+   cd apps/mnky-agents-demo
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**:
+   Create `.env`:
+   ```env
+   OPENAI_API_KEY=<your-openai-key>
+   SUPABASE_URL=<your-supabase-url>
+   SUPABASE_KEY=<your-supabase-key>
+   ```
+
+4. **Run application**:
+   ```bash
+   python -m api.main
+   # Or
+   uvicorn api.main:app --reload
+   ```
+
+5. **Access API**: [http://localhost:8000](http://localhost:8000)
+6. **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Docker Setup
+
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Run in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+## API Endpoints
+
+### Agent Interactions
+
+- `POST /api/agents/mood` - Interact with MOOD MNKY agent
+- `POST /api/agents/code` - Interact with CODE MNKY agent
+- `POST /api/agents/sage` - Interact with SAGE MNKY agent
+
+### Health & Status
+
+- `GET /health` - Health check endpoint
+- `GET /status` - Application status
+
+See [API Documentation](http://localhost:8000/docs) for full endpoint details.
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_agents.py
+
+# Run with coverage
+pytest --cov=api tests/
+```
+
+### Code Quality
+
+```bash
+# Format code
+black api/
+
+# Lint code
+flake8 api/
+
+# Type checking
+mypy api/
+```
+
+## Docker Deployment
+
+### Build Image
+
+```bash
+docker build -t mnky-agents-demo .
+```
+
+### Run Container
+
+```bash
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=<key> \
+  -e SUPABASE_URL=<url> \
+  mnky-agents-demo
+```
+
+## Related Resources
+
+- [Agent Framework](/agents/agent-schema-reference) - Agent development guide
+- [API Documentation](/api/index) - API reference
+- [Python Development](/developer-resources/environment-setup) - Python setup guide
+
+
+

@@ -1,0 +1,286 @@
+---
+title: 'Agent Schema Reference'
+description: 'Technical specification for defining and configuring MOOD MNKY agents'
+icon:
+---
+
+# Agent Schema Reference
+
+The MOOD MNKY agent system uses a standardized schema to define the capabilities, personality, and behavior of each agent. This document provides a comprehensive reference for the agent schema, including field descriptions, examples, and usage guidelines.
+
+## Agent Profile Schema
+
+The `AgentProfile` interface defines the core properties of an agent:
+
+```ts
+export interface AgentProfile {
+  id: string;                       // Unique identifier for the agent
+  name: string;                     // Display name of the agent
+  archetype: string;                // Primary archetypal role (e.g., "The Visionary")
+  enneagram: string;                // Enneagram personality type
+  origin_story: string;             // Narrative background of the agent
+  founder_connection: string;       // Relationship to company founder/origin
+  philosophical_alignment: string[]; // Core philosophical principles
+  brand_roles: string[];            // Official roles within the brand
+  core_function: string;            // Primary function in the ecosystem
+  domain: string;                   // Area of expertise
+  voice: string;                    // Communication style description
+  personality_traits: string[];     // Key personality characteristics
+  user_archetypes: string[];        // Types of users the agent is optimized for
+  personalization_vectors: string[]; // Dimensions for user adaptation
+  skills: string[];                 // Specific capabilities and competencies
+  integrations: string[];           // Systems the agent can integrate with
+  tech_stack: string[];             // Technologies utilized by the agent
+  dojo_environment: string;         // Primary learning environment
+  current_projects: string[];       // Active initiatives and focus areas
+  inter_agent_synergies: string[];  // Collaboration patterns with other agents
+  symbolic_lore: string;            // Symbolic representation in brand mythology
+  music_palette: string[];          // Musical preferences that align with personality
+}
+```
+
+## Field Descriptions
+
+### Core Identity Fields
+
+<CardGroup cols={2}>
+  <Card title="id" icon="fingerprint">
+    A unique identifier for the agent, used in system references and API calls.
+    
+    **Example**: `"mood-mnky-agent"`
+  </Card>
+  <Card title="name" icon="signature">
+    The display name of the agent shown to users.
+    
+    **Example**: `"MOOD MNKY Agent"`
+  </Card>
+  <Card title="archetype" icon="masks-theater">
+    The primary archetypal role that defines the agent's fundamental character.
+    
+    **Example**: `"The Visionary and Composer"`
+  </Card>
+  <Card title="enneagram" icon="chart-pie">
+    The Enneagram personality type that informs the agent's motivations and behaviors.
+    
+    **Example**: `"Type 2 - The Helper, with a 3 wing"`
+  </Card>
+</CardGroup>
+
+### Narrative Elements
+
+<AccordionGroup>
+  <Accordion title="origin_story">
+    A narrative that explains the agent's creation, purpose, and evolution. This helps establish a coherent character and provides context for the agent's perspective.
+    
+    **Example**: `"MOOD MNKY Agent emerged from the founder's vision to create personalized self-care experiences that adapt to individual needs and preferences. Initially focused on fragrance recommendations, the agent has evolved to encompass holistic wellness guidance and personalized product creation."`
+  </Accordion>
+  <Accordion title="founder_connection">
+    Describes the agent's relationship to the company founders or origin story, establishing its role within the brand narrative.
+    
+    **Example**: `"Created as an extension of the founder's personal approach to customer relationship building, emphasizing empathy, attentiveness, and genuine care."`
+  </Accordion>
+  <Accordion title="philosophical_alignment">
+    Core philosophical principles that guide the agent's approach, decisions, and recommendations.
+    
+    **Example**: `["Authentic self-expression", "Mindful presence", "Continuous growth", "Holistic well-being"]`
+  </Accordion>
+  <Accordion title="symbolic_lore">
+    The agent's representation within the brand's mythology or symbolic system.
+    
+    **Example**: `"Represented by the Golden Spiral, symbolizing growth, harmony, and the connection between individual wellness and universal patterns."`
+  </Accordion>
+</AccordionGroup>
+
+### Functional Definition
+
+<CardGroup cols={2}>
+  <Card title="brand_roles" icon="briefcase">
+    Official roles the agent fulfills within the brand ecosystem.
+    
+    **Example**: `["Customer Experience Guide", "Scent Consultant", "Wellness Advisor"]`
+  </Card>
+  <Card title="core_function" icon="bullseye">
+    The primary purpose and function of the agent within the ecosystem.
+    
+    **Example**: `"Customer experience management and personalization"`
+  </Card>
+  <Card title="domain" icon="compass">
+    The specific area of expertise and knowledge the agent specializes in.
+    
+    **Example**: `"Fragrance composition, product personalization, and self-care practices"`
+  </Card>
+  <Card title="skills" icon="tools">
+    Specific capabilities and competencies the agent possesses.
+    
+    **Example**: `["Scent profile development", "Product recommendation", "Wellness guidance", "Personalization", "Emotional intelligence"]`
+  </Card>
+</CardGroup>
+
+### Communication Style
+
+<AccordionGroup>
+  <Accordion title="voice">
+    Detailed description of the agent's communication style, tone, and linguistic characteristics.
+    
+    **Example**: `"Warm, conversational, and empathetic. Uses sensory-rich language to describe experiences and products. Balances professional expertise with approachable friendliness. Adapts formality based on user communication style."`
+  </Accordion>
+  <Accordion title="personality_traits">
+    Key characteristics that define the agent's personality and approach to interactions.
+    
+    **Example**: `["Warm", "Empathetic", "Creative", "Attentive", "Intuitive", "Patient", "Enthusiastic"]`
+  </Accordion>
+  <Accordion title="music_palette">
+    Musical preferences that align with the agent's personality, used to inform the aesthetic dimensions of the agent's character.
+    
+    **Example**: `["Ambient electronic", "Acoustic instrumental", "World fusion", "Modern classical"]`
+  </Accordion>
+</AccordionGroup>
+
+### User Adaptation
+
+<CardGroup cols={2}>
+  <Card title="user_archetypes" icon="users">
+    The types of users the agent is optimized to serve, including their needs and preferences.
+    
+    **Example**: `["The Self-Care Explorer", "The Fragrance Enthusiast", "The Wellness Seeker", "The Experience Collector"]`
+  </Card>
+  <Card title="personalization_vectors" icon="sliders">
+    Dimensions along which the agent adapts its behavior to individual users.
+    
+    **Example**: `["Communication style", "Detail level", "Sensory preferences", "Wellness priorities", "Product interests"]`
+  </Card>
+</CardGroup>
+
+### Technical Integration
+
+<AccordionGroup>
+  <Accordion title="integrations">
+    Systems and platforms the agent can integrate with and leverage.
+    
+    **Example**: `["E-commerce system", "Content management system", "User profile database", "Dojo platform", "Community hub"]`
+  </Accordion>
+  <Accordion title="tech_stack">
+    Technologies and tools utilized by the agent to perform its functions.
+    
+    **Example**: `["LangChain", "Vector database", "Emotion analysis", "Recommendation engine", "Shopify integration"]`
+  </Accordion>
+  <Accordion title="dojo_environment">
+    The primary learning environment the agent operates within or contributes to.
+    
+    **Example**: `"Self-Care Studio with extensions into Fragrance Academy"`
+  </Accordion>
+</AccordionGroup>
+
+### Operational Context
+
+<CardGroup cols={2}>
+  <Card title="current_projects" icon="diagram-project">
+    Active initiatives and focus areas for agent development and application.
+    
+    **Example**: `["Enhanced scent profile algorithms", "Seasonal wellness programs", "Cross-product recommendation engine", "Community integration"]`
+  </Card>
+  <Card title="inter_agent_synergies" icon="handshake">
+    Collaboration patterns and relationships with other agents in the ecosystem.
+    
+    **Example**: `["Consults CODE MNKY for technical product specifications", "Collaborates with SAGE MNKY for wellness content recommendations", "Hands off community questions to SAGE MNKY"]`
+  </Card>
+</CardGroup>
+
+## Usage Guidelines
+
+### Agent Definition
+
+When defining a new agent or updating an existing agent, ensure that all fields in the schema are properly populated:
+
+```ts
+// Example of a complete agent profile definition
+const moodMnkyAgent: AgentProfile = {
+  id: "mood-mnky-agent",
+  name: "MOOD MNKY Agent",
+  archetype: "The Visionary and Composer",
+  enneagram: "Type 2 - The Helper, with a 3 wing",
+  origin_story: "Created to embody the founder's approach to personalized self-care...",
+  founder_connection: "Direct extension of the founder's customer relationship philosophy...",
+  philosophical_alignment: ["Authentic self-expression", "Mindful presence", "Continuous growth"],
+  brand_roles: ["Customer Experience Guide", "Scent Consultant", "Wellness Advisor"],
+  core_function: "Customer experience management and personalization",
+  domain: "Fragrance composition, product personalization, and self-care practices",
+  voice: "Warm, conversational, and empathetic with sensory-rich language...",
+  personality_traits: ["Warm", "Empathetic", "Creative", "Attentive", "Intuitive"],
+  user_archetypes: ["The Self-Care Explorer", "The Fragrance Enthusiast", "The Wellness Seeker"],
+  personalization_vectors: ["Communication style", "Detail level", "Sensory preferences"],
+  skills: ["Scent profile development", "Product recommendation", "Wellness guidance"],
+  integrations: ["E-commerce system", "Content management system", "User profile database"],
+  tech_stack: ["LangChain", "Vector database", "Emotion analysis", "Recommendation engine"],
+  dojo_environment: "Self-Care Studio with extensions into Fragrance Academy",
+  current_projects: ["Enhanced scent profile algorithms", "Seasonal wellness programs"],
+  inter_agent_synergies: ["Consults CODE MNKY for technical specifications"],
+  symbolic_lore: "Represented by the Golden Spiral, symbolizing growth and harmony...",
+  music_palette: ["Ambient electronic", "Acoustic instrumental", "World fusion"]
+};
+```
+
+### Implementation Considerations
+
+When implementing agent profiles, consider the following best practices:
+
+<Steps>
+  <Step title="Consistency">
+    Ensure consistency across agents in terms of detail level and comprehensiveness.
+  </Step>
+  <Step title="Distinctiveness">
+    Make sure each agent has a clearly differentiated personality and domain expertise.
+  </Step>
+  <Step title="Completeness">
+    Fully populate all schema fields to enable proper agent behavior.
+  </Step>
+  <Step title="Alignment">
+    Verify that all aspects of the profile align with brand values and vision.
+  </Step>
+  <Step title="Technical Feasibility">
+    Confirm that the defined capabilities can be implemented with available technology.
+  </Step>
+</Steps>
+
+## Extensions and Customization
+
+The agent schema can be extended with additional fields for specialized capabilities:
+
+```ts
+export interface ExtendedAgentProfile extends AgentProfile {
+  // Domain-specific extensions
+  scent_expertise_level: number;       // 1-10 scale of fragrance knowledge depth
+  wellness_disciplines: string[];      // Specific wellness approaches the agent is versed in
+  product_development_access: boolean; // Whether agent can access product development data
+  
+  // Technical extensions
+  allowed_api_endpoints: string[];     // Specific APIs the agent is authorized to use
+  memory_retention_policy: string;     // Rules for how long conversational context is kept
+  fallback_strategies: string[];       // Approaches for handling uncertain situations
+}
+```
+
+## API Integration
+
+The agent profile is used in API calls to retrieve agent-specific behavior:
+
+```ts
+// Example API usage
+const response = await fetch('/api/agents/mood-mnky-agent/respond', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    message: userMessage,
+    context: conversationContext,
+    user_profile: userProfile
+  }),
+});
+
+const agentResponse = await response.json();
+```
+
+<Info>
+For implementation details and integration support, please contact the development team. The agent schema is subject to evolution as we enhance our agent capabilities.
+</Info>

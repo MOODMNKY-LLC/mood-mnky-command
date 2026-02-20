@@ -1,0 +1,91 @@
+---
+title: 'Agent API Reference'
+description: 'Technical reference for the MOOD MNKY agent API endpoints and parameters'
+---
+
+# Agent API Reference
+
+<Note>
+**Under Construction**
+
+This documentation is currently being developed and will be available soon. This placeholder outlines the planned content.
+</Note>
+
+## Overview
+
+This technical reference provides comprehensive documentation for all API endpoints available in the MOOD MNKY agent system. It includes detailed parameter descriptions, request/response formats, error codes, and examples for each endpoint.
+
+## Planned Content
+
+### Base URL and Versioning
+- Production and development environments
+- API versioning policy
+- Endpoint URL structure
+- Deprecation and migration guidelines
+
+### Authentication
+- Authentication methods
+- Token generation and management
+- Scopes and permissions
+- Security best practices
+
+### Core Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Agent Messages" icon="message">
+    Send and receive messages to/from agents
+    - POST /api/agents/{agent_id}/messages
+    - GET /api/agents/{agent_id}/messages
+  </Card>
+  <Card title="Conversations" icon="comments">
+    Manage conversation sessions
+    - POST /api/conversations
+    - GET /api/conversations/{conversation_id}
+    - DELETE /api/conversations/{conversation_id}
+  </Card>
+  <Card title="Knowledge" icon="database">
+    Query agent knowledge base
+    - POST /api/knowledge/query
+    - GET /api/knowledge/topics
+  </Card>
+  <Card title="User Profiles" icon="user-gear">
+    Manage user preferences and history
+    - GET /api/users/{user_id}/profile
+    - PATCH /api/users/{user_id}/profile
+  </Card>
+</CardGroup>
+
+### Request/Response Formats
+- Standard request parameters
+- Response structure
+- Pagination
+- Filtering and sorting
+- Field selection
+
+### Error Handling
+- Error response format
+- Standard error codes
+- Validation errors
+- Rate limiting responses
+- Troubleshooting guidelines
+
+### WebSocket API
+- Connection establishment
+- Authentication
+- Event types
+- Streaming message format
+- Heartbeat and reconnection
+
+### SDKs and Client Libraries
+- JavaScript/TypeScript SDK
+- Python SDK
+- Agent Core package integration
+- Custom client implementation guidelines
+
+## Implementation Timeline
+
+This reference documentation is scheduled for completion in Q3 2023. For immediate API integration needs, please contact the development team for early access information.
+
+<Info>
+The completed API reference will include interactive API explorers, code snippets in multiple languages, and downloadable OpenAPI specification files.
+</Info> 

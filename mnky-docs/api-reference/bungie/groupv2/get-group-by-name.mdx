@@ -1,0 +1,674 @@
+---
+title: 'Get Group By Name'
+api: 'GET https://www.bungie.net/Platform/GroupV2/Name/{groupName}/{groupType}/'
+description: 'Returns group information for the specified name and type.'
+---
+
+# Get Group By Name
+
+This endpoint returns detailed information about a Bungie.net group (clan or group) based on its name and type. This is particularly useful for finding clans by their name without knowing their ID.
+
+## Authentication
+
+This endpoint requires:
+- A valid Bungie.net API key
+- No OAuth authentication is required for public groups
+
+## Path Parameters
+
+<ParamField path="groupName" type="string" required>
+  The name of the group to retrieve
+</ParamField>
+
+<ParamField path="groupType" type="integer" required>
+  The type of group to retrieve:
+  - 0: General
+  - 1: Clan
+</ParamField>
+
+<RequestExample>
+```bash
+curl -X GET "https://www.bungie.net/Platform/GroupV2/Name/MNKY%20Clan/1/" \
+  -H "X-API-Key: your-api-key-here"
+```
+
+```javascript
+const fetchGroupByName = async (groupName, groupType) => {
+  const encodedName = encodeURIComponent(groupName);
+  
+  const response = await fetch(
+    `https://www.bungie.net/Platform/GroupV2/Name/${encodedName}/${groupType}/`,
+    {
+      headers: {
+        'X-API-Key': 'your-api-key-here'
+      }
+    }
+  );
+  
+  return await response.json();
+};
+```
+</RequestExample>
+
+## Response
+
+<ResponseField name="Response" type="object">
+  The response object contains detailed information about the requested group
+  
+  <Expandable title="Properties">
+    <ResponseField name="detail" type="object">
+      Detailed information about the group
+      
+      <Expandable title="Properties">
+        <ResponseField name="groupId" type="string">
+          The unique identifier for the group
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          The name of the group
+        </ResponseField>
+        
+        <ResponseField name="groupType" type="integer">
+          The type of group (0 = Group, 1 = Clan)
+        </ResponseField>
+        
+        <ResponseField name="membershipIdCreated" type="string">
+          The membership ID that created the group
+        </ResponseField>
+        
+        <ResponseField name="creationDate" type="string" format="date-time">
+          The date the group was created
+        </ResponseField>
+        
+        <ResponseField name="modificationDate" type="string" format="date-time">
+          The date the group was last modified
+        </ResponseField>
+        
+        <ResponseField name="about" type="string">
+          The 'about' text for the group
+        </ResponseField>
+        
+        <ResponseField name="tags" type="array">
+          Tags associated with the group
+          
+          <Expandable title="Items">
+            <ResponseField name="" type="string">
+              A tag for the group
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="memberCount" type="integer">
+          The number of members in the group
+        </ResponseField>
+        
+        <ResponseField name="isPublic" type="boolean">
+          Whether the group is public
+        </ResponseField>
+        
+        <ResponseField name="isPublicTopicAdminOnly" type="boolean">
+          Whether posting to the group forum is restricted to admins
+        </ResponseField>
+        
+        <ResponseField name="motto" type="string">
+          The motto of the group
+        </ResponseField>
+        
+        <ResponseField name="allowChat" type="boolean">
+          Whether chat is enabled for the group
+        </ResponseField>
+        
+        <ResponseField name="isDefaultPostPublic" type="boolean">
+          Whether posts are public by default
+        </ResponseField>
+        
+        <ResponseField name="chatSecurity" type="integer">
+          The security level for chat
+        </ResponseField>
+        
+        <ResponseField name="locale" type="string">
+          The locale of the group
+        </ResponseField>
+        
+        <ResponseField name="avatarImageIndex" type="integer">
+          The index of the avatar image
+        </ResponseField>
+        
+        <ResponseField name="homepage" type="integer">
+          The type of home page selected for the group
+        </ResponseField>
+        
+        <ResponseField name="membershipOption" type="integer">
+          The membership options for the group:
+          - 0: Reviewed (admin approval required)
+          - 1: Open (anyone can join)
+          - 2: Closed (no new members)
+        </ResponseField>
+        
+        <ResponseField name="defaultPublicity" type="integer">
+          The default publicity setting for the group
+        </ResponseField>
+        
+        <ResponseField name="theme" type="string">
+          The theme of the group
+        </ResponseField>
+        
+        <ResponseField name="bannerPath" type="string">
+          The path to the group's banner image
+        </ResponseField>
+        
+        <ResponseField name="avatarPath" type="string">
+          The path to the group's avatar image
+        </ResponseField>
+        
+        <ResponseField name="conversationId" type="string">
+          The conversation ID for the group's chat
+        </ResponseField>
+        
+        <ResponseField name="enableInvitationMessagingForAdmins" type="boolean">
+          Whether admins can send invitation messages
+        </ResponseField>
+        
+        <ResponseField name="banExpireDate" type="string" format="date-time">
+          The date any ban on the group expires (if applicable)
+        </ResponseField>
+        
+        <ResponseField name="features" type="object">
+          Features enabled for this group
+          
+          <Expandable title="Properties">
+            <ResponseField name="maximumMembers" type="integer">
+              The maximum number of members allowed
+            </ResponseField>
+            
+            <ResponseField name="maximumMembershipsOfGroupType" type="integer">
+              The maximum number of groups of this type a member can join
+            </ResponseField>
+            
+            <ResponseField name="capabilities" type="integer">
+              Bitmask of capabilities this group has
+            </ResponseField>
+            
+            <ResponseField name="membershipTypes" type="array">
+              Platform membership types that are allowed to join
+              
+              <Expandable title="Items">
+                <ResponseField name="" type="integer">
+                  Membership type (e.g., 1 = Xbox, 2 = PSN, 3 = Steam)
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="invitePermissionOverride" type="boolean">
+              Whether invitation permissions are overridden
+            </ResponseField>
+            
+            <ResponseField name="updateCulturePermissionOverride" type="boolean">
+              Whether culture update permissions are overridden
+            </ResponseField>
+            
+            <ResponseField name="hostGuidedGamePermissionOverride" type="integer">
+              Override for guided game hosting permissions
+            </ResponseField>
+            
+            <ResponseField name="updateBannerPermissionOverride" type="boolean">
+              Whether banner update permissions are overridden
+            </ResponseField>
+            
+            <ResponseField name="joinLevel" type="integer">
+              Level required to join the group
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="clanInfo" type="object">
+          Information specific to clans (if this is a clan)
+          
+          <Expandable title="Properties">
+            <ResponseField name="clanCallsign" type="string">
+              The clan's callsign/tag (e.g., "MNKY")
+            </ResponseField>
+            
+            <ResponseField name="clanBannerData" type="object">
+              Data for the clan's banner
+              
+              <Expandable title="Properties">
+                <ResponseField name="decalId" type="integer">
+                  The ID of the decal
+                </ResponseField>
+                
+                <ResponseField name="decalColorId" type="integer">
+                  The color ID of the decal
+                </ResponseField>
+                
+                <ResponseField name="decalBackgroundColorId" type="integer">
+                  The background color ID of the decal
+                </ResponseField>
+                
+                <ResponseField name="gonfalonId" type="integer">
+                  The ID of the gonfalon (banner shape)
+                </ResponseField>
+                
+                <ResponseField name="gonfalonColorId" type="integer">
+                  The color ID of the gonfalon
+                </ResponseField>
+                
+                <ResponseField name="gonfalonDetailId" type="integer">
+                  The ID of the gonfalon detail
+                </ResponseField>
+                
+                <ResponseField name="gonfalonDetailColorId" type="integer">
+                  The color ID of the gonfalon detail
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="founder" type="object">
+      Information about the founder of the group
+      
+      <Expandable title="Properties">
+        <ResponseField name="memberType" type="integer">
+          The member type (e.g., 3 = Founder)
+        </ResponseField>
+        
+        <ResponseField name="isOnline" type="boolean">
+          Whether the founder is currently online
+        </ResponseField>
+        
+        <ResponseField name="lastOnlineStatusChange" type="string" format="date-time">
+          The last time the founder's online status changed
+        </ResponseField>
+        
+        <ResponseField name="groupId" type="string">
+          The ID of the group
+        </ResponseField>
+        
+        <ResponseField name="destinyUserInfo" type="object">
+          Information about the founder's Destiny account
+          
+          <Expandable title="Properties">
+            <ResponseField name="membershipType" type="integer">
+              The platform membership type
+            </ResponseField>
+            
+            <ResponseField name="membershipId" type="string">
+              The membership ID
+            </ResponseField>
+            
+            <ResponseField name="displayName" type="string">
+              The display name on the platform
+            </ResponseField>
+            
+            <ResponseField name="bungieGlobalDisplayName" type="string">
+              The global display name across Bungie.net
+            </ResponseField>
+            
+            <ResponseField name="bungieGlobalDisplayNameCode" type="integer">
+              The code appended to the global display name
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="bungieNetUserInfo" type="object">
+          Information about the founder's Bungie.net account
+          
+          <Expandable title="Properties">
+            <ResponseField name="membershipType" type="integer">
+              The membership type (always 254 for Bungie.net)
+            </ResponseField>
+            
+            <ResponseField name="membershipId" type="string">
+              The Bungie.net membership ID
+            </ResponseField>
+            
+            <ResponseField name="displayName" type="string">
+              The display name on Bungie.net
+            </ResponseField>
+            
+            <ResponseField name="bungieGlobalDisplayName" type="string">
+              The global display name across Bungie.net
+            </ResponseField>
+            
+            <ResponseField name="bungieGlobalDisplayNameCode" type="integer">
+              The code appended to the global display name
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="joinDate" type="string" format="date-time">
+          The date the founder joined the group
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="alliedIds" type="array">
+      IDs of groups allied with this group
+      
+      <Expandable title="Items">
+        <ResponseField name="" type="string">
+          Group ID of an allied group
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="parentGroup" type="object">
+      Information about the parent group (if this is a clan)
+      
+      <Expandable title="Properties">
+        <ResponseField name="groupId" type="string">
+          The ID of the parent group
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          The name of the parent group
+        </ResponseField>
+        
+        <ResponseField name="groupType" type="integer">
+          The type of the parent group
+        </ResponseField>
+        
+        <ResponseField name="membershipIdCreated" type="string">
+          The membership ID that created the parent group
+        </ResponseField>
+        
+        <ResponseField name="creationDate" type="string" format="date-time">
+          The date the parent group was created
+        </ResponseField>
+        
+        <ResponseField name="modificationDate" type="string" format="date-time">
+          The date the parent group was last modified
+        </ResponseField>
+        
+        <ResponseField name="about" type="string">
+          The 'about' text for the parent group
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="allianceStatus" type="integer">
+      The alliance status of the group
+    </ResponseField>
+    
+    <ResponseField name="groupJoinInviteCount" type="integer">
+      The count of pending join invites
+    </ResponseField>
+    
+    <ResponseField name="currentUserMemberMap" type="object">
+      Information about the current user's membership in this group (if applicable)
+    </ResponseField>
+    
+    <ResponseField name="currentUserPotentialMemberMap" type="object">
+      Information about the current user's potential membership in this group (if applicable)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ErrorCode" type="integer">
+  Error code (1 for success)
+</ResponseField>
+
+<ResponseField name="ThrottleSeconds" type="integer">
+  Number of seconds to wait before making another request (for rate limiting)
+</ResponseField>
+
+<ResponseField name="ErrorStatus" type="string">
+  Status message (e.g., "Success")
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Additional information
+</ResponseField>
+
+<ResponseField name="MessageData" type="object">
+  Additional message data (typically empty)
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "Response": {
+    "detail": {
+      "groupId": "1234567",
+      "name": "MNKY Clan",
+      "groupType": 1,
+      "membershipIdCreated": "98765432",
+      "creationDate": "2020-05-15T12:30:45Z",
+      "modificationDate": "2023-10-20T08:15:30Z",
+      "about": "A clan for MOOD MNKY community members",
+      "tags": ["destiny2", "pve", "pvp"],
+      "memberCount": 87,
+      "isPublic": true,
+      "isPublicTopicAdminOnly": false,
+      "motto": "Monkey business in orbit",
+      "allowChat": true,
+      "isDefaultPostPublic": true,
+      "chatSecurity": 1,
+      "locale": "en",
+      "avatarImageIndex": 12,
+      "homepage": 1,
+      "membershipOption": 0,
+      "defaultPublicity": 2,
+      "theme": "Destiny",
+      "bannerPath": "/img/Themes/Group_Banners/banner_destiny_01.jpg",
+      "avatarPath": "/img/profile/avatars/group/destiny_titan.jpg",
+      "conversationId": "12345678901234567",
+      "enableInvitationMessagingForAdmins": true,
+      "features": {
+        "maximumMembers": 100,
+        "maximumMembershipsOfGroupType": 1,
+        "capabilities": 31,
+        "membershipTypes": [1, 2, 3, 6],
+        "invitePermissionOverride": false,
+        "updateCulturePermissionOverride": false,
+        "hostGuidedGamePermissionOverride": 0,
+        "updateBannerPermissionOverride": false,
+        "joinLevel": 1
+      },
+      "clanInfo": {
+        "clanCallsign": "MNKY",
+        "clanBannerData": {
+          "decalId": 4567,
+          "decalColorId": 12,
+          "decalBackgroundColorId": 5,
+          "gonfalonId": 2345,
+          "gonfalonColorId": 8,
+          "gonfalonDetailId": 1234,
+          "gonfalonDetailColorId": 9
+        }
+      }
+    },
+    "founder": {
+      "memberType": 3,
+      "isOnline": false,
+      "lastOnlineStatusChange": "2023-10-25T18:45:12Z",
+      "groupId": "1234567",
+      "destinyUserInfo": {
+        "membershipType": 3,
+        "membershipId": "98765432",
+        "displayName": "FounderGuardian",
+        "bungieGlobalDisplayName": "FounderGuardian",
+        "bungieGlobalDisplayNameCode": 1234
+      },
+      "bungieNetUserInfo": {
+        "membershipType": 254,
+        "membershipId": "987654321",
+        "displayName": "FounderGuardian",
+        "bungieGlobalDisplayName": "FounderGuardian",
+        "bungieGlobalDisplayNameCode": 1234
+      },
+      "joinDate": "2020-05-15T12:30:45Z"
+    },
+    "alliedIds": ["2345678", "3456789"],
+    "allianceStatus": 0,
+    "groupJoinInviteCount": 5
+  },
+  "ErrorCode": 1,
+  "ThrottleSeconds": 0,
+  "ErrorStatus": "Success",
+  "Message": "Ok",
+  "MessageData": {}
+}
+```
+</ResponseExample>
+
+## Usage in MOOD MNKY
+
+The Get Group By Name endpoint is used in MOOD MNKY applications for:
+
+1. **Clan Search** - Allowing users to find and join clans by name rather than requiring an ID
+2. **Clan Profiles** - Displaying detailed information about a clan, including its banner, membership options, and member count
+3. **Clan Management Tools** - Retrieving clan details for administrative purposes
+4. **Social Integration** - Finding allied clans and potential community partnerships
+
+### Integration Example
+
+```javascript
+// Clan search component
+import React, { useState } from 'react';
+
+function ClanSearch() {
+  const [clanName, setClanName] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const searchClan = async () => {
+    if (!clanName.trim()) {
+      setError('Please enter a clan name');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const encodedName = encodeURIComponent(clanName.trim());
+      const response = await fetch(
+        `https://www.bungie.net/Platform/GroupV2/Name/${encodedName}/1/`,
+        {
+          headers: {
+            'X-API-Key': process.env.BUNGIE_API_KEY
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.ErrorCode !== 1) {
+        throw new Error(data.Message || 'Failed to find clan');
+      }
+
+      setSearchResults(data.Response);
+    } catch (err) {
+      setError(err.message || 'An error occurred while searching for the clan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderClanDetails = () => {
+    if (!searchResults) return null;
+
+    const { detail, founder } = searchResults;
+    
+    // Get clan banner URL from the clan banner data
+    const clanBannerUrl = generateClanBannerUrl(detail.clanInfo.clanBannerData);
+
+    return (
+      <div className="clan-details">
+        <div className="clan-header">
+          <img src={clanBannerUrl} alt="Clan Banner" className="clan-banner" />
+          <div className="clan-info">
+            <h2>{detail.name} [{detail.clanInfo.clanCallsign}]</h2>
+            <p className="clan-motto">{detail.motto}</p>
+            <p className="clan-founded">
+              Founded {new Date(detail.creationDate).toLocaleDateString()}
+            </p>
+            <p className="clan-members">{detail.memberCount} members</p>
+          </div>
+        </div>
+        
+        <div className="clan-about">
+          <h3>About</h3>
+          <p>{detail.about || 'No description provided.'}</p>
+        </div>
+        
+        <div className="clan-founder">
+          <h3>Founder</h3>
+          <p>{founder.bungieNetUserInfo.bungieGlobalDisplayName}#{founder.bungieNetUserInfo.bungieGlobalDisplayNameCode}</p>
+        </div>
+        
+        <div className="clan-join">
+          {detail.membershipOption === 1 ? (
+            <button className="join-button">Request to Join</button>
+          ) : detail.membershipOption === 0 ? (
+            <button className="join-button">Apply to Join (Requires Approval)</button>
+          ) : (
+            <span className="closed-clan">This clan is not accepting new members</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="clan-search-container">
+      <h1>Find a Clan</h1>
+      
+      <div className="search-bar">
+        <input
+          type="text"
+          value={clanName}
+          onChange={(e) => setClanName(e.target.value)}
+          placeholder="Enter clan name..."
+          className="clan-search-input"
+        />
+        <button 
+          onClick={searchClan} 
+          disabled={loading}
+          className="search-button"
+        >
+          {loading ? 'Searching...' : 'Search'}
+        </button>
+      </div>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      {loading ? (
+        <div className="loading">Searching for clan...</div>
+      ) : (
+        renderClanDetails()
+      )}
+    </div>
+  );
+}
+
+// Helper function to generate clan banner URL from banner data
+function generateClanBannerUrl(bannerData) {
+  if (!bannerData) return '/default-banner.png';
+  
+  return `https://www.bungie.net/img/UserThemes/ClanBanners/Banner_${bannerData.gonfalonId}_${bannerData.gonfalonColorId}_${bannerData.gonfalonDetailId}_${bannerData.gonfalonDetailColorId}_${bannerData.decalId}_${bannerData.decalColorId}_${bannerData.decalBackgroundColorId}.png`;
+}
+
+export default ClanSearch;
+```
+
+## Common Issues
+
+- **Exact Name Required**: The search is case-sensitive and requires the exact clan name. Partial matches will not work.
+- **URL Encoding**: Ensure the clan name is properly URL encoded, especially for names with spaces or special characters.
+- **Similar Names**: Multiple clans may have similar names. The endpoint only returns one result for the exact match.
+- **Clan vs Group**: Be sure to use the correct `groupType` parameter (1 for clans, 0 for groups).
+- **Rate Limiting**: This endpoint is subject to Bungie's rate limiting. Monitor the `ThrottleSeconds` value in responses.
+- **Private Groups**: Some group information may be limited for private groups.
+
+## Related Endpoints
+
+- [Get Group By ID](/api-reference/bungie/groupv2/get-group) - Get a group using its unique ID instead of name
+- [Get Available Avatars](/api-reference/bungie/groupv2/get-available-avatars) - Get available avatar images for group customization
+- [Get Available Themes](/api-reference/bungie/groupv2/get-available-themes) - Get available themes for group customization
+- [Get Memberships of User](/api-reference/bungie/user/get-memberships-for-current-user) - Get groups a user belongs to 

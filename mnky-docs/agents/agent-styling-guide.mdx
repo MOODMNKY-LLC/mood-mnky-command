@@ -1,0 +1,484 @@
+---
+title: Agent Styling Guide
+description: "A comprehensive guide for consistent styling of agent-specific content using our CSS framework"
+---
+
+# Agent Styling Guide
+
+<Note>
+This guide provides comprehensive instructions for styling agent-specific content across the MOOD MNKY documentation. Use these styles to maintain visual consistency and reinforce agent identity.
+</Note>
+
+## Overview
+
+The MOOD MNKY documentation features three distinct agents, each with their own visual identity. This styling system allows you to create consistent, visually distinctive sections for each agent while maintaining the overall monochromatic theme of the documentation.
+
+<CardGroup cols={3}>
+  <Card title="MOOD MNKY" icon="palette" color="#F59E0B">
+    Amber/gold theme for customer experience and personalization
+  </Card>
+  <Card title="CODE MNKY" icon="code" color="#3B82F6">
+    Blue theme for technical infrastructure and development
+  </Card>
+  <Card title="SAGE MNKY" icon="book-open" color="#22C55E">
+    Green theme for content, learning, and community support
+  </Card>
+</CardGroup>
+
+## Basic Usage
+
+To apply agent-specific styling, use the appropriate CSS classes on your HTML or JSX elements.
+
+### Section Styling
+
+Wrap sections related to a specific agent with the appropriate section class:
+
+```jsx
+<div className="mood-mnky-section">
+  <h2>MOOD MNKY Features</h2>
+  <p>This content relates to MOOD MNKY...</p>
+</div>
+```
+
+```jsx
+<div className="code-mnky-section">
+  <h2>CODE MNKY Implementation</h2>
+  <p>Technical details about CODE MNKY...</p>
+</div>
+```
+
+```jsx
+<div className="sage-mnky-section">
+  <h2>SAGE MNKY Learning Resources</h2>
+  <p>Educational content from SAGE MNKY...</p>
+</div>
+```
+
+### Card Styling
+
+Create agent-specific cards or callouts:
+
+```jsx
+<div className="mood-mnky-card">
+  <h3>MOOD MNKY Recommendation</h3>
+  <p>This approach helps create personalized experiences...</p>
+</div>
+```
+
+```jsx
+<div className="code-mnky-card">
+  <h3>CODE MNKY Best Practice</h3>
+  <p>When implementing this feature, ensure you...</p>
+</div>
+```
+
+```jsx
+<div className="sage-mnky-card">
+  <h3>SAGE MNKY Insight</h3>
+  <p>Studies show this approach improves learning outcomes...</p>
+</div>
+```
+
+### Border Styling
+
+Apply agent-specific borders to elements:
+
+```jsx
+<table className="mood-mnky-border">
+  <!-- Table content -->
+</table>
+```
+
+```jsx
+<blockquote className="code-mnky-border">
+  Important technical considerations...
+</blockquote>
+```
+
+```jsx
+<div className="custom-component sage-mnky-border">
+  <!-- Component content -->
+</div>
+```
+
+## Advanced Usage
+
+### Agent Avatars
+
+Display agent avatars with consistent styling:
+
+```jsx
+<img 
+  src="/images/mood-mnky-avatar.png" 
+  alt="MOOD MNKY" 
+  className="agent-avatar mood-mnky-avatar"
+/>
+```
+
+```jsx
+<img 
+  src="/images/code-mnky-avatar.png" 
+  alt="CODE MNKY" 
+  className="agent-avatar code-mnky-avatar"
+/>
+```
+
+```jsx
+<img 
+  src="/images/sage-mnky-avatar.png" 
+  alt="SAGE MNKY" 
+  className="agent-avatar sage-mnky-avatar"
+/>
+```
+
+### Combined Styling
+
+You can combine different styling classes for more complex layouts:
+
+```jsx
+<div className="mood-mnky-section">
+  <h2>MOOD MNKY Processes</h2>
+  
+  <div className="mood-mnky-card">
+    <h3>Recommendation Engine</h3>
+    <p>How MOOD MNKY creates personalized suggestions...</p>
+  </div>
+  
+  <table className="mood-mnky-border">
+    <!-- Table content -->
+  </table>
+</div>
+```
+
+### Customizing Colors
+
+While we encourage using the predefined color schemes, you can access the color variables directly if needed:
+
+```jsx
+<div style={{ backgroundColor: 'var(--mood-mnky-light)', padding: '1rem' }}>
+  Custom styling with MOOD MNKY colors
+</div>
+```
+
+## Agent Color Reference
+
+### MOOD MNKY
+- Primary Colors: Monochromatic grayscale from our main brand palette
+- Secondary Colors: Gold and ember tones for warmth and luxury
+  - **Ember Gold**: `#D4A04E` - Rich, glowing accent  
+  - **Molten Amber**: `#B87532` - Deeper mid-gold tone
+  - **Burnished Bronze**: `#8C5524` - Aged, metallic warmth
+  - **Smolder Umber**: `#5A3B1F` - Deep embered brown
+  - **Ashen Gold**: `#A28B6A` - Muted, smoky highlight
+
+- CSS Variables:
+  - Light: `var(--mood-mnky-light)` - #D4A04E (Ember Gold)
+  - Medium: `var(--mood-mnky-medium)` - #B87532 (Molten Amber)
+  - Dark: `var(--mood-mnky-dark)` - #8C5524 (Burnished Bronze)
+
+### CODE MNKY
+- Primary Colors: Monochromatic grayscale from our main brand palette
+- Secondary Colors: Navy, steel, and royal blue tones for precision and technical clarity
+  - **Steelcore Blue**: `#3A4C66` - Solid, desaturated base
+  - **Royal Circuit**: `#2F60C1` - Vibrant but deep accent
+  - **Navy Depths**: `#1A2A3A` - Classic navy, grounded and clean
+  - **Carbon Azure**: `#4E6C78` - Muted teal-blue steel
+  - **Frosted Byte**: `#9FB8CC` - Cool desaturated highlight
+
+- CSS Variables:
+  - Light: `var(--code-mnky-light)` - #9FB8CC (Frosted Byte)
+  - Medium: `var(--code-mnky-medium)` - #3A4C66 (Steelcore Blue)
+  - Dark: `var(--code-mnky-dark)` - #1A2A3A (Navy Depths)
+
+### SAGE MNKY
+- Primary Colors: Monochromatic grayscale from our main brand palette
+- Secondary Colors: Forest, emerald, and teal tones for a grounded, natural feel
+  - **Emerald Veil**: `#2A9D6B` - Lush, rich green
+  - **Deep Forest**: `#1E4D3A` - Earthy pine tone
+  - **Teal Whisper**: `#3B7D75` - Muted calming teal
+  - **Moss Grey**: `#5E665C` - Earth-blended olive/grey
+  - **Eucalyptus Mist**: `#A6C3B5` - Soft minty neutral highlight
+
+- CSS Variables:
+  - Light: `var(--sage-mnky-light)` - #2A9D6B (Emerald Veil)
+  - Medium: `var(--sage-mnky-medium)` - #3B7D75 (Teal Whisper)
+  - Dark: `var(--sage-mnky-dark)` - #1E4D3A (Deep Forest)
+
+## MOOD MNKY Palette Applications
+
+The MOOD MNKY gold/ember tones work beautifully with our monochromatic base palette and can be applied in several ways:
+
+### Accent Elements
+```jsx
+<button className="bg-[#D4A04E] text-white px-4 py-2 rounded-md">
+  MOOD MNKY Action
+</button>
+```
+
+### Gradient Effects
+```jsx
+<div className="bg-gradient-to-r from-[#B87532] to-[#D4A04E] text-white p-4 rounded-md">
+  MOOD MNKY gradient container
+</div>
+```
+
+### Subtle Borders
+```jsx
+<div className="border-2 border-[#A28B6A] p-4 rounded-md">
+  Content with MOOD MNKY border
+</div>
+```
+
+### Icons and Highlights
+```jsx
+<div className="flex items-center">
+  <span className="text-[#D4A04E] mr-2">
+    <svg><!-- Icon SVG --></svg>
+  </span>
+  <span>MOOD MNKY feature with highlighted icon</span>
+</div>
+```
+
+### Accessibility Considerations
+
+The MOOD MNKY gold/ember palette has been selected to ensure:
+- WCAG AA compliance for text when used with appropriate backgrounds
+- Sufficient contrast with our grayscale base palette
+- Distinct visual identity while maintaining brand cohesion
+- Appropriate dark mode adaptations
+
+## SAGE MNKY Palette Applications
+
+The SAGE MNKY forest/emerald tones create a grounded, natural aesthetic that complements our monochromatic base palette in the following applications:
+
+### Accent Elements
+```jsx
+<button className="bg-[#2A9D6B] text-white px-4 py-2 rounded-md">
+  SAGE MNKY Action
+</button>
+```
+
+### Gradient Effects
+```jsx
+<div className="bg-gradient-to-r from-[#1E4D3A] to-[#2A9D6B] text-white p-4 rounded-md">
+  SAGE MNKY gradient container
+</div>
+```
+
+### Subtle Borders
+```jsx
+<div className="border-2 border-[#A6C3B5] p-4 rounded-md">
+  Content with SAGE MNKY border
+</div>
+```
+
+### Icons and Highlights
+```jsx
+<div className="flex items-center">
+  <span className="text-[#3B7D75] mr-2">
+    <svg><!-- Icon SVG --></svg>
+  </span>
+  <span>SAGE MNKY feature with highlighted icon</span>
+</div>
+```
+
+### Nature-Inspired Patterns
+```jsx
+<div className="relative p-6 rounded-lg">
+  <div className="absolute inset-0 opacity-10 bg-[#A6C3B5] pattern-leaves"></div>
+  <h3 className="text-[#2A9D6B] relative z-10">SAGE MNKY Learning Module</h3>
+  <p className="relative z-10">Educational content with natural inspiration.</p>
+</div>
+```
+
+### Accessibility Considerations
+
+The SAGE MNKY forest/emerald palette has been selected to ensure:
+- WCAG AA compliance for text when used with appropriate backgrounds
+- Balanced contrast with our grayscale base palette
+- Calming, nature-inspired visual identity while maintaining brand cohesion
+- Appropriate dark mode adaptations that preserve the natural feel
+
+## CODE MNKY Palette Applications
+
+The CODE MNKY navy, steel, and royal blue tones create a technical, precise aesthetic that complements our monochromatic base palette in the following applications:
+
+### Accent Elements
+```jsx
+<button className="bg-[#3A4C66] text-white px-4 py-2 rounded-md">
+  CODE MNKY Action
+</button>
+```
+
+### Gradient Effects
+```jsx
+<div className="bg-gradient-to-r from-[#1A2A3A] to-[#3A4C66] text-white p-4 rounded-md">
+  CODE MNKY gradient container
+</div>
+```
+
+### Subtle Borders
+```jsx
+<div className="border-2 border-[#9FB8CC] p-4 rounded-md">
+  Content with CODE MNKY border
+</div>
+```
+
+### Icons and Highlights
+```jsx
+<div className="flex items-center">
+  <span className="text-[#2F60C1] mr-2">
+    <svg><!-- Icon SVG --></svg>
+  </span>
+  <span>CODE MNKY feature with highlighted icon</span>
+</div>
+```
+
+### Technical Interfaces
+```jsx
+<div className="relative p-6 rounded-lg bg-[#1A2A3A] border border-[#4E6C78]">
+  <h3 className="text-[#9FB8CC] font-mono">CODE MNKY Console</h3>
+  <pre className="bg-black bg-opacity-40 p-3 rounded text-[#9FB8CC] text-sm font-mono mt-2">
+    <code>// Technical interface example
+function initializeSystem() {
+  return { status: "Ready" };
+}</code>
+  </pre>
+</div>
+```
+
+### Accessibility Considerations
+
+The CODE MNKY navy/steel palette has been selected to ensure:
+- WCAG AA compliance for text when used with appropriate backgrounds
+- Strong contrast ratios for code snippets and technical content
+- Technical, structured visual identity while maintaining brand cohesion
+- Appropriate dark mode adaptations that enhance readability of code
+
+## Component Examples
+
+### Agent-Themed Cards
+
+<div className="grid grid-cols-3 gap-4 my-6">
+  <div className="mood-mnky-card rounded-md p-4 bg-amber-50">
+    <h3 className="text-amber-800 font-bold">MOOD MNKY Feature</h3>
+    <p>Personalized customer experiences through empathetic connection.</p>
+  </div>
+  
+  <div className="code-mnky-card rounded-md p-4 bg-blue-50">
+    <h3 className="text-blue-800 font-bold">CODE MNKY Feature</h3>
+    <p>Technical infrastructure and development support with precision.</p>
+  </div>
+  
+  <div className="sage-mnky-card rounded-md p-4 bg-green-50">
+    <h3 className="text-green-800 font-bold">SAGE MNKY Feature</h3>
+    <p>Educational content and community facilitation with insight.</p>
+  </div>
+</div>
+
+### Agent Section Headers
+
+<div className="mood-mnky-section mt-6 mb-2">
+  <h3>MOOD MNKY Section Example</h3>
+  <p>This demonstrates heading styling in a MOOD MNKY section.</p>
+</div>
+
+<div className="code-mnky-section mt-6 mb-2">
+  <h3>CODE MNKY Section Example</h3>
+  <p>This demonstrates heading styling in a CODE MNKY section.</p>
+</div>
+
+<div className="sage-mnky-section mt-6 mb-2">
+  <h3>SAGE MNKY Section Example</h3>
+  <p>This demonstrates heading styling in a SAGE MNKY section.</p>
+</div>
+
+## Best Practices
+
+1. **Consistent Usage**: Apply agent styling consistently across related content to reinforce agent identity.
+
+2. **Appropriate Context**: Use agent styling only for content directly related to that specific agent's domain.
+
+3. **Accessibility**: Ensure sufficient contrast between text and backgrounds, especially when using light color variants.
+
+4. **Don't Overuse**: Reserve agent-specific styling for content directly related to each agent to maintain its impact.
+
+5. **Responsive Design**: Test agent-styled components on different screen sizes to ensure they remain effective on mobile devices.
+
+6. **Semantic Meaning**: Use agent styling to reinforce meaning, not just for decorative purposes.
+
+7. **Documentation Updates**: When new agent-specific styling options are added, update this guide accordingly.
+
+## Implementation Details
+
+These styles are implemented in the `/docs/styles.css` file, which defines:
+
+- Font declarations for Helvetica (our brand font)
+- Default typography enhancements
+- Agent-specific color variables
+- UI component styling including cards, sections, and borders
+- Agent avatar styling
+- Dark mode adjustments
+
+For developers who need to extend or modify these styles, refer to the [Theme Customization](/developer-resources/theme-customization) guide.
+
+## Examples in Context
+
+### Example 1: Agent Capabilities Comparison
+
+```jsx
+<div className="grid grid-cols-3 gap-4 my-6">
+  <div className="mood-mnky-card rounded-md p-4">
+    <h3>MOOD MNKY</h3>
+    <ul>
+      <li>Personalized recommendations</li>
+      <li>Emotional intelligence</li>
+      <li>Customer experience optimization</li>
+    </ul>
+  </div>
+  
+  <div className="code-mnky-card rounded-md p-4">
+    <h3>CODE MNKY</h3>
+    <ul>
+      <li>Technical troubleshooting</li>
+      <li>Infrastructure monitoring</li>
+      <li>Development support</li>
+    </ul>
+  </div>
+  
+  <div className="sage-mnky-card rounded-md p-4">
+    <h3>SAGE MNKY</h3>
+    <ul>
+      <li>Educational content creation</li>
+      <li>Community facilitation</li>
+      <li>Knowledge organization</li>
+    </ul>
+  </div>
+</div>
+```
+
+### Example 2: Agent-Specific Documentation Section
+
+```jsx
+<div className="code-mnky-section">
+  <h2>Technical Implementation</h2>
+  <p>This section explains the technical details of the feature.</p>
+  
+  <div className="code-mnky-card">
+    <h3>Integration Requirements</h3>
+    <p>To implement this feature, ensure your system meets these requirements:</p>
+    <ul>
+      <li>Node.js v18 or higher</li>
+      <li>Support for WebSockets</li>
+      <li>Access to the API Gateway</li>
+    </ul>
+  </div>
+  
+  <pre><code>// Example implementation code
+const initializeFeature = async () => {
+  // Setup code here
+};</code></pre>
+</div>
+```
+
+This guide will help maintain visual consistency across agent-specific content while reinforcing each agent's unique identity within the MOOD MNKY ecosystem. 

@@ -98,7 +98,8 @@ Further setup (Supabase migrations, MNKY VERSE blog sync, MNKY LABZ): see [docs/
 | `Shopify/theme/` | Liquid theme (sections, templates, assets). Use from repo root: `shopify theme push --path Shopify/theme` |
 | `extensions/mood-mnky-theme/` | Theme app extension (blocks, embed). Use Shopify CLI from repo root. |
 | `supabase/` | Migrations, Edge Functions, config. Use Supabase CLI from repo root. |
-| `docs/` | Design system, integration report, runbooks |
+| `docs/` | Design system, integration report, runbooks (repo docs) |
+| `mnky-docs/` | Mintlify documentation (MOOD MNKY). Run `pnpm docs:dev` from root to preview. In Mintlify dashboard set monorepo path to `/mnky-docs`. |
 
 ### Monorepo deployment (Vercel)
 

@@ -1,0 +1,472 @@
+# Rate Limiting Guide
+
+This guide explains the rate limiting system for MOOD MNKY API services, including limits, monitoring, and best practices for handling rate limits in your applications.
+
+## Rate Limit Overview
+
+### Service Tiers
+
+Each API service has different rate limits based on the subscription tier:
+
+| Service    | Basic Tier  | Standard Tier | Premium Tier | Enterprise |
+|------------|-------------|---------------|--------------|------------|
+| Ollama     | 100/hour    | 1,000/hour   | 10,000/hour | Custom     |
+| Flowise    | 100/hour    | 1,000/hour   | 10,000/hour | Custom     |
+| Langchain  | 50/hour     | 500/hour     | 5,000/hour  | Custom     |
+
+### Rate Limit Headers
+
+All API responses include rate limit information in the headers:
+
+```
+x-ratelimit-limit: 1000
+x-ratelimit-remaining: 999
+x-ratelimit-reset: 1635724800
+x-ratelimit-used: 1
+```
+
+## Rate Limit Implementation
+
+### TypeScript Implementation
+
+1. **Rate Limit Handler**
+```typescript
+interface RateLimitInfo {
+  limit: number;
+  remaining: number;
+  reset: number;
+  used: number;
+}
+
+class RateLimitHandler {
+  private rateLimits: Map<string, RateLimitInfo> = new Map();
+
+  constructor(private client: APIClient) {
+    this.client.on('response', this.updateRateLimits.bind(this));
+  }
+
+  private updateRateLimits(response: Response): void {
+    const service = new URL(response.url).hostname;
+    
+    this.rateLimits.set(service, {
+      limit: parseInt(response.headers.get('x-ratelimit-limit') || '0'),
+      remaining: parseInt(response.headers.get('x-ratelimit-remaining') || '0'),
+      reset: parseInt(response.headers.get('x-ratelimit-reset') || '0'),
+      used: parseInt(response.headers.get('x-ratelimit-used') || '0')
+    });
+  }
+
+  public getRateLimit(service: string): RateLimitInfo | undefined {
+    return this.rateLimits.get(service);
+  }
+
+  public async waitForReset(service: string): Promise<void> {
+    const limit = this.getRateLimit(service);
+    if (!limit) return;
+
+    const now = Math.floor(Date.now() / 1000);
+    const waitTime = Math.max(0, limit.reset - now) * 1000;
+    
+    if (waitTime > 0) {
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+}
+```
+
+2. **Retry Strategy**
+```typescript
+interface RetryOptions {
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+}
+
+class RetryStrategy {
+  constructor(
+    private options: RetryOptions = {
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 60000
+    }
+  ) {}
+
+  async execute<T>(
+    operation: () => Promise<T>,
+    attempt: number = 1
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      if (
+        error.status === 429 &&
+        attempt <= this.options.maxRetries
+      ) {
+        const delay = this.calculateDelay(attempt);
+        await this.wait(delay);
+        return this.execute(operation, attempt + 1);
+      }
+      throw error;
+    }
+  }
+
+  private calculateDelay(attempt: number): number {
+    const delay = Math.min(
+      this.options.maxDelay,
+      this.options.baseDelay * Math.pow(2, attempt - 1)
+    );
+    return delay + Math.random() * delay * 0.1; // Add jitter
+  }
+
+  private wait(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+```
+
+### Python Implementation
+
+1. **Rate Limit Handler**
+```python
+from dataclasses import dataclass
+from datetime import datetime
+import time
+from typing import Dict, Optional
+
+@dataclass
+class RateLimitInfo:
+    limit: int
+    remaining: int
+    reset: int
+    used: int
+
+class RateLimitHandler:
+    def __init__(self):
+        self.rate_limits: Dict[str, RateLimitInfo] = {}
+
+    def update_rate_limits(self, response) -> None:
+        service = response.url.split('/')[2]
+        
+        self.rate_limits[service] = RateLimitInfo(
+            limit=int(response.headers.get('x-ratelimit-limit', 0)),
+            remaining=int(response.headers.get('x-ratelimit-remaining', 0)),
+            reset=int(response.headers.get('x-ratelimit-reset', 0)),
+            used=int(response.headers.get('x-ratelimit-used', 0))
+        )
+
+    def get_rate_limit(self, service: str) -> Optional[RateLimitInfo]:
+        return self.rate_limits.get(service)
+
+    async def wait_for_reset(self, service: str) -> None:
+        limit = self.get_rate_limit(service)
+        if not limit:
+            return
+
+        now = int(time.time())
+        wait_time = max(0, limit.reset - now)
+        
+        if wait_time > 0:
+            time.sleep(wait_time)
+```
+
+2. **Retry Strategy**
+```python
+import asyncio
+from dataclasses import dataclass
+import random
+from typing import TypeVar, Callable, Awaitable
+
+T = TypeVar('T')
+
+@dataclass
+class RetryOptions:
+    max_retries: int = 3
+    base_delay: float = 1.0
+    max_delay: float = 60.0
+
+class RetryStrategy:
+    def __init__(self, options: RetryOptions = RetryOptions()):
+        self.options = options
+
+    async def execute(
+        self,
+        operation: Callable[[], Awaitable[T]],
+        attempt: int = 1
+    ) -> T:
+        try:
+            return await operation()
+        except Exception as error:
+            if (
+                getattr(error, 'status', None) == 429 and
+                attempt <= self.options.max_retries
+            ):
+                delay = self._calculate_delay(attempt)
+                await asyncio.sleep(delay)
+                return await self.execute(operation, attempt + 1)
+            raise error
+
+    def _calculate_delay(self, attempt: int) -> float:
+        delay = min(
+            self.options.max_delay,
+            self.options.base_delay * (2 ** (attempt - 1))
+        )
+        # Add jitter
+        return delay + random.random() * delay * 0.1
+```
+
+## Best Practices
+
+### Rate Limit Monitoring
+
+1. **Usage Tracking**
+```typescript
+class RateLimitMonitor {
+  constructor(private storage: MetricsStorage) {}
+
+  async trackUsage(rateLimitInfo: RateLimitInfo, service: string): Promise<void> {
+    await this.storage.record({
+      timestamp: new Date(),
+      service,
+      remaining: rateLimitInfo.remaining,
+      used: rateLimitInfo.used,
+      limit: rateLimitInfo.limit
+    });
+  }
+
+  async getUsageMetrics(
+    service: string,
+    startTime: Date,
+    endTime: Date
+  ): Promise<UsageMetrics> {
+    const usage = await this.storage.query({
+      service,
+      timestamp: {
+        $gte: startTime,
+        $lte: endTime
+      }
+    });
+
+    return this.calculateMetrics(usage);
+  }
+
+  private calculateMetrics(usage: RateLimitRecord[]): UsageMetrics {
+    // Implementation
+  }
+}
+```
+
+2. **Alerting System**
+```typescript
+interface AlertConfig {
+  thresholdPercentage: number;
+  cooldownPeriod: number;
+  notificationChannels: string[];
+}
+
+class RateLimitAlert {
+  private lastAlertTime: Map<string, number> = new Map();
+
+  constructor(
+    private config: AlertConfig,
+    private notifier: AlertNotifier
+  ) {}
+
+  async checkAndAlert(
+    service: string,
+    rateLimitInfo: RateLimitInfo
+  ): Promise<void> {
+    const usagePercentage = 
+      (rateLimitInfo.used / rateLimitInfo.limit) * 100;
+
+    if (
+      usagePercentage >= this.config.thresholdPercentage &&
+      this.canSendAlert(service)
+    ) {
+      await this.sendAlert(service, usagePercentage);
+      this.updateLastAlertTime(service);
+    }
+  }
+
+  private canSendAlert(service: string): boolean {
+    const lastAlert = this.lastAlertTime.get(service) || 0;
+    return Date.now() - lastAlert >= this.config.cooldownPeriod;
+  }
+
+  private async sendAlert(
+    service: string,
+    usagePercentage: number
+  ): Promise<void> {
+    await this.notifier.send({
+      type: 'RATE_LIMIT_WARNING',
+      service,
+      usagePercentage,
+      timestamp: new Date(),
+      message: `Rate limit usage at ${usagePercentage.toFixed(1)}%`
+    });
+  }
+
+  private updateLastAlertTime(service: string): void {
+    this.lastAlertTime.set(service, Date.now());
+  }
+}
+```
+
+### Request Optimization
+
+1. **Request Batching**
+```typescript
+interface BatchOptions {
+  maxBatchSize: number;
+  maxWaitTime: number;
+}
+
+class RequestBatcher<T, R> {
+  private batch: T[] = [];
+  private timer: NodeJS.Timeout | null = null;
+  private promises: Array<{
+    resolve: (value: R) => void;
+    reject: (error: any) => void;
+  }> = [];
+
+  constructor(
+    private processBatch: (items: T[]) => Promise<R[]>,
+    private options: BatchOptions
+  ) {}
+
+  async add(item: T): Promise<R> {
+    this.batch.push(item);
+
+    if (this.batch.length >= this.options.maxBatchSize) {
+      return this.flush();
+    }
+
+    if (!this.timer) {
+      this.timer = setTimeout(
+        () => this.flush(),
+        this.options.maxWaitTime
+      );
+    }
+
+    return new Promise((resolve, reject) => {
+      this.promises.push({ resolve, reject });
+    });
+  }
+
+  private async flush(): Promise<R> {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+
+    const items = [...this.batch];
+    const currentPromises = [...this.promises];
+    this.batch = [];
+    this.promises = [];
+
+    try {
+      const results = await this.processBatch(items);
+      results.forEach((result, index) => {
+        currentPromises[index].resolve(result);
+      });
+      return results[0];
+    } catch (error) {
+      currentPromises.forEach(promise => promise.reject(error));
+      throw error;
+    }
+  }
+}
+```
+
+2. **Request Prioritization**
+```typescript
+enum RequestPriority {
+  HIGH = 'high',
+  MEDIUM = 'medium',
+  LOW = 'low'
+}
+
+interface PrioritizedRequest<T> {
+  priority: RequestPriority;
+  data: T;
+  timestamp: number;
+}
+
+class RequestPrioritizer<T> {
+  private queues: Map<RequestPriority, PrioritizedRequest<T>[]> = new Map();
+  private processing: boolean = false;
+
+  constructor(
+    private processor: (data: T) => Promise<void>,
+    private rateLimitHandler: RateLimitHandler
+  ) {
+    Object.values(RequestPriority).forEach(priority => {
+      this.queues.set(priority, []);
+    });
+  }
+
+  async add(data: T, priority: RequestPriority): Promise<void> {
+    const queue = this.queues.get(priority)!;
+    queue.push({
+      priority,
+      data,
+      timestamp: Date.now()
+    });
+
+    if (!this.processing) {
+      this.processing = true;
+      await this.processQueues();
+    }
+  }
+
+  private async processQueues(): Promise<void> {
+    while (this.hasItems()) {
+      const request = this.getNextRequest();
+      if (!request) break;
+
+      try {
+        await this.processor(request.data);
+      } catch (error) {
+        if (error.status === 429) {
+          await this.rateLimitHandler.waitForReset(
+            error.service
+          );
+          // Re-queue the request
+          this.add(request.data, request.priority);
+        } else {
+          console.error('Request failed:', error);
+        }
+      }
+    }
+    this.processing = false;
+  }
+
+  private hasItems(): boolean {
+    return Array.from(this.queues.values()).some(
+      queue => queue.length > 0
+    );
+  }
+
+  private getNextRequest(): PrioritizedRequest<T> | null {
+    for (const priority of Object.values(RequestPriority)) {
+      const queue = this.queues.get(priority)!;
+      if (queue.length > 0) {
+        return queue.shift()!;
+      }
+    }
+    return null;
+  }
+}
+```
+
+## Support & Resources
+
+### Documentation
+- [API Rate Limits Reference](https://docs.moodmnky.com/api/rate-limits)
+- [Best Practices Guide](https://docs.moodmnky.com/guides/rate-limits)
+- [Implementation Examples](https://docs.moodmnky.com/examples/rate-limits)
+
+### Support Channels
+- [Rate Limit Status](https://status.moodmnky.com/rate-limits)
+- [Developer Forum](https://community.moodmnky.com)
+- [Support Portal](https://support.moodmnky.com)
+- [API Updates](https://docs.moodmnky.com/changelog) 

@@ -6,9 +6,12 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
+    "docs:validate": "cd mnky-docs && pnpm exec mint validate"
   },
   "devDependencies": {
+    "mint": "latest",
     "turbo": "latest"
   }
 }

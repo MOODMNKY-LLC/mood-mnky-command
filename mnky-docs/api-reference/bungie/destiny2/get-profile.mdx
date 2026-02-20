@@ -1,0 +1,842 @@
+---
+title: 'Get Destiny 2 Profile'
+api: 'GET https://www.bungie.net/Platform/Destiny2/{membershipType}/Profile/{destinyMembershipId}/'
+description: 'Returns Destiny 2 profile information for the supplied membership, including characters, inventory, progressions, and more.'
+---
+
+# Get Destiny 2 Profile
+
+This endpoint returns Destiny 2 profile information for the specified account. It allows you to request specific components of profile data, giving you precise control over what information is returned.
+
+## Authentication
+
+This endpoint requires:
+- A valid Bungie.net API key
+- For private profiles, OAuth 2.0 authentication with the `ReadDestinyInventoryAndVault` scope
+
+## Path Parameters
+
+<ParamField path="membershipType" type="integer" required>
+  A valid Destiny 2 platform identifier:
+  - 1: Xbox
+  - 2: PlayStation
+  - 3: Steam
+  - 4: Blizzard (legacy)
+  - 5: Stadia (legacy)
+  - 6: Epic Games
+  - 10: Demon
+  - 254: BungieNext
+</ParamField>
+
+<ParamField path="destinyMembershipId" type="string" required>
+  Destiny membership ID of the account whose profile you want to access
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="components" type="array" required>
+  A comma-separated list of components to return (as a string parameter). See [Components](#components) for the list of available components.
+</ParamField>
+
+## Components
+
+The API allows you to request specific components of profile data. Each component represents a different aspect of a Destiny profile. Below are some commonly used component types:
+
+| Component | Value | Description |
+|-----------|-------|-------------|
+| Profiles | 100 | Basic profile information |
+| VendorReceipts | 101 | Receipts from vendors |
+| ProfileInventories | 102 | Profile-level inventory |
+| ProfileCurrencies | 103 | Profile-level currencies |
+| ProfileProgression | 104 | Profile-level progression |
+| PlatformSilver | 105 | Silver currency |
+| Characters | 200 | Character information |
+| CharacterInventories | 201 | Character-level inventory |
+| CharacterProgressions | 202 | Character-level progression |
+| CharacterRenderData | 203 | Character rendering data |
+| CharacterActivities | 204 | Character activity data |
+| CharacterEquipment | 205 | Equipped items |
+| ItemInstances | 300 | Item instance details |
+| ItemObjectives | 301 | Item objectives/quests |
+| ItemPerks | 302 | Item perks |
+| ItemRenderData | 303 | Item rendering data |
+| ItemStats | 304 | Item stats |
+| ItemSockets | 305 | Item sockets |
+| ItemTalentGrids | 306 | Item talent grids |
+| ItemCommonData | 307 | Common item data |
+| ItemPlugStates | 308 | Plug states for items |
+| ItemPlugObjectives | 309 | Plug objectives |
+| ItemReusablePlugs | 310 | Reusable plugs |
+| Vendors | 400 | Vendor data |
+| VendorCategories | 401 | Vendor categories |
+| VendorSales | 402 | Vendor sales |
+| Kiosks | 500 | Kiosk data |
+| CurrencyLookups | 600 | Currency lookup data |
+| PresentationNodes | 700 | Presentation nodes |
+| Collectibles | 800 | Collectibles |
+| Records | 900 | Records (Triumphs) |
+| Transitory | 1000 | Transitory data |
+| Metrics | 1100 | Metrics (statistics) |
+| StringVariables | 1200 | String variables |
+| Craftables | 1300 | Craftable items |
+
+<RequestExample>
+```bash
+curl -X GET "https://www.bungie.net/Platform/Destiny2/3/Profile/4611686018429783292/?components=100,200,201,205" \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Authorization: Bearer your-oauth-token"
+```
+
+```javascript
+const fetchProfile = async (membershipType, destinyMembershipId, components, accessToken) => {
+  const componentsParam = components.join(',');
+  
+  const response = await fetch(
+    `https://www.bungie.net/Platform/Destiny2/${membershipType}/Profile/${destinyMembershipId}/?components=${componentsParam}`,
+    {
+      headers: {
+        'X-API-Key': 'your-api-key-here',
+        'Authorization': accessToken ? `Bearer ${accessToken}` : undefined
+      }
+    }
+  );
+  
+  return await response.json();
+};
+```
+</RequestExample>
+
+## Response
+
+The response structure varies significantly based on the components requested. Each component's data is returned in its own property of the Response object.
+
+<ResponseField name="Response" type="object">
+  The response object contains all the requested components
+  
+  <Expandable title="Properties">
+    <ResponseField name="profile" type="object">
+      Data for the Profile component (100)
+      
+      <Expandable title="Properties">
+        <ResponseField name="data" type="object">
+          Profile data
+          
+          <Expandable title="Properties">
+            <ResponseField name="userInfo" type="object">
+              Basic user info
+              
+              <Expandable title="Properties">
+                <ResponseField name="membershipType" type="integer">
+                  Platform membership type
+                </ResponseField>
+                
+                <ResponseField name="membershipId" type="string">
+                  Destiny membership ID
+                </ResponseField>
+                
+                <ResponseField name="displayName" type="string">
+                  Display name on platform
+                </ResponseField>
+                
+                <ResponseField name="bungieGlobalDisplayName" type="string">
+                  Bungie global display name
+                </ResponseField>
+                
+                <ResponseField name="bungieGlobalDisplayNameCode" type="integer">
+                  The 4-digit code appended to the global display name
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="dateLastPlayed" type="string" format="date-time">
+              Date the user last played
+            </ResponseField>
+            
+            <ResponseField name="versionsOwned" type="integer">
+              Bitmask of owned game versions
+            </ResponseField>
+            
+            <ResponseField name="characterIds" type="array">
+              List of character IDs
+              
+              <Expandable title="Items">
+                <ResponseField name="" type="string">
+                  Character ID
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="seasonHashes" type="array">
+              List of owned season hashes
+              
+              <Expandable title="Items">
+                <ResponseField name="" type="integer">
+                  Season hash
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="eventCardHashesOwned" type="array">
+              Event card hashes owned
+              
+              <Expandable title="Items">
+                <ResponseField name="" type="integer">
+                  Event card hash
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="currentSeasonHash" type="integer">
+              Hash of the current season
+            </ResponseField>
+            
+            <ResponseField name="currentSeasonRewardPowerCap" type="integer">
+              Power cap for the current season
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="privacy" type="integer">
+          Privacy setting for this component
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="characters" type="object">
+      Data for the Characters component (200)
+      
+      <Expandable title="Properties">
+        <ResponseField name="data" type="object">
+          Map of character IDs to character data
+          
+          <Expandable title="Properties">
+            <ResponseField name="[characterId]" type="object">
+              Data for one character
+              
+              <Expandable title="Properties">
+                <ResponseField name="characterId" type="string">
+                  Character ID
+                </ResponseField>
+                
+                <ResponseField name="membershipId" type="string">
+                  Associated membership ID
+                </ResponseField>
+                
+                <ResponseField name="membershipType" type="integer">
+                  Platform membership type
+                </ResponseField>
+                
+                <ResponseField name="dateLastPlayed" type="string" format="date-time">
+                  Date the character was last played
+                </ResponseField>
+                
+                <ResponseField name="minutesPlayedLastSession" type="integer">
+                  Minutes played in the last session
+                </ResponseField>
+                
+                <ResponseField name="minutesPlayedTotal" type="integer">
+                  Total minutes played on this character
+                </ResponseField>
+                
+                <ResponseField name="light" type="integer">
+                  Character's power level
+                </ResponseField>
+                
+                <ResponseField name="stats" type="object">
+                  Character stats
+                  
+                  <Expandable title="Properties">
+                    <ResponseField name="[statHash]" type="integer">
+                      The value of each stat (e.g., mobility, resilience)
+                    </ResponseField>
+                  </Expandable>
+                </ResponseField>
+                
+                <ResponseField name="raceHash" type="integer">
+                  Hash identifier for the character's race
+                </ResponseField>
+                
+                <ResponseField name="genderHash" type="integer">
+                  Hash identifier for the character's gender
+                </ResponseField>
+                
+                <ResponseField name="classHash" type="integer">
+                  Hash identifier for the character's class
+                </ResponseField>
+                
+                <ResponseField name="emblemPath" type="string">
+                  Path to the character's equipped emblem icon
+                </ResponseField>
+                
+                <ResponseField name="emblemBackgroundPath" type="string">
+                  Path to the character's equipped emblem background
+                </ResponseField>
+                
+                <ResponseField name="emblemHash" type="integer">
+                  Hash identifier for the character's equipped emblem
+                </ResponseField>
+                
+                <ResponseField name="emblemColor" type="object">
+                  Color information for the character's emblem
+                  
+                  <Expandable title="Properties">
+                    <ResponseField name="red" type="integer">
+                      Red value (0-255)
+                    </ResponseField>
+                    
+                    <ResponseField name="green" type="integer">
+                      Green value (0-255)
+                    </ResponseField>
+                    
+                    <ResponseField name="blue" type="integer">
+                      Blue value (0-255)
+                    </ResponseField>
+                    
+                    <ResponseField name="alpha" type="integer">
+                      Alpha value (0-255)
+                    </ResponseField>
+                  </Expandable>
+                </ResponseField>
+                
+                <ResponseField name="levelProgression" type="object">
+                  Character level progression
+                  
+                  <Expandable title="Properties">
+                    <ResponseField name="progressionHash" type="integer">
+                      Hash identifier for the progression
+                    </ResponseField>
+                    
+                    <ResponseField name="dailyProgress" type="integer">
+                      Progress earned today
+                    </ResponseField>
+                    
+                    <ResponseField name="dailyLimit" type="integer">
+                      Daily limit (if any)
+                    </ResponseField>
+                    
+                    <ResponseField name="weeklyProgress" type="integer">
+                      Progress earned this week
+                    </ResponseField>
+                    
+                    <ResponseField name="weeklyLimit" type="integer">
+                      Weekly limit (if any)
+                    </ResponseField>
+                    
+                    <ResponseField name="currentProgress" type="integer">
+                      Current progress value
+                    </ResponseField>
+                    
+                    <ResponseField name="level" type="integer">
+                      Current level
+                    </ResponseField>
+                    
+                    <ResponseField name="levelCap" type="integer">
+                      Level cap
+                    </ResponseField>
+                    
+                    <ResponseField name="stepIndex" type="integer">
+                      Current step index
+                    </ResponseField>
+                    
+                    <ResponseField name="progressToNextLevel" type="integer">
+                      Progress needed to reach next level
+                    </ResponseField>
+                    
+                    <ResponseField name="nextLevelAt" type="integer">
+                      Progress required for next level
+                    </ResponseField>
+                  </Expandable>
+                </ResponseField>
+                
+                <ResponseField name="baseCharacterLevel" type="integer">
+                  Base character level
+                </ResponseField>
+                
+                <ResponseField name="percentToNextLevel" type="number">
+                  Percentage progress to the next level
+                </ResponseField>
+                
+                <ResponseField name="titleRecordHash" type="integer">
+                  Hash identifier for the character's equipped title (if any)
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="privacy" type="integer">
+          Privacy setting for this component
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="characterInventories" type="object">
+      Data for the CharacterInventories component (201)
+      
+      <Expandable title="Properties">
+        <ResponseField name="data" type="object">
+          Map of character IDs to inventory data
+          
+          <Expandable title="Properties">
+            <ResponseField name="[characterId]" type="object">
+              Inventory data for one character
+              
+              <Expandable title="Properties">
+                <ResponseField name="items" type="array">
+                  Items in the character's inventory
+                  
+                  <Expandable title="Items">
+                    <ResponseField name="itemHash" type="integer">
+                      Hash identifier for the item
+                    </ResponseField>
+                    
+                    <ResponseField name="itemInstanceId" type="string">
+                      If the item is instanced, this is the instance ID
+                    </ResponseField>
+                    
+                    <ResponseField name="quantity" type="integer">
+                      Stack size
+                    </ResponseField>
+                    
+                    <ResponseField name="bindStatus" type="integer">
+                      Binding status
+                    </ResponseField>
+                    
+                    <ResponseField name="location" type="integer">
+                      Location within the character's inventory
+                    </ResponseField>
+                    
+                    <ResponseField name="bucketHash" type="integer">
+                      Hash identifier for the inventory bucket
+                    </ResponseField>
+                    
+                    <ResponseField name="transferStatus" type="integer">
+                      Transfer status flags
+                    </ResponseField>
+                    
+                    <ResponseField name="lockable" type="boolean">
+                      Whether the item can be locked
+                    </ResponseField>
+                    
+                    <ResponseField name="state" type="integer">
+                      State flags
+                    </ResponseField>
+                    
+                    <ResponseField name="dismantlePermission" type="integer">
+                      Flags indicating whether the item can be dismantled
+                    </ResponseField>
+                    
+                    <ResponseField name="isWrapper" type="boolean">
+                      If true, this item is a wrapper for another item
+                    </ResponseField>
+                  </Expandable>
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="privacy" type="integer">
+          Privacy setting for this component
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="characterEquipment" type="object">
+      Data for the CharacterEquipment component (205)
+      
+      <Expandable title="Properties">
+        <ResponseField name="data" type="object">
+          Map of character IDs to equipment data
+          
+          <Expandable title="Properties">
+            <ResponseField name="[characterId]" type="object">
+              Equipment data for one character
+              
+              <Expandable title="Properties">
+                <ResponseField name="items" type="array">
+                  Equipped items
+                  
+                  <Expandable title="Items">
+                    <ResponseField name="itemHash" type="integer">
+                      Hash identifier for the item
+                    </ResponseField>
+                    
+                    <ResponseField name="itemInstanceId" type="string">
+                      If the item is instanced, this is the instance ID
+                    </ResponseField>
+                    
+                    <ResponseField name="quantity" type="integer">
+                      Stack size
+                    </ResponseField>
+                    
+                    <ResponseField name="bindStatus" type="integer">
+                      Binding status
+                    </ResponseField>
+                    
+                    <ResponseField name="location" type="integer">
+                      Location within the character's inventory
+                    </ResponseField>
+                    
+                    <ResponseField name="bucketHash" type="integer">
+                      Hash identifier for the inventory bucket
+                    </ResponseField>
+                    
+                    <ResponseField name="transferStatus" type="integer">
+                      Transfer status flags
+                    </ResponseField>
+                    
+                    <ResponseField name="lockable" type="boolean">
+                      Whether the item can be locked
+                    </ResponseField>
+                    
+                    <ResponseField name="state" type="integer">
+                      State flags
+                    </ResponseField>
+                    
+                    <ResponseField name="dismantlePermission" type="integer">
+                      Flags indicating whether the item can be dismantled
+                    </ResponseField>
+                    
+                    <ResponseField name="isWrapper" type="boolean">
+                      If true, this item is a wrapper for another item
+                    </ResponseField>
+                  </Expandable>
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="privacy" type="integer">
+          Privacy setting for this component
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ErrorCode" type="integer">
+  Error code (1 for success)
+</ResponseField>
+
+<ResponseField name="ThrottleSeconds" type="integer">
+  Number of seconds to wait before making another request (for rate limiting)
+</ResponseField>
+
+<ResponseField name="ErrorStatus" type="string">
+  Status message (e.g., "Success")
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Additional information
+</ResponseField>
+
+<ResponseField name="MessageData" type="object">
+  Additional message data (typically empty)
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "Response": {
+    "profile": {
+      "data": {
+        "userInfo": {
+          "membershipType": 3,
+          "membershipId": "4611686018429783292",
+          "displayName": "Guardian",
+          "bungieGlobalDisplayName": "Guardian",
+          "bungieGlobalDisplayNameCode": 1234
+        },
+        "dateLastPlayed": "2023-11-15T22:30:00Z",
+        "versionsOwned": 63,
+        "characterIds": ["2305843009504307242", "2305843009504307243", "2305843009504307244"],
+        "seasonHashes": [2809059425, 3612906877, 2189971086],
+        "eventCardHashesOwned": [578539348, 67898761],
+        "currentSeasonHash": 3049022729,
+        "currentSeasonRewardPowerCap": 1810
+      },
+      "privacy": 1
+    },
+    "characters": {
+      "data": {
+        "2305843009504307242": {
+          "membershipId": "4611686018429783292",
+          "membershipType": 3,
+          "characterId": "2305843009504307242",
+          "dateLastPlayed": "2023-11-15T22:30:00Z",
+          "minutesPlayedTotal": 12450,
+          "minutesPlayedLastSession": 121,
+          "light": 1802,
+          "stats": {
+            "144602215": 32,
+            "392767087": 100,
+            "1735777505": 70,
+            "1935470627": 50,
+            "2996146975": 42,
+            "4244567218": 90
+          },
+          "raceHash": 898834093,
+          "genderHash": 2204441813,
+          "classHash": 671679327,
+          "emblemPath": "/common/destiny2_content/icons/emblem.png",
+          "emblemBackgroundPath": "/common/destiny2_content/icons/emblem_bg.png",
+          "emblemHash": 3965815390,
+          "emblemColor": {
+            "red": 21,
+            "green": 127,
+            "blue": 204,
+            "alpha": 255
+          },
+          "levelProgression": {
+            "progressionHash": 1716568313,
+            "dailyProgress": 0,
+            "dailyLimit": 0,
+            "weeklyProgress": 0,
+            "weeklyLimit": 0,
+            "currentProgress": 0,
+            "level": 50,
+            "levelCap": 50,
+            "stepIndex": 0,
+            "progressToNextLevel": 0,
+            "nextLevelAt": 0
+          },
+          "baseCharacterLevel": 50,
+          "percentToNextLevel": 0,
+          "titleRecordHash": 3249408038
+        }
+      },
+      "privacy": 1
+    },
+    "characterInventories": {
+      "data": {
+        "2305843009504307242": {
+          "items": [
+            {
+              "itemHash": 3512014804,
+              "itemInstanceId": "6917529068241619534",
+              "quantity": 1,
+              "bindStatus": 0,
+              "location": 1,
+              "bucketHash": 1498876634,
+              "transferStatus": 1,
+              "lockable": true,
+              "state": 1,
+              "dismantlePermission": 2,
+              "isWrapper": false
+            }
+          ]
+        }
+      },
+      "privacy": 1
+    },
+    "characterEquipment": {
+      "data": {
+        "2305843009504307242": {
+          "items": [
+            {
+              "itemHash": 2742838701,
+              "itemInstanceId": "6917529081947872834",
+              "quantity": 1,
+              "bindStatus": 0,
+              "location": 1,
+              "bucketHash": 3448274439,
+              "transferStatus": 1,
+              "lockable": true,
+              "state": 5,
+              "dismantlePermission": 1,
+              "isWrapper": false
+            }
+          ]
+        }
+      },
+      "privacy": 1
+    }
+  },
+  "ErrorCode": 1,
+  "ThrottleSeconds": 0,
+  "ErrorStatus": "Success",
+  "Message": "Ok",
+  "MessageData": {}
+}
+```
+</ResponseExample>
+
+## Usage in MOOD MNKY
+
+The Get Profile endpoint is a cornerstone of the MOOD MNKY ecosystem, providing critical character and inventory data for:
+
+1. **Inventory Management** - Fetching equipped items, vault contents, and character inventories
+2. **Character Selection** - Displaying available characters with their class, power level, and emblems
+3. **Item Stat Tracking** - Retrieving detailed item stats, socket configurations, and masterwork status
+4. **Collections & Triumphs** - Tracking player collections and triumph progress
+5. **Season Progress** - Monitoring season pass level and event participation
+
+### Integration Example
+
+```javascript
+// Retrieve and display character information
+async function loadCharacters(membershipType, membershipId, accessToken) {
+  try {
+    // Request only the components we need
+    const components = ['100', '200']; // Profile and Characters components
+    
+    const response = await fetch(
+      `https://www.bungie.net/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=${components.join(',')}`,
+      {
+        headers: {
+          'X-API-Key': process.env.BUNGIE_API_KEY,
+          'Authorization': accessToken ? `Bearer ${accessToken}` : undefined
+        }
+      }
+    );
+    
+    const data = await response.json();
+    
+    if (data.ErrorCode !== 1) {
+      throw new Error(`Failed to get profile data: ${data.Message}`);
+    }
+    
+    const { profile, characters } = data.Response;
+    
+    if (!profile?.data || !characters?.data) {
+      throw new Error('Missing required profile data components');
+    }
+    
+    // Get class definitions to map class hashes to readable names
+    const classDefinitions = await getDestinyDefinitions('DestinyClassDefinition');
+    
+    // Format character data for display
+    const characterData = Object.values(characters.data).map(character => {
+      const classDefinition = classDefinitions[character.classHash];
+      
+      return {
+        characterId: character.characterId,
+        lastPlayed: new Date(character.dateLastPlayed),
+        light: character.light,
+        className: classDefinition?.displayProperties.name || 'Unknown Class',
+        emblemBackgroundPath: `https://www.bungie.net${character.emblemBackgroundPath}`,
+        minutesPlayed: character.minutesPlayedTotal,
+        level: character.baseCharacterLevel
+      };
+    });
+    
+    // Sort characters by last played date (most recent first)
+    return characterData.sort((a, b) => b.lastPlayed - a.lastPlayed);
+  } catch (error) {
+    console.error('Error loading characters:', error);
+    throw error;
+  }
+}
+
+// Example character selection component
+function CharacterSelector({ characters, onSelectCharacter }) {
+  return (
+    <div className="character-selector">
+      <h2>Select Character</h2>
+      <div className="character-list">
+        {characters.map(character => (
+          <div 
+            key={character.characterId}
+            className="character-card"
+            onClick={() => onSelectCharacter(character.characterId)}
+            style={{ backgroundImage: `url(${character.emblemBackgroundPath})` }}
+          >
+            <div className="character-info">
+              <div className="character-class">{character.className}</div>
+              <div className="character-light">Power {character.light}</div>
+              <div className="character-last-played">
+                Last played: {character.lastPlayed.toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Example for loading inventory
+async function loadInventory(membershipType, membershipId, characterId, accessToken) {
+  try {
+    // Request character equipment and instances for detailed item information
+    const components = ['205', '300', '304', '305']; // Equipment, instances, stats, sockets
+    
+    const response = await fetch(
+      `https://www.bungie.net/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=${components.join(',')}`,
+      {
+        headers: {
+          'X-API-Key': process.env.BUNGIE_API_KEY,
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    );
+    
+    const data = await response.json();
+    
+    if (data.ErrorCode !== 1) {
+      throw new Error(`Failed to get inventory data: ${data.Message}`);
+    }
+    
+    const { characterEquipment, itemComponents } = data.Response;
+    
+    if (!characterEquipment?.data || !characterEquipment.data[characterId]) {
+      throw new Error(`No equipment data found for character ${characterId}`);
+    }
+    
+    // Get item definitions for display
+    const itemDefinitions = await getDestinyDefinitions('DestinyInventoryItemDefinition');
+    
+    // Format equipment data for display
+    const equipment = characterEquipment.data[characterId].items.map(item => {
+      const itemDefinition = itemDefinitions[item.itemHash];
+      const instanceData = itemComponents.instances.data[item.itemInstanceId];
+      
+      return {
+        itemHash: item.itemHash,
+        instanceId: item.itemInstanceId,
+        name: itemDefinition?.displayProperties.name || 'Unknown Item',
+        icon: itemDefinition?.displayProperties.icon ? `https://www.bungie.net${itemDefinition.displayProperties.icon}` : null,
+        itemTypeDisplayName: itemDefinition?.itemTypeDisplayName || '',
+        powerLevel: instanceData?.primaryStat?.value || 0,
+        damageType: instanceData?.damageType || 0,
+        energy: instanceData?.energy || null,
+        isExotic: itemDefinition?.inventory.tierType === 6
+      };
+    });
+    
+    // Group equipment by bucket (slot)
+    const slots = {};
+    equipment.forEach(item => {
+      const bucketHash = item.bucketHash;
+      if (!slots[bucketHash]) {
+        slots[bucketHash] = [];
+      }
+      slots[bucketHash].push(item);
+    });
+    
+    return { equipment, slots };
+  } catch (error) {
+    console.error('Error loading inventory:', error);
+    throw error;
+  }
+}
+```
+
+## Common Issues
+
+- **Component Selection**: Requesting too many components at once can lead to longer response times or timeouts. Only request components you need.
+- **Privacy Settings**: If a profile has private settings, certain components may not be accessible without proper authentication.
+- **Rate Limiting**: The Bungie API has rate limits. Monitor the `ThrottleSeconds` value in responses.
+- **Instanced Data**: For detailed item information (stats, perks, etc.), you must include the appropriate ItemInstance components.
+- **Manifest Dependency**: Many returned values are hashes that must be resolved using the Destiny 2 Manifest.
+- **Response Size**: For active players with many items, responses can be large. Implement proper pagination or filtering on your end.
+- **Character ID Requirement**: Some components require a valid character ID, which you must obtain from the Characters component first.
+
+## Related Endpoints
+
+- [Get Memberships for Current User](/api-reference/bungie/user/get-memberships-for-current-user) - Get a user's linked profiles to find their membershipType and membershipId
+- [Get Destiny Manifest](/api-reference/bungie/destiny2/get-destiny-manifest) - Get the manifest to resolve definition hashes
+- [Get Character](/api-reference/bungie/destiny2/get-character) - Get detailed information for a specific character
+- [Get Item](/api-reference/bungie/destiny2/get-item) - Get detailed information for a specific item 

@@ -1,0 +1,531 @@
+---
+title: 'Customers API'
+description: 'API reference for customer management and profiles'
+---
+
+# Customers API
+
+The Customers API provides endpoints for managing customer accounts, profiles, and preferences in the MOOD MNKY e-commerce system.
+
+## Endpoints
+
+### Get Customer Profile
+
+```
+GET /api/customers/profile
+```
+
+Retrieves the authenticated customer's profile information.
+
+#### Response
+
+```json
+{
+  "id": "user_123456",
+  "email": "customer@example.com",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "phoneNumber": "+1 (555) 555-1234",
+  "createdAt": "2022-11-15T09:30:00Z",
+  "updatedAt": "2023-03-20T14:45:00Z",
+  "addresses": [
+    {
+      "id": "addr_123456",
+      "name": "Home",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "company": "",
+      "line1": "123 Main St",
+      "line2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US",
+      "phone": "+1 (555) 555-1234",
+      "isDefault": true,
+      "type": "both"
+    },
+    {
+      "id": "addr_123457",
+      "name": "Work",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "company": "Acme Inc",
+      "line1": "456 Business Ave",
+      "line2": "Suite 300",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10002",
+      "country": "US",
+      "phone": "+1 (555) 555-5678",
+      "isDefault": false,
+      "type": "shipping"
+    }
+  ],
+  "preferences": {
+    "emailMarketing": true,
+    "smsMarketing": false,
+    "preferredCurrency": "USD",
+    "reminderFrequency": "weekly"
+  },
+  "scentProfile": {
+    "id": "scent_123456",
+    "name": "Jane's Profile",
+    "preferences": {
+      "intensity": "medium",
+      "categories": ["floral", "woody"],
+      "favoriteNotes": ["lavender", "bergamot", "cedar"],
+      "dislikedNotes": ["patchouli", "musk"],
+      "occasions": ["relaxation", "home"]
+    },
+    "createdAt": "2022-12-10T11:15:00Z",
+    "updatedAt": "2023-02-25T16:30:00Z"
+  },
+  "orderStats": {
+    "totalOrders": 4,
+    "totalSpent": 248.96,
+    "averageOrderValue": 62.24,
+    "lastOrderDate": "2023-03-15T14:30:00Z"
+  },
+  "membershipTier": "premium",
+  "tokens": 250,
+  "loyaltyPoints": 125,
+  "referralCode": "JANESMITH10"
+}
+```
+
+### Update Customer Profile
+
+```
+PATCH /api/customers/profile
+```
+
+Updates the authenticated customer's profile information.
+
+#### Request Body
+
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Smith-Jones",
+  "phoneNumber": "+1 (555) 555-9876",
+  "preferences": {
+    "emailMarketing": false,
+    "reminderFrequency": "monthly"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "user_123456",
+  "email": "customer@example.com",
+  "firstName": "Jane",
+  "lastName": "Smith-Jones",
+  "phoneNumber": "+1 (555) 555-9876",
+  "updatedAt": "2023-04-16T10:30:00Z",
+  "preferences": {
+    "emailMarketing": false,
+    "smsMarketing": false,
+    "preferredCurrency": "USD",
+    "reminderFrequency": "monthly"
+  },
+  // ... other profile fields
+}
+```
+
+### Get Customer Addresses
+
+```
+GET /api/customers/addresses
+```
+
+Retrieves the authenticated customer's saved addresses.
+
+#### Response
+
+```json
+{
+  "addresses": [
+    {
+      "id": "addr_123456",
+      "name": "Home",
+      "firstName": "Jane",
+      "lastName": "Smith-Jones",
+      "company": "",
+      "line1": "123 Main St",
+      "line2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US",
+      "phone": "+1 (555) 555-1234",
+      "isDefault": true,
+      "type": "both"
+    },
+    {
+      "id": "addr_123457",
+      "name": "Work",
+      "firstName": "Jane",
+      "lastName": "Smith-Jones",
+      "company": "Acme Inc",
+      "line1": "456 Business Ave",
+      "line2": "Suite 300",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10002",
+      "country": "US",
+      "phone": "+1 (555) 555-5678",
+      "isDefault": false,
+      "type": "shipping"
+    }
+  ]
+}
+```
+
+### Add Customer Address
+
+```
+POST /api/customers/addresses
+```
+
+Adds a new address to the customer's profile.
+
+#### Request Body
+
+```json
+{
+  "name": "Parents",
+  "firstName": "Jane",
+  "lastName": "Smith-Jones",
+  "company": "",
+  "line1": "789 Suburban Rd",
+  "line2": "",
+  "city": "Cleveland",
+  "state": "OH",
+  "postalCode": "44101",
+  "country": "US",
+  "phone": "+1 (555) 555-3456",
+  "isDefault": false,
+  "type": "shipping"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "addr_123458",
+  "name": "Parents",
+  "firstName": "Jane",
+  "lastName": "Smith-Jones",
+  "company": "",
+  "line1": "789 Suburban Rd",
+  "line2": "",
+  "city": "Cleveland",
+  "state": "OH",
+  "postalCode": "44101",
+  "country": "US",
+  "phone": "+1 (555) 555-3456",
+  "isDefault": false,
+  "type": "shipping",
+  "createdAt": "2023-04-16T10:45:00Z"
+}
+```
+
+### Update Customer Address
+
+```
+PATCH /api/customers/addresses/{addressId}
+```
+
+Updates an existing customer address.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| addressId | string | Yes | The unique identifier of the address |
+
+#### Request Body
+
+```json
+{
+  "line1": "789 Suburban Road",
+  "isDefault": true
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "addr_123458",
+  "name": "Parents",
+  "firstName": "Jane",
+  "lastName": "Smith-Jones",
+  "company": "",
+  "line1": "789 Suburban Road",
+  "line2": "",
+  "city": "Cleveland",
+  "state": "OH",
+  "postalCode": "44101",
+  "country": "US",
+  "phone": "+1 (555) 555-3456",
+  "isDefault": true,
+  "type": "shipping",
+  "updatedAt": "2023-04-16T10:50:00Z"
+}
+```
+
+### Delete Customer Address
+
+```
+DELETE /api/customers/addresses/{addressId}
+```
+
+Deletes a customer address.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| addressId | string | Yes | The unique identifier of the address |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Address successfully deleted",
+  "id": "addr_123458"
+}
+```
+
+### Get Customer Orders
+
+```
+GET /api/customers/orders
+```
+
+Retrieves the authenticated customer's order history.
+
+#### Query Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| page | integer | No | Page number (default: 1) |
+| limit | integer | No | Items per page (default: 10, max: 50) |
+| status | string | No | Filter by order status |
+| fromDate | string | No | Filter orders from date (ISO format) |
+| toDate | string | No | Filter orders to date (ISO format) |
+
+#### Response
+
+```json
+{
+  "orders": [
+    {
+      "id": "order_123456",
+      "number": "MNKY-1001",
+      "status": "completed",
+      "createdAt": "2023-03-15T14:30:00Z",
+      "updatedAt": "2023-03-16T10:45:00Z",
+      "totalAmount": 84.97,
+      "currency": "USD",
+      "itemCount": 2,
+      "shippingStatus": "delivered",
+      "deliveredAt": "2023-03-20T14:30:00Z"
+    },
+    {
+      "id": "order_234567",
+      "number": "MNKY-978",
+      "status": "completed",
+      "createdAt": "2023-02-10T11:20:00Z",
+      "updatedAt": "2023-02-11T09:15:00Z",
+      "totalAmount": 54.99,
+      "currency": "USD",
+      "itemCount": 1,
+      "shippingStatus": "delivered",
+      "deliveredAt": "2023-02-15T15:30:00Z"
+    },
+    // Additional orders...
+  ],
+  "pagination": {
+    "total": 4,
+    "pages": 1,
+    "page": 1,
+    "limit": 10
+  }
+}
+```
+
+### Get Customer Scent Profile
+
+```
+GET /api/customers/scent-profile
+```
+
+Retrieves the authenticated customer's scent profile.
+
+#### Response
+
+```json
+{
+  "id": "scent_123456",
+  "name": "Jane's Profile",
+  "preferences": {
+    "intensity": "medium",
+    "categories": ["floral", "woody"],
+    "favoriteNotes": ["lavender", "bergamot", "cedar"],
+    "dislikedNotes": ["patchouli", "musk"],
+    "occasions": ["relaxation", "home"]
+  },
+  "createdAt": "2022-12-10T11:15:00Z",
+  "updatedAt": "2023-02-25T16:30:00Z",
+  "customBlends": [
+    {
+      "id": "blend_123456",
+      "name": "Summer Breeze",
+      "description": "Light floral with citrus notes",
+      "notes": ["lavender", "bergamot", "lemongrass"],
+      "createdAt": "2023-01-15T13:20:00Z"
+    },
+    {
+      "id": "blend_234567",
+      "name": "Cozy Evening",
+      "description": "Warm woody with vanilla undertones",
+      "notes": ["cedar", "sandalwood", "vanilla"],
+      "createdAt": "2023-02-20T18:15:00Z"
+    }
+  ]
+}
+```
+
+### Update Customer Scent Profile
+
+```
+PATCH /api/customers/scent-profile
+```
+
+Updates the authenticated customer's scent profile.
+
+#### Request Body
+
+```json
+{
+  "name": "Jane's Updated Profile",
+  "preferences": {
+    "intensity": "strong",
+    "favoriteNotes": ["lavender", "bergamot", "cedar", "vanilla"],
+    "occasions": ["relaxation", "home", "work"]
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "scent_123456",
+  "name": "Jane's Updated Profile",
+  "preferences": {
+    "intensity": "strong",
+    "categories": ["floral", "woody"],
+    "favoriteNotes": ["lavender", "bergamot", "cedar", "vanilla"],
+    "dislikedNotes": ["patchouli", "musk"],
+    "occasions": ["relaxation", "home", "work"]
+  },
+  "updatedAt": "2023-04-16T11:00:00Z"
+}
+```
+
+### Get Customer Loyalty
+
+```
+GET /api/customers/loyalty
+```
+
+Retrieves the authenticated customer's loyalty and rewards information.
+
+#### Response
+
+```json
+{
+  "membershipTier": "premium",
+  "tokens": 250,
+  "loyaltyPoints": 125,
+  "nextTier": {
+    "name": "vip",
+    "threshold": 500,
+    "pointsNeeded": 375
+  },
+  "transactions": [
+    {
+      "id": "trans_123456",
+      "type": "earn",
+      "amount": 50,
+      "description": "Order #MNKY-1001",
+      "date": "2023-03-15T14:30:00Z"
+    },
+    {
+      "id": "trans_234567",
+      "type": "redeem",
+      "amount": 25,
+      "description": "Free shipping reward",
+      "date": "2023-03-01T10:15:00Z"
+    },
+    // Additional transactions...
+  ],
+  "availableRewards": [
+    {
+      "id": "reward_123456",
+      "name": "10% Off Next Order",
+      "description": "Get 10% off your next purchase",
+      "cost": 50,
+      "expiresAt": "2023-05-31T23:59:59Z"
+    },
+    {
+      "id": "reward_234567",
+      "name": "Free Sample Pack",
+      "description": "Receive a free sample pack with your next order",
+      "cost": 75,
+      "expiresAt": "2023-05-31T23:59:59Z"
+    },
+    // Additional rewards...
+  ],
+  "referralCode": "JANESMITH10",
+  "referralReward": 100,
+  "referrals": [
+    {
+      "id": "ref_123456",
+      "status": "completed",
+      "date": "2023-02-05T09:30:00Z",
+      "reward": 100
+    },
+    // Additional referrals...
+  ]
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource does not exist |
+| 409 | Conflict - Resource already exists |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Cache customer profile data for frequently accessed information
+- Implement validation for address fields based on country
+- Use PATCH operations for partial updates to customer data
+- Include detailed error messages for validation failures
+- Consider regional privacy regulations when handling customer data
+- Maintain audit logs for customer profile changes 

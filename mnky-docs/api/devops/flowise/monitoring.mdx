@@ -1,0 +1,558 @@
+# Monitoring
+
+This guide covers the monitoring capabilities of the Flowise service for tracking system health, performance, and logs.
+
+## Monitoring Overview
+
+Flowise provides comprehensive monitoring capabilities to help you ensure the reliability, performance, and availability of your AI workflows. These monitoring tools enable you to track system health, identify issues, and optimize resource usage.
+
+## Monitoring Endpoints
+
+### Health Check
+
+Get the current health status of the Flowise service.
+
+```bash
+GET /api/v1/health
+
+curl "https://flowise.moodmnky.com/api/v1/health" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "version": "1.3.8",
+  "uptime": 259200,
+  "startTime": "2024-03-29T12:00:00Z",
+  "environment": "production",
+  "memoryUsage": {
+    "rss": 150540288,
+    "heapTotal": 115343360,
+    "heapUsed": 89457664,
+    "external": 3688524
+  },
+  "cpuUsage": 12.5
+}
+```
+
+### System Metrics
+
+Get detailed system metrics for the Flowise service.
+
+```bash
+GET /api/v1/metrics
+
+curl "https://flowise.moodmnky.com/api/v1/metrics" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "system": {
+    "cpu": {
+      "usage": 12.5,
+      "cores": 4,
+      "processes": 24
+    },
+    "memory": {
+      "total": 8589934592,
+      "free": 3221225472,
+      "used": 5368709120,
+      "usage": 62.5
+    },
+    "uptime": 259200
+  },
+  "application": {
+    "requests": {
+      "total": 15824,
+      "success": 15542,
+      "failed": 282,
+      "averageResponseTime": 325
+    },
+    "chatflows": {
+      "active": 18,
+      "total": 25
+    },
+    "tools": {
+      "active": 12,
+      "failed": 2
+    },
+    "database": {
+      "connections": 8,
+      "queryLatency": 45
+    }
+  }
+}
+```
+
+### Logs Retrieval
+
+Retrieve application logs.
+
+```bash
+GET /api/v1/logs?limit=100&level=error
+
+curl "https://flowise.moodmnky.com/api/v1/logs?limit=100&level=error" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "logs": [
+    {
+      "timestamp": "2024-04-01T12:34:56Z",
+      "level": "error",
+      "message": "Failed to connect to external API",
+      "metadata": {
+        "chatflowId": "chatflow-1234",
+        "nodeId": "node-5678",
+        "statusCode": 503
+      }
+    },
+    {
+      "timestamp": "2024-04-01T10:23:45Z",
+      "level": "error",
+      "message": "Memory cache overflow",
+      "metadata": {
+        "chatflowId": "chatflow-5678",
+        "memoryUsage": 95.2
+      }
+    }
+  ],
+  "pagination": {
+    "total": 282,
+    "limit": 100,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+### Configure Logging
+
+Configure logging settings.
+
+```bash
+POST /api/v1/admin/logging
+
+curl -X POST "https://flowise.moodmnky.com/api/v1/admin/logging" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "level": "info",
+    "format": "json",
+    "destination": "file",
+    "filePath": "/var/log/flowise.log",
+    "maxSize": 10485760,
+    "maxFiles": 5
+  }'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "config": {
+    "level": "info",
+    "format": "json",
+    "destination": "file",
+    "filePath": "/var/log/flowise.log",
+    "maxSize": 10485760,
+    "maxFiles": 5,
+    "updatedAt": "2024-04-01T12:00:00Z"
+  }
+}
+```
+
+### Alert Configuration
+
+Configure alert settings.
+
+```bash
+POST /api/v1/admin/alerts
+
+curl -X POST "https://flowise.moodmnky.com/api/v1/admin/alerts" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "enabled": true,
+    "channels": [
+      {
+        "type": "email",
+        "recipients": ["admin@example.com", "ops@example.com"],
+        "events": ["system.error", "chatflow.failure"]
+      },
+      {
+        "type": "webhook",
+        "url": "https://alerts.example.com/webhook",
+        "headers": {
+          "Authorization": "Bearer your-token"
+        },
+        "events": ["system.critical", "chatflow.failure"]
+      }
+    ],
+    "thresholds": {
+      "cpuUsage": 90,
+      "memoryUsage": 85,
+      "errorRate": 5,
+      "responseTime": 2000
+    }
+  }'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "config": {
+    "enabled": true,
+    "channels": [
+      {
+        "type": "email",
+        "recipients": ["admin@example.com", "ops@example.com"],
+        "events": ["system.error", "chatflow.failure"]
+      },
+      {
+        "type": "webhook",
+        "url": "https://alerts.example.com/webhook",
+        "events": ["system.critical", "chatflow.failure"]
+      }
+    ],
+    "thresholds": {
+      "cpuUsage": 90,
+      "memoryUsage": 85,
+      "errorRate": 5,
+      "responseTime": 2000
+    },
+    "updatedAt": "2024-04-01T12:00:00Z"
+  }
+}
+```
+
+## Monitoring Parameters
+
+### Logs Parameters
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| limit | number | Maximum number of logs to return | 100 |
+| offset | number | Offset for pagination | 0 |
+| level | string | Log level (debug, info, warn, error, critical) | info |
+| startDate | string | Start date in ISO format | 24 hours ago |
+| endDate | string | End date in ISO format | Current time |
+| chatflowId | string | Filter logs by chatflow ID | All chatflows |
+| search | string | Search term within log messages | None |
+
+### Alert Thresholds
+
+| Threshold | Type | Description | Default |
+|-----------|------|-------------|---------|
+| cpuUsage | number | CPU usage percentage threshold | 90 |
+| memoryUsage | number | Memory usage percentage threshold | 85 |
+| errorRate | number | Error rate percentage threshold | 5 |
+| responseTime | number | Average response time threshold in ms | 2000 |
+| diskUsage | number | Disk usage percentage threshold | 85 |
+| concurrentRequests | number | Concurrent requests threshold | 100 |
+
+### Alert Event Types
+
+| Event Type | Description |
+|------------|-------------|
+| system.warning | System warning events |
+| system.error | System error events |
+| system.critical | System critical events |
+| chatflow.failure | Chatflow execution failures |
+| chatflow.timeout | Chatflow execution timeouts |
+| resource.low | Resource usage approaching thresholds |
+| security.violation | Security policy violations |
+
+## Usage Examples
+
+### Basic Health Monitoring
+
+```typescript
+// Check system health
+async function checkSystemHealth() {
+  try {
+    const health = await client.flowise.getHealth();
+    
+    console.log(`System status: ${health.status}`);
+    console.log(`Uptime: ${Math.floor(health.uptime / 3600)} hours`);
+    console.log(`Memory usage: ${Math.round(health.memoryUsage.heapUsed / 1024 / 1024)} MB`);
+    
+    // Alert if not healthy
+    if (health.status !== "healthy") {
+      sendAlert("System health check failed", health);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Health check failed:", error.message);
+    sendAlert("Health check failed", { error: error.message });
+    return false;
+  }
+}
+
+// Schedule regular health checks
+setInterval(checkSystemHealth, 300000); // Every 5 minutes
+```
+
+### Performance Monitoring Dashboard
+
+```typescript
+// Collect metrics for dashboard
+async function collectMetricsForDashboard() {
+  try {
+    const metrics = await client.flowise.getMetrics();
+    
+    // Extract key performance indicators
+    const kpis = {
+      systemHealth: {
+        cpuUsage: metrics.system.cpu.usage,
+        memoryUsage: metrics.system.memory.usage,
+        uptime: formatUptime(metrics.system.uptime)
+      },
+      applicationPerformance: {
+        requestsPerMinute: metrics.application.requests.total / (metrics.system.uptime / 60),
+        successRate: (metrics.application.requests.success / metrics.application.requests.total) * 100,
+        averageResponseTime: metrics.application.requests.averageResponseTime
+      },
+      resourceUtilization: {
+        activeChatflows: metrics.application.chatflows.active,
+        databaseConnections: metrics.application.database.connections,
+        activeTools: metrics.application.tools.active
+      }
+    };
+    
+    // Update dashboard with KPIs
+    updateDashboard(kpis);
+    
+    // Check for threshold violations
+    checkThresholds(metrics);
+    
+    return kpis;
+  } catch (error) {
+    console.error("Failed to collect metrics:", error.message);
+    return null;
+  }
+}
+
+function formatUptime(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${days}d ${hours}h ${minutes}m`;
+}
+
+function checkThresholds(metrics) {
+  if (metrics.system.cpu.usage > 80) {
+    sendAlert("High CPU Usage", { usage: metrics.system.cpu.usage });
+  }
+  
+  if (metrics.system.memory.usage > 80) {
+    sendAlert("High Memory Usage", { usage: metrics.system.memory.usage });
+  }
+  
+  if (metrics.application.requests.failed / metrics.application.requests.total > 0.05) {
+    sendAlert("High Error Rate", { 
+      errorRate: (metrics.application.requests.failed / metrics.application.requests.total) * 100 
+    });
+  }
+}
+
+// Schedule regular metrics collection
+setInterval(collectMetricsForDashboard, 60000); // Every minute
+```
+
+### Error Log Analysis
+
+```typescript
+// Analyze error logs for patterns
+async function analyzeErrorLogs() {
+  try {
+    // Get recent error logs
+    const logs = await client.flowise.getLogs({
+      level: "error",
+      limit: 500,
+      startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // Last 24 hours
+    });
+    
+    // Group by error type
+    const errorGroups = logs.logs.reduce((groups, log) => {
+      const messageKey = log.message.split(':')[0]; // Simple grouping by message prefix
+      groups[messageKey] = groups[messageKey] || [];
+      groups[messageKey].push(log);
+      return groups;
+    }, {});
+    
+    // Sort by frequency
+    const errorFrequency = Object.entries(errorGroups)
+      .map(([messageKey, logs]) => ({
+        type: messageKey,
+        count: logs.length,
+        samples: logs.slice(0, 3), // Include a few examples
+        chatflows: [...new Set(logs.map(log => log.metadata.chatflowId).filter(Boolean))]
+      }))
+      .sort((a, b) => b.count - a.count);
+    
+    console.log("Error analysis results:");
+    console.log(`Total errors in last 24 hours: ${logs.logs.length}`);
+    console.log("Top error types:");
+    errorFrequency.slice(0, 5).forEach(error => {
+      console.log(`- ${error.type}: ${error.count} occurrences (${error.chatflows.length} chatflows affected)`);
+    });
+    
+    // Return detailed analysis
+    return {
+      totalErrors: logs.logs.length,
+      errorTypes: errorFrequency,
+      timeRange: {
+        start: logs.logs[logs.logs.length - 1]?.timestamp,
+        end: logs.logs[0]?.timestamp
+      }
+    };
+  } catch (error) {
+    console.error("Failed to analyze error logs:", error.message);
+    return null;
+  }
+}
+
+// Run error analysis daily
+setInterval(analyzeErrorLogs, 86400000); // Every 24 hours
+```
+
+## Integration with Monitoring Tools
+
+### Prometheus Integration
+
+```typescript
+// Configure Prometheus metrics endpoint
+const prometheusConfig = {
+  enabled: true,
+  path: "/metrics",
+  collectDefaultMetrics: true,
+  labels: {
+    environment: "production",
+    instance: "flowise-1"
+  }
+};
+
+await client.flowise.configureMonitoring({
+  prometheus: prometheusConfig
+});
+
+// Example Prometheus configuration
+/* 
+scrape_configs:
+  - job_name: 'flowise'
+    scrape_interval: 15s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['flowise.moodmnky.com']
+    basic_auth:
+      username: 'prometheus'
+      password: 'your-secure-password'
+*/
+```
+
+### ELK Stack Integration
+
+```typescript
+// Configure log forwarding to ELK Stack
+const elkConfig = {
+  enabled: true,
+  elasticUrl: "https://elasticsearch.example.com:9200",
+  indexPrefix: "flowise-logs",
+  apiKey: "your-elasticsearch-api-key",
+  logLevels: ["warn", "error", "critical"]
+};
+
+await client.flowise.configureMonitoring({
+  elkStack: elkConfig
+});
+```
+
+### Custom Webhook Integration
+
+```typescript
+// Configure webhook notifications for monitoring events
+const webhookConfig = {
+  enabled: true,
+  url: "https://monitoring.example.com/webhook",
+  headers: {
+    "Authorization": "Bearer your-token",
+    "Content-Type": "application/json"
+  },
+  events: [
+    "system.health",
+    "system.metrics",
+    "chatflow.failure"
+  ],
+  includeMetadata: true,
+  batchInterval: 300 // Send batched events every 5 minutes
+};
+
+await client.flowise.configureMonitoring({
+  webhook: webhookConfig
+});
+```
+
+## Best Practices
+
+1. **Health Monitoring Strategy**
+   - Implement regular health checks
+   - Set up automated alerting for unhealthy status
+   - Monitor key system resources
+   - Establish baseline performance metrics
+
+2. **Log Management**
+   - Configure appropriate log levels
+   - Implement log rotation to manage storage
+   - Centralize logs for easier analysis
+   - Use structured logging format (JSON)
+
+3. **Alert Configuration**
+   - Define meaningful alert thresholds
+   - Avoid alert fatigue with proper prioritization
+   - Configure multiple notification channels
+   - Implement escalation procedures for critical issues
+
+4. **Performance Optimization**
+   - Monitor response time trends
+   - Track resource utilization patterns
+   - Identify and address performance bottlenecks
+   - Implement resource-based scaling
+
+### Version Info
+
+Get version information for the Flowise service.
+
+```bash
+GET /api/v1/version
+
+curl "https://flowise.moodmnky.com/api/v1/version" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "version": "1.3.8",
+  "buildDate": "2024-03-15T10:00:00Z",
+  "gitCommit": "abc123def456",
+  "nodeVersion": "18.17.0"
+}
+```
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/flowise)
+- [Monitoring Guide](https://docs.moodmnky.com/guides/flowise-monitoring)
+- [Prometheus Documentation](https://prometheus.io/docs/introduction/overview/)
+- [ELK Stack Documentation](https://www.elastic.co/guide/index.html)
+- [Support](mailto:support@moodmnky.com) 

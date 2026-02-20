@@ -1,0 +1,243 @@
+# Langchain Service Overview
+
+The MOOD MNKY Langchain service provides a comprehensive set of APIs for building AI-powered applications with language models. This service enables you to create sophisticated AI workflows, manage language model interactions, process documents, and build intelligent applications with minimal development effort.
+
+## Key Features
+
+- **Language Model Integration** - Interact with various language models through a unified API
+- **Chain Management** - Create, configure, and run complex reasoning chains
+- **Memory Systems** - Implement conversation history and contextual memory
+- **Document Processing** - Upload, process, and retrieve documents using vector embeddings
+- **Agents** - Deploy autonomous agents that can use tools and make decisions
+- **Prompt Management** - Create, iterate on, and optimize prompts for different use cases
+
+## Getting Started
+
+To start using the Langchain service, you'll need:
+
+1. **API Credentials** - Obtain your API key from the [Developer Portal](https://developer.moodmnky.com)
+2. **Service Endpoint** - Connect to the right environment:
+   - Development: `http://localhost:8000`
+   - Production: `https://langchain.moodmnky.com`
+
+### Base URL
+
+All API endpoints are relative to the base URL:
+
+```
+https://langchain.moodmnky.com/api
+```
+
+### Authentication
+
+All requests require an API key passed in the `x-api-key` header:
+
+```bash
+curl "https://langchain.moodmnky.com/api/models" \
+  -H "x-api-key: your_api_key"
+```
+
+## Service Status
+
+Check the current status of the Langchain service:
+
+```bash
+curl "https://langchain.moodmnky.com/api/health" \
+  -H "x-api-key: your_api_key"
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "version": "1.2.3",
+  "uptime": "3d 4h 12m",
+  "services": {
+    "database": "connected",
+    "vector_store": "connected",
+    "llm_services": "connected"
+  }
+}
+```
+
+## Core Concepts
+
+### Chains
+
+Chains are sequences of operations that combine language models with other components like memory, document retrieval, or tool usage. They enable you to create complex workflows while maintaining a simple interface.
+
+[Learn more about Chains →](/api/devops/langchain/chains)
+
+### Memory
+
+Memory systems allow your applications to maintain conversation history, remember user preferences, and provide contextual awareness across interactions.
+
+[Learn more about Memory →](/api/devops/langchain/memory)
+
+### Documents
+
+The document processing system lets you upload, process, and retrieve documents using vector embeddings, enabling knowledge-based applications and retrieval-augmented generation.
+
+[Learn more about Documents →](/api/devops/langchain/documents)
+
+## Common Workflows
+
+### Build a Conversational AI
+
+```typescript
+// Create a conversation chain
+const response = await axios.post(
+  'https://langchain.moodmnky.com/api/chains',
+  {
+    name: 'Customer Support Assistant',
+    type: 'conversation_chain',
+    llm: {
+      provider: 'ollama',
+      model_name: 'llama2',
+      temperature: 0.7
+    },
+    memory: {
+      type: 'conversation_buffer',
+      memory_key: 'chat_history',
+      return_messages: true
+    },
+    prompt_template: `You are a helpful customer support agent for MOOD MNKY.
+    
+Current conversation:
+{chat_history}
+
+User: {input}
+AI: `
+  },
+  {
+    headers: {
+      'x-api-key': 'your_api_key',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+// Get the chain ID from the response
+const chainId = response.data.id;
+
+// Run the conversation chain
+const chatResponse = await axios.post(
+  `https://langchain.moodmnky.com/api/chains/${chainId}/run`,
+  {
+    input: 'How do I create a custom fragrance?'
+  },
+  {
+    headers: {
+      'x-api-key': 'your_api_key',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log(chatResponse.data.output);
+```
+
+### Build a Document Q&A System
+
+```typescript
+// Create a retrieval QA chain
+const response = await axios.post(
+  'https://langchain.moodmnky.com/api/chains',
+  {
+    name: 'Product Documentation QA',
+    type: 'retrieval_qa',
+    llm: {
+      provider: 'ollama',
+      model_name: 'llama2',
+      temperature: 0.2
+    },
+    retriever: {
+      vector_store_id: 'vector-store-1234',
+      search_type: 'similarity',
+      k: 5
+    },
+    prompt_template: `You are an AI assistant for MOOD MNKY product documentation.
+    
+Answer the question based only on the following context:
+{context}
+
+Question: {question}
+Answer: `
+  },
+  {
+    headers: {
+      'x-api-key': 'your_api_key',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+// Get the chain ID from the response
+const chainId = response.data.id;
+
+// Run the QA chain
+const qaResponse = await axios.post(
+  `https://langchain.moodmnky.com/api/chains/${chainId}/run`,
+  {
+    question: 'What ingredients are in the Calm Fragrance Blend?'
+  },
+  {
+    headers: {
+      'x-api-key': 'your_api_key',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log(qaResponse.data.output);
+```
+
+## Integration with Other Services
+
+The Langchain service integrates seamlessly with other MOOD MNKY services:
+
+- **Ollama Service** - Used for language model inference
+- **Flowise Service** - For visual workflow creation and deployment
+- **n8n Service** - For automation and integration with external systems
+
+## Best Practices
+
+1. **Use the Right Chain Type**
+   - Choose the appropriate chain type for your use case
+   - Use conversation chains for chat applications
+   - Use retrieval QA chains for knowledge-based applications
+   - Use sequential chains for multi-step workflows
+
+2. **Optimize Prompts**
+   - Create clear, specific prompt templates
+   - Include appropriate context and instructions
+   - Test and iterate on prompts for best results
+
+3. **Manage Memory Effectively**
+   - Choose the right memory type for your application
+   - Limit conversation history length to manage tokens
+   - Consider using summarization memory for long conversations
+
+4. **Document Processing**
+   - Use appropriate chunk sizes for your content
+   - Include comprehensive metadata for better retrieval
+   - Consider document structure when designing your system
+
+## Rate Limits
+
+| Plan | Requests per Minute | Requests per Day | Tokens per Request |
+|------|---------------------|------------------|-------------------|
+| Development | 60 | 10,000 | 16,000 |
+| Basic | 120 | 50,000 | 32,000 |
+| Professional | 300 | 250,000 | 64,000 |
+| Enterprise | Custom | Custom | Custom |
+
+Exceed these limits and your request will receive a `429 Too Many Requests` response.
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/langchain)
+- [Langchain Documentation](https://docs.moodmnky.com/guides/langchain)
+- [Code Examples](https://github.com/moodmnky/langchain-examples)
+- [Known Issues](https://docs.moodmnky.com/support/known-issues)
+- [Support](mailto:support@moodmnky.com) 

@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant U as User
+    participant M as MOOD MNKY
+    participant S as SAGE MNKY
+    participant C as CODE MNKY
+    participant O as Orchestrator
+    participant KB as Knowledge Base
+    participant Mem as Memory System
+
+    Note over U,Mem: Complex Query Handling
+
+    U->>M: Product customization request
+    
+    M->>O: Request assistance
+    O->>Mem: Get context
+    Mem-->>O: Return context
+    
+    O->>KB: Query domain knowledge
+    KB-->>O: Return knowledge
+    
+    O->>S: Request learning content
+    S->>KB: Query learning materials
+    KB-->>S: Return materials
+    S-->>O: Provide content
+    
+    O->>C: Request technical validation
+    C->>KB: Check specifications
+    KB-->>C: Return specs
+    C-->>O: Provide validation
+    
+    O->>M: Combine responses
+    
+    M->>Mem: Update interaction memory
+    Mem-->>M: Confirm update
+    
+    M-->>U: Provide comprehensive response
+
+    Note over U,Mem: Continuous Learning
+
+    par Memory Updates
+        M->>Mem: Store interaction patterns
+        S->>Mem: Update learning progress
+        C->>Mem: Log technical insights
+    end
+
+    par Knowledge Updates
+        M->>KB: Update customer preferences
+        S->>KB: Store new learning patterns
+        C->>KB: Update technical knowledge
+    end
+
+    Note over U,Mem: Agent Collaboration Complete

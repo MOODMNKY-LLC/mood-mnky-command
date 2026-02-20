@@ -1,0 +1,234 @@
+---
+title: "Shopify App"
+description: "Shopify integration for managing fragrance oils and custom blends"
+icon: "shopping-bag"
+---
+
+# Shopify App
+
+The MOOD MNKY Shopify App integrates fragrance oil management, custom blend creation, and product synchronization between Notion databases and Shopify stores. This application enables seamless e-commerce operations for the MOOD MNKY product catalog.
+
+## Overview
+
+The Shopify App provides a comprehensive interface for managing fragrance products, syncing data from Notion databases to Shopify, creating custom blends, and tracking product lifecycle. The application integrates with multiple services to provide a unified product management experience.
+
+### Key Features
+
+- **Notion Sync**: Sync fragrance oils from Notion database to Shopify
+- **Product Management**: Create and manage Shopify products and variants
+- **Custom Blends**: Create custom fragrance blends and sync to Shopify
+- **Real-time Updates**: Track sync status and product updates
+- **Inventory Management**: Monitor stock levels and availability
+- **Order Processing**: Handle custom product orders and fulfillment
+
+## Architecture
+
+### Technology Stack
+
+- **Frontend**: Next.js 15, TypeScript, React
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Backend**: Next.js API routes, Supabase
+- **Integrations**: 
+  - Shopify Admin API
+  - Notion API
+  - Supabase (database and real-time)
+  - OpenAI API (optional AI features)
+
+### Application Structure
+
+```
+apps/shopify-app/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   └── (dashboard)/          # Protected dashboard routes
+├── components/                # React components
+│   ├── ui/                   # shadcn components
+│   └── shopify/              # Shopify-specific components
+├── lib/                      # Utilities and clients
+│   ├── shopify/              # Shopify API client
+│   ├── notion/               # Notion API client
+│   └── supabase/             # Supabase client
+└── types/                     # TypeScript types
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- Shopify Partner account and app
+- Notion workspace with fragrance database
+- Supabase project
+- Environment variables configured
+
+### Setup
+
+1. **Install dependencies**:
+   ```bash
+   cd apps/shopify-app
+   pnpm install
+   ```
+
+2. **Configure environment variables**:
+   Create `.env.local`:
+   ```env
+   # Shopify Configuration
+   SHOPIFY_API_KEY=<your-shopify-api-key>
+   SHOPIFY_API_SECRET=<your-shopify-api-secret>
+   SHOPIFY_STORE_DOMAIN=<your-store.myshopify.com>
+   
+   # Notion Configuration
+   NOTION_API_KEY=<your-notion-integration-token>
+   NOTION_DATABASE_ID=<fragrance-database-id>
+   
+   # Supabase Configuration
+   NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+   SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+   
+   # OpenAI (Optional)
+   OPENAI_API_KEY=<your-openai-key>
+   ```
+
+3. **Verify credentials**:
+   ```bash
+   pnpm test:api
+   ```
+
+4. **Run development server**:
+   ```bash
+   pnpm dev
+   ```
+
+5. **Open** [http://localhost:3000](http://localhost:3000)
+
+## Notion Integration
+
+The app syncs fragrance oil data from Notion databases to Shopify:
+
+### Database Structure
+
+The Notion database should contain:
+- Fragrance name and description
+- Scent notes and profile
+- Pricing information
+- Inventory levels
+- Product images
+- Custom metadata
+
+### Sync Process
+
+1. **Fetch from Notion**: Retrieve fragrance data from Notion database
+2. **Transform Data**: Convert Notion format to Shopify product format
+3. **Create/Update Products**: Sync to Shopify store
+4. **Track Status**: Monitor sync progress and errors
+
+## Shopify Integration
+
+### Product Management
+
+- **Create Products**: Convert Notion entries to Shopify products
+- **Manage Variants**: Handle different sizes, scents, and options
+- **Inventory Sync**: Keep stock levels synchronized
+- **Image Upload**: Sync product images to Shopify
+
+### Custom Blends
+
+The app enables creation of custom fragrance blends:
+
+1. **Blend Configuration**: User selects base notes and intensity
+2. **Product Creation**: Generate custom Shopify product
+3. **Order Processing**: Handle custom blend orders
+4. **Production Instructions**: Generate formulation details
+
+## API Integration
+
+### Shopify Admin API
+
+- Product CRUD operations
+- Inventory management
+- Order processing
+- Webhook handling
+
+### Notion API
+
+- Database queries
+- Page updates
+- Property synchronization
+
+### Supabase
+
+- Sync status tracking
+- Error logging
+- Real-time updates
+
+## Testing
+
+### API Tests
+
+```bash
+# Test all API integrations
+pnpm test:api
+
+# Test specific integrations
+pnpm test:spotify
+pnpm test:comprehensive
+pnpm test:data-integrity
+```
+
+### Test Coverage
+
+- API endpoint validation
+- Data transformation accuracy
+- Error handling
+- Sync process integrity
+
+## Deployment
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `SHOPIFY_API_KEY` | Shopify app API key | Yes |
+| `SHOPIFY_API_SECRET` | Shopify app API secret | Yes |
+| `NOTION_API_KEY` | Notion integration token | Yes |
+| `NOTION_DATABASE_ID` | Fragrance database ID | Yes |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
+
+### Vercel Deployment
+
+1. Connect repository to Vercel
+2. Set all environment variables
+3. Configure build settings
+4. Deploy application
+
+## Troubleshooting
+
+### Common Issues
+
+#### Notion Sync Failures
+- **Issue**: Fragrance data not syncing from Notion
+- **Solution**: Verify Notion API key and database ID. Check database permissions. Review sync logs for specific errors.
+
+#### Shopify Product Creation Errors
+- **Issue**: Products not creating in Shopify store
+- **Solution**: Verify Shopify API credentials and permissions. Check product data format matches Shopify requirements.
+
+#### Authentication Issues
+- **Issue**: Cannot authenticate with Shopify or Notion
+- **Solution**: Regenerate API keys and verify they're correctly set in environment variables. Check API rate limits.
+
+### Best Practices
+
+- **Incremental Syncs**: Sync only changed products to reduce API calls
+- **Error Handling**: Implement retry logic for failed syncs
+- **Data Validation**: Validate data before syncing to prevent errors
+- **Monitoring**: Set up alerts for sync failures
+
+## Related Resources
+
+- [Shopify API Documentation](/api/e-commerce/products) - E-commerce API reference
+- [Notion Integration](/api/integrations/notion/index) - Notion API guide
+- [Supabase Integration](/technology-stack/supabase) - Database setup
+- [Supabase Client Package](/packages/supabase-client) - Database client utilities
+

@@ -1,0 +1,205 @@
+---
+title: 'Swagger UI Guide'
+description: 'How to use Swagger UI to explore and test MOOD MNKY API endpoints'
+---
+
+# Swagger UI Guide
+
+This guide provides instructions on how to use Swagger UI to explore and test the MOOD MNKY API endpoints. Swagger UI offers an interactive experience that allows you to understand and interact with our APIs without writing any code.
+
+## Overview
+
+Each of our API services (Ollama, Flowise, Langchain, and n8n) comes with a dedicated Swagger UI interface that allows you to:
+
+- View all available endpoints
+- Understand request parameters and response formats
+- Test API calls directly in your browser
+- Authenticate with your API keys
+- Switch between development and production environments
+
+## Accessing Swagger UI
+
+### Development Environment
+
+When running services locally, you can access Swagger UI at the following URLs:
+
+| Service | Swagger UI URL |
+|---------|---------------|
+| Ollama | http://localhost:11434/docs |
+| Flowise | http://localhost:3000/api/v1/swagger |
+| Langchain | http://localhost:8000/docs |
+| n8n | http://localhost:5678/swagger |
+
+### Production Environment
+
+In production, Swagger UI is available at:
+
+| Service | Swagger UI URL |
+|---------|---------------|
+| Ollama | https://ollama.moodmnky.com/docs |
+| Flowise | https://flowise.moodmnky.com/api/v1/swagger |
+| Langchain | https://langchain.moodmnky.com/docs |
+| n8n | https://mnky-mind-n8n.moodmnky.com/swagger |
+
+## Authentication in Swagger UI
+
+To use authenticated endpoints in Swagger UI:
+
+1. Locate the **Authorize** button at the top of the Swagger UI interface
+2. Enter your API key in the provided field
+3. Click **Authorize** to apply the key to all subsequent requests
+
+Different services may have slightly different authentication methods:
+
+### Ollama
+```
+Bearer YOUR_API_KEY
+```
+
+### Flowise
+```
+Bearer YOUR_API_KEY
+```
+
+### Langchain
+```
+x-api-key: YOUR_API_KEY
+```
+
+### n8n
+```
+Bearer YOUR_API_KEY
+```
+
+## Using Swagger UI
+
+### Exploring Endpoints
+
+1. Endpoints are grouped by tags or categories
+2. Click on an endpoint to expand its details
+3. Each endpoint displays:
+   - HTTP method (GET, POST, PUT, DELETE)
+   - Path
+   - Description
+   - Request parameters
+   - Request body schema (for POST/PUT)
+   - Response schemas
+   - Examples
+
+### Testing Endpoints
+
+To test an endpoint:
+
+1. Click on the endpoint to expand it
+2. Fill in any required parameters or request body
+3. Click the **Try it out** button
+4. Review the request parameters and body
+5. Click **Execute** to send the request
+6. View the response, including:
+   - Status code
+   - Response headers
+   - Response body
+   - Curl command that was executed
+
+### Example: Testing the Ollama Chat API
+
+1. Navigate to the Ollama Swagger UI
+2. Locate the `/api/chat` endpoint
+3. Click to expand it
+4. Click **Try it out**
+5. Enter the request body:
+```json
+{
+  "model": "llama2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how can you help me today?"
+    }
+  ]
+}
+```
+6. Click **Execute**
+7. Review the response
+
+## Environment Switching
+
+Swagger UI allows you to test against both development and production environments:
+
+1. Look for the **Server** dropdown at the top of the Swagger UI interface
+2. Select either the development (localhost) or production server URL
+3. All subsequent requests will be sent to the selected server
+
+## Schema Models
+
+Swagger UI provides detailed models for request and response bodies:
+
+1. Scroll down to the **Schemas** section
+2. Click on a schema to expand its details
+3. Models show all properties, their types, format, and whether they're required
+4. Use these schemas to understand the expected data structure
+
+## Request Body Builders
+
+For POST and PUT requests:
+
+1. The request body builder provides a form-based interface
+2. Required fields are marked with an asterisk (*)
+3. Dropdown selectors are provided for enumerated values
+4. Arrays can be expanded with the **Add item** button
+5. Complex nested objects are supported with expandable sections
+
+## Response Visualization
+
+After executing a request:
+
+1. The response section shows the complete server response
+2. Status code is highlighted (green for success, red for errors)
+3. Response body is formatted and syntax-highlighted
+4. Headers are displayed in a table format
+5. Response time is shown
+
+## Common Issues and Troubleshooting
+
+### Authentication Errors
+
+If you receive a 401 or 403 response:
+- Verify your API key is correctly entered in the Authorize dialog
+- Check that your API key has permissions for the endpoint you're testing
+- Ensure you've selected the correct environment for your API key
+
+### Request Validation Errors
+
+If you receive a 400 Bad Request:
+- Check the response body for detailed error messages
+- Verify all required fields are provided
+- Ensure data types match the expected schema
+- Look for format errors in dates, emails, or other formatted fields
+
+### CORS Issues
+
+Swagger UI may encounter CORS issues when testing from certain browsers:
+- Try a different browser
+- Use a CORS browser extension to bypass CORS restrictions
+- Consider using the API directly via curl or Postman instead
+
+## Best Practices
+
+1. **Start with GET requests** to understand available data before attempting modifications
+2. **Use the Models section** to understand data structures
+3. **Save useful requests** by copying the curl command for future reference
+4. **Check response headers** for rate limiting information
+5. **Use the correct content-type** header (usually application/json)
+6. **Test authorization first** with a simple endpoint before attempting complex operations
+
+## Additional Resources
+
+- [OpenAPI Specification](https://swagger.io/specification/) - Learn more about the OpenAPI standard
+- [Swagger UI Documentation](https://swagger.io/tools/swagger-ui/) - Official Swagger UI documentation
+- [MOOD MNKY API Reference](/api-reference) - Complete API reference
+- [Authentication Guide](/api/devops/authentication) - Detailed authentication information
+- [Rate Limiting Guide](/api/devops/rate-limiting) - Understanding API rate limits
+
+## Support
+
+If you encounter any issues with Swagger UI or have questions about our API endpoints, please contact our support team at [api-support@moodmnky.com](mailto:api-support@moodmnky.com) or join our [Developer Community](https://community.moodmnky.com/developers) for assistance. 

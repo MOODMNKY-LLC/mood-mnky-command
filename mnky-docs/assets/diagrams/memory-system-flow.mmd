@@ -1,0 +1,46 @@
+sequenceDiagram
+    participant Agent as Agent
+    participant STM as Short-term Memory
+    participant LTM as Long-term Memory
+    participant Context as Context Manager
+    participant KB as Knowledge Base
+
+    Note over Agent,KB: Memory System Flow
+
+    Agent->>STM: New interaction data
+    STM->>Context: Update current context
+    Context->>STM: Retrieve relevant context
+
+    alt Important Information
+        STM->>LTM: Store significant data
+        LTM->>KB: Update knowledge base
+    end
+
+    loop Memory Consolidation
+        LTM->>LTM: Analyze patterns
+        LTM->>KB: Update learned patterns
+    end
+
+    opt Context Switch
+        Agent->>Context: Request context change
+        Context->>STM: Clear irrelevant data
+        Context->>LTM: Store session data
+        LTM->>Context: Load new context
+    end
+
+    Agent->>STM: Request information
+    STM->>Context: Get current context
+    Context->>LTM: Query relevant memory
+    LTM->>KB: Query knowledge base
+    KB-->>LTM: Return knowledge
+    LTM-->>Context: Combine with context
+    Context-->>STM: Provide contextualized data
+    STM-->>Agent: Return response
+
+    Note over Agent,KB: Memory Maintenance
+
+    loop Periodic Cleanup
+        STM->>STM: Remove old data
+        LTM->>LTM: Archive unused data
+        Context->>Context: Update relevance scores
+    end

@@ -1,0 +1,137 @@
+---
+title: "Applications Overview"
+description: "Comprehensive guide to all applications in the MOOD MNKY monorepo"
+icon: "window"
+---
+
+# Applications Overview
+
+The MOOD MNKY monorepo contains multiple applications, each serving a specific purpose in the ecosystem. This section provides comprehensive documentation for each application, including architecture, setup, development workflows, and deployment guides.
+
+<Info>
+All applications in the monorepo share common infrastructure and follow consistent development patterns. See [Monorepo Structure](/technology-stack/mono-repo-structure) for details on the overall architecture.
+</Info>
+
+## Application Architecture
+
+The MOOD MNKY ecosystem consists of several integrated applications working together:
+
+<CardGroup cols={2}>
+  <Card title="MNKY VERSE" icon="sparkles" href="/applications/mnky-verse">
+    Central hub for the MOOD MNKY ecosystem with multi-agent interaction
+  </Card>
+  <Card title="TRVLR Sync" icon="sync" href="/applications/trvlr-sync">
+    Bungie.net/Destiny 2 sync service with OAuth and manifest management
+  </Card>
+  <Card title="Shopify App" icon="shopping-bag" href="/applications/shopify-app">
+    Shopify integration for fragrance oils and custom blend management
+  </Card>
+  <Card title="MNKY Agents Demo" icon="flask" href="/applications/mnky-agents-demo">
+    Python FastAPI demo application for agent interactions
+  </Card>
+</CardGroup>
+
+## Application Comparison
+
+| Application | Purpose | Tech Stack | Primary Users |
+|------------|---------|------------|---------------|
+| **MNKY VERSE** | Central ecosystem hub | Next.js 14, React, Supabase | End users, Community members |
+| **TRVLR Sync** | Destiny 2 data sync | Next.js 15, Supabase, Bungie API | Gamers, Developers |
+| **Shopify App** | E-commerce integration | Next.js 15, Shopify API, Notion API | Operations, Merchants |
+| **MNKY Agents Demo** | Agent framework demo | Python, FastAPI | Developers, AI engineers |
+
+## Getting Started with Applications
+
+### For New Developers
+
+1. **Understand the Ecosystem**: Start with the [Introduction](/introduction) to understand the Three Pillars
+2. **Set Up Environment**: Follow the [Environment Setup Guide](/developer-resources/environment-setup)
+3. **Choose an Application**: Review application overviews to find where you want to contribute
+4. **Read Application Docs**: Deep dive into the specific application's documentation
+5. **Start Contributing**: Follow the [Contribution Guidelines](/developer-resources/contribution-guidelines)
+
+### Common Patterns Across Applications
+
+All applications in the monorepo share common patterns:
+
+- **Shared Packages**: Use `@repo/ui`, `@repo/supabase-client`, and shared configs
+- **Consistent Structure**: Follow the same directory organization patterns
+- **TypeScript**: All applications use TypeScript for type safety
+- **Supabase Integration**: Unified authentication and database access
+- **Deployment**: Consistent deployment workflows via Vercel
+
+## Application Development Workflow
+
+### Local Development
+
+```bash
+# Start all applications
+pnpm dev
+
+# Start specific application
+pnpm --filter mnky-verse dev
+pnpm --filter trvlr-sync dev
+pnpm --filter shopify-app dev
+```
+
+### Building Applications
+
+```bash
+# Build all applications
+pnpm build
+
+# Build specific application
+pnpm --filter mnky-verse build
+```
+
+### Testing Applications
+
+```bash
+# Run tests for all applications
+pnpm test
+
+# Run tests for specific application
+pnpm --filter mnky-verse test
+```
+
+## Integration Points
+
+Applications integrate with each other and shared infrastructure:
+
+- **Shared Authentication**: All apps use Supabase Auth
+- **Shared Database**: Common Supabase database with RLS
+- **Shared UI Components**: `@repo/ui` package provides consistent design
+- **API Integration**: Applications consume shared APIs and services
+- **Agent Framework**: Applications integrate with MOOD, CODE, and SAGE agents
+
+## Application Comparison
+
+| Application | Primary Use Case | Key Technologies | Deployment |
+|------------|------------------|------------------|------------|
+| **MNKY VERSE** | User-facing hub | Next.js 14, React, Supabase | Vercel |
+| **TRVLR Sync** | Game data sync | Next.js 15, Supabase Edge Functions | Vercel + Supabase |
+| **Shopify App** | E-commerce integration | Next.js 15, Shopify API, Notion API | Vercel |
+| **MNKY Agents Demo** | Agent testing | Python, FastAPI, Docker | Docker |
+
+## Choosing the Right Application
+
+### For End Users
+- **MNKY VERSE**: Main interface for interacting with agents and ecosystem
+
+### For Developers
+- **MNKY Agents Demo**: Test agent interactions and develop agent features
+- **TRVLR Sync**: Example of OAuth integration and Edge Functions
+- **Shopify App**: Example of multi-API integration
+
+### For Operations
+- **Shopify App**: Manage product catalog and sync operations
+- **TRVLR Sync**: Monitor sync status and manifest updates
+
+## Related Resources
+
+- [Monorepo Structure](/technology-stack/mono-repo-structure) - Understand the overall architecture
+- [Shared Packages](/packages/overview) - Learn about reusable packages
+- [Infrastructure Overview](/technology-stack/infra-overview) - Understand deployment and infrastructure
+- [Development Guides](/developer-resources/environment-setup) - Setup and development workflows
+- [Docker Setup](/developer-resources/docker-setup) - Containerized services
+

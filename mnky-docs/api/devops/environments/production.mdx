@@ -1,0 +1,299 @@
+# Production Environment
+
+This guide covers working with MOOD MNKY API services in the production environment.
+
+## Production Servers
+
+| Service    | URL                                    | Purpose                                |
+|------------|----------------------------------------|----------------------------------------|
+| Ollama     | https://ollama.moodmnky.com           | AI model management and inference     |
+| Flowise    | https://flowise.moodmnky.com          | Visual workflow automation            |
+| Langchain  | https://langchain.moodmnky.com        | Chain-based AI operations            |
+| n8n        | https://mnky-mind-n8n.moodmnky.com    | Workflow automation and integration   |
+
+## Authentication
+
+### Production API Keys
+
+1. **Obtaining Production Keys**
+   - Log in to [Developer Portal](https://developers.moodmnky.com)
+   - Navigate to API Keys section
+   - Request production key access
+   - Complete verification process
+
+2. **Key Format**
+   ```
+   prod_xxxxxxxxxxxxxxxxxxxx
+   ```
+
+3. **Key Permissions**
+   - Model management
+   - Workflow creation
+   - Chain execution
+   - Analytics access
+
+### Rate Limits
+
+| Service    | Basic Tier  | Standard Tier | Premium Tier | Enterprise |
+|------------|-------------|---------------|--------------|------------|
+| Ollama     | 100/hour    | 1,000/hour   | 10,000/hour | Custom     |
+| Flowise    | 100/hour    | 1,000/hour   | 10,000/hour | Custom     |
+| Langchain  | 50/hour     | 500/hour     | 5,000/hour  | Custom     |
+| n8n        | 100/hour    | 1,000/hour   | 10,000/hour | Custom     |
+
+## Production Features
+
+### High Availability
+
+- Load balanced endpoints
+- Automatic failover
+- Geographic distribution
+- 99.9% uptime SLA
+
+### Security
+
+1. **SSL/TLS Encryption**
+   - All endpoints use HTTPS
+   - TLS 1.3 supported
+   - Regular certificate rotation
+
+2. **Access Control**
+   - IP whitelisting available
+   - Role-based access control
+   - Audit logging enabled
+
+3. **Data Protection**
+   - Encrypted data at rest
+   - Secure key storage
+   - Regular security audits
+
+### Monitoring
+
+1. **Service Health**
+   - Real-time status at [status.moodmnky.com](https://status.moodmnky.com)
+   - Automated health checks
+   - Incident reporting
+
+2. **Usage Analytics**
+   ```typescript
+   interface UsageMetrics {
+     requests: number;
+     success_rate: number;
+     average_latency: number;
+     error_rate: number;
+   }
+   ```
+
+3. **Performance Monitoring**
+   - Request latency tracking
+   - Error rate monitoring
+   - Resource utilization
+   - Capacity planning
+
+## Integration Examples
+
+### SDK Integration
+
+```typescript
+import { MoodMnkyClient } from '@moodmnky/sdk';
+
+const client = new MoodMnkyClient({
+  environment: 'production',
+  apiKey: 'prod_your_api_key',
+  options: {
+    timeout: 30000,
+    retries: 3,
+    backoff: {
+      initial: 1000,
+      max: 10000,
+      factor: 2
+    }
+  }
+});
+
+// Error handling
+try {
+  const result = await client.ollama.generate({
+    prompt: 'Hello, world!'
+  });
+} catch (error) {
+  if (error.status === 429) {
+    // Handle rate limit
+    await sleep(error.retryAfter * 1000);
+  } else {
+    // Handle other errors
+    console.error('API Error:', error);
+  }
+}
+```
+
+### HTTP Requests
+
+```bash
+# Ollama API
+curl -X POST "https://ollama.moodmnky.com/api/generate" \
+  -H "x-api-key: prod_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2",
+    "prompt": "Hello, world!"
+  }'
+
+# Flowise API
+curl -X POST "https://flowise.moodmnky.com/api/v1/prediction/flow_id" \
+  -H "x-api-key: prod_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "How can I help?"
+  }'
+
+# Langchain API
+curl -X POST "https://langchain.moodmnky.com/api/v1/chains/execute" \
+  -H "x-api-key: prod_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "chain_id": "chain_xyz",
+    "input": {"query": "What is AI?"}
+  }'
+
+# n8n API
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/trigger" \
+  -H "x-api-key: prod_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workflow_id": "workflow_abc",
+    "data": {"key": "value"}
+  }'
+```
+
+## Best Practices
+
+### Error Handling
+
+1. **Implement Retry Logic**
+```typescript
+class RetryHandler {
+  constructor(private maxRetries: number = 3) {}
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    let lastError;
+    for (let i = 0; i < this.maxRetries; i++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        if (!this.isRetryable(error)) throw error;
+        await this.wait(this.getDelay(i));
+      }
+    }
+    throw lastError;
+  }
+
+  private isRetryable(error: any): boolean {
+    return error.status === 429 || error.status >= 500;
+  }
+
+  private getDelay(attempt: number): number {
+    return Math.min(1000 * Math.pow(2, attempt), 10000);
+  }
+
+  private wait(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+```
+
+2. **Rate Limit Handling**
+```typescript
+class RateLimitHandler {
+  private limits: Map<string, number> = new Map();
+
+  updateLimits(response: Response): void {
+    const remaining = parseInt(response.headers.get('x-ratelimit-remaining') || '0');
+    const reset = parseInt(response.headers.get('x-ratelimit-reset') || '0');
+    this.limits.set('remaining', remaining);
+    this.limits.set('reset', reset);
+  }
+
+  async waitIfNeeded(): Promise<void> {
+    const remaining = this.limits.get('remaining');
+    const reset = this.limits.get('reset');
+    
+    if (remaining === 0 && reset) {
+      const now = Math.floor(Date.now() / 1000);
+      const waitTime = Math.max(0, reset - now);
+      await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+    }
+  }
+}
+```
+
+### Performance Optimization
+
+1. **Request Batching**
+```typescript
+class RequestBatcher<T> {
+  private queue: T[] = [];
+  private processing = false;
+
+  async add(item: T): Promise<void> {
+    this.queue.push(item);
+    if (this.queue.length >= 10 && !this.processing) {
+      await this.processQueue();
+    }
+  }
+
+  private async processQueue(): Promise<void> {
+    this.processing = true;
+    while (this.queue.length > 0) {
+      const batch = this.queue.splice(0, 10);
+      await this.processBatch(batch);
+    }
+    this.processing = false;
+  }
+
+  private async processBatch(items: T[]): Promise<void> {
+    // Implementation
+  }
+}
+```
+
+2. **Caching Strategy**
+```typescript
+class APICache {
+  private cache = new Map<string, {
+    value: any;
+    expires: number;
+  }>();
+
+  set(key: string, value: any, ttl: number = 3600): void {
+    this.cache.set(key, {
+      value,
+      expires: Date.now() + ttl * 1000
+    });
+  }
+
+  get(key: string): any {
+    const item = this.cache.get(key);
+    if (!item) return null;
+    if (Date.now() > item.expires) {
+      this.cache.delete(key);
+      return null;
+    }
+    return item.value;
+  }
+}
+```
+
+## Support & Resources
+
+### Documentation
+- [API Reference](https://docs.moodmnky.com/api)
+- [SDK Documentation](https://docs.moodmnky.com/sdk)
+- [Best Practices](https://docs.moodmnky.com/guides/best-practices)
+
+### Support Channels
+- [Status Page](https://status.moodmnky.com)
+- [Developer Forum](https://community.moodmnky.com)
+- [Support Portal](https://support.moodmnky.com)
+- [Security Contact](mailto:security@moodmnky.com) 

@@ -1,0 +1,225 @@
+---
+title: "MNKY VERSE"
+description: "Central hub application for the MOOD MNKY ecosystem with multi-agent interaction"
+icon: "sparkles"
+---
+
+# MNKY VERSE
+
+MNKY VERSE is the central hub for the MOOD MNKY ecosystem, providing an integrated interface to interact with our specialized AI agents. This application delivers personalized experiences, technical support, and educational content through a unified, intuitive interface.
+
+<Info>
+MNKY VERSE represents **THE VERSE** pillar of the MOOD MNKY ecosystem, providing the technological foundation that powers both THE EXPERIENCE and THE DOJO pillars.
+</Info>
+
+## Overview
+
+MNKY VERSE serves as the primary user-facing application where members interact with MOOD MNKY, CODE MNKY, and SAGE MNKY agents. The application provides a unified dashboard, agent-specific chat interfaces, profile management, and seamless navigation across the ecosystem.
+
+### Key Features
+
+- **Multi-Agent Interaction**: Engage with three specialized agents (MOOD, CODE, SAGE)
+- **Unified Dashboard**: Centralized view of your journey with easy access to all agents
+- **Enhanced Navigation**: Context-aware sidebar with breadcrumbs and keyboard shortcuts
+- **Personalized Experience**: Custom recommendations and content based on user preferences
+- **Secure Authentication**: Robust user management with Supabase Auth
+- **Cross-Agent Collaboration**: Seamless handoffs between agents for comprehensive support
+
+## Architecture
+
+### Technology Stack
+
+- **Frontend**: Next.js 14+ (App Router), TypeScript, React
+- **Styling**: Tailwind CSS, ShadCN UI components
+- **State Management**: React Context API, Server Components
+- **Backend**: Supabase, Edge Functions
+- **Database**: PostgreSQL (via Supabase)
+- **Authentication**: Supabase Auth
+- **AI Integration**: Vector search, LLM integrations
+- **Deployment**: Vercel
+
+### Application Structure
+
+```
+apps/mnky-verse/
+├── app/                      # Next.js App Router routes
+│   ├── api/                  # API routes for data access
+│   ├── auth/                 # Authentication flows
+│   ├── dashboard/            # User dashboard experience
+│   ├── profile/              # User profile management
+│   ├── chat/                 # Universal chat interface
+│   ├── agents/               # Agent-specific pages
+│   └── protected/            # Protected route components
+├── components/               # Reusable React components
+│   ├── ui/                   # ShadCN UI components
+│   ├── agents/               # Agent-specific components
+│   └── typography/           # Text styling components
+├── lib/                      # Shared libraries and utilities
+├── utils/                    # Utility functions
+├── hooks/                    # Custom React hooks
+├── supabase/                 # Supabase configuration
+└── public/                    # Static assets
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and pnpm installed
+- Supabase account and project
+- Environment variables configured
+
+### Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/mood-mnky/MNKY-REPO.git
+   cd MNKY-REPO
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pnpm install
+   ```
+
+3. **Configure environment variables**:
+   Create `.env.local` in `apps/mnky-verse/`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   OPENAI_API_KEY=your-openai-key  # Optional
+   ```
+
+4. **Start development server**:
+   ```bash
+   pnpm --filter mnky-verse dev
+   ```
+
+5. **Visit** [http://localhost:3000](http://localhost:3000)
+
+### Local Supabase Setup
+
+For full functionality with local Supabase:
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Navigate to Supabase directory
+cd apps/mnky-verse/supabase
+
+# Start Supabase locally
+supabase start
+
+# Apply migrations
+supabase db reset
+```
+
+## Agent Integration
+
+MNKY VERSE integrates with three specialized agents:
+
+### MOOD MNKY Agent
+- **Purpose**: Experience and personalization specialist
+- **Capabilities**: Custom fragrance recommendations, self-care journey guidance
+- **Integration**: Chat interface, product recommendations, mood tracking
+
+### CODE MNKY Agent
+- **Purpose**: Technical expert and development support
+- **Capabilities**: Code analysis, infrastructure management, documentation
+- **Integration**: Developer tools, technical support, system diagnostics
+
+### SAGE MNKY Agent
+- **Purpose**: Knowledge and learning guide
+- **Capabilities**: Educational content, community facilitation, learning paths
+- **Integration**: Learning environments, content delivery, community features
+
+## API Integration
+
+MNKY VERSE integrates with multiple APIs:
+
+- **Supabase API**: Authentication, database, storage, real-time subscriptions
+- **OpenAI API**: AI capabilities and agent interactions
+- **Shopify API**: Product data and e-commerce functionality
+- **Notion API**: Content management and knowledge base
+- **Custom APIs**: Flowise, Ollama, Langchain, n8n integrations
+
+See [API Hub](/api/index) for comprehensive API documentation.
+
+## Deployment
+
+### Vercel Deployment
+
+1. Connect GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Configure build settings:
+   - Build Command: `cd ../.. && pnpm deploy:mnky-verse`
+   - Output Directory: `.next`
+   - Install Command: `pnpm install`
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+| `NEXT_PUBLIC_SITE_URL` | Site URL for auth redirects | In production |
+| `OPENAI_API_KEY` | OpenAI API key | Optional |
+
+## Development Workflow
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm --filter mnky-verse test
+
+# Run tests in watch mode
+pnpm --filter mnky-verse test:watch
+```
+
+### Type Checking
+
+```bash
+pnpm --filter mnky-verse check-types
+```
+
+### Linting
+
+```bash
+pnpm --filter mnky-verse lint
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Authentication Errors
+- **Issue**: "Invalid credentials" or "Session expired"
+- **Solution**: Clear browser cookies and re-authenticate. Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are correct.
+
+#### Sidebar Not Appearing
+- **Issue**: Sidebar navigation not visible
+- **Solution**: Press `⌘+B` (Mac) or `Ctrl+B` (Windows) to toggle sidebar. Check browser console for errors.
+
+#### Agent Not Responding
+- **Issue**: Agent chat interface not loading or timing out
+- **Solution**: Verify OpenAI API key is set (if using OpenAI features). Check network connectivity and API endpoint status.
+
+### Performance Optimization
+
+- **Enable Edge Caching**: Configure Vercel edge caching for static assets
+- **Optimize Images**: Use Next.js Image component for automatic optimization
+- **Code Splitting**: Leverage Next.js automatic code splitting
+- **Database Queries**: Use Supabase query optimization and indexing
+
+## Related Resources
+
+- [Agent Ecosystem](/agents/index) - Learn about MOOD, CODE, and SAGE agents
+- [API Documentation](/api/index) - Comprehensive API reference
+- [Supabase Integration](/technology-stack/supabase) - Database and auth setup
+- [UI Components Package](/packages/ui) - Shared UI component library
+- [Supabase Client Package](/packages/supabase-client) - Database client utilities
+- [Contribution Guidelines](/developer-resources/contribution-guidelines) - How to contribute
+

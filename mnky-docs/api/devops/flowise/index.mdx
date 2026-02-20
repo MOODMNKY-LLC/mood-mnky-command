@@ -1,0 +1,265 @@
+---
+title: 'Flowise Service API'
+description: 'Complete API documentation for the MOOD MNKY Flowise service'
+---
+
+# Flowise Service API
+
+The MOOD MNKY Flowise service provides advanced chatflow management and AI workflow orchestration capabilities. This documentation covers all available endpoints, integration patterns, and best practices.
+
+## Base URL
+
+```bash
+https://mnky-mind-flowise.moodmnky.com
+```
+
+## Available Endpoints
+
+### Chatflow Management
+
+- [Create Chatflow](/api/devops/flowise/chatflows#create-chatflow)
+- [List Chatflows](/api/devops/flowise/chatflows#list-chatflows)
+- [Get Chatflow](/api/devops/flowise/chatflows#get-chatflow)
+- [Update Chatflow](/api/devops/flowise/chatflows#update-chatflow)
+- [Delete Chatflow](/api/devops/flowise/chatflows#delete-chatflow)
+- [Duplicate Chatflow](/api/devops/flowise/chatflows#duplicate-chatflow)
+
+### Prediction & Execution
+
+- [Chat Prediction](/api/devops/flowise/chatflows#chat-prediction)
+- [Stream Chat](/api/devops/flowise/chatflows#stream-chat)
+- [Stop Chat](/api/devops/flowise/chatflows#stop-chat)
+
+### Analytics & Telemetry
+
+- [Usage Analytics](/api/devops/flowise/analytics#usage-analytics)
+- [Performance Metrics](/api/devops/flowise/analytics#performance-metrics)
+- [Error Tracking](/api/devops/flowise/analytics#error-tracking)
+
+### Service Health
+
+- [Health Check](/api/devops/flowise/monitoring#health-check)
+- [System Metrics](/api/devops/flowise/monitoring#system-metrics)
+- [Version Info](/api/devops/flowise/monitoring#version-info)
+
+## Authentication
+
+All requests to the Flowise service require authentication:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+To obtain API credentials:
+1. Access the [developer portal](#)
+2. Create a new API key with required permissions
+3. Follow our [security guidelines](#) for key management
+
+## Request Format
+
+All requests should use JSON:
+
+```bash
+Content-Type: application/json
+```
+
+## Response Format
+
+Successful responses follow this format:
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response data
+  }
+}
+```
+
+Error responses:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "error_code",
+    "message": "Error description"
+  }
+}
+```
+
+## Streaming Responses
+
+For streaming endpoints, use socket.io-client:
+
+```javascript
+import socketIOClient from 'socket.io-client'
+
+const socket = socketIOClient("https://mnky-mind-flowise.moodmnky.com")
+
+socket.on('connect', () => {
+  console.log('Connected:', socket.id)
+})
+
+socket.on('start', () => {
+  console.log('Stream started')
+})
+
+socket.on('token', (token) => {
+  console.log('Token:', token)
+})
+
+socket.on('sourceDocuments', (docs) => {
+  console.log('Source documents:', docs)
+})
+
+socket.on('end', () => {
+  console.log('Stream ended')
+})
+```
+
+## Rate Limiting
+
+The service implements tiered rate limits:
+
+| Tier | Chat Requests | Management Requests |
+|------|---------------|-------------------|
+| Basic | 60/min | 300/min |
+| Pro | 300/min | 1000/min |
+| Enterprise | Custom | Custom |
+
+Rate limit headers:
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+
+## Analytics Integration
+
+The service supports multiple analytics providers:
+
+- Langsmith
+- Langfuse
+- LLMonitor
+
+Configure analytics in your requests:
+
+```json
+{
+  "question": "Hello!",
+  "overrideConfig": {
+    "analytics": {
+      "langFuse": {
+        "userId": "user123"
+      }
+    }
+  }
+}
+```
+
+## Monitoring
+
+Access Prometheus metrics at:
+```bash
+https://mnky-mind-flowise.moodmnky.com/metrics
+```
+
+Available metrics:
+- Request latencies
+- Chatflow execution stats
+- Memory usage
+- Error rates
+- Custom business metrics
+
+## Best Practices
+
+1. **Chatflow Management**
+   - Version control your chatflows
+   - Test in development environment
+   - Use descriptive chatflow names
+   - Document node configurations
+
+2. **Production Usage**
+   - Implement proper error handling
+   - Use streaming for long responses
+   - Monitor response times
+   - Set appropriate timeouts
+
+3. **Analytics**
+   - Track user interactions
+   - Monitor completion rates
+   - Analyze error patterns
+   - Measure response quality
+
+## Examples
+
+### Curl
+
+```bash
+# Create a chat prediction
+curl -X POST https://mnky-mind-flowise.moodmnky.com/api/v1/prediction/{chatflowid} \
+  -H "Authorization: Bearer your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "Hello!",
+    "overrideConfig": {
+      "analytics": {
+        "langFuse": {
+          "userId": "user123"
+        }
+      }
+    }
+  }'
+```
+
+### Python
+
+```python
+import requests
+
+API_KEY = "your-api-key"
+BASE_URL = "https://mnky-mind-flowise.moodmnky.com"
+
+def chat_prediction(chatflow_id, question):
+    response = requests.post(
+        f"{BASE_URL}/api/v1/prediction/{chatflow_id}",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "question": question
+        }
+    )
+    return response.json()
+```
+
+### JavaScript
+
+```javascript
+const API_KEY = 'your-api-key';
+const BASE_URL = 'https://mnky-mind-flowise.moodmnky.com';
+
+async function chatPrediction(chatflowId, question) {
+  const response = await fetch(
+    `${BASE_URL}/api/v1/prediction/${chatflowId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        question
+      })
+    }
+  );
+  return await response.json();
+}
+```
+
+## Support
+
+- [Service Status](#)
+- [API Changelog](#)
+- [Developer Community](#)
+- [Security Updates](#) 

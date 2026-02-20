@@ -1,0 +1,655 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "theme": "maple",
+  "name": "MOOD MNKY",
+  "colors": {
+    "primary": "#000000",
+    "light": "#F5F5F5",
+    "dark": "#666666"
+  },
+  "fonts": {
+    "family": "Helvetica, sans-serif",
+    "weight": 400
+  },
+  "css": [
+    "/styles.css"
+  ],
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "api": {
+    "baseUrl": "https://api.moodmnky.com",
+    "auth": {
+      "method": "bearer"
+    },
+    "playground": {
+      "mode": "show"
+    }
+  },
+  "openapi": [
+    {
+      "name": "Ollama API",
+      "path": "api/devops/ollama/api/ollama.yaml",
+      "baseUrl": "https://ollama.moodmnky.com",
+      "auth": {
+        "method": "none"
+      }
+    },
+    {
+      "name": "Flowise API",
+      "path": "api/devops/flowise/api/flowise.yaml",
+      "baseUrl": "https://flowise.moodmnky.com"
+    },
+    {
+      "name": "Langchain API",
+      "path": "api/devops/langchain/api/langchain.yaml",
+      "baseUrl": "https://langchain.moodmnky.com"
+    },
+    {
+      "name": "n8n API",
+      "path": "api/devops/n8n/api/n8n.yaml",
+      "baseUrl": "https://mnky-mind-n8n.moodmnky.com"
+    },
+    {
+      "name": "Bungie API",
+      "path": "api/devops/bungie/api/bungie.yaml",
+      "baseUrl": "https://www.bungie.net/Platform"
+    },
+    {
+      "name": "Notion API",
+      "path": "api/openapi/notion-api.json",
+      "baseUrl": "https://api.notion.com",
+      "auth": {
+        "method": "bearer"
+      }
+    }
+  ],
+  "navigation": {
+    "dropdowns": [
+      {
+        "dropdown": "MNKY VERSE",
+        "icon": "globe",
+        "description": "Welcome to the immersive world of MOOD MNKY",
+        "groups": [
+          {
+            "group": "MNKY VERSE",
+            "pages": [
+              "index",
+              "introduction",
+              "brand-overview/mission-vision",
+              "brand-overview/ecosystem-blueprint"
+            ]
+          },
+          {
+            "group": "Core Experiences",
+            "pages": [
+              "brand-overview/mood-experience",
+              "platform-services/dojo-overview",
+              "technology-stack/tech-foundation"
+            ]
+          },
+          {
+            "group": "Get Started",
+            "pages": [
+              "quickstart",
+              "faqs",
+              "agents/index"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "Brand & Company",
+        "icon": "building",
+        "description": "MOOD MNKY brand identity, philosophy, and corporate foundation",
+        "groups": [
+          {
+            "group": "Brand Identity",
+            "pages": [
+              "brand-overview/brand-bible",
+              "brand-overview/brand-dna-framework",
+              "brand-overview/design-guidelines"
+            ]
+          },
+          {
+            "group": "Company Foundation",
+            "pages": [
+              "brand-overview/origin-story",
+              "brand-overview/founders-principles",
+              "brand-overview/team-lore",
+              "brand-overview/brand-time-capsule"
+            ]
+          },
+          {
+            "group": "Brand Voice",
+            "pages": [
+              "brand-overview/social-voice-manifesto",
+              "brand-overview/personas-archetypes"
+            ]
+          },
+          {
+            "group": "Brand Governance",
+            "pages": [
+              "brand-overview/brand-governance-manual",
+              "brand-overview/customer-experience"
+            ]
+          },
+          {
+            "group": "Product Philosophy",
+            "pages": [
+              "product-catalog/product-design-philosophy",
+              "product-catalog/creation-process",
+              "product-catalog/quality-standards",
+              "product-catalog/sustainability"
+            ]
+          },
+          {
+            "group": "Product Catalog",
+            "pages": [
+              "product-catalog/fragrances",
+              "product-catalog/candles",
+              "product-catalog/bath-body",
+              "product-catalog/digital-services",
+              "product-catalog/subscriptions",
+              "product-catalog/product-lifecycle"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "Community & Engagement",
+        "icon": "users",
+        "description": "Community platforms, engagement strategies, and user experiences",
+        "groups": [
+          {
+            "group": "Dojo Platform",
+            "pages": [
+              "platform-services/dojo-features",
+              "platform-services/dojo-core-manual",
+              "platform-services/dojo-grant-roadmap",
+              "platform-services/dojo-roadmap"
+            ]
+          },
+          {
+            "group": "User Experience",
+            "pages": [
+              "platform-services/onboarding-playbooks",
+              "roadmap-planning/customer-journey-blueprints",
+              "platform-services/virtual-consulting",
+              "platform-services/mood-tracking"
+            ]
+          },
+          {
+            "group": "Community Features",
+            "pages": [
+              "platform-services/community-features",
+              "platform-services/content-delivery",
+              "platform-services/content-ecosystem-map",
+              "platform-services/reward-system",
+              "platform-services/token-economy-design"
+            ]
+          },
+          {
+            "group": "Strategic Planning",
+            "pages": [
+              "roadmap-planning/overview",
+              "brand-overview/ecosystem-roadmap",
+              "roadmap-planning/short-term-goals",
+              "roadmap-planning/long-term-vision",
+              "roadmap-planning/platform-development",
+              "roadmap-planning/product-expansion"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "Development & DevOps",
+        "icon": "code",
+        "description": "Technical implementation, infrastructure, and development resources",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "developer-resources/introduction"
+            ]
+          },
+          {
+            "group": "Applications",
+            "pages": [
+              "applications/overview",
+              "applications/mnky-verse",
+              "applications/trvlr-sync",
+              "applications/shopify-app",
+              "applications/mnky-agents-demo"
+            ]
+          },
+          {
+            "group": "Packages",
+            "pages": [
+              "packages/overview",
+              "packages/ui",
+              "packages/supabase-client",
+              "packages/eslint-config",
+              "packages/typescript-config"
+            ]
+          },
+          {
+            "group": "Technology Stack",
+            "pages": [
+              "technology-stack/tech-stack-reference",
+              "technology-stack/frontend-technologies",
+              "technology-stack/supabase",
+              "technology-stack/ai-integration"
+            ]
+          },
+          {
+            "group": "Infrastructure",
+            "pages": [
+              "technology-stack/mono-repo-structure",
+              "technology-stack/infra-overview",
+              "technology-stack/deployment",
+              "technology-stack/security"
+            ]
+          },
+          {
+            "group": "Development Guides",
+            "pages": [
+              "developer-resources/environment-setup",
+              "developer-resources/contribution-guidelines",
+              "developer-resources/coding-standards",
+              "developer-resources/testing-strategy",
+              "developer-resources/theme-customization",
+              "developer-resources/mintlify-components",
+              "developer-resources/docker-setup",
+              "developer-resources/n8n-workflows"
+            ]
+          },
+          {
+            "group": "Database & Backend",
+            "pages": [
+              "developer-resources/supabase-local-development",
+              "developer-resources/data-modeling",
+              "developer-resources/migration-patterns",
+              "developer-resources/supabase-ssl-config",
+              "developer-resources/supabase-s3-access"
+            ]
+          },
+          {
+            "group": "Integration & SDKs",
+            "pages": [
+              "platform-services/integration-points",
+              "roadmap-planning/technology-roadmap"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "API Hub",
+        "icon": "brackets-curly",
+        "description": "Comprehensive hub for API documentation, references, and implementation guides",
+        "pages": ["api/index"],
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "api/index",
+              "api/getting-started",
+              "api/standards",
+              "api/versioning"
+            ]
+          },
+          {
+            "group": "Platform APIs",
+            "pages": [
+              {
+                "group": "Core API",
+                "pages": [
+                  "api/core/index",
+                  "api/core/authentication",
+                  "api/core/endpoints",
+                  "api/core/webhooks",
+                  "api/core/examples"
+                ]
+              },
+              {
+                "group": "E-commerce API",
+                "pages": [
+                  "api/e-commerce/index",
+                  "api/e-commerce/products",
+                  "api/e-commerce/cart",
+                  "api/e-commerce/checkout",
+                  "api/e-commerce/orders",
+                  "api/e-commerce/customer"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "AI & Workflow APIs",
+            "pages": [
+              {
+                "group": "Ollama",
+                "pages": [
+                  "api/devops/ollama/index",
+                  "api/devops/ollama/endpoints",
+                  "api/devops/ollama/models",
+                  "api/devops/ollama/generation",
+                  "api/devops/ollama/monitoring",
+                  "api/devops/ollama/playground"
+                ]
+              },
+              {
+                "group": "Flowise",
+                "pages": [
+                  "api/devops/flowise/index",
+                  "api/devops/flowise/endpoints",
+                  "api/devops/flowise/chatflows",
+                  "api/devops/flowise/analytics",
+                  "api/devops/flowise/monitoring",
+                  "api/devops/flowise/playground"
+                ]
+              },
+              {
+                "group": "Langchain",
+                "pages": [
+                  "api/devops/langchain/index",
+                  "api/devops/langchain/endpoints",
+                  "api/devops/langchain/chains",
+                  "api/devops/langchain/memory",
+                  "api/devops/langchain/documents",
+                  "api/devops/langchain/playground"
+                ]
+              },
+              {
+                "group": "n8n",
+                "pages": [
+                  "api/devops/n8n/index",
+                  "api/devops/n8n/endpoints",
+                  "api/devops/n8n/workflows",
+                  "api/devops/n8n/monitoring",
+                  "api/devops/n8n/playground"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Integration APIs",
+            "pages": [
+              {
+                "group": "Notion",
+                "pages": [
+                  "api/integrations/notion/index",
+                  "api/integrations/notion/setup",
+                  "api/integrations/notion/use-cases",
+                  "api/integrations/notion/examples"
+                ]
+              },
+              {
+                "group": "Bungie",
+                "pages": [
+                  "api/devops/bungie/index",
+                  "api/devops/bungie/authentication",
+                  "api/devops/bungie/endpoints",
+                  "api/devops/bungie/examples"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "API References",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Ollama API Reference",
+            "openapi": {
+              "source": "api/devops/ollama/api/ollama.yaml",
+              "directory": "api-reference/ollama"
+            }
+          },
+          {
+            "group": "Flowise API Reference",
+            "openapi": {
+              "source": "api/devops/flowise/api/flowise.yaml",
+              "directory": "api-reference/flowise"
+            }
+          },
+          {
+            "group": "Langchain API Reference",
+            "openapi": {
+              "source": "api/devops/langchain/api/langchain.yaml",
+              "directory": "api-reference/langchain"
+            }
+          },
+          {
+            "group": "n8n API Reference",
+            "openapi": {
+              "source": "api/devops/n8n/api/n8n.yaml",
+              "directory": "api-reference/n8n"
+            }
+          },
+          {
+            "group": "Notion API Reference",
+            "openapi": {
+              "source": "api/openapi/notion-api.json",
+              "directory": "api-reference/notion"
+            }
+          },
+          {
+            "group": "Bungie API Reference",
+            "pages": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "api/devops/bungie/index",
+                  "api/devops/bungie/playground"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "pages": [
+                  "api-reference/bungie-api/introduction",
+                  {
+                    "directory": "api-reference/bungie-api",
+                    "exclude": ["introduction.mdx"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Development Guidelines",
+            "pages": [
+              "api/devops/environments/overview",
+              "api/devops/environments/local-setup",
+              "api/devops/environments/production",
+              "api/devops/authentication",
+              "api/devops/rate-limiting",
+              "api/devops/best-practices",
+              "api/devops/error-handling",
+              "api/devops/monitoring"
+            ]
+          },
+          {
+            "group": "SDKs & Client Libraries",
+            "pages": [
+              "developer-resources/javascript-sdk",
+              "developer-resources/ai-integration-sdk"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "AI Agent Ecosystem",
+        "icon": "brain-circuit",
+        "description": "Comprehensive documentation of our specialized AI agents",
+        "groups": [
+          {
+            "group": "Agent Framework",
+            "pages": [
+              "agents/agent-schema-reference",
+              "technology-stack/agent-dev-protocol",
+              "platform-services/ai-agents",
+              "platform-services/memory-systems"
+            ]
+          },
+          {
+            "group": "Agent Database System",
+            "pages": [
+              "agents/agent-database/overview",
+              "agents/agent-database/agents",
+              "agents/agent-database/capabilities",
+              "agents/agent-database/integration-points",
+              "agents/agent-database/knowledge-base",
+              "agents/agent-database/memory-systems",
+              "agents/agent-database/user-profiles",
+              "agents/agent-database/training"
+            ]
+          },
+          {
+            "group": "MOOD MNKY Agent",
+            "pages": [
+              "agents/mood-mnky/overview",
+              "agents/mood-mnky/capabilities",
+              "agents/mood-mnky/api-hooks",
+              "agents/mood-mnky/dojo",
+              "agents/mood-mnky/changelog"
+            ]
+          },
+          {
+            "group": "CODE MNKY Agent",
+            "pages": [
+              "agents/code-mnky/overview",
+              "agents/code-mnky/capabilities",
+              "agents/code-mnky/api-hooks",
+              "agents/code-mnky/dojo",
+              "agents/code-mnky/changelog"
+            ]
+          },
+          {
+            "group": "SAGE MNKY Agent",
+            "pages": [
+              "agents/sage-mnky/overview",
+              "agents/sage-mnky/capabilities",
+              "agents/sage-mnky/api-hooks",
+              "agents/sage-mnky/dojo",
+              "agents/sage-mnky/changelog"
+            ]
+          },
+          {
+            "group": "Agent Styling & Integration",
+            "pages": [
+              "agents/agent-styling-guide",
+              "agents/agent-role-profiles",
+              "product-catalog/ai-agents"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "agents/user-guide",
+              "agents/developer-guide",
+              "agents/content-guide"
+            ]
+          }
+        ]
+      },
+      {
+        "dropdown": "Documentation",
+        "icon": "book-open",
+        "description": "Documentation standards, guides, and resources",
+        "groups": [
+          {
+            "group": "Documentation Guides",
+            "pages": [
+              "brand-overview/docs-style-guide",
+              "developer-resources/documentation-guide",
+              "developer-resources/documentation-standards",
+              "MIGRATION-GUIDE"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "brand-overview/ecosystem-blueprint",
+              "brand-overview/first-principles",
+              "technology-stack/overview"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@moodmnky.com",
+        "icon": "life-buoy"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "MOOD MNKY",
+      "href": "https://www.moodmnky.com",
+      "icon": "globe"
+    }
+  },
+  "footer": {
+    "socials": {
+      "instagram": "https://instagram.com/moodmnky",
+      "github": "https://github.com/moodmnky-llc",
+      "discord": "https://discord.gg/moodmnky"
+    }
+  },
+  "anchors": [
+    {
+      "name": "PRD Documentation",
+      "icon": "book-open-cover",
+      "url": "https://moodmnky.co/prd"
+    },
+    {
+      "name": "MOOD MNKY Website",
+      "icon": "globe",
+      "url": "https://www.moodmnky.com"
+    },
+    {
+      "name": "Shop",
+      "icon": "shopping-bag",
+      "url": "https://shop.moodmnky.com"
+    },
+    {
+      "name": "Documentation",
+      "icon": "book",
+      "url": "https://docs.moodmnky.com"
+    },
+    {
+      "name": "Agents App",
+      "icon": "sparkles",
+      "url": "https://agents.moodmnky.com"
+    },
+    {
+      "name": "Dojo Platform",
+      "icon": "layout-dashboard",
+      "url": "https://dojo.moodmnky.co"
+    },
+    {
+      "name": "Community",
+      "icon": "people-group",
+      "url": "https://community.moodmnky.co"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/mood-mnky"
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/mood-mnky",
+    "discord": "https://discord.gg/moodmnky",
+    "twitter": "https://twitter.com/mood_mnky"
+  }
+}

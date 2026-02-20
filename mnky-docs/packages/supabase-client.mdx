@@ -1,0 +1,245 @@
+---
+title: "Supabase Client Package"
+description: "Wrapped Supabase client with SSL support and type safety"
+icon: "database"
+---
+
+# Supabase Client Package (@repo/supabase-client)
+
+The Supabase Client package provides a wrapped Supabase client with production-ready SSL configuration, TypeScript type safety, and a singleton pattern for efficient client reuse across applications.
+
+## Overview
+
+`@repo/supabase-client` abstracts Supabase client creation and configuration, providing a consistent interface for database access, authentication, storage, and real-time subscriptions across all MOOD MNKY applications.
+
+### Key Features
+
+- **SSL Support**: Production-ready SSL certificate configuration
+- **Type Safety**: Full TypeScript types from database schema
+- **Singleton Pattern**: Efficient client reuse
+- **Environment-Aware**: Automatic configuration based on environment
+- **Error Handling**: Consistent error handling patterns
+
+## Installation
+
+The package is automatically available as a workspace dependency:
+
+```json
+{
+  "dependencies": {
+    "@repo/supabase-client": "workspace:*"
+  }
+}
+```
+
+## Usage
+
+### Basic Client Creation
+
+```typescript
+import { createSupabaseClient } from '@repo/supabase-client';
+
+// Client-side usage
+const supabase = createSupabaseClient();
+```
+
+### Server-Side Client
+
+```typescript
+import { createSupabaseServerClient } from '@repo/supabase-client';
+
+// Server-side usage with service role
+const supabase = createSupabaseServerClient();
+```
+
+### Type-Safe Queries
+
+```typescript
+import { createSupabaseClient } from '@repo/supabase-client';
+import type { Database } from '@repo/types';
+
+const supabase = createSupabaseClient<Database>();
+
+// Type-safe query
+const { data, error } = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', 'user@example.com');
+```
+
+## Configuration
+
+### Environment Variables
+
+The package uses standard Supabase environment variables:
+
+```env
+# Client-side
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Server-side
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_DB_SSL_CERT_PATH=/path/to/cert.pem  # Production only
+```
+
+### SSL Configuration
+
+For production environments, configure SSL:
+
+```typescript
+// Automatic SSL detection in production
+const supabase = createSupabaseClient({
+  ssl: {
+    certPath: process.env.SUPABASE_DB_SSL_CERT_PATH,
+  },
+});
+```
+
+## API Methods
+
+### Database Queries
+
+```typescript
+// Select
+const { data } = await supabase
+  .from('users')
+  .select('*');
+
+// Insert
+const { data } = await supabase
+  .from('users')
+  .insert({ email: 'user@example.com' });
+
+// Update
+const { data } = await supabase
+  .from('users')
+  .update({ name: 'New Name' })
+  .eq('id', userId);
+
+// Delete
+const { data } = await supabase
+  .from('users')
+  .delete()
+  .eq('id', userId);
+```
+
+### Authentication
+
+```typescript
+// Sign up
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'password',
+});
+
+// Sign in
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'password',
+});
+
+// Sign out
+await supabase.auth.signOut();
+```
+
+### Storage
+
+```typescript
+// Upload file
+const { data, error } = await supabase.storage
+  .from('bucket-name')
+  .upload('path/to/file.jpg', file);
+
+// Download file
+const { data, error } = await supabase.storage
+  .from('bucket-name')
+  .download('path/to/file.jpg');
+```
+
+### Real-Time Subscriptions
+
+```typescript
+const subscription = supabase
+  .channel('users')
+  .on('postgres_changes', 
+    { event: 'INSERT', schema: 'public', table: 'users' },
+    (payload) => {
+      console.log('New user:', payload.new);
+    }
+  )
+  .subscribe();
+```
+
+## Type Safety
+
+### Database Types
+
+Import types from the shared types package:
+
+```typescript
+import type { Database } from '@repo/types';
+
+const supabase = createSupabaseClient<Database>();
+
+// Type-safe table access
+type User = Database['public']['Tables']['users']['Row'];
+```
+
+### Generated Types
+
+Types are generated from the database schema:
+
+```bash
+# Generate types from Supabase schema
+supabase gen types typescript --local > packages/types/src/database.ts
+```
+
+## Error Handling
+
+### Consistent Error Patterns
+
+```typescript
+const { data, error } = await supabase
+  .from('users')
+  .select('*');
+
+if (error) {
+  console.error('Database error:', error.message);
+  // Handle error appropriately
+  return;
+}
+
+// Use data safely
+console.log('Users:', data);
+```
+
+## Best Practices
+
+### Client Reuse
+
+- ✅ Reuse client instances when possible
+- ✅ Use singleton pattern for client creation
+- ❌ Don't create new clients for each request
+
+### Error Handling
+
+- ✅ Always check for errors
+- ✅ Provide user-friendly error messages
+- ✅ Log errors for debugging
+
+### Type Safety
+
+- ✅ Use TypeScript types from database schema
+- ✅ Type all queries and responses
+- ✅ Keep types synchronized with schema
+
+## Related Resources
+
+- [Supabase Documentation](/technology-stack/supabase) - Supabase integration guide
+- [Local Development](/developer-resources/supabase-local-development) - Local setup
+- [SSL Configuration](/developer-resources/supabase-ssl-config) - Production SSL setup
+- [Applications](/applications/overview) - See client usage in apps
+
+
+
