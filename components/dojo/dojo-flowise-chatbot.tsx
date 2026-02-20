@@ -26,16 +26,19 @@ import {
 } from "@/components/ai-elements/message";
 import {
   PromptInputProvider,
+  PromptInputHeader,
   PromptInput,
   PromptInputTextarea,
-  PromptInputSubmit,
-  PromptInputHeader,
-  PromptInputBody,
-  PromptInputFooter,
   PromptInputActionMenu,
   PromptInputActionMenuTrigger,
   PromptInputActionMenuContent,
   PromptInputActionAddAttachments,
+  PromptInputSubmit,
+  PromptInputBody,
+  PromptInputButton,
+  PromptInputHoverCard,
+  PromptInputHoverCardContent,
+  PromptInputHoverCardTrigger,
   usePromptInputAttachments,
   usePromptInputController,
   type PromptInputMessage,
@@ -64,8 +67,14 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
+import { filePartsToFlowiseUploads } from "@/lib/flowise-uploads";
 import { cn } from "@/lib/utils";
-import { CopyIcon, MessageSquare } from "lucide-react";
+import { CopyIcon, FilesIcon, MessageSquare, PlusIcon } from "lucide-react";
+
+/** Max file size for inline uploads (10MB). Larger files would need backend upload + URL. */
+const DOJO_CHAT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 const DOJO_MNKY_AVATAR = "/verse/mood-mnky-3d.png";
 const DOJO_OPENAI_MODEL = "gpt-5-mini";
@@ -73,6 +82,13 @@ const STARTER_PROMPTS = [
   "Cozy fall blend ideas",
   "Citrus + woody combinations",
   "What blends well with vanilla?",
+];
+
+const CHAT_SUGGESTIONS = [
+  "Explain this in simple terms",
+  "Summarize the main points",
+  "What blends well with vanilla?",
+  "Cozy fall blend ideas",
 ];
 
 interface ChatMessage {
@@ -133,21 +149,6 @@ function messagePartsToContent(parts: Array<{ type: string; text?: string; [k: s
     .join("\n\n");
 }
 
-type FlowiseUpload = { data?: string; type: string; name: string; mime: string };
-
-function filePartsToFlowiseUploads(files: FileUIPart[]): FlowiseUpload[] {
-  return files.map((part) => {
-    const url = part.url ?? "";
-    const data = url.startsWith("data:") ? url : undefined;
-    return {
-      data,
-      type: "file",
-      name: part.filename ?? "file",
-      mime: part.mediaType ?? "application/octet-stream",
-    };
-  });
-}
-
 function DojoAttachmentsDisplay() {
   const attachments = usePromptInputAttachments();
   const handleRemove = useCallback((id: string) => attachments.remove(id), [attachments]);
@@ -164,12 +165,35 @@ function DojoAttachmentsDisplay() {
   );
 }
 
-function DojoSpeechInput() {
+function DojoAttachmentTrigger() {
+  const attachments = usePromptInputAttachments();
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="size-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+      onClick={() => attachments.openFileDialog()}
+      aria-label="Add attachments"
+    >
+      <PlusIcon className="size-5" />
+    </Button>
+  );
+}
+
+function DojoSpeechInput({
+  isStreaming = false,
+  onListeningChange,
+}: {
+  isStreaming?: boolean;
+  onListeningChange?: (listening: boolean) => void;
+}) {
   const controller = usePromptInputController();
   const valueRef = useRef(controller.textInput.value);
   valueRef.current = controller.textInput.value;
   return (
     <SpeechInput
+      disabled={isStreaming}
       onTranscriptionChange={(t) => {
         const prev = valueRef.current ?? "";
         controller.textInput.setInput(prev ? `${prev} ${t}` : t);
@@ -185,7 +209,8 @@ function DojoSpeechInput() {
         const { transcript } = await res.json();
         return (transcript as { text?: string })?.text ?? "";
       }}
-      className="shrink-0"
+      onListeningChange={onListeningChange}
+      className="size-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
     />
   );
 }
@@ -201,10 +226,12 @@ export function DojoFlowiseChatbot({
   overrideConfig: propOverrideConfig,
   className,
 }: DojoFlowiseChatbotProps) {
+  const { toast } = useToast();
   const [provider, setProvider] = useState<"flowise" | "openai">("flowise");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   const sessionId = useMemo(() => nanoid(), []);
 
@@ -418,6 +445,28 @@ export function DojoFlowiseChatbot({
     [provider, sendMessageFlowise, openaiSendMessage]
   );
 
+  const handleSuggestionClick = useCallback(
+    (text: string) => {
+      if (provider === "flowise") {
+        sendMessageFlowise(text.trim());
+      } else {
+        openaiSendMessage({ text: text.trim() });
+      }
+    },
+    [provider, sendMessageFlowise, openaiSendMessage]
+  );
+
+  const handleInputError = useCallback(
+    (err: { code: "max_files" | "max_file_size" | "accept"; message: string }) => {
+      toast({
+        title: "Upload error",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
+
   const displayMessages = provider === "flowise" ? messages : openaiMessages;
   const isStreaming = provider === "flowise" ? isLoading : openaiStatus === "streaming";
   const displayError = provider === "flowise" ? error : openaiError?.message ?? null;
@@ -532,6 +581,7 @@ export function DojoFlowiseChatbot({
                               </MessageAction>
                             </MessageActions>
                           )}
+                          {/* Future TTS: if Flowise/backend returns audio (e.g. base64 in stream), render with AudioPlayer + AudioPlayerElement from @/components/ai-elements/audio-player */}
                           {msg.role === "assistant" && msg.content ? (
                             <MessageResponse parseIncompleteMarkdown>{msg.content}</MessageResponse>
                           ) : msg.role === "user" ? (
@@ -557,8 +607,10 @@ export function DojoFlowiseChatbot({
                               <ul className="mt-1 list-disc pl-4">
                                 {msg.usedTools.slice(0, 5).map((t, i) => (
                                   <li key={i}>
-                                    {typeof t === "object" && t !== null && "name" in (t as object)
-                                      ? String((t as { name?: string }).name ?? "Tool")
+                                    {typeof t === "object" && t !== null
+                                      ? "name" in (t as object)
+                                        ? String((t as { name?: string }).name ?? "Tool")
+                                        : "Tool"
                                       : String(t)}
                                   </li>
                                 ))}
@@ -703,40 +755,97 @@ export function DojoFlowiseChatbot({
             <div className="shrink-0 px-4 py-2 text-destructive text-sm">{displayError}</div>
           ) : null}
 
-          <div className="shrink-0 border-t border-border/50 p-3">
+          <div className="shrink-0 px-4 pb-3 pt-2">
             <PromptInputProvider>
               <PromptInput
+                accept="image/*,.pdf,.txt,.md,audio/*,video/*"
+                maxFileSize={DOJO_CHAT_MAX_FILE_SIZE_BYTES}
+                onError={handleInputError}
                 onSubmit={handleSubmit}
-                className="w-full"
+                className="w-full max-w-3xl mx-auto"
                 multiple
                 globalDrop
                 maxFiles={10}
               >
-                <PromptInputHeader>
+                <PromptInputHeader className="flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {CHAT_SUGGESTIONS.map((suggestion) => (
+                      <Button
+                        key={suggestion}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full text-xs font-normal"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        disabled={isStreaming}
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                  <PromptInputHoverCard>
+                    <PromptInputHoverCardTrigger>
+                      <PromptInputButton
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        tooltip="Context & rules"
+                      >
+                        <FilesIcon className="text-muted-foreground size-3.5" />
+                        <span className="text-muted-foreground text-xs">Context</span>
+                      </PromptInputButton>
+                    </PromptInputHoverCardTrigger>
+                    <PromptInputHoverCardContent className="w-72 p-3 text-muted-foreground text-sm">
+                      <p className="font-medium text-foreground">Project context</p>
+                      <p className="mt-1">Attach rules or knowledge sources here (coming soon).</p>
+                    </PromptInputHoverCardContent>
+                  </PromptInputHoverCard>
                   <DojoAttachmentsDisplay />
                 </PromptInputHeader>
-                <PromptInputBody className="flex gap-2 rounded-lg border border-input bg-background px-3 py-2">
-                  <PromptInputTextarea
-                    name="message"
-                    placeholder="Ask about fragrance blending..."
-                    className="min-h-[44px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
-                    disabled={isStreaming}
-                  />
+                <PromptInputBody>
+                  <div className="flex w-full flex-col gap-1">
+                    {isListening && (
+                      <p className="text-muted-foreground text-center text-xs">Listening…</p>
+                    )}
+                    <div className="flex w-full items-end gap-1 rounded-2xl border border-border/80 bg-muted/40 pl-2 pr-1.5 py-1.5 shadow-lg transition-[box-shadow,background-color,border-color] focus-within:bg-muted/60 focus-within:border-primary/40 focus-within:shadow-xl dark:bg-muted/30 dark:focus-within:bg-muted/50">
+                      <PromptInputActionMenu>
+                        <PromptInputActionMenuTrigger
+                          tooltip="Add photos or files"
+                          className="size-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                        />
+                        <PromptInputActionMenuContent>
+                          <PromptInputActionAddAttachments label="Add photos or files" />
+                        </PromptInputActionMenuContent>
+                      </PromptInputActionMenu>
+                      <PromptInputTextarea
+                        name="message"
+                        placeholder="Ask anything…"
+                        className="min-h-[44px] max-h-[200px] flex-1 resize-none border-0 bg-transparent px-1 py-2 text-base shadow-none placeholder:text-muted-foreground focus-visible:ring-0"
+                        disabled={isStreaming}
+                      />
+                      <DojoSpeechInput
+                        isStreaming={isStreaming}
+                        onListeningChange={setIsListening}
+                        className="size-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                      />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex shrink-0">
+                            <PromptInputSubmit
+                              status={isStreaming ? "streaming" : "ready"}
+                              disabled={isStreaming}
+                              className="size-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity disabled:opacity-70"
+                            />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Send</TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-center text-muted-foreground text-xs pt-1">
+                      MNKY CHAT can make mistakes. Check important info.
+                    </p>
+                  </div>
                 </PromptInputBody>
-                <PromptInputFooter className="flex items-center justify-between gap-1 pt-2">
-                  <DojoSpeechInput />
-                  <PromptInputActionMenu>
-                    <PromptInputActionMenuTrigger />
-                    <PromptInputActionMenuContent>
-                      <PromptInputActionAddAttachments label="Add photos or files" />
-                    </PromptInputActionMenuContent>
-                  </PromptInputActionMenu>
-                  <PromptInputSubmit
-                    status={isStreaming ? "streaming" : "ready"}
-                    disabled={isStreaming}
-                    className="shrink-0"
-                  />
-                </PromptInputFooter>
               </PromptInput>
             </PromptInputProvider>
           </div>

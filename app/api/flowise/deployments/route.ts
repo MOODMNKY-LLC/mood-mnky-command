@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
-import { flowiseFetch } from "@/lib/flowise/client"
+import {
+  flowiseFetch,
+  FLOWISE_HTML_ERROR_DETAIL,
+  isHtmlResponse,
+} from "@/lib/flowise/client"
 
 async function requireAuth() {
   const supabase = await createClient()
@@ -15,28 +19,37 @@ async function requireAuth() {
   return null
 }
 
-function flowiseError(res: Response, text: string, err?: unknown) {
-  const status = res.status >= 500 ? 502 : res.status
-  return new Response(
-    JSON.stringify({
-      error: "Flowise request failed",
-      status: res.status,
-      detail: text?.slice(0, 500) ?? (err instanceof Error ? err.message : "Unknown error"),
-    }),
-    { status, headers: { "Content-Type": "application/json" } },
-  )
-}
-
+/**
+ * GET /api/flowise/deployments - Proxies Flowise GET /api/v1/deployments.
+ * On Flowise failure returns 200 with { error, detail } so the platform UI can show the message instead of a 502.
+ */
 export async function GET() {
   const authError = await requireAuth()
   if (authError) return authError
   try {
     const res = await flowiseFetch("deployments")
     const text = await res.text()
-    if (!res.ok) return flowiseError(res, text)
+    if (isHtmlResponse(text)) {
+      return Response.json({
+        error: "Flowise request failed",
+        detail: FLOWISE_HTML_ERROR_DETAIL,
+      })
+    }
+    if (!res.ok) {
+      const detail = text?.slice(0, 500) || `Flowise returned ${res.status}`
+      return Response.json({
+        error: "Flowise request failed",
+        status: res.status,
+        detail,
+      })
+    }
     const data = text ? JSON.parse(text) : []
-    return Response.json(data)
+    return Response.json(Array.isArray(data) ? data : [])
   } catch (err) {
-    return flowiseError(new Response(null, { status: 502 }), "", err)
+    const message = err instanceof Error ? err.message : "Unknown error"
+    return Response.json({
+      error: "Flowise request failed",
+      detail: message,
+    })
   }
 }

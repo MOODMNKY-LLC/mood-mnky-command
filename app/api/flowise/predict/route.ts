@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { getFlowiseClient } from "@/lib/flowise/client"
 import { decryptFlowiseApiKey } from "@/lib/flowise/profile-api-key"
 
+/** Predict endpoint forwards to Flowise; see temp/flowise-api-upgraded.json for high-level Flowise REST API. */
 export const maxDuration = 60
 
 interface PredictBody {

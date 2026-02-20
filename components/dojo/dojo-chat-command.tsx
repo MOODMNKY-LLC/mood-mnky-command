@@ -44,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDojoChat } from "@/components/dojo/dojo-chat-context";
-import type { DojoChatSidebarChat } from "@/components/dojo/dojo-chat-sidebar";
+import type { DojoChatSidebarChat, DojoChatProject } from "@/components/dojo/dojo-chat-sidebar";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface DojoChatCommandPaletteProps {
@@ -219,6 +219,108 @@ export function DojoChatCommandPalette({ chat, trigger }: DojoChatCommandPalette
             <AlertDialogTitle>Delete chat</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete &quot;{chat.title || "Untitled"}&quot;? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+export interface DojoProjectCommandPaletteProps {
+  project: DojoChatProject;
+  trigger: React.ReactNode;
+}
+
+export function DojoProjectCommandPalette({ project, trigger }: DojoProjectCommandPaletteProps) {
+  const { renameProject, deleteProject } = useDojoChat();
+  const { toast } = useToast();
+  const [renameOpen, setRenameOpen] = React.useState(false);
+  const [renameValue, setRenameValue] = React.useState(project.name || "");
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+  const handleRename = React.useCallback(() => {
+    setRenameValue(project.name || "");
+    setRenameOpen(true);
+  }, [project.name]);
+
+  const handleRenameSubmit = React.useCallback(() => {
+    const name = renameValue.trim() || "Untitled project";
+    renameProject(project.id, name);
+    setRenameOpen(false);
+    toast({ title: "Renamed", description: `Project renamed to "${name}".` });
+  }, [project.id, renameValue, renameProject, toast]);
+
+  const handleDeleteClick = React.useCallback(() => {
+    setDeleteOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = React.useCallback(() => {
+    deleteProject(project.id);
+    setDeleteOpen(false);
+    toast({ title: "Deleted", description: "Project deleted." });
+  }, [project.id, deleteProject, toast]);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+          {trigger}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem onClick={handleRename}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Rename
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:text-destructive">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename project</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="rename-project-name">Name</Label>
+              <Input
+                id="rename-project-name"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleRenameSubmit()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameSubmit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{project.name || "Untitled"}&quot;? Chats in this project will be
+              moved to no project. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

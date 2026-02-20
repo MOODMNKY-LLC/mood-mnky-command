@@ -39,7 +39,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DojoChatCommandPalette } from "@/components/dojo/dojo-chat-command";
+import { DojoChatCommandPalette, DojoProjectCommandPalette } from "@/components/dojo/dojo-chat-command";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DojoTeamSwitcher } from "@/components/dojo/dojo-team-switcher";
 import { DojoSidebarFooter } from "@/components/dojo/dojo-sidebar-footer";
@@ -223,9 +223,24 @@ export function DojoChatSidebar({
                 )}
                 {projects.map((p) => (
                   <SidebarMenuSubItem key={p.id}>
-                    <SidebarMenuSubButton disabled className="cursor-default">
-                      <span className="truncate">{p.name}</span>
-                    </SidebarMenuSubButton>
+                    <div className="flex items-center gap-0 w-full group">
+                      <SidebarMenuSubButton disabled className="flex-1 min-w-0 cursor-default pointer-events-none">
+                        <span className="truncate">{p.name}</span>
+                      </SidebarMenuSubButton>
+                      <DojoProjectCommandPalette
+                        project={p}
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 aria-expanded:opacity-100"
+                            aria-label="Project actions"
+                          >
+                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          </Button>
+                        }
+                      />
+                    </div>
                   </SidebarMenuSubItem>
                 ))}
                 {projects.length === 0 && !onAddProject && (

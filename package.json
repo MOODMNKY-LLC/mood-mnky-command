@@ -29,7 +29,8 @@
     "vercel:env-backup-pull-push": "node scripts/vercel-env-backup-pull-push.mjs",
     "vercel:env-backup-pull-push:dry": "node scripts/vercel-env-backup-pull-push.mjs --dry-run",
     "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
-    "voice:preview": "node scripts/preview-voices.mjs"
+    "voice:preview": "node scripts/preview-voices.mjs",
+    "test:flowise-uploads": "node --test --import tsx lib/flowise-uploads.test.ts"
   },
   "dependencies": {
     "@adobe/pdfservices-node-sdk": "^4.1.0",

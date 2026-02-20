@@ -28,6 +28,18 @@ export function getFlowiseBaseUrl(): string {
 
 const FLOWISE_V1 = `${BASE_URL}/api/v1`
 
+/** Message shown when Flowise returns HTML (wrong URL or proxy). */
+export const FLOWISE_HTML_ERROR_DETAIL =
+  "Flowise returned HTML instead of JSON. Set FLOWISE_BASE_URL to the Flowise instance root only (e.g. https://flowise-dev.moodmnky.com), with no path. Restart the dev server after changing .env."
+
+/**
+ * True if the response body looks like HTML (wrong URL or proxy error page).
+ */
+export function isHtmlResponse(text: string): boolean {
+  const t = text.trim().toLowerCase()
+  return t.startsWith("<!") || t.startsWith("<html")
+}
+
 /**
  * Server-only. Fetch Flowise API with auth. path is e.g. "chatflows" or "chatflows/123".
  * @param path - Path segment (e.g. "chatflows") or full URL.

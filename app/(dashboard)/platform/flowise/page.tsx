@@ -258,7 +258,11 @@ export default function FlowisePage() {
   const credentialsHasError = Boolean(credentialsError || (credentialsData && !Array.isArray(credentialsData)));
   const deploymentsHasError = Boolean(deploymentsError || (deploymentsData && !Array.isArray(deploymentsData)));
   const nodesHasError = Boolean(nodesError || (nodesData && !Array.isArray(nodesData)));
-  const systemInfoHasError = Boolean(systemInfoError || (systemInfoData && Array.isArray(systemInfoData)));
+  const systemInfoHasError = Boolean(
+    systemInfoError ||
+      (systemInfoData &&
+        (Array.isArray(systemInfoData) || typeof (systemInfoData as { error?: string })?.error === "string"))
+  );
 
   const runTest = useCallback(() => {
     if (!testFlowId || !testQuestion.trim()) return;
@@ -702,54 +706,45 @@ export default function FlowisePage() {
         )}
       </div>
 
+      {/* Global banner only for core Flowise API endpoints (Chatflows, Variables, Tools, Credentials). Deployments, Nodes, System info are not in the official API and may 404 on some instances. */}
       {(chatflowsHasError ||
         variablesHasError ||
         toolsHasError ||
-        credentialsHasError ||
-        deploymentsHasError ||
-        nodesHasError ||
-        systemInfoHasError) && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            {chatflowsHasError &&
-              (typeof (chatflowsData as { error?: string })?.error === "string"
-                ? (chatflowsData as { error: string }).error
-                : "Failed to load chatflows. ")}
-            {variablesHasError &&
-              (typeof (variablesData as { error?: string })?.error === "string"
-                ? (variablesData as { error: string }).error
-                : "Failed to load variables. ")}
-            {toolsHasError &&
-              (typeof (toolsData as { error?: string })?.error === "string"
-                ? (toolsData as { error: string }).error
-                : "Failed to load tools. ")}
-            {credentialsHasError &&
-              (typeof (credentialsData as { error?: string })?.error === "string"
-                ? (credentialsData as { error: string }).error
-                : "Failed to load credentials. ")}
-            {deploymentsHasError &&
-              (typeof (deploymentsData as { error?: string })?.error === "string"
-                ? (deploymentsData as { error: string }).error
-                : "Failed to load deployments. ")}
-            {nodesHasError &&
-              (typeof (nodesData as { error?: string })?.error === "string"
-                ? (nodesData as { error: string }).error
-                : "Failed to load nodes. ")}
-            {systemInfoHasError &&
-              (typeof (systemInfoData as { error?: string })?.error === "string"
-                ? (systemInfoData as { error: string }).error
-                : "Failed to load system info. ")}
-            {!chatflowsHasError &&
-              !variablesHasError &&
-              !toolsHasError &&
-              !credentialsHasError &&
-              !deploymentsHasError &&
-              !nodesHasError &&
-              !systemInfoHasError &&
-              "Check FLOWISE_API_KEY and instance URL."}
-          </AlertDescription>
-        </Alert>
-      )}
+        credentialsHasError) && (() => {
+        type ErrorPayload = { error?: string; detail?: string }
+        const messages: string[] = []
+        let firstDetail: string | undefined
+        const add = (data: unknown, fallback: string) => {
+          const p = data as ErrorPayload
+          if (typeof p?.error === "string") messages.push(p.error)
+          else messages.push(fallback)
+          if (typeof p?.detail === "string" && p.detail && !firstDetail) firstDetail = p.detail
+        }
+        if (chatflowsHasError) add(chatflowsData, "Failed to load chatflows.")
+        if (variablesHasError) add(variablesData, "Failed to load variables.")
+        if (toolsHasError) add(toolsData, "Failed to load tools.")
+        if (credentialsHasError) add(credentialsData, "Failed to load credentials.")
+        const text = [...new Set(messages)].join(" ")
+        const alreadyExplainsConfig =
+          typeof firstDetail === "string" &&
+          (firstDetail.includes("FLOWISE_BASE_URL") || firstDetail.includes("Flowise instance"))
+        return (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {text || "Flowise request failed."}
+              {firstDetail ? ` (${firstDetail})` : null}
+              {!alreadyExplainsConfig && (
+                <>
+                  {" "}
+                  Check FLOWISE_BASE_URL and FLOWISE_API_KEY in the environment where the app runs
+                  (restart dev server after changing .env), and that the Flowise instance is
+                  reachable from that host.
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )
+      })()}
 
       <Tabs defaultValue="chatflows" className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1 p-1">
@@ -944,7 +939,12 @@ export default function FlowisePage() {
             <CardContent>
               {deploymentsLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
-              ) : deploymentsList.length === 0 && !deploymentsHasError ? (
+              ) : deploymentsHasError ? (
+                <p className="text-sm text-muted-foreground">
+                  Deployments API is not part of the standard Flowise API and may not be available on
+                  this instance. Chatflows, Variables, and Tools are working.
+                </p>
+              ) : deploymentsList.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No deployments.</p>
               ) : (
                 <ScrollArea className="w-full">
@@ -986,7 +986,12 @@ export default function FlowisePage() {
             <CardContent>
               {nodesLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
-              ) : nodesList.length === 0 && !nodesHasError ? (
+              ) : nodesHasError ? (
+                <p className="text-sm text-muted-foreground">
+                  Nodes API may not be available on this Flowise instance. Chatflows, Variables, and
+                  Tools are working.
+                </p>
+              ) : nodesList.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No nodes.</p>
               ) : (
                 <ScrollArea className="w-full">
@@ -1027,7 +1032,10 @@ export default function FlowisePage() {
               {systemInfoLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : systemInfoHasError ? (
-                <p className="text-sm text-destructive">Failed to load system info.</p>
+                <p className="text-sm text-muted-foreground">
+                  System info API is not part of the standard Flowise API and may not be available on
+                  this instance. Chatflows, Variables, and Tools are working.
+                </p>
               ) : systemInfoData && typeof systemInfoData === "object" && !Array.isArray(systemInfoData) ? (
                 <pre className="text-xs font-mono bg-muted/50 p-4 rounded-md overflow-auto max-h-[400px]">
                   {JSON.stringify(systemInfoData, null, 2)}
