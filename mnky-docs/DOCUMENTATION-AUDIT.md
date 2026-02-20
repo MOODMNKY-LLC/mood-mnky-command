@@ -3,11 +3,32 @@
 ## Overview
 This document provides an audit of the current documentation site structure, identifying missing files and inconsistencies. Created to ensure the documentation defined in docs.json matches the actual files available.
 
-## Audit Date: 2025-04-05 (Updated)
+## Audit Date: 2026-02-20 (Mintlify Docs Overhaul)
 
 ## Status
 
-✅ **All referenced documentation pages now exist as at least placeholder files.**
+✅ **Documentation overhaul completed.** Core experiences (MNKY VERSE, The Dojo, MNKY LABZ) now align with the mood-mnky-command codebase.
+
+### Mintlify Docs Overhaul (2026-02-20)
+
+- ✅ Replaced "THE EXPERIENCE" with **MNKY VERSE** (web experiential portal) in mood-experience.mdx
+- ✅ Rewrote applications/mnky-verse.mdx to reflect apps/web structure, Hydrogen React, Supabase
+- ✅ Updated dojo-overview.mdx and dojo-features.mdx to match actual Dojo (XP, quests, Blending Lab, MNKY CHAT)
+- ✅ Created platform-services/labz-overview.mdx (MNKY LABZ dashboard, CODE MNKY, routes, APIs)
+- ✅ Updated tech-foundation.mdx: replaced DevOps framing with LABZ; stack = Next.js, Supabase, Vercel
+- ✅ Reframed introduction.mdx pillars: MNKY VERSE (portal), The Dojo (private hub), MNKY LABZ (backstage)
+- ✅ Updated applications/overview.mdx: single app with three experiences
+- ✅ Updated mono-repo-structure.mdx: apps/web, Shopify/theme, extensions/, supabase/
+- ✅ Updated ecosystem-blueprint.mdx: current implementation diagram and digital platform architecture
+- ✅ Archived experience-pillar.mdx with redirect to mood-experience
+- ✅ Updated docs.json: added labz-overview to Core Experiences, Applications, Database & Backend
+- ✅ Fixed mnky-verse.mdx env vars: `NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_STOREFRONT_API_TOKEN` (per SHOPIFY-ENV-REFERENCE.md)
+- ✅ Refined mono-repo-structure.mdx: removed data/schemas, infra/supabase; corrected workspace config; fixed Supabase setup commands
+- ✅ Refined ecosystem-blueprint.mdx Development Infrastructure: monorepo structure, DevOps (Vercel, GitHub Actions, Supabase)
+
+---
+
+## Previous Audit (2025-04-05)
 
 Previous issues:
 - Missing files have been addressed by creating placeholder files for all previously missing documentation.

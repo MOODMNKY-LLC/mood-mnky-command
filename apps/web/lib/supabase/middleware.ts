@@ -5,9 +5,21 @@ import { createAdminClient } from "@/lib/supabase/admin"
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error(
+      "[Supabase] Missing env vars. Add .env.local at the monorepo root with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. pnpm dev loads it via dotenv-cli. See .env.example."
+    )
+    throw new Error(
+      "Supabase URL and Key required. Put .env.local at the monorepo root with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. See https://supabase.com/dashboard/project/_/settings/api"
+    )
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {

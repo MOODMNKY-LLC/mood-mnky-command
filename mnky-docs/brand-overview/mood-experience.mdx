@@ -1,125 +1,118 @@
 ---
-title: "MOOD MNKY"
-description: "MOOD MNKY's approach to creating bespoke, sensory self-care experiences through customizable product lines and personalized fragrances"
-icon: "flask"
+title: "MNKY VERSE"
+description: "The web experiential portal to the MOOD MNKY brand—storefront, customer portal, blog, agents, gamification, and community in one immersive experience"
+icon: "globe"
 ---
 
 <img 
   className="w-24 h-24 rounded-full float-right ml-4 mb-4"
   src="/images/mood-mnky-2d.png"
-  alt="MOOD MNKY Agent"
+  alt="MOOD MNKY"
 />
 
-# MOOD MNKY: scents the mood
+# MNKY VERSE: The Web Experience
 
-MOOD MNKY is the heart of our brand - a bespoke self-care approach centered on customizable fragrance and bath/body product lines that transform routine self-care into meaningful rituals.
-
-## Overview
-
-MOOD MNKY represents our commitment to creating sensory self-care experiences that are deeply personal and uniquely tailored to each individual. Through customizable fragrances and products, we provide tools for emotional wellness and self-expression.
+MNKY VERSE is the web experiential portal to the MOOD MNKY brand—a unified digital destination where customers explore products, engage with AI agents, read the blog, participate in gamification, and connect with the community. It is the public-facing heart of our ecosystem.
 
 <Note>
-**Experience Tagline**: "Personalized self-care experiences that adapt to your emotional landscape."
+**MNKY VERSE Tagline**: "Bespoke fragrance in the MNKY VERSE. Always scentsing the MOOD."
 </Note>
 
 <img 
   className="my-8 rounded-lg shadow-lg" 
   src="/images/mood-mnky-3d.png" 
-  alt="MOOD MNKY Experience"
+  alt="MNKY VERSE Experience"
   width="100%"
 />
 
-## Key Components
+## Overview
 
-### Custom Fragrance Creation
+MNKY VERSE is built as a Next.js application using **Hydrogen React** and the Shopify Storefront API. It serves as the primary customer touchpoint, complementing the Shopify store theme and providing a richer, app-based experience for exploration, shopping, learning, and community.
 
-Our fragrance system allows customers to create personalized scent profiles based on their preferences, memories, and emotional needs. The custom fragrance creation process includes:
+### Key Features
 
-- Sophisticated scent profiling questionnaires
-- AI-assisted fragrance recommendations
-- Adjustable formulation parameters
-- Personal fragrance library management
-- Emotional and memory associations
+- **Storefront & Catalog**: Products and collections via Shopify Storefront API; cart and checkout powered by Hydrogen React
+- **MNKY VERSE Blog**: Supabase-hosted blog synced from Notion; stories and content from the brand
+- **AI Agents Directory**: Agent profiles (MOOD MNKY, CODE MNKY, SAGE MNKY) with chat interfaces
+- **Gamification**: XP, levels, quests, and rewards tied to engagement
+- **Manga/Issues**: Collection manga with chapters, reader, and quizzes
+- **Community**: Community hub, UGC (user-generated content), Discord integration
+- **Fragrance Tools**: Fragrance wheel, oils catalog, formulas library, glossary, blending guide
+- **Music & Voice**: Background music player; optional realtime voice chat
+- **The Dojo**: Links to the members' private portal for preferences, Blending Lab, and saved blends
 
-### Product Lines
+## MNKY VERSE Routes
 
-MOOD MNKY encompasses a range of physical products designed for customization:
+| Path | Description |
+|------|--------------|
+| `/verse` | Portal homepage (MNKY PORTAL) |
+| `/verse/explore` | Explore page |
+| `/verse/blog` | MNKY VERSE blog |
+| `/verse/blog/[slug]` | Blog post detail |
+| `/verse/agents` | AI agents directory |
+| `/verse/agents/[slug]` | Agent profile page |
+| `/verse/products` | Product catalog |
+| `/verse/products/[handle]` | Product detail |
+| `/verse/collections` | Collections list |
+| `/verse/collections/[handle]` | Collection detail |
+| `/verse/shop` | Shop page |
+| `/verse/cart` | Shopping cart |
+| `/verse/chat` | Chat interface |
+| `/verse/profile` | User profile |
+| `/verse/quests` | Quests and gamification |
+| `/verse/issues` | Manga/issues list |
+| `/verse/issues/[slug]` | Issue detail, reader, quiz |
+| `/verse/ugc` | User-generated content |
+| `/verse/community` | Community hub |
+| `/verse/music` | Music player |
+| `/verse/fragrance-wheel` | Fragrance wheel tool |
+| `/verse/fragrance-oils` | Fragrance oils catalog |
+| `/verse/formulas` | Formulas library |
+| `/verse/glossary` | Fragrance glossary |
+| `/verse/blending-guide` | Blending guide |
 
-- **Candles**: Personalized scent blends with custom vessels
-- **Bath & Body**: Custom formulations with adjustable properties
-- **Home Fragrance**: Ambient scenting solutions with personalization options
-- **Wearable Fragrance**: Personal scents with customizable concentration levels
-- **Ritual Kits**: Curated combinations of products for specific emotional needs
+## Technology Stack
 
-### Multi-Sensory Integration
+- **Framework**: Next.js 14+ (App Router) with Hydrogen React (`@shopify/hydrogen-react`)
+- **E-commerce**: Shopify Storefront API (catalog, cart, checkout); not Remix Hydrogen or Oxygen
+- **Backend**: Supabase (blog, profiles, gamification, auth)
+- **UI**: shadcn/ui, Tailwind CSS
+- **Deployment**: Vercel
 
-We design products that engage multiple senses simultaneously:
-
-- **Visual**: Beautiful packaging and product design
-- **Olfactory**: Complex, layered fragrance experiences
-- **Tactile**: Thoughtfully textured products and packaging
-- **Auditory**: Companion sound experiences via digital integration
-- **Taste**: Complementary taste experiences (where applicable)
-
-### Personalization Technology
-
-Our products leverage technology to enhance personalization:
-
-- **Scent Engine**: Algorithmic fragrance formulation system
-- **Customer Profiles**: Detailed preference tracking across products
-- **Adaptation System**: Products that evolve based on feedback and usage
-- **Integration Points**: Physical-digital connection points
-- **Data-Driven Formulation**: Using analytics to improve recommendations
-
-<Frame caption="The MOOD MNKY Experience in action">
-  <img src="/images/mnky-trio-hero-white.png" alt="MOOD MNKY Experience" className="block dark:hidden" />
-  <img src="/images/mnky-trio-hero-gold.png" alt="MOOD MNKY Experience" className="hidden dark:block" />
+<Frame caption="MNKY VERSE and the ecosystem">
+  <img src="/images/mnky-trio-hero-white.png" alt="MNKY VERSE" className="block dark:hidden" />
+  <img src="/images/mnky-trio-hero-gold.png" alt="MNKY VERSE" className="hidden dark:block" />
 </Frame>
 
-## Business Impact
+## Integration with Shopify
 
-MOOD MNKY drives business value through:
+The Shopify Liquid theme and MNKY VERSE app share the same Shopify catalog. The theme links to MNKY VERSE for Blending Lab, Dojo, Explore, Blog, Agents, and Community. Theme app blocks (Blending CTA, Fragrance Finder, Subscription CTA) and the MNKY CHAT embed point to the app base URL.
 
-- **Differentiation**: Unique value proposition in the crowded self-care market
-- **Premium Positioning**: Justifying higher price points through customization
-- **Retention**: Creating products that evolve with customer needs
-- **Recurring Revenue**: Subscription models for evolving product lines
-- **Data Value**: Generating valuable preference and formulation data
+## Integration with The Dojo
+
+Authenticated users access **The Dojo** at `/dojo`—their private portal for preferences, MNKY CHAT, Blending Lab, and saved blends. The Dojo provides quick access back to MNKY VERSE (Shop, Chat, Profile, Issues, UGC).
 
 ## Customer Value
 
-Customers benefit from MOOD MNKY through:
-
-- **Emotional Wellness**: Products designed for specific emotional needs
-- **Self-Expression**: Creative control over personal care items
-- **Ritual Formation**: Turning routine into meaningful moments
-- **Discovery**: Guided exploration of new scents and experiences
-- **Memories**: Creating olfactory anchors for important moments
-
-## Integration with Other Domains
-
-MOOD MNKY connects seamlessly with other parts of our ecosystem:
-
-- **With The Dojo**: Physical products integrate with digital learning and tracking
-- **With DevOps**: Product data feeds into the larger ecosystem intelligence
-
-## Future Direction
-
-The roadmap for MOOD MNKY includes:
-
-- Expanded product categories beyond fragrance and bath/body
-- Enhanced biometric integration for more precise formulation
-- Augmented reality visualization of custom products
-- Community co-creation opportunities
-- Hyperlocal ingredient sourcing for geographical personalization
+- **Discovery**: Explore products, scents, and content in one place
+- **Convenience**: Cart and checkout via Storefront API; seamless app experience
+- **Engagement**: Gamification (XP, quests) and community features
+- **Learning**: Blog, glossary, formulas, blending guide
+- **Personalization**: Profile, saved blends, agent preferences
 
 ---
 
 <CardGroup cols={2}>
-  <Card title="Dojo Integration" icon="bridge" href="/platform-services/dojo-overview">
-    Learn how physical products connect with our digital platform
+  <Card title="The Dojo" icon="bridge" href="/platform-services/dojo-overview">
+    Members' private hub: preferences, Blending Lab, MNKY CHAT
+  </Card>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard and backstage tools
+  </Card>
+  <Card title="MNKY VERSE Application" icon="code" href="/applications/mnky-verse">
+    Technical documentation and setup
   </Card>
   <Card title="Product Catalog" icon="box" href="/product-catalog/fragrances">
-    Explore our current product offerings
+    Explore product offerings
   </Card>
-</CardGroup> 
+</CardGroup>

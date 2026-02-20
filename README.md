@@ -67,12 +67,13 @@ flowchart LR
    pnpm install
    ```
 
-2. Copy environment variables and set values (see `.env.example` or project docs). Key vars include:
-   - Next.js: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, Shopify Storefront API keys.
-   - Supabase: `SUPABASE_SERVICE_ROLE_KEY` for server-side operations.
+2. Copy `.env.example` to `.env.local` at the **monorepo root** and set values. Key vars include:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, Shopify Storefront API keys
+   - `SUPABASE_SERVICE_ROLE_KEY` for server-side operations
    - Optional: Notion, OpenAI, Vercel, etc., per feature.
+   `pnpm dev` and `pnpm build` load `.env.local` and `.env` from the root via dotenv-cli.
 
-3. Run the Next.js app (from repo root; Turborepo runs the `web` app):
+3. Run the Next.js app (from repo root):
 
    ```bash
    pnpm dev

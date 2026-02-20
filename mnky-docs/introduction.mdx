@@ -19,7 +19,7 @@ description: 'An overview of the three pillars that form the foundation of the M
 
 # Introduction
 
-The MNKY VERSE is built on three interconnected pillars that work together to create a cohesive ecosystem for personalized self-care and wellness. Each pillar serves a distinct purpose while reinforcing the others to deliver a comprehensive experience.
+The MNKY VERSE is built on three interconnected pillars that work together to create a cohesive ecosystem for bespoke fragrance and personalized self-care. Each pillar serves a distinct purpose while reinforcing the others.
 
 ## The Three Pillars Architecture
 
@@ -27,30 +27,31 @@ The MNKY VERSE is built on three interconnected pillars that work together to cr
   <img src="/images/mnky-trio-icon.png" alt="Three Pillars Architecture" />
 </Frame>
 
-### THE EXPERIENCE: Bespoke Self-Care
+### MNKY VERSE: The Web Portal
 
 <img
   className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
   src="/images/mood-mnky-2d.png"
-  alt="MOOD MNKY Agent"
+  alt="MOOD MNKY"
 />
 
-**THE EXPERIENCE** is our physical product pillar, focused on creating personalized self-care rituals through custom fragrance and body care products.
+**MNKY VERSE** is the web experiential portal—the public-facing destination where customers explore products, engage with AI agents, read the blog, participate in gamification, and connect with the community.
 
-**Core Focus:** Creating sensory self-care experiences that are deeply personal and uniquely tailored to each individual.
+**Core Focus:** Bespoke fragrance in the MNKY VERSE. Always scentsing the MOOD.
 
 **Key Components:**
-- Custom fragrance creation system
-- Personalized bath and body products
-- Multi-sensory integration
-- Customization technology
-- Memory and emotion mapping
+- Storefront and product catalog (Shopify Storefront API)
+- MNKY VERSE blog (Supabase, synced from Notion)
+- AI agents directory and chat
+- Gamification (XP, quests)
+- Manga/Issues, UGC, community
+- Fragrance tools (wheel, oils, formulas, glossary, blending guide)
 
-[Learn more about THE EXPERIENCE](/brand-overview/experience-pillar)
+[Learn more about MNKY VERSE](/brand-overview/mood-experience)
 
 ---
 
-### THE DOJO: AI-Powered Wellness
+### The Dojo: Members' Private Hub
 
 <img
   className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
@@ -58,22 +59,22 @@ The MNKY VERSE is built on three interconnected pillars that work together to cr
   alt="SAGE MNKY Agent"
 />
 
-**THE DOJO** is our digital platform pillar, focusing on personalized learning, growth, and community engagement.
+**The Dojo** is the members' private hub—an authenticated space for preferences, Blending Lab, MNKY CHAT, and saved blends.
 
-**Core Focus:** Providing a digital "life OS" for personalized wellness and learning, supported by AI guidance and community interaction.
+**Core Focus:** A private "dojo" for growth and mastery in self-care practices.
 
 **Key Components:**
-- SAGE MNKY AI learning companion
-- Personalized learning environments
-- Community engagement platform
-- Progress tracking and metrics
-- Token-based economy system
+- XP and quests (gamification)
+- Blending Lab and saved blends
+- MNKY CHAT with Flowise
+- Preferences (default agent, settings)
+- Quick access to MNKY VERSE
 
-[Learn more about THE DOJO](/platform-services/dojo-overview)
+[Learn more about The Dojo](/platform-services/dojo-overview)
 
 ---
 
-### THE VERSE: Technical Infrastructure
+### MNKY LABZ: Command Center
 
 <img
   className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
@@ -81,18 +82,19 @@ The MNKY VERSE is built on three interconnected pillars that work together to cr
   alt="CODE MNKY Agent"
 />
 
-**THE VERSE** is our technological foundation pillar, providing the infrastructure and tools that power our ecosystem.
+**MNKY LABZ** is the admin dashboard and backstage—where operations, product data, and the CODE MNKY assistant converge.
 
-**Core Focus:** Creating a developer-friendly, extensible technological foundation that powers both THE EXPERIENCE and THE DOJO.
+**Core Focus:** Developer-centric infrastructure and operational tools.
 
 **Key Components:**
-- CODE MNKY technical companion
-- API-first architecture
-- Developer tools and documentation
-- Integration framework
-- Data platform and AI infrastructure
+- Formulas, fragrance oils, glossary
+- Shopify store management
+- Notion sync
+- CODE MNKY conversational assistant
+- Platform tools (SQL, Flowise, funnels)
+- Verse backoffice (manga, XP, UGC)
 
-[Learn more about THE VERSE](/technology-stack/verse-pillar)
+[Learn more about MNKY LABZ](/platform-services/labz-overview)
 
 ---
 
@@ -105,14 +107,14 @@ The MNKY VERSE is built on three interconnected pillars that work together to cr
   width="70%"
 />
 
-The three pillars of the MNKY VERSE are designed to work together seamlessly:
+The three pillars work together:
 
-- **EXPERIENCE + DOJO**: Physical products connect with digital tracking and learning
-- **DOJO + VERSE**: Digital platform leverages technical infrastructure
-- **VERSE + EXPERIENCE**: Technical systems power product personalization
-- **All Three**: Complete ecosystem for holistic self-care and wellness
+- **MNKY VERSE + Dojo**: Public portal links to private hub; gamification spans both
+- **Dojo + LABZ**: LABZ powers product data (formulas, oils) used in Blending Lab
+- **LABZ + VERSE**: LABZ manages Shopify catalog and Notion content for the Verse blog
+- **All Three**: Complete ecosystem in one Next.js app
 
-This integrated approach delivers our core value proposition:
+This integrated approach delivers:
 
 1. **Extreme Personalization**: Tailored to individual preferences
 2. **Multi-sensory Integration**: Engaging all senses
@@ -124,6 +126,6 @@ This integrated approach delivers our core value proposition:
 
 | Pillar | Focus | Core Agent | Key Technology | Primary Value |
 |--------|-------|------------|----------------|---------------|
-| **THE EXPERIENCE** | Physical Products | MOOD MNKY Agent | Scent Engine | Personalized Self-Care |
-| **THE DOJO** | Digital Platform | SAGE MNKY Agent | Learning Environment | Growth & Community |
-| **THE VERSE** | Infrastructure | CODE MNKY Agent | API Architecture | Development & Integration |
+| **MNKY VERSE** | Web Portal | MOOD MNKY Agent | Shopify, Hydrogen React | Discovery & Engagement |
+| **The Dojo** | Private Hub | SAGE MNKY Agent | Supabase Auth | Growth & Crafting |
+| **MNKY LABZ** | Command Center | CODE MNKY Agent | Supabase, Notion, Shopify Admin | Operations & Development |

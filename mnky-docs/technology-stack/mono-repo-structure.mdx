@@ -23,114 +23,95 @@ The MOOD MNKY ecosystem uses a mono repository architecture to organize all code
 
 <CardGroup cols={3}>
   <Card title="Apps" icon="window">
-    Complete applications that are deployed independently
+    Next.js app (MNKY VERSE + Dojo + LABZ) in `apps/web/`
   </Card>
-  <Card title="Packages" icon="cube">
-    Shared libraries used across multiple applications
+  <Card title="Shopify" icon="shopping-bag">
+    Liquid theme and theme app extension
   </Card>
-  <Card title="Infra" icon="server">
-    Infrastructure configuration and deployment resources
+  <Card title="Supabase" icon="database">
+    Migrations and Edge Functions at repo root
   </Card>
-  <Card title="Data" icon="database">
-    Data models and schema definitions
+  <Card title="Extensions" icon="puzzle-piece">
+    Theme app extension (blocks, embed)
   </Card>
   <Card title="Config" icon="gear">
-    Configuration files shared across the codebase
+    Root package.json, turbo.json, pnpm-workspace
   </Card>
 </CardGroup>
 
 ## Directory Structure
 
+The **mood-mnky-command** monorepo uses a single Next.js application (`apps/web/`) that hosts MNKY VERSE, The Dojo, and MNKY LABZ via route groups:
+
 ```bash
-MNKY-REPO/
+mood-mnky-command/
 ├── apps/
-│   ├── web/                 # Primary MOOD MNKY website (Next.js)
-│   ├── dojo/                # Dojo platform (Next.js)
-│   ├── admin/               # Admin dashboard (Next.js)
-│   ├── mobile/              # Mobile app (React Native)
-│   └── docs/                # Documentation (Mintlify)
+│   └── web/                 # Single Next.js app (MNKY VERSE + Dojo + LABZ)
+│       ├── app/
+│       │   ├── (storefront)/verse/  # MNKY VERSE routes
+│       │   ├── dojo/                # The Dojo routes
+│       │   └── (dashboard)/         # MNKY LABZ routes
+│       ├── components/
+│       └── lib/
 │
-├── packages/
-│   ├── ui/                  # Shared UI components
-│   ├── utils/               # Utility functions
-│   ├── hooks/               # Shared React hooks
-│   ├── api/                 # API client libraries
-│   ├── config/              # Shared configuration
-│   ├── supabase-client/     # Supabase client and utilities
-│   ├── analytics/           # Analytics implementation
-│   ├── scent-engine/        # Fragrance creation logic
-│   ├── agent-core/          # Shared agent infrastructure
-│   ├── token-economy/       # Token system implementation
-│   └── types/               # Shared TypeScript types
+├── Shopify/
+│   └── theme/               # Liquid theme (Dawn-derived)
 │
-├── infra/
-│   ├── supabase/            # Supabase infrastructure
-│   │   ├── migrations/      # Database migration scripts
-│   │   ├── functions/       # Edge functions
-│   │   └── seed-data/       # Seed data for development
-│   ├── deployment/          # Deployment configurations
-│   └── docker/              # Docker configurations
+├── extensions/
+│   └── mood-mnky-theme/     # Theme app extension (blocks, embed)
 │
-├── data/
-│   ├── models/              # TypeScript data models
-│   └── schemas/             # Database schema definitions
+├── supabase/
+│   ├── migrations/          # Database migrations
+│   └── functions/           # Edge functions (optional)
 │
-├── agents/                  # Agent definitions and configurations
-│   ├── mood-mnky/           # MOOD MNKY agent
-│   ├── code-mnky/           # CODE MNKY agent
-│   └── sage-mnky/           # SAGE MNKY agent
+├── packages/                # Shared packages (workspace supports; add as needed)
 │
-├── content/                 # Content libraries and assets
-├── docs/                    # Documentation (Mintlify)
-├── scripts/                 # Repository scripts
-├── config/                  # Shared configurations
+├── docs/                    # Repo docs (design system, runbooks)
+├── mnky-docs/               # Mintlify documentation (this site)
 ├── .github/                 # GitHub workflows
 ├── turbo.json               # Turborepo configuration
 └── package.json             # Root package.json
 ```
 
+<Info>
+The Supabase config lives in `supabase/` at the repo root. Migrations, Edge Functions, and config are in that directory. Run `supabase start` and `supabase db reset` from the repo root.
+</Info>
+
 ## Application Structure
 
-Each application follows a consistent structure to ensure predictability across the codebase:
+The `apps/web/` Next.js app uses the App Router with route groups:
 
 <Tabs>
-  <Tab title="Next.js Apps">
+  <Tab title="apps/web">
     ```bash
-    apps/[app-name]/
-    ├── src/
-    │   ├── app/             # App router components and routes
-    │   ├── components/      # React components
-    │   │   ├── ui/          # Presentational components
-    │   │   └── features/    # Feature-specific components
-    │   ├── hooks/           # Custom React hooks
-    │   ├── lib/             # Utilities and helpers
-    │   ├── styles/          # Global styles
-    │   └── types/           # TypeScript types
-    ├── public/              # Static assets
-    ├── tests/               # Tests
-    ├── next.config.js       # Next.js configuration
-    ├── package.json         # App-specific dependencies
-    └── tsconfig.json        # TypeScript configuration
+    apps/web/
+    ├── app/
+    │   ├── (storefront)/verse/  # MNKY VERSE
+    │   ├── dojo/                # The Dojo
+    │   ├── (dashboard)/         # MNKY LABZ
+    │   └── api/                 # API routes
+    ├── components/
+    │   ├── verse/
+    │   ├── dojo/
+    │   ├── dashboard/
+    │   └── labz/
+    ├── lib/
+    ├── public/
+    └── ...
     ```
   </Tab>
-  <Tab title="React Native">
+  <Tab title="Shopify Theme">
     ```bash
-    apps/mobile/
-    ├── src/
-    │   ├── screens/         # Screen components
-    │   ├── components/      # React components
-    │   │   ├── ui/          # Presentational components
-    │   │   └── features/    # Feature-specific components
-    │   ├── navigation/      # Navigation configuration
-    │   ├── hooks/           # Custom React hooks
-    │   ├── utils/           # Utilities and helpers
-    │   ├── styles/          # Global styles
-    │   └── types/           # TypeScript types
-    ├── assets/              # Static assets
-    ├── tests/               # Tests
-    ├── app.json             # App configuration
-    ├── package.json         # App-specific dependencies
-    └── tsconfig.json        # TypeScript configuration
+    Shopify/theme/            # Dawn-derived Liquid theme
+    ├── sections/
+    ├── snippets/
+    ├── templates/
+    ├── config/
+    └── assets/
+
+    extensions/mood-mnky-theme/  # Theme app extension
+    ├── blocks/               # App blocks (Blending CTA, etc.)
+    └── ...                   # App embed (MNKY CHAT)
     ```
   </Tab>
 </Tabs>
@@ -156,39 +137,15 @@ Our infrastructure and data follow a clear organization:
 <Tabs>
   <Tab title="Supabase">
     ```bash
-    # Infrastructure configuration
-    infra/supabase/
+    # At repo root
+    supabase/
     ├── migrations/           # Database migration scripts
-    │   ├── 20240101000000_   # Timestamp-prefixed migrations
-    │   └── README.md         # Migration documentation
-    ├── functions/            # Edge and database functions
-    ├── config.toml           # Supabase configuration
-    └── seed-data/            # Development seed data
-    
-    # Data definitions
-    data/
-    ├── schemas/              # SQL schema definitions
-    │   ├── users.sql         # Users table schema
-    │   └── products.sql      # Products table schema
-    ├── models/               # TypeScript data models
-    │   ├── user.model.ts     # User model definition
-    │   └── product.model.ts  # Product model definition
+    ├── functions/            # Edge functions (optional)
+    └── config.toml           # Supabase configuration
     ```
   </Tab>
-  <Tab title="Agents">
-    ```bash
-    agents/
-    ├── mood-mnky/            # MOOD MNKY agent
-    │   ├── prompts/          # Agent prompt templates
-    │   ├── capabilities/     # Specialized capabilities
-    │   └── config.ts         # Agent configuration
-    ├── code-mnky/            # CODE MNKY agent
-    │   └── ...
-    ├── sage-mnky/            # SAGE MNKY agent
-    │   └── ...
-    └── internal/             # Shared agent utilities
-        └── ...
-    ```
+  <Tab title="Agent Integration">
+    Agent logic (MOOD MNKY, CODE MNKY, SAGE MNKY) is integrated in `apps/web/` via Flowise (MNKY CHAT), CODE MNKY in LABZ, and the agents documentation in `mnky-docs/agents/`.
   </Tab>
 </Tabs>
 
@@ -201,14 +158,14 @@ We use a combination of tools to manage dependencies in our mono repo:
     pnpm is our primary package manager, chosen for its efficient handling of dependencies in a mono repo structure.
     
     ```bash
-    # Installing a dependency in a specific package or app
-    pnpm --filter @mood-mnky/web add react-query
+    # Installing a dependency in the web app
+    pnpm --filter web add react-query
     
-    # Installing a dependency for all packages and apps
+    # Installing a root-level dev dependency
     pnpm add -w typescript
     
-    # Installing a workspace package as a dependency
-    pnpm --filter @mood-mnky/dojo add @mood-mnky/ui
+    # Installing in a workspace package (when packages exist)
+    pnpm --filter web add @repo/ui
     ```
   </Step>
   <Step title="Workspace Configuration">
@@ -218,8 +175,6 @@ We use a combination of tools to manage dependencies in our mono repo:
     packages:
       - 'apps/*'
       - 'packages/*'
-      - 'infra/*'
-      - 'data'
     ```
     
     And the root package.json:
@@ -271,94 +226,11 @@ We use a combination of tools to manage dependencies in our mono repo:
 The Supabase integration follows our structured organization:
 
 <AccordionGroup>
-  <Accordion title="Database Schema" icon="database">
-    Database schemas are defined in SQL files within the `data/schemas` directory:
-    
-    ```sql
-    -- data/schemas/users.sql
-    CREATE TABLE public.users (
-      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      full_name TEXT,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-      scent_profile JSONB,
-      preferences JSONB
-    );
-    
-    -- Add indexes for common query patterns
-    CREATE INDEX users_email_idx ON public.users (email);
-    
-    -- Add RLS policies
-    ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-    
-    CREATE POLICY "Users can view their own data" ON public.users
-      FOR SELECT USING (auth.uid() = id);
-      
-    CREATE POLICY "Users can update their own data" ON public.users
-      FOR UPDATE USING (auth.uid() = id);
-    ```
-    
-    These schema files are the source of truth for table definitions and are used to generate migrations.
-  </Accordion>
-  
-  <Accordion title="Data Models" icon="code">
-    TypeScript data models provide type safety for database interactions:
-    
-    ```typescript
-    // data/models/user.model.ts
-    import { Database } from './supabase.types';
-    
-    export interface User {
-      id: string;
-      email: string;
-      fullName: string | null;
-      createdAt: string;
-      updatedAt: string;
-      scentProfile: ScentProfile | null;
-      preferences: UserPreferences | null;
-    }
-    
-    export interface ScentProfile {
-      favoriteNotes: string[];
-      intensity: number;
-      preferences: {
-        floral: number;
-        woody: number;
-        citrus: number;
-        oriental: number;
-        fresh: number;
-      };
-    }
-    
-    export interface UserPreferences {
-      theme: 'light' | 'dark' | 'system';
-      notifications: boolean;
-      newsletter: boolean;
-    }
-    
-    // Type-safe helper to convert from DB model to application model
-    export function fromDBUser(
-      dbUser: Database['public']['Tables']['users']['Row']
-    ): User {
-      return {
-        id: dbUser.id,
-        email: dbUser.email,
-        fullName: dbUser.full_name,
-        createdAt: dbUser.created_at,
-        updatedAt: dbUser.updated_at,
-        scentProfile: dbUser.scent_profile,
-        preferences: dbUser.preferences
-      };
-    }
-    ```
-  </Accordion>
-  
   <Accordion title="Migrations" icon="code-branch">
-    Migrations in the `infra/supabase/migrations` directory reflect changes to the database schema:
+    Migrations live in `supabase/migrations/` at the repo root. Each migration is a timestamped SQL file applied in sequence:
     
     ```sql
-    -- infra/supabase/migrations/20240401000000_create_users_table.sql
+    -- supabase/migrations/20240401000000_create_users_table.sql
     CREATE TABLE public.users (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
@@ -366,53 +238,22 @@ The Supabase integration follows our structured organization:
       created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
     );
-    
-    -- infra/supabase/migrations/20240402000000_add_scent_profile.sql
-    ALTER TABLE public.users ADD COLUMN scent_profile JSONB;
-    ALTER TABLE public.users ADD COLUMN preferences JSONB;
     ```
     
-    Each migration is a timestamped file that can be applied in sequence to build the database structure.
+    Run `supabase db reset` from the repo root to apply all migrations.
   </Accordion>
   
   <Accordion title="Supabase Client" icon="plug">
-    The `packages/supabase-client` package provides a consistent way to interact with Supabase:
+    The app uses `@supabase/supabase-js` from `apps/web/lib/`. Create clients with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `SUPABASE_SERVICE_ROLE_KEY` for server-side).
     
     ```typescript
-    // packages/supabase-client/src/index.ts
     import { createClient } from '@supabase/supabase-js';
-    import type { Database } from '@repo/types';
     
-    let supabaseInstance: ReturnType<typeof createClient> | null = null;
-    
-    export function getSupabaseClient() {
-      if (!supabaseInstance) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseKey) {
-          throw new Error('Missing Supabase environment variables');
-        }
-        
-        supabaseInstance = createClient<Database>(supabaseUrl, supabaseKey);
-      }
-      
-      return supabaseInstance;
-    }
-    
-    export function getSupabaseServerClient() {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      
-      if (!supabaseUrl || !supabaseServiceKey) {
-        throw new Error('Missing Supabase environment variables for server client');
-      }
-      
-      return createClient<Database>(supabaseUrl, supabaseServiceKey);
-    }
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     ```
-    
-    This client is used across all applications to ensure consistent API access.
   </Accordion>
 </AccordionGroup>
 
@@ -438,10 +279,7 @@ To set up Supabase for local development:
   </Step>
   <Step title="Start Supabase Local Development">
     ```bash
-    # Navigate to the infrastructure directory
-    cd infra/supabase
-    
-    # Start Supabase local development
+    # From repo root
     supabase start
     ```
     
@@ -457,8 +295,8 @@ To set up Supabase for local development:
   </Step>
   <Step title="Seed Data (Optional)">
     ```bash
-    # Seed the database with test data
-    supabase db reset --seed-data
+    # Run seed script if present in supabase/seed.sql
+    supabase db reset
     ```
     
     This will populate the database with seed data for development and testing.
@@ -468,20 +306,16 @@ To set up Supabase for local development:
 ### Typical Development Commands
 
 ```bash
-# Start development server for a specific app
-pnpm --filter @mood-mnky/web dev
+# Start development server (runs apps/web via turbo)
+pnpm dev
 
-# Start development servers for multiple apps
-pnpm --filter "@mood-mnky/web..." dev
+# Start development for the web app only
+pnpm --filter web dev
 
-# Build a specific package and its dependencies
-pnpm --filter "@mood-mnky/ui..." build
+# Run lint
+pnpm lint
 
-# Run tests for all packages and apps
-pnpm test
-
-# Create a new migration
-cd infra/supabase
+# Create a new Supabase migration (from repo root)
 supabase migration new add_new_feature
 ```
 

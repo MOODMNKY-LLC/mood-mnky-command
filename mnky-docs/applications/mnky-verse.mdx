@@ -1,225 +1,145 @@
 ---
-title: "MNKY VERSE"
-description: "Central hub application for the MOOD MNKY ecosystem with multi-agent interaction"
+title: "MNKY VERSE Application"
+description: "Technical documentation for the MNKY VERSE storefront—Next.js, Hydrogen React, Shopify Storefront API, and Supabase"
 icon: "sparkles"
 ---
 
-# MNKY VERSE
+# MNKY VERSE Application
 
-MNKY VERSE is the central hub for the MOOD MNKY ecosystem, providing an integrated interface to interact with our specialized AI agents. This application delivers personalized experiences, technical support, and educational content through a unified, intuitive interface.
+MNKY VERSE is the web experiential portal within the **mood-mnky-command** monorepo. It is not a separate application—it lives inside the single Next.js app at `apps/web/` under the storefront route group.
 
 <Info>
-MNKY VERSE represents **THE VERSE** pillar of the MOOD MNKY ecosystem, providing the technological foundation that powers both THE EXPERIENCE and THE DOJO pillars.
+All MNKY VERSE routes are served from `apps/web/app/(storefront)/verse/`. The same app also hosts **The Dojo** (`/dojo`) and **MNKY LABZ** (`/` dashboard). Deployment is a single Vercel project.
 </Info>
-
-## Overview
-
-MNKY VERSE serves as the primary user-facing application where members interact with MOOD MNKY, CODE MNKY, and SAGE MNKY agents. The application provides a unified dashboard, agent-specific chat interfaces, profile management, and seamless navigation across the ecosystem.
-
-### Key Features
-
-- **Multi-Agent Interaction**: Engage with three specialized agents (MOOD, CODE, SAGE)
-- **Unified Dashboard**: Centralized view of your journey with easy access to all agents
-- **Enhanced Navigation**: Context-aware sidebar with breadcrumbs and keyboard shortcuts
-- **Personalized Experience**: Custom recommendations and content based on user preferences
-- **Secure Authentication**: Robust user management with Supabase Auth
-- **Cross-Agent Collaboration**: Seamless handoffs between agents for comprehensive support
 
 ## Architecture
 
+### Directory Structure
+
+```
+apps/web/
+├── app/
+│   ├── (storefront)/
+│   │   └── verse/           # MNKY VERSE routes
+│   │       ├── page.tsx     # /verse
+│   │       ├── layout.tsx
+│   │       ├── blog/        # /verse/blog
+│   │       ├── agents/      # /verse/agents
+│   │       ├── products/    # /verse/products
+│   │       ├── collections/ # /verse/collections
+│   │       ├── shop/        # /verse/shop
+│   │       ├── cart/        # /verse/cart
+│   │       ├── chat/        # /verse/chat
+│   │       ├── profile/     # /verse/profile
+│   │       ├── quests/      # /verse/quests
+│   │       ├── issues/      # /verse/issues (manga)
+│   │       ├── ugc/         # /verse/ugc
+│   │       ├── community/   # /verse/community
+│   │       ├── music/       # /verse/music
+│   │       ├── fragrance-wheel/
+│   │       ├── fragrance-oils/
+│   │       ├── formulas/
+│   │       ├── glossary/
+│   │       └── blending-guide/
+│   ├── dojo/                # The Dojo (private)
+│   └── (dashboard)/         # MNKY LABZ
+├── components/
+│   └── verse/               # Verse-specific components
+├── lib/
+│   └── shopify/             # Storefront client, queries
+└── public/
+```
+
 ### Technology Stack
 
-- **Frontend**: Next.js 14+ (App Router), TypeScript, React
-- **Styling**: Tailwind CSS, ShadCN UI components
-- **State Management**: React Context API, Server Components
-- **Backend**: Supabase, Edge Functions
-- **Database**: PostgreSQL (via Supabase)
-- **Authentication**: Supabase Auth
-- **AI Integration**: Vector search, LLM integrations
-- **Deployment**: Vercel
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 14+ (App Router), React, TypeScript |
+| **UI** | shadcn/ui, Tailwind CSS |
+| **E-commerce** | Hydrogen React (`@shopify/hydrogen-react`), Storefront API |
+| **Backend** | Supabase (Auth, PostgreSQL, Realtime, Storage) |
+| **Deployment** | Vercel |
 
-### Application Structure
+<Warning>
+This is **not** a Remix Hydrogen app. We use Shopify's "bring your own stack" path with Hydrogen React. No `create-hydrogen` or migration to full Hydrogen (Remix) is required. No Oxygen.
+</Warning>
 
-```
-apps/mnky-verse/
-├── app/                      # Next.js App Router routes
-│   ├── api/                  # API routes for data access
-│   ├── auth/                 # Authentication flows
-│   ├── dashboard/            # User dashboard experience
-│   ├── profile/              # User profile management
-│   ├── chat/                 # Universal chat interface
-│   ├── agents/               # Agent-specific pages
-│   └── protected/            # Protected route components
-├── components/               # Reusable React components
-│   ├── ui/                   # ShadCN UI components
-│   ├── agents/               # Agent-specific components
-│   └── typography/           # Text styling components
-├── lib/                      # Shared libraries and utilities
-├── utils/                    # Utility functions
-├── hooks/                    # Custom React hooks
-├── supabase/                 # Supabase configuration
-└── public/                    # Static assets
-```
+## Shopify Integration
+
+### Storefront API
+
+- **Client**: `lib/shopify/storefront-client.ts` — `createStorefrontClient` from `@shopify/hydrogen-react`
+- **Queries**: `lib/shopify/storefront-queries.ts` — products, collections, cart operations
+- **API version**: 2026-01
+- **Credentials**: Storefront API tokens from Shopify Admin → Hydrogen or Headless channel
+
+### Providers
+
+Verse pages use `VerseProviders` (`components/verse/verse-providers.tsx`) wrapping `ShopifyProvider` and `CartProvider` for cart state and checkout.
+
+## Supabase Integration
+
+MNKY VERSE uses Supabase for:
+
+- **Verse blog**: `verse_blog_posts` (synced from Notion)
+- **Profiles**: `profiles` (extends Supabase Auth)
+- **Gamification**: `xp_state`, `xp_ledger`, `quests`, `quest_progress`
+- **Agent profiles**: `agent_profiles`
+- **Chat**: `chat_sessions`, `chat_messages`, `storefront_chat_sessions`
+- **Music**: `verse_music_playlist`
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm installed
-- Supabase account and project
-- Environment variables configured
+- Node.js (LTS) and pnpm
+- Shopify CLI (for theme/extension work)
+- Supabase project
 
 ### Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/mood-mnky/MNKY-REPO.git
-   cd MNKY-REPO
-   ```
+1. **Clone and install**:
 
-2. **Install dependencies**:
    ```bash
+   git clone <repo-url>
+   cd mood-mnky-command
    pnpm install
    ```
 
-3. **Configure environment variables**:
-   Create `.env.local` in `apps/mnky-verse/`:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-   NEXT_PUBLIC_SITE_URL=http://localhost:3000
-   OPENAI_API_KEY=your-openai-key  # Optional
-   ```
+2. **Configure environment** (see `.env.example`):
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Shopify Storefront API keys (`NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_STOREFRONT_API_TOKEN`)
+   - Optional: Notion, OpenAI, ElevenLabs for blog sync and agents
 
-4. **Start development server**:
+3. **Run development server**:
+
    ```bash
-   pnpm --filter mnky-verse dev
+   pnpm dev
    ```
 
-5. **Visit** [http://localhost:3000](http://localhost:3000)
-
-### Local Supabase Setup
-
-For full functionality with local Supabase:
-
-```bash
-# Install Supabase CLI
-npm install -g supabase
-
-# Navigate to Supabase directory
-cd apps/mnky-verse/supabase
-
-# Start Supabase locally
-supabase start
-
-# Apply migrations
-supabase db reset
-```
-
-## Agent Integration
-
-MNKY VERSE integrates with three specialized agents:
-
-### MOOD MNKY Agent
-- **Purpose**: Experience and personalization specialist
-- **Capabilities**: Custom fragrance recommendations, self-care journey guidance
-- **Integration**: Chat interface, product recommendations, mood tracking
-
-### CODE MNKY Agent
-- **Purpose**: Technical expert and development support
-- **Capabilities**: Code analysis, infrastructure management, documentation
-- **Integration**: Developer tools, technical support, system diagnostics
-
-### SAGE MNKY Agent
-- **Purpose**: Knowledge and learning guide
-- **Capabilities**: Educational content, community facilitation, learning paths
-- **Integration**: Learning environments, content delivery, community features
-
-## API Integration
-
-MNKY VERSE integrates with multiple APIs:
-
-- **Supabase API**: Authentication, database, storage, real-time subscriptions
-- **OpenAI API**: AI capabilities and agent interactions
-- **Shopify API**: Product data and e-commerce functionality
-- **Notion API**: Content management and knowledge base
-- **Custom APIs**: Flowise, Ollama, Langchain, n8n integrations
-
-See [API Hub](/api/index) for comprehensive API documentation.
-
-## Deployment
+   App runs at `http://localhost:3000`. MNKY VERSE routes: `/verse`, `/verse/blog`, `/verse/shop`, etc.
 
 ### Vercel Deployment
 
-1. Connect GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Configure build settings:
-   - Build Command: `cd ../.. && pnpm deploy:mnky-verse`
-   - Output Directory: `.next`
-   - Install Command: `pnpm install`
+- **Root directory**: Set to `apps/web` in Vercel project settings
+- **Build**: Turborepo build from repo root; `pnpm turbo build --filter=web`
+- **Environment variables**: Configure in Vercel dashboard
 
-### Environment Variables
+## API Routes
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
-| `NEXT_PUBLIC_SITE_URL` | Site URL for auth redirects | In production |
-| `OPENAI_API_KEY` | OpenAI API key | Optional |
+Verse-specific API routes under `apps/web/app/api/verse/`:
 
-## Development Workflow
-
-### Running Tests
-
-```bash
-# Run all tests
-pnpm --filter mnky-verse test
-
-# Run tests in watch mode
-pnpm --filter mnky-verse test:watch
-```
-
-### Type Checking
-
-```bash
-pnpm --filter mnky-verse check-types
-```
-
-### Linting
-
-```bash
-pnpm --filter mnky-verse lint
-```
-
-## Troubleshooting
-
-### Common Issues
-
-#### Authentication Errors
-- **Issue**: "Invalid credentials" or "Session expired"
-- **Solution**: Clear browser cookies and re-authenticate. Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are correct.
-
-#### Sidebar Not Appearing
-- **Issue**: Sidebar navigation not visible
-- **Solution**: Press `⌘+B` (Mac) or `Ctrl+B` (Windows) to toggle sidebar. Check browser console for errors.
-
-#### Agent Not Responding
-- **Issue**: Agent chat interface not loading or timing out
-- **Solution**: Verify OpenAI API key is set (if using OpenAI features). Check network connectivity and API endpoint status.
-
-### Performance Optimization
-
-- **Enable Edge Caching**: Configure Vercel edge caching for static assets
-- **Optimize Images**: Use Next.js Image component for automatic optimization
-- **Code Splitting**: Leverage Next.js automatic code splitting
-- **Database Queries**: Use Supabase query optimization and indexing
+- `GET /api/verse/blog` — Blog posts
+- `GET /api/verse/chat` — Chat messages
+- `GET /api/verse/agents` — Agent profiles
+- `GET /api/verse/profile` — User profile
+- `GET /api/verse/music` — Music tracks
+- `POST /api/verse/upload-attachment` — File uploads
 
 ## Related Resources
 
-- [Agent Ecosystem](/agents/index) - Learn about MOOD, CODE, and SAGE agents
-- [API Documentation](/api/index) - Comprehensive API reference
-- [Supabase Integration](/technology-stack/supabase) - Database and auth setup
-- [UI Components Package](/packages/ui) - Shared UI component library
-- [Supabase Client Package](/packages/supabase-client) - Database client utilities
-- [Contribution Guidelines](/developer-resources/contribution-guidelines) - How to contribute
-
+- [MNKY VERSE Experience](/brand-overview/mood-experience) — Product/UX overview
+- [The Dojo](/platform-services/dojo-overview) — Private member hub
+- [MNKY LABZ](/platform-services/labz-overview) — Admin dashboard
+- [Technology Stack](/technology-stack/tech-foundation) — Stack overview
+- [API Hub](/api/index) — API documentation

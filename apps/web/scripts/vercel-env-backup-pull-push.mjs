@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * 1. Back up .env and .env.local
- * 2. Pull production env from Vercel into .env
- * 3. Compare backup (merged .env + .env.local) with pulled .env for vars missing in production
- * 4. Push those missing vars to Vercel production (values from backup)
+ * 1. Back up .env, .env.local, and .env.production (if they exist)
+ * 2. Pull production env from Vercel into .env.production
+ * 3. Compare merged .env + .env.local with Vercel production for vars missing in production
+ * 4. Push those missing vars to Vercel production (values from .env / .env.local)
  *
  * Prerequisites: Vercel CLI linked (vercel link). Values are never logged.
  *
  * Usage: node scripts/vercel-env-backup-pull-push.mjs [--dry-run]
  */
 
-import { readFileSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
+import { readFileSync, existsSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -55,33 +55,32 @@ function getCanonicalVarNames(path) {
 const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 const envPath = resolve(root, ".env");
 const envLocalPath = resolve(root, ".env.local");
-const backupEnvPath = resolve(root, `.env.backup.${ts}`);
-const backupEnvLocalPath = resolve(root, `.env.local.backup.${ts}`);
+const envProductionPath = resolve(root, ".env.production");
 
-if (!existsSync(envPath)) {
-  console.error("No .env found. Create one or run vercel env pull first.");
-  process.exit(1);
+if (existsSync(envPath)) {
+  copyFileSync(envPath, resolve(root, `.env.backup.${ts}`));
+  console.log(`Backed up .env`);
 }
-
-copyFileSync(envPath, backupEnvPath);
-console.log(`Backed up .env → ${backupEnvPath}`);
-
 if (existsSync(envLocalPath)) {
-  copyFileSync(envLocalPath, backupEnvLocalPath);
-  console.log(`Backed up .env.local → ${backupEnvLocalPath}`);
+  copyFileSync(envLocalPath, resolve(root, `.env.local.backup.${ts}`));
+  console.log(`Backed up .env.local`);
+}
+if (existsSync(envProductionPath)) {
+  copyFileSync(envProductionPath, resolve(root, `.env.production.backup.${ts}`));
+  console.log(`Backed up .env.production`);
 }
 
-// Merged local = .env (backup) + .env.local (backup), .env.local wins
+// Merged local = .env + .env.local (not overwritten by pull), .env.local wins
 const localMerged = {
-  ...parseEnvFile(backupEnvPath),
-  ...(existsSync(backupEnvLocalPath) ? parseEnvFile(backupEnvLocalPath) : {}),
+  ...parseEnvFile(envPath),
+  ...parseEnvFile(envLocalPath),
 };
 
-// 2. Pull production to .env
-console.log("\nPulling production env to .env...");
+// 2. Pull production to .env.production
+console.log("\nPulling production env to .env.production...");
 const pull = spawnSync(
   "vercel",
-  ["env", "pull", ".env", "--environment=production", "--yes"],
+  ["env", "pull", ".env.production", "--environment=production", "--yes"],
   { encoding: "utf-8", cwd: root, shell: process.platform === "win32" }
 );
 if (pull.status !== 0) {
@@ -126,7 +125,7 @@ if (missing.length === 0) {
   process.exit(0);
 }
 
-console.log(`\nFound ${missing.length} var(s) in backup missing in production: ${missing.join(", ")}`);
+console.log(`\nFound ${missing.length} var(s) in .env/.env.local missing in production: ${missing.join(", ")}`);
 
 if (DRY_RUN) {
   console.log("Dry run — would push the above to Vercel production.");

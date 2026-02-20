@@ -1,6 +1,6 @@
 ---
 title: 'The Dojo'
-description: 'Overview of MOOD MNKYs premium membership platform'
+description: "The members' private hub in the MNKY VERSE—XP, quests, Blending Lab, MNKY CHAT, and preferences"
 icon: "book-open"
 ---
 
@@ -14,207 +14,101 @@ icon: "book-open"
 
 ## Overview
 
-The Dojo is MOOD MNKY's premium membership platform designed to provide an immersive, personalized self-care experience. It combines our expertise in fragrance creation with cutting-edge AI technology to deliver a comprehensive wellness ecosystem for our members.
+The Dojo is the members' **private hub** in the MNKY VERSE—more exclusive than the public storefront. Each authenticated user has access to their own Dojo at `/dojo`. It is built as part of the same Next.js app as MNKY VERSE and MNKY LABZ, with a dedicated layout and sidebar.
 
 <Note>
-  The name "Dojo" reflects our philosophy of continual growth and mastery in self-care practices. Just as a traditional dojo is a place of focused learning and development, our platform provides a space for members to develop their personal wellness journey.
+The name "Dojo" reflects our philosophy of continual growth and mastery in self-care practices. Just as a traditional dojo is a place of focused learning and development, our platform provides a space for members to develop their personal wellness journey.
 </Note>
 
-## Core Components
+## Key Characteristics
 
-### Member Infrastructure
+- **Private**: All Dojo routes require authentication. Unauthenticated users are redirected to `/auth/login`.
+- **Member access**: Non-admin authenticated users can access `/dojo` alongside MNKY VERSE.
+- **No public paths**: Unlike Verse (which has public glossary, formulas, etc.), Dojo is fully private.
+- **Context-aware**: Sidebar supports context switching between Home, Crafting, Verse, and Chat.
 
-<CardGroup cols={2}>
-  <Card title="Personalized Dashboard" icon="gauge">
-    Custom user interface that adapts to individual preferences and usage patterns. The dashboard provides quick access to all platform features and personalized recommendations.
-  </Card>
-  <Card title="Profile Management" icon="user-gear">
-    Comprehensive system for managing personal details, preferences, and subscription settings. Members can update their preferences at any time to refine their experience.
-  </Card>
-  <Card title="Authentication System" icon="lock">
-    Secure, multi-factor authentication to protect member data and privacy. Our authentication system uses Supabase to provide enterprise-grade security.
-  </Card>
-</CardGroup>
+## Route Structure
 
-### AI Integration
+| Path | Description |
+|------|-------------|
+| `/dojo` | Main hub—XP/level, quests, quick actions, manga/UGC entry points |
+| `/dojo/preferences` | User preferences (default agent, etc.) |
+| `/dojo/chat` | MNKY CHAT interface with Flowise integration |
+| `/dojo/crafting` | Blending Lab |
+| `/dojo/crafting/saved` | Saved blends |
+| `/dojo/flowise` | Flowise configuration |
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-  <div className="p-5 border rounded-lg bg-gray-50">
-    <h4 className="font-medium mb-2">MOOD MNKY Master Agent</h4>
-    <p>Our central AI assistant coordinates all platform interactions, creating a cohesive and personalized experience. The Master Agent maintains context across different platform areas.</p>
-  </div>
-  <div className="p-5 border rounded-lg bg-gray-50">
-    <h4 className="font-medium mb-2">Customizable AI Personalities</h4>
-    <p>Members can personalize their AI assistants to match their preferences and needs, creating a unique interaction experience. This includes tone, expertise areas, and communication style.</p>
-  </div>
-</div>
+## Core Features
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-  <div className="p-5 border rounded-lg bg-gray-50">
-    <h4 className="font-medium mb-2">Memory Systems</h4>
-    <p>Our AI retains information about member preferences and past interactions, providing continuity and increasingly personalized recommendations over time.</p>
-  </div>
-  <div className="p-5 border rounded-lg bg-gray-50">
-    <h4 className="font-medium mb-2">Natural Language Processing</h4>
-    <p>Advanced conversational capabilities enable natural human-AI interaction, making the platform intuitive and accessible to all members regardless of technical expertise.</p>
-  </div>
-</div>
+### Gamification (XP & Quests)
 
-### Content Delivery
+The Dojo home page surfaces:
+- **XP / Level card**: Fetches from `xp_state`, links to `/verse/profile`
+- **Quests card**: Fetches active quests and `quest_progress` completed count, links to `/verse/quests`
+- **Quick actions**: Preferences, MNKY VERSE Shop, Chat, Issues, UGC
+- **Lower section**: Manga/Issues and UGC entry points linking to `/verse/issues` and `/verse/ugc`
 
-The Dojo Platform offers rich media content to complement the self-care experience:
+APIs: `GET /api/xp/state`, `GET /api/quests`, `GET /api/quests/my-progress`
 
-<Steps>
-  <Step title="Media Streaming">
-    High-quality audio, video, and e-book streaming services that provide guided self-care routines, educational content, and entertainment options.
-  </Step>
-  <Step title="Personalized Content Recommendations">
-    AI-driven suggestions based on member preferences and behavior, helping members discover content that aligns with their self-care goals.
-  </Step>
-  <Step title="Interactive Tutorials">
-    Guided self-care routines and educational content that provide step-by-step instruction for various wellness practices.
-  </Step>
-  <Step title="Exclusive Member Content">
-    Premium content only available to Dojo members, including early access to new products, special events, and limited edition experiences.
-  </Step>
-</Steps>
+### Blending Lab (Crafting)
 
-### Scent Experience
+Members can create custom fragrance blends and save them for later. The Blending Lab is available in the Crafting context with links to:
+- Blending Lab
+- Saved Blends
+- Glossary (public Verse route)
+- MNKY VERSE Shop
 
-<div className="mb-6">
-  <h4>Digital Scent Profiles</h4>
-  <p>The Dojo Platform maintains detailed tracking of member fragrance preferences and history, allowing for highly personalized recommendations and custom creations.</p>
-  
-  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
-    <h5 className="font-medium text-amber-800">Features:</h5>
-    <ul className="list-disc pl-6 mt-2 text-amber-800">
-      <li>Preference tracking across fragrance families</li>
-      <li>Seasonal variation management</li>
-      <li>Mood-based recommendation engine</li>
-      <li>Historical purchase and feedback analysis</li>
-    </ul>
-  </div>
-</div>
+### MNKY CHAT
 
-<div className="mb-6">
-  <h4>Custom Fragrance Creation</h4>
-  <p>Members have access to tools for designing their own signature scents, with guidance from our Master Agent and scent experts.</p>
-  
-  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md">
-    <h5 className="font-medium text-amber-800">Process:</h5>
-    <ol className="list-decimal pl-6 mt-2 text-amber-800">
-      <li>Preference assessment through interactive questionnaire</li>
-      <li>AI-generated initial fragrance concepts</li>
-      <li>Virtual sampling and refinement</li>
-      <li>Final formulation and production</li>
-    </ol>
-  </div>
-</div>
+Dojo includes MNKY CHAT—a chat interface with Flowise integration. Members can:
+- Start new chats
+- View saved chats and folders
+- Configure Flowise chatbot settings
 
-### Community Features
+### Preferences
 
-<Tabs>
-  <Tab title="Member Forums">
-    Spaces for discussion and connection around shared interests, where members can exchange ideas, share experiences, and build relationships.
-  </Tab>
-  <Tab title="Direct Messaging">
-    Private communication between members, facilitating one-on-one connections and collaborations in a secure environment.
-  </Tab>
-  <Tab title="Event Calendar">
-    Schedule of virtual and in-person Dojo events, including workshops, webinars, product launches, and community gatherings.
-  </Tab>
-  <Tab title="Collaborative Projects">
-    Tools for members to create and share experiences, from custom fragrance collections to wellness challenges and creative endeavors.
-  </Tab>
-</Tabs>
+At `/dojo/preferences`, members can set their default agent and other user-specific settings.
 
-### Reward System
+## Layout and Design
 
-The Dojo Platform includes a comprehensive rewards program that recognizes and incentivizes member engagement:
+The Dojo uses the **shadcn sidebar-07** pattern (dashboard-07 block):
+- **Collapsible sidebar**: Icon mode when collapsed
+- **Team/context switcher**: Switch between Home, Crafting, MNKY VERSE, Chat
+- **Nav groups**: Dojo (Home, MNKY CHAT, Preferences); MNKY VERSE (Home, Shop, Chat, Profile); Crafting (Blending Lab, Saved Blends)
+- **Quick access**: Shortcuts to Shop, Chat, Profile, Issues, UGC
+- **User footer**: Avatar, Profile, Preferences, Sign out
 
-<AccordionGroup>
-  <Accordion title="Engagement Tokens" icon="coins">
-    Digital currency earned through platform participation, which can be redeemed for products, services, or experiences. Tokens are awarded for activities such as completing wellness challenges, participating in community discussions, and providing product feedback.
-  </Accordion>
-  <Accordion title="Achievement Tracking" icon="trophy">
-    Recognition system for member milestones and activities, celebrating progress in various aspects of the self-care journey. Achievements are displayed on member profiles and may unlock special benefits.
-  </Accordion>
-  <Accordion title="Member Tiers" icon="stairs">
-    Status levels that unlock additional benefits and features as members increase their engagement with the platform. Each tier represents a deeper level of participation in the MOOD MNKY ecosystem.
-  </Accordion>
-  <Accordion title="Redeemable Rewards" icon="gift">
-    Ability to exchange tokens for products, services, or experiences, providing tangible benefits for platform engagement. Rewards range from product discounts to exclusive events and custom creations.
-  </Accordion>
-</AccordionGroup>
+Layout components: `DojoDashboardLayout`, `DojoSidebar`, `DojoAuthContext`
 
 ## Technical Architecture
 
-The Dojo Platform is built on a modern, scalable architecture that leverages the latest technologies:
+- **Framework**: Next.js 14+ (App Router), same as MNKY VERSE
+- **UI**: shadcn/ui, Tailwind CSS
+- **Auth**: Supabase Auth (server-side user fetch, redirect if unauthenticated)
+- **Data**: Supabase (profiles, xp_state, quests, quest_progress, saved_blends, chat_sessions)
 
-### Front-End
+## Integration with MNKY VERSE
 
-- **Next.js Framework**: For high-performance web application
-- **Tailwind CSS**: For responsive, customizable styling
-- **Vue.js Components**: For interactive UI elements
-- **Progressive Web App**: Supporting mobile and desktop use
+The Dojo provides quick links to MNKY VERSE:
+- MNKY VERSE Home, Shop, Chat, Profile
+- Issues (manga), UGC
+- Glossary (from Crafting context)
 
-### Back-End
-
-- **Node.js**: Server-side application logic
-- **Supabase**: Database and authentication management
-- **LLM Integration**: Connection to language model APIs
-- **Docker Containers**: For service isolation and management
-
-### AI Services
-
-- **GPT Models**: For natural language understanding and generation
-- **LangChain**: For AI workflow orchestration
-- **Persistent Memory Store**: For long-term conversation context
-- **Custom Training**: For MOOD MNKY-specific knowledge and capabilities
-
-### Infrastructure
-
-- **CloudFlare**: For content delivery and security
-- **CloudFlare Tunnels**: For secure service access
-- **Containerized Deployment**: For scalability and reliability
-- **Multi-region Hosting**: For performance optimization
-
-## Member Journey
-
-The Dojo Platform is designed to support members throughout their self-care journey:
-
-<div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-6">
-  <div className="p-3 bg-gray-100 rounded text-center">
-    <div className="text-xl font-bold mb-1">1</div>
-    <h4 className="text-sm font-medium">Onboarding</h4>
-    <p className="text-xs">Introduction to platform features, preference collection, initial personalization</p>
-  </div>
-  <div className="p-3 bg-gray-100 rounded text-center">
-    <div className="text-xl font-bold mb-1">2</div>
-    <h4 className="text-sm font-medium">Discovery</h4>
-    <p className="text-xs">Exploration of content, community, and AI capabilities</p>
-  </div>
-  <div className="p-3 bg-gray-100 rounded text-center">
-    <div className="text-xl font-bold mb-1">3</div>
-    <h4 className="text-sm font-medium">Customization</h4>
-    <p className="text-xs">Personalization of experience, AI assistants, and scent profiles</p>
-  </div>
-  <div className="p-3 bg-gray-100 rounded text-center">
-    <div className="text-xl font-bold mb-1">4</div>
-    <h4 className="text-sm font-medium">Engagement</h4>
-    <p className="text-xs">Regular interaction with content, community, and creation tools</p>
-  </div>
-  <div className="p-3 bg-gray-100 rounded text-center">
-    <div className="text-xl font-bold mb-1">5</div>
-    <h4 className="text-sm font-medium">Mastery</h4>
-    <p className="text-xs">Advanced platform usage, contribution to community, custom experience creation</p>
-  </div>
-</div>
-
-<Warning>
-  Access to the Dojo Platform requires a subscription. Various membership tiers are available to accommodate different needs and budgets, ensuring that quality self-care is accessible to a wide audience.
-</Warning>
+Legacy `/verse/dojo` redirects to `/dojo`.
 
 ---
 
-The Dojo Platform represents MOOD MNKY's commitment to delivering exceptional, personalized self-care experiences. By combining our expertise in fragrance creation with cutting-edge technology, we have created a unique ecosystem where members can discover, create, and share meaningful wellness experiences. 
+<CardGroup cols={2}>
+  <Card title="Dojo Features" icon="list" href="/platform-services/dojo-features">
+    Detailed feature documentation
+  </Card>
+  <Card title="MNKY VERSE" icon="globe" href="/brand-overview/mood-experience">
+    The web experiential portal
+  </Card>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard and backstage
+  </Card>
+  <Card title="Gamification" icon="trophy" href="/platform-services/reward-system">
+    XP, quests, and rewards
+  </Card>
+</CardGroup>

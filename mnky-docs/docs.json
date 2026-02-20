@@ -87,6 +87,7 @@
             "pages": [
               "brand-overview/mood-experience",
               "platform-services/dojo-overview",
+              "platform-services/labz-overview",
               "technology-stack/tech-foundation"
             ]
           },
@@ -220,6 +221,7 @@
             "pages": [
               "applications/overview",
               "applications/mnky-verse",
+              "platform-services/labz-overview",
               "applications/trvlr-sync",
               "applications/shopify-app",
               "applications/mnky-agents-demo"
@@ -269,6 +271,7 @@
           {
             "group": "Database & Backend",
             "pages": [
+              "platform-services/labz-overview",
               "developer-resources/supabase-local-development",
               "developer-resources/data-modeling",
               "developer-resources/migration-patterns",

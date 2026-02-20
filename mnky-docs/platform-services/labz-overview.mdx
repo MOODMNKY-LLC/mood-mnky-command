@@ -1,0 +1,178 @@
+---
+title: "MNKY LABZ"
+description: "Admin dashboard and backstage tools—formulas, fragrance oils, glossary, Shopify, Notion sync, CODE MNKY assistant"
+icon: "flask"
+---
+
+# MNKY LABZ
+
+MNKY LABZ is the admin dashboard and command center for the MOOD MNKY ecosystem. It lives in the same Next.js app as MNKY VERSE and The Dojo, under the `(dashboard)` route group. It provides operational tools for formulas, fragrance oils, glossary, Shopify store management, Notion sync, and the CODE MNKY conversational assistant.
+
+<Note>
+**LABZ Tagline**: "Command center" — where operations, product data, and AI assistance converge.
+</Note>
+
+## Overview
+
+MNKY LABZ serves internal users (operations, product, development) with:
+
+- **Product data**: Formulas, fragrance oils, glossary (fragrance_notes)
+- **Shopify**: Products, collections, orders, customers, marketing, analytics
+- **Content**: MNKY LABZ Pages (Shopify), Notion sync for oils/formulas/blog
+- **Platform tools**: Table editor, SQL editor, Flowise, funnels, members
+- **Verse backoffice**: Manga, XP & Quests, UGC moderation, Discord events
+- **CODE MNKY**: In-dashboard conversational assistant (LABZ dock)
+
+## Dashboard Routes
+
+### Lab (Product Data)
+
+| Path | Description |
+|------|-------------|
+| `/` | Dashboard home (stats, activity feed, quick actions) |
+| `/formulas` | Formulas library |
+| `/fragrances` | Fragrance oils catalog |
+| `/glossary` | Fragrance glossary |
+| `/glossary/[slug]` | Glossary term detail |
+| `/blending` | Blending Lab |
+| `/wicks` | Wicks & Wax |
+| `/products` | Product Builder |
+
+### Store (Shopify Admin)
+
+| Path | Description |
+|------|-------------|
+| `/store` | Store overview |
+| `/store/products` | Products |
+| `/store/collections` | Collections |
+| `/store/orders` | Orders |
+| `/store/customers` | Customers |
+| `/store/inventory` | Inventory |
+| `/store/marketing` | Marketing |
+| `/store/discounts` | Discounts |
+| `/store/finance` | Finance |
+| `/store/content` | Content |
+| `/store/analytics` | Analytics |
+| `/store/labz-pages` | MNKY LABZ Pages |
+
+### Integrations
+
+| Path | Description |
+|------|-------------|
+| `/notion` | Notion sync (fragrance oils, formulas, glossary, blog) |
+
+### Create & Chat
+
+| Path | Description |
+|------|-------------|
+| `/chat` | AI Chat |
+| `/chat/agents` | Chat agents |
+| `/chat/eleven-labs` | ElevenLabs voice |
+| `/studio` | Media studio |
+| `/studio/video` | Video studio |
+| `/studio/audio` | Audio studio |
+| `/media` | Media library |
+
+### Platform
+
+| Path | Description |
+|------|-------------|
+| `/platform` | Platform overview |
+| `/platform/tables` | Table editor |
+| `/platform/sql` | SQL editor |
+| `/platform/ai-sql` | AI SQL |
+| `/platform/funnels` | Funnels |
+| `/platform/flowise` | Flowise control panel |
+| `/platform/discord` | Discord integration |
+| `/platform/storefront-assistant` | Storefront assistant |
+| `/members` | Members management |
+
+### Verse Backoffice
+
+| Path | Description |
+|------|-------------|
+| `/verse-backoffice/xp` | XP management |
+| `/verse-backoffice/ugc` | UGC moderation |
+| `/verse-backoffice/manga` | Manga management |
+| `/verse-backoffice/discord-events` | Discord events |
+
+## CODE MNKY Assistant
+
+The **LABZ dock** (bottom of the dashboard sidebar) hosts the CODE MNKY avatar. Click to open the conversational assistant.
+
+### Tools
+
+CODE MNKY can use these tools (defined in `lib/chat/labz-tools.ts`):
+
+| Tool | Purpose |
+|------|---------|
+| `list_formulas` | List formulas from Supabase |
+| `list_fragrance_oils` | List fragrance oils |
+| `search_glossary` | Search fragrance_notes by name/description |
+| `get_labz_pages_summary` | Count and list MNKY LABZ pages (Shopify) |
+| `notion_sync_status` | Check Notion connection |
+| `open_labz_section` | Deep links to LABZ sections |
+
+### Configuration
+
+- **Storage**: `code_mnky_config` table (Supabase)
+- **API**: `GET/PATCH /api/labz/config`
+- **Control panel**: `/code-mnky` — edit default model, system prompt
+
+## LABZ APIs
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /api/labz/chat` | CODE MNKY chat (streaming) |
+| `GET /api/labz/config` | LABZ config |
+| `PATCH /api/labz/config` | Update config |
+| `GET /api/labz/models` | Available AI models |
+| `POST /api/labz/transcribe` | Speech-to-text |
+| `GET /api/dashboard/stats` | Dashboard statistics |
+
+## Integrations
+
+### Shopify Admin API
+
+LABZ consumes Shopify Admin API for products, collections, orders, customers, inventory, marketing, discounts, finance, analytics, and pages.
+
+### Notion
+
+Notion sync populates:
+- Fragrance oils
+- Formulas
+- Glossary (fragrance_notes)
+- Blog posts (verse_blog_posts)
+
+### Supabase
+
+LABZ reads and writes:
+- `formulas`, `formula_categories`, `formula_phases`, `formula_ingredients`
+- `fragrance_oils`, `fragrance_notes`
+- `code_mnky_config`
+- Plus tables for Verse backoffice, members, etc.
+
+## Technical Stack
+
+- **Framework**: Next.js 14+ (App Router)
+- **UI**: shadcn/ui, Tailwind CSS
+- **Auth**: Supabase Auth (admin/member roles)
+- **Data**: Supabase PostgreSQL
+- **Deployment**: Vercel
+
+---
+
+<CardGroup cols={2}>
+  <Card title="MNKY VERSE" icon="globe" href="/brand-overview/mood-experience">
+    The web experiential portal
+  </Card>
+  <Card title="The Dojo" icon="book-open" href="/platform-services/dojo-overview">
+    Members' private hub
+  </Card>
+  <Card title="CODE MNKY Agent" icon="bot" href="/agents/code-mnky/overview">
+    Agent documentation
+  </Card>
+  <Card title="Technology Stack" icon="code" href="/technology-stack/tech-foundation">
+    Stack overview
+  </Card>
+</CardGroup>

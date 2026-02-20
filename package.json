@@ -4,13 +4,14 @@
   "private": true,
   "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build": "dotenv -e .env.local -e .env -- turbo run build",
+    "dev": "dotenv -e .env.local -e .env -- turbo run dev",
     "lint": "turbo run lint",
     "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
     "docs:validate": "cd mnky-docs && pnpm exec mint validate"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.4",
     "mint": "latest",
     "turbo": "latest"
   }

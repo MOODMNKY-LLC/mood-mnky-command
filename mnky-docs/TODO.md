@@ -20,15 +20,16 @@
 
 ### Platform Documentation
 
-- [ ] Migrate Dojo platform documentation
+- [x] Migrate Dojo platform documentation (2026-02-20: dojo-overview, dojo-features aligned with codebase)
+- [x] MNKY LABZ documentation (2026-02-20: created labz-overview.mdx)
 - [ ] Migrate e-commerce integration documentation
 - [ ] Migrate personalization system documentation
 - [ ] Migrate token economy documentation
 
 ### Brand Documentation
 
-- [ ] Reorganize brand overview content into vision, design, products, and strategy
-- [ ] Update cross-references between brand sections
+- [x] Reorganize MNKY VERSE / experience content (2026-02-20: mood-experience → MNKY VERSE portal)
+- [x] Update cross-references between brand sections (2026-02-20: introduction, ecosystem-blueprint)
 - [ ] Ensure all brand assets are properly linked
 
 ### Agent Documentation
@@ -51,7 +52,8 @@
 
 ## Phase 3: Navigation Update
 
-- [ ] Finalize the docs.json.new file
+- [x] Update docs.json for MNKY VERSE, Dojo, LABZ (2026-02-20: Core Experiences, Applications, Database & Backend)
+- [ ] Finalize the docs.json.new file (if separate migration file exists)
 - [ ] Test navigation with staging environment
 - [ ] Make adjustments based on testing feedback
 - [ ] Back up original docs.json
@@ -63,7 +65,7 @@
 - [ ] Verify all redirects are working
 - [ ] Remove temporary files and notes
 - [ ] Archive old directory structure
-- [ ] Final documentation review
+- [x] Final documentation review (2026-02-20: Mintlify overhaul refinements applied)
 
 ## Additional Tasks
 

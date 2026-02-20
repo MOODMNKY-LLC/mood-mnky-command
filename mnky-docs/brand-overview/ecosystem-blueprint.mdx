@@ -12,65 +12,51 @@ This blueprint provides a comprehensive overview of the MOOD MNKY ecosystem arch
 
 ## Ecosystem Architecture Overview
 
-The MOOD MNKY ecosystem is designed as an integrated network of physical and digital experiences, supported by a robust technical architecture and AI-driven personalization. This ecosystem enables seamless customer journeys across touchpoints while maintaining a consistent brand experience.
+The MOOD MNKY ecosystem is designed as an integrated network of physical and digital experiences, supported by a robust technical architecture and AI-driven personalization. The **mood-mnky-command** monorepo implements the core digital platform as a single Next.js app.
 
-<Frame>
+### Current Implementation (mood-mnky-command)
+
+<Frame caption="MNKY VERSE, The Dojo, and MNKY LABZ in one app">
   ```mermaid
-  graph TD
-    subgraph PhysicalProducts[Physical Products]
-      FragranceSystem[Custom Fragrance System]
-      BathBody[Bath & Body Products]
-      HomeAmbiance[Home Ambiance Collection]
+  flowchart TB
+    subgraph Store [Shopify Store]
+      Theme[Liquid Theme]
+      Ext[Theme App Extension]
     end
 
-    subgraph DigitalPlatforms[Digital Platforms]
-      WebPlatform[Web Platform]
-      MobileApp[Mobile Application]
-      DojoEnvironment[Dojo Learning Environment]
+    subgraph App [Next.js App - apps/web]
+      subgraph Verse [MNKY VERSE]
+        Storefront[Storefront /verse]
+        Blog[Verse Blog]
+        Community[Community]
+        Catalog[Products, Collections]
+      end
+      subgraph Dojo [The Dojo]
+        Hub[Dojo Hub /dojo]
+        Crafting[Blending Lab]
+        Chat[MNKY CHAT]
+        Prefs[Preferences]
+      end
+      subgraph Labz [MNKY LABZ]
+        Dashboard[Dashboard]
+        CodeMnky[CODE MNKY]
+        Formulas[Formulas]
+        StoreAdmin[Shopify Admin]
+      end
     end
 
-    subgraph AgentSystem[Agent System]
-      MoodMnky[MOOD MNKY Agent]
-      CodeMnky[CODE MNKY Agent]
-      SageMnky[SAGE MNKY Agent]
-      AgentInfra[Agent Infrastructure]
-    end
-
-    subgraph CommPlatform[Community Platform]
-      Community[Community Hub]
-      TokenEconomy[Token Economy]
-      ContentHub[Content Hub]
-    end
-
-    subgraph CoreServices[Core Services]
-      PersonalizationEngine[Personalization Engine]
-      EcommerceServices[E-commerce Services]
-      MemorySystem[Memory System]
-      AnalyticsEngine[Analytics Engine]
-    end
-
-    WebPlatform <--> EcommerceServices
-    WebPlatform <--> PersonalizationEngine
-    WebPlatform <--> AgentSystem
-    MobileApp <--> WebPlatform
-    DojoEnvironment <--> WebPlatform
-    
-    AgentSystem <--> PersonalizationEngine
-    AgentSystem <--> MemorySystem
-    AgentSystem <--> Community
-    
-    FragranceSystem --> EcommerceServices
-    BathBody --> EcommerceServices
-    HomeAmbiance --> EcommerceServices
-    
-    Community <--> TokenEconomy
-    Community <--> ContentHub
-    
-    PersonalizationEngine <--> MemorySystem
-    PersonalizationEngine <--> AnalyticsEngine
-    EcommerceServices <--> AnalyticsEngine
+    Theme --> Storefront
+    Ext --> Storefront
+    Verse --> Dojo
+    Labz --> Verse
+    Labz --> Store
   ```
 </Frame>
+
+- **MNKY VERSE**: Web portal (storefront, blog, agents, gamification) at `/verse`
+- **The Dojo**: Private hub (XP, quests, Blending Lab, chat) at `/dojo`
+- **MNKY LABZ**: Admin dashboard (formulas, oils, Shopify Admin) at `/`
+- **Shopify**: Liquid theme and app extension link to the app
 
 ## Core System Components
 
@@ -100,52 +86,50 @@ The MOOD MNKY ecosystem is designed as an integrated network of physical and dig
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
   <div className="p-5 border border-gray-200 rounded-lg">
-    <h3 className="text-lg font-medium mb-3">Web Platform</h3>
-    <p className="text-sm mb-3">Primary digital touchpoint built on Next.js with App Router.</p>
+    <h3 className="text-lg font-medium mb-3">MNKY VERSE</h3>
+    <p className="text-sm mb-3">Web experiential portal—storefront, blog, agents, gamification, community.</p>
     <ul className="list-disc pl-5 text-sm">
-      <li>User authentication & profiles</li>
-      <li>E-commerce integration</li>
-      <li>Custom product builder</li>
-      <li>Content delivery</li>
-      <li>Agent interfaces</li>
+      <li>Shopify Storefront API (products, cart)</li>
+      <li>Verse blog (Supabase, Notion sync)</li>
+      <li>AI agents directory & chat</li>
+      <li>XP, quests, manga, UGC</li>
+      <li>Fragrance tools (wheel, oils, glossary)</li>
     </ul>
   </div>
   
   <div className="p-5 border border-gray-200 rounded-lg">
-    <h3 className="text-lg font-medium mb-3">Mobile Application</h3>
-    <p className="text-sm mb-3">On-the-go experience for members with location-aware features.</p>
+    <h3 className="text-lg font-medium mb-3">The Dojo</h3>
+    <p className="text-sm mb-3">Members' private hub—authenticated space for preferences and crafting.</p>
     <ul className="list-disc pl-5 text-sm">
-      <li>Personalized dashboard</li>
-      <li>Product scanning & recognition</li>
-      <li>Usage tracking & reminders</li>
-      <li>Community participation</li>
-      <li>Offline experience capabilities</li>
+      <li>XP & level display</li>
+      <li>Quests & quick actions</li>
+      <li>Blending Lab & saved blends</li>
+      <li>MNKY CHAT (Flowise)</li>
+      <li>Preferences (default agent)</li>
     </ul>
   </div>
   
   <div className="p-5 border border-gray-200 rounded-lg">
-    <h3 className="text-lg font-medium mb-3">Dojo Environment</h3>
-    <p className="text-sm mb-3">Learning and development platform for personalized growth.</p>
+    <h3 className="text-lg font-medium mb-3">MNKY LABZ</h3>
+    <p className="text-sm mb-3">Admin dashboard and command center for operations.</p>
     <ul className="list-disc pl-5 text-sm">
-      <li>Customizable learning paths</li>
-      <li>Content delivery system</li>
-      <li>Progress tracking</li>
-      <li>Interactive exercises</li>
-      <li>Community learning spaces</li>
+      <li>Formulas, fragrance oils, glossary</li>
+      <li>Shopify Admin integration</li>
+      <li>Notion sync</li>
+      <li>CODE MNKY assistant</li>
+      <li>Platform tools (SQL, Flowise)</li>
     </ul>
   </div>
 </div>
 
 <Accordion title="Technical Architecture">
-  The MOOD MNKY digital platform is built on a modern, scalable technical architecture:
+  The MOOD MNKY digital platform (mood-mnky-command) is built on:
   
-  - **Frontend**: Next.js with App Router, TypeScript, and Tailwind CSS
-  - **Backend Services**: Serverless functions, Edge computing, and dedicated services
-  - **Authentication**: Supabase Auth with social login integration
-  - **Data Storage**: Supabase PostgreSQL with real-time capabilities
-  - **Media Management**: Content delivery network for global performance
-  - **API Layer**: GraphQL and REST endpoints with proper authorization
-  - **Monitoring**: Comprehensive logging, error tracking, and performance monitoring
+  - **Frontend**: Next.js 14+ with App Router, TypeScript, shadcn/ui, Tailwind CSS
+  - **E-commerce**: Hydrogen React, Shopify Storefront API (not Remix Hydrogen)
+  - **Backend**: Supabase (PostgreSQL, Auth, Realtime, Storage)
+  - **Integrations**: Shopify Admin API, Notion, Flowise, OpenAI
+  - **Hosting**: Vercel (Next.js app); Shopify (theme + app extension)
 </Accordion>
 
 ### Agent System
@@ -641,25 +625,23 @@ The MOOD MNKY ecosystem is built on a sophisticated data architecture that enabl
   <CardGroup cols={2}>
     <Card title="Monorepo Structure" icon="code-branch">
       <div className="text-sm">
-        Turborepo-based monorepo organization with clear boundaries between packages and applications:
+        Turborepo-based monorepo (mood-mnky-command):
         
-        - apps/ - User-facing applications
-        - packages/ - Shared libraries and utilities
-        - agents/ - Agent definitions and configurations
-        - content/ - Content libraries and assets
-        - docs/ - Documentation (Mintlify)
+        - apps/web - Single Next.js app (MNKY VERSE + Dojo + LABZ)
+        - Shopify/theme - Liquid theme
+        - extensions/ - Theme app extension
+        - supabase/ - Migrations and Edge Functions
+        - mnky-docs/ - Mintlify documentation
       </div>
     </Card>
     <Card title="DevOps Pipeline" icon="gears">
       <div className="text-sm">
-        Comprehensive CI/CD workflow for reliable deployment:
+        CI/CD and hosting:
         
-        - GitHub Actions for CI/CD
-        - Automated testing and linting
-        - Environment-specific deployments
-        - Vercel for frontend hosting
-        - Docker containerization for services
-        - Infrastructure as Code with Terraform
+        - GitHub Actions for CI
+        - Vercel for Next.js deployment
+        - Shopify for theme and store
+        - Supabase for database and auth
       </div>
     </Card>
   </CardGroup>

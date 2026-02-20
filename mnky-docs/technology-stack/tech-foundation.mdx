@@ -1,6 +1,6 @@
 ---
-title: "DevOps"
-description: "MOOD MNKY's technological infrastructure that powers our ecosystem through a developer-centric approach and advanced API architecture"
+title: "Technology Foundation"
+description: "The technical infrastructure powering MNKY VERSE, The Dojo, and MNKY LABZ—Next.js, Supabase, Shopify, Vercel"
 icon: "code"
 ---
 
@@ -10,13 +10,9 @@ icon: "code"
   alt="CODE MNKY Agent"
 />
 
-# DevOps: Technical Infrastructure
+# Technology Foundation
 
-DevOps is the technological backbone of MOOD MNKY - our intelligent infrastructure that powers the entire ecosystem, enabling developers to build upon and extend our platform through a robust API architecture and developer tools.
-
-## Overview
-
-DevOps represents our commitment to creating a developer-friendly, extensible technological base. Through a modern tech stack, comprehensive API architecture, and open ecosystem approach, we provide the infrastructure that powers both MOOD MNKY and The Dojo.
+The MOOD MNKY ecosystem is powered by a modern, unified technology stack. A single Next.js application hosts **MNKY VERSE** (storefront), **The Dojo** (private hub), and **MNKY LABZ** (admin dashboard), deployed on Vercel with Supabase and Shopify integrations.
 
 <Note>
 **Foundation Tagline**: "Developer-centric infrastructure that powers our universe."
@@ -25,110 +21,102 @@ DevOps represents our commitment to creating a developer-friendly, extensible te
 <img 
   className="my-8 rounded-lg shadow-lg" 
   src="/images/code-mnky-3d.png" 
-  alt="CODE MNKY Infrastructure"
+  alt="Technical Infrastructure"
   width="100%"
 />
 
-## Key Components
+## Technology Stack
 
-### Core Architecture
+### Frontend
 
-DevOps is built on a flexible, scalable system:
+- **Framework**: Next.js 14+ (App Router)
+- **UI**: React, TypeScript, shadcn/ui, Tailwind CSS
+- **E-commerce**: Hydrogen React (`@shopify/hydrogen-react`) for Storefront API—not Remix Hydrogen
 
-- Monorepo structure for cohesive development
-- Microservices architecture for modularity
-- Event-driven design for system integration
-- API-first approach for extensibility
-- Cloud-native infrastructure for scalability
+### Backend & Data
 
-### Technology Stack
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Realtime**: Supabase Realtime
+- **Storage**: Supabase Storage
 
-Our technology stack combines modern tools and frameworks:
+### Integrations
 
-- **Frontend**: Next.js, React, Vue, Tailwind CSS
-- **Backend**: Node.js, TypeScript, Supabase
-- **Database**: PostgreSQL, Redis
-- **Infrastructure**: Docker, Kubernetes, AWS
-- **AI Infrastructure**: OpenAI, Azure Cognitive Services, Vector Databases
+- **Shopify**: Storefront API (catalog, cart, checkout); Admin API (LABZ store management)
+- **Notion**: Sync for fragrance oils, formulas, glossary, blog posts
+- **Flowise**: AI orchestration and chatbots
+- **OpenAI**: GPT models for CODE MNKY and agents
+- **ElevenLabs**: Voice synthesis (optional)
 
-### API Ecosystem
+### Infrastructure
 
-Our API architecture enables seamless integration:
+- **Hosting**: Vercel (Next.js)
+- **Database**: Supabase (hosted PostgreSQL)
+- **Theme**: Liquid theme in `Shopify/theme/`; app extension in `extensions/mood-mnky-theme/`
 
-- REST and GraphQL endpoints for different use cases
-- Comprehensive SDK libraries for multiple platforms
-- Developer portal with documentation and tools
-- Webhook system for event-driven integration
-- Authentication and permission framework
+## Architecture Overview
 
-### Developer Experience
+```
+mood-mnky-command/
+├── apps/web/          # Single Next.js app
+│   ├── (storefront)/  # MNKY VERSE routes
+│   ├── dojo/          # The Dojo routes
+│   └── (dashboard)/   # MNKY LABZ routes
+├── Shopify/theme/     # Liquid theme
+├── extensions/        # Theme app extension
+└── supabase/          # Migrations, Edge Functions
+```
 
-We prioritize developer experience through:
+## MNKY LABZ as Backstage
 
-- Comprehensive documentation with Mintlify
-- Interactive API playground and testing tools
-- Sample applications and starter templates
-- CLI tools for common development tasks
-- Local development environment setup scripts
+**MNKY LABZ** is the operational face of the technology foundation. It provides:
 
-### Integration Framework
+- Formulas, fragrance oils, glossary management
+- Shopify Admin integration
+- Notion sync
+- CODE MNKY assistant (tools for formulas, oils, glossary)
+- Platform tools (SQL editor, Flowise, funnels)
+- Verse backoffice (manga, XP, UGC)
 
-Our integration points connect all aspects of our ecosystem:
+See [MNKY LABZ](/platform-services/labz-overview) for details.
 
-- Physical product data synchronization
-- Customer profile integration
-- AI agent communication protocols
-- Analytics data pipeline
-- Security and compliance framework
+## API Ecosystem
+
+- **Storefront API**: Products, collections, cart (MNKY VERSE)
+- **Shopify Admin API**: Products, orders, customers (LABZ)
+- **Supabase**: Auth, database, storage, realtime
+- **Internal APIs**: `/api/verse/*`, `/api/labz/*`, `/api/xp/*`, `/api/quests/*`, etc.
+
+## Developer Experience
+
+- **Documentation**: Mintlify (this site)
+- **Monorepo**: mood-mnky-command (Next.js app, Shopify theme, extensions, Supabase)
+- **Local development**: `pnpm dev` from repo root
+- **Deployment**: Vercel with Turborepo
 
 <Frame caption="The MNKY VERSE Technical Architecture">
   <img src="/images/mnky-trio-bg.png" alt="MNKY VERSE Technical Architecture" />
 </Frame>
 
-## Business Impact
-
-DevOps drives business value through:
-
-- **Extensibility**: Enabling rapid development of new features
-- **Integration**: Seamless connection with third-party services
-- **Scalability**: Supporting growth without architectural changes
-- **Innovation**: Providing a platform for experimentation
-- **Efficiency**: Reducing development time through reusable components
-
-## Developer Value
-
-Developers benefit from DevOps through:
-
-- **Productivity**: Well-documented APIs and SDKs
-- **Flexibility**: Modern tech stack with options for different use cases
-- **Support**: Community and official support channels
-- **Growth**: Learning opportunities and skill development
-- **Impact**: Building meaningful solutions for real users
-
 ## Integration with Other Domains
 
-DevOps connects seamlessly with other parts of our ecosystem:
-
-- **With MOOD MNKY**: Powering product customization and data collection
-- **With The Dojo**: Enabling AI agent functionality and learning environment creation
-
-## Future Direction
-
-The roadmap for DevOps includes:
-
-- Enhanced developer ecosystem with marketplace
-- Expanded API capabilities for more use cases
-- Advanced AI integration infrastructure
-- Edge computing capabilities for performance
-- Blockchain integration for token economy
+- **With MNKY VERSE**: Powers storefront, blog, gamification, agents
+- **With The Dojo**: Auth, profiles, XP, quests, Blending Lab data
+- **With MNKY LABZ**: Full operational toolset
 
 ---
 
 <CardGroup cols={2}>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard and command center
+  </Card>
   <Card title="Developer Resources" icon="code" href="/developer-resources/introduction">
-    Get started with our development ecosystem
+    Get started with development
   </Card>
-  <Card title="API Reference" icon="book-open-cover" href="/developer-resources/api-overview">
-    Explore our API documentation
+  <Card title="Mono-repo Structure" icon="folder-tree" href="/technology-stack/mono-repo-structure">
+    Repository organization
   </Card>
-</CardGroup> 
+  <Card title="API Hub" icon="book-open-cover" href="/api/index">
+    API documentation
+  </Card>
+</CardGroup>

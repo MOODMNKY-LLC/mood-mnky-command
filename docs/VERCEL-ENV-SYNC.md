@@ -4,16 +4,24 @@ This document lists environment variables that must be set in Vercel for product
 
 ## Sync Commands
 
+**Env file layout:** `.env.local` (local dev), `.env` (staging for Vercel push), `.env.production` (Vercel pull target). `pnpm dev` loads `.env.local` and `.env` only; `.env.production` is not used for local development.
+
 ```bash
-# Pull existing vars from Vercel to .env.local
-vercel env pull .env.local
+# Pull production vars from Vercel to .env.production (never overwrites .env or .env.local)
+vercel env pull .env.production --environment=production
+
+# Push new vars: add to .env or .env.local, then run
+pnpm vercel:env-sync
+
+# Or use backup-pull-push: backs up, pulls to .env.production, pushes vars from .env/.env.local that are missing in production
+node apps/web/scripts/vercel-env-backup-pull-push.mjs
 
 # Add a variable (interactive - prompts for value)
 vercel env add VARIABLE_NAME production
 vercel env add VARIABLE_NAME preview
 ```
 
-Vercel CLI has no native "push from .env" command. Add variables manually or use third-party tools like `vercel-env-push`.
+**To push vars from a temp file:** Merge content into `.env` (or `.env.local`), then run `pnpm vercel:env-sync` or `vercel-env-backup-pull-push.mjs`.
 
 **Validate locally before deploying:**
 
