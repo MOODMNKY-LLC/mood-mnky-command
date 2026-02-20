@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BookMarked, Plus } from "lucide-react"
 import { MangaSyncNotionButton } from "@/components/verse-backoffice/manga-sync-notion-button"
+import { MangaPublishShopifyButton } from "@/components/verse-backoffice/manga-publish-shopify-button"
 
 export const dynamic = "force-dynamic"
 
@@ -24,6 +25,7 @@ export default async function MangaIssuesPage() {
         <h1 className="text-2xl font-semibold">Manga / Issues</h1>
         <div className="flex gap-2">
           <MangaSyncNotionButton />
+          <MangaPublishShopifyButton />
           <Button asChild size="sm">
             <Link href="/verse-backoffice/manga/new">
               <Plus className="mr-2 h-4 w-4" />

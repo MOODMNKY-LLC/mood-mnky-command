@@ -55,6 +55,8 @@ Each Flowise Custom Tool POSTs to the corresponding proxy route:
 
 All requests must include `userId` and `sessionId` in the body. Authentication is via `Authorization: Bearer <FLOWISE_API_KEY>` or `x-api-key` header.
 
+**Manga tools (Companion):** Hotspot mapper and quiz generator use the same pattern: `POST` to `/api/flowise/tools/manga/hotspot-mapper` and `/api/flowise/tools/manga/quiz-generator` with `Authorization: Bearer <MOODMNKY_API_KEY>` and JSON body `{ "issueSlug": "..." }`. See [COMPANION-MANGA-ROADMAP.md](COMPANION-MANGA-ROADMAP.md) → “Calling app tools from Flowise (Manga)”.
+
 ## Flowise Custom Tool Example
 
 Each Custom Tool in Flowise should POST to the MOOD MNKY API. Example (submission tool):

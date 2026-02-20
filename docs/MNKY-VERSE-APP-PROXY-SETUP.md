@@ -41,7 +41,7 @@ Theme JS can get a token from `/apps/mnky/session`, then call `/api/mag/read-eve
 
 ## 3. Theme block
 
-**MNKY VERSE Issue Teaser** is in `extensions/mood-mnky-theme/blocks/mnky-verse-issue-teaser.liquid`. Add it from the Theme Editor (e.g. on collection or index). Set **App base URL** to your app URL so the CTA links to `/verse/issues`.
+**MNKY VERSE Issue Teaser** is in `extensions/mood-mnky-theme/blocks/mnky-verse-issue-teaser.liquid`. Add it from the Theme Editor (e.g. on collection or index). Set **App base URL** to your app URL so the CTA links to `/verse/issues`. Optionally set **Current issue slug** to show a "Current issue" button linking to `/verse/issues/[slug]` (use the issue slug from Backoffice after Publish to Shopify).
 
 ## 4. Optional: Metaobjects for published issues
 

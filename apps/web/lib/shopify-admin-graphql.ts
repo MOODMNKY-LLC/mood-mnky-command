@@ -554,3 +554,220 @@ export async function metaobjectListFragranceNoteHandles(): Promise<Array<{ id: 
   }
   return nodes
 }
+
+// ---- Manga metaobjects (mnky_collection, mnky_issue) ----
+
+export const MNKY_COLLECTION_METAOBJECT_TYPE = "mnky_collection"
+export const MNKY_ISSUE_METAOBJECT_TYPE = "mnky_issue"
+
+/**
+ * Ensure mnky_collection metaobject definition exists. Idempotent.
+ * Requires write_metaobject_definitions.
+ */
+export async function ensureMnkyCollectionMetaobjectDefinition(): Promise<void> {
+  const data = await shopifyGraphQL<{
+    metaobjectDefinitionCreate: {
+      metaobjectDefinition: { id: string; type: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_DEFINITION_CREATE, {
+    definition: {
+      name: "MNKY Collection",
+      type: MNKY_COLLECTION_METAOBJECT_TYPE,
+      access: { storefront: "PUBLIC_READ" },
+      fieldDefinitions: [
+        { name: "Name", key: "name", type: "single_line_text_field" },
+        { name: "Slug", key: "slug", type: "single_line_text_field" },
+        { name: "Shopify collection GID", key: "shopify_collection_gid", type: "single_line_text_field" },
+      ],
+    },
+  })
+  const result = data.metaobjectDefinitionCreate
+  if (result.userErrors?.length) {
+    const taken = result.userErrors.some(
+      (e) => e.code === "TAKEN" || /already exists|taken/i.test(e.message)
+    )
+    if (taken) return
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`mnky_collection definition create failed: ${msg}`)
+  }
+}
+
+/**
+ * Ensure mnky_issue metaobject definition exists. Idempotent.
+ * Requires write_metaobject_definitions.
+ */
+export async function ensureMnkyIssueMetaobjectDefinition(): Promise<void> {
+  const data = await shopifyGraphQL<{
+    metaobjectDefinitionCreate: {
+      metaobjectDefinition: { id: string; type: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_DEFINITION_CREATE, {
+    definition: {
+      name: "MNKY Issue",
+      type: MNKY_ISSUE_METAOBJECT_TYPE,
+      access: { storefront: "PUBLIC_READ" },
+      fieldDefinitions: [
+        { name: "Collection", key: "collection", type: "metaobject_reference", reference: { type: MNKY_COLLECTION_METAOBJECT_TYPE } },
+        { name: "Issue number", key: "issue_number", type: "number_integer" },
+        { name: "Title", key: "title", type: "single_line_text_field" },
+        { name: "Slug", key: "slug", type: "single_line_text_field" },
+        { name: "Arc summary", key: "arc_summary", type: "multi_line_text_field" },
+        { name: "Cover asset URL", key: "cover_asset_url", type: "url" },
+        { name: "Status", key: "status", type: "single_line_text_field" },
+        { name: "Published at", key: "published_at", type: "date_time" },
+      ],
+    },
+  })
+  const result = data.metaobjectDefinitionCreate
+  if (result.userErrors?.length) {
+    const taken = result.userErrors.some(
+      (e) => e.code === "TAKEN" || /already exists|taken/i.test(e.message)
+    )
+    if (taken) return
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`mnky_issue definition create failed: ${msg}`)
+  }
+}
+
+export interface MnkyCollectionMetaobjectFields {
+  name: string
+  slug: string
+  shopify_collection_gid: string
+}
+
+export async function metaobjectCreateMnkyCollection(
+  handle: string,
+  fields: MnkyCollectionMetaobjectFields
+): Promise<{ id: string; handle: string }> {
+  const data = await shopifyGraphQL<{
+    metaobjectCreate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_CREATE, {
+    metaobject: {
+      type: MNKY_COLLECTION_METAOBJECT_TYPE,
+      handle,
+      fields: [
+        { key: "name", value: fields.name },
+        { key: "slug", value: fields.slug },
+        { key: "shopify_collection_gid", value: fields.shopify_collection_gid ?? "" },
+      ],
+    },
+  })
+  const result = data.metaobjectCreate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`MnkyCollection metaobject create failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject create returned no metaobject")
+  return result.metaobject
+}
+
+export async function metaobjectUpdateMnkyCollection(
+  id: string,
+  fields: Partial<MnkyCollectionMetaobjectFields>
+): Promise<{ id: string; handle: string }> {
+  const fieldEntries = Object.entries(fields).filter(([, v]) => v != null) as [string, string][]
+  const data = await shopifyGraphQL<{
+    metaobjectUpdate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_UPDATE, {
+    id,
+    metaobject: { fields: fieldEntries.map(([key, value]) => ({ key, value })) },
+  })
+  const result = data.metaobjectUpdate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`MnkyCollection metaobject update failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject update returned no metaobject")
+  return result.metaobject
+}
+
+export async function metaobjectListMnkyCollectionHandles(): Promise<Array<{ id: string; handle: string }>> {
+  const data = await shopifyGraphQL<{
+    metaobjects: { nodes: Array<{ id: string; handle: string }> }
+  }>(METAOBJECTS_QUERY, { type: MNKY_COLLECTION_METAOBJECT_TYPE, first: 100 })
+  return data.metaobjects?.nodes ?? []
+}
+
+export interface MnkyIssueMetaobjectFields {
+  collection_gid: string
+  issue_number: number
+  title: string
+  slug: string
+  arc_summary: string
+  cover_asset_url: string
+  status: string
+  published_at: string | null
+}
+
+/** Create mnky_issue metaobject. collection_gid is the mnky_collection metaobject GID. */
+export async function metaobjectCreateMnkyIssue(
+  handle: string,
+  fields: MnkyIssueMetaobjectFields
+): Promise<{ id: string; handle: string }> {
+  const data = await shopifyGraphQL<{
+    metaobjectCreate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_CREATE, {
+    metaobject: {
+      type: MNKY_ISSUE_METAOBJECT_TYPE,
+      handle,
+      fields: [
+        { key: "collection", value: fields.collection_gid },
+        { key: "issue_number", value: String(fields.issue_number) },
+        { key: "title", value: fields.title },
+        { key: "slug", value: fields.slug },
+        { key: "arc_summary", value: fields.arc_summary ?? "" },
+        { key: "cover_asset_url", value: fields.cover_asset_url ?? "" },
+        { key: "status", value: fields.status },
+        { key: "published_at", value: fields.published_at ?? "" },
+      ],
+    },
+  })
+  const result = data.metaobjectCreate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`MnkyIssue metaobject create failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject create returned no metaobject")
+  return result.metaobject
+}
+
+export async function metaobjectUpdateMnkyIssue(
+  id: string,
+  fields: Partial<MnkyIssueMetaobjectFields>
+): Promise<{ id: string; handle: string }> {
+  const fieldEntries = Object.entries(fields).filter(([, v]) => v != null) as [string, string][]
+  const data = await shopifyGraphQL<{
+    metaobjectUpdate: {
+      metaobject: { id: string; handle: string } | null
+      userErrors: Array<{ field?: string[]; message: string; code?: string }>
+    }
+  }>(METAOBJECT_UPDATE, {
+    id,
+    metaobject: { fields: fieldEntries.map(([key, value]) => ({ key, value: String(value) })) },
+  })
+  const result = data.metaobjectUpdate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    throw new Error(`MnkyIssue metaobject update failed: ${msg}`)
+  }
+  if (!result.metaobject) throw new Error("Metaobject update returned no metaobject")
+  return result.metaobject
+}
+
+export async function metaobjectListMnkyIssueHandles(): Promise<Array<{ id: string; handle: string }>> {
+  const data = await shopifyGraphQL<{
+    metaobjects: { nodes: Array<{ id: string; handle: string }> }
+  }>(METAOBJECTS_QUERY, { type: MNKY_ISSUE_METAOBJECT_TYPE, first: 100 })
+  return data.metaobjects?.nodes ?? []
+}

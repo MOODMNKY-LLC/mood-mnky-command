@@ -26,6 +26,8 @@ interface DojoHomeSectionsProps {
   savedBlendsCount: number;
   funnelProfile: Record<string, unknown> | null;
   linkedAccounts: { discord: boolean };
+  /** When set, show "Current issue" link in Manga & Issues card (env NEXT_PUBLIC_FEATURED_ISSUE_SLUG or first published). */
+  featuredIssue?: { slug: string; title: string } | null;
 }
 
 function CopyCodeButton({ code }: { code: string }) {
@@ -49,6 +51,7 @@ export function DojoHomeSections({
   savedBlendsCount,
   funnelProfile,
   linkedAccounts,
+  featuredIssue = null,
 }: DojoHomeSectionsProps) {
   const funnelKeys = funnelProfile ? Object.keys(funnelProfile) : [];
 
@@ -197,10 +200,17 @@ export function DojoHomeSections({
             Read chapters, pass quizzes, earn XP
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
+          {featuredIssue && (
+            <Button variant="default" size="sm" className="w-full justify-start" asChild>
+              <Link href={`/verse/issues/${featuredIssue.slug}`}>
+                Current issue: {featuredIssue.title}
+              </Link>
+            </Button>
+          )}
           <Button variant="link" className="h-auto p-0 text-primary" asChild>
             <Link href="/verse/issues">
-              Start reading →
+              {featuredIssue ? "All issues →" : "Start reading →"}
             </Link>
           </Button>
         </CardContent>

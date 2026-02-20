@@ -10,6 +10,7 @@ remote_only_versions.txt
 node_modules/
 .cursor/
 .next/
+.turbo/
 .env
 .env*.local
 .DS_Store

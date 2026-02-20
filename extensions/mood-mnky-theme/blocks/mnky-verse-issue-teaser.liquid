@@ -1,11 +1,18 @@
 {% comment %}
   MNKY VERSE - Issue Teaser block
   Links to manga/issues in the app. Set app_base_url to mood-mnky-command (e.g. https://mnky-command.moodmnky.com).
+  Optional: set current_issue_slug to show a "Current issue" link (e.g. first published issue slug after Publish to Shopify).
+  For metaobject-based current issue, use Shopify metaobjects (mnky_issue) in a section that references a metaobject.
 {% endcomment %}
 {%- liquid
   assign app_url = block.settings.app_base_url | default: '' | strip
   assign path = block.settings.verse_issues_path | default: '/verse/issues'
   assign full_url = app_url | append: path
+  assign current_slug = block.settings.current_issue_slug | default: '' | strip
+  assign show_current = false
+  if current_slug != '' and current_slug != blank and app_url != '' and app_url != blank
+    assign show_current = true
+  endif
   assign is_valid = false
   if app_url != '' and app_url != blank
     assign is_valid = true
@@ -20,6 +27,15 @@
   {%- endif -%}
   {%- if block.settings.subheading != blank -%}
     <p class="mood-mnky-block-subheading">{{ block.settings.subheading | escape }}</p>
+  {%- endif -%}
+  {%- if show_current -%}
+    <a
+      href="{{ app_url }}/verse/issues/{{ current_slug }}"
+      class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+      aria-label="{{ block.settings.current_issue_aria_label | default: 'Read current issue' | escape }}"
+    >
+      {{ block.settings.current_issue_label | default: 'Current issue' | escape }}
+    </a>
   {%- endif -%}
   {%- if block.settings.cta_label != blank -%}
     {%- if is_valid -%}
@@ -68,6 +84,23 @@
       "id": "verse_issues_path",
       "label": "Verse issues path",
       "default": "/verse/issues"
+    },
+    {
+      "type": "text",
+      "id": "current_issue_slug",
+      "label": "Current issue slug",
+      "info": "Optional. When set, shows a 'Current issue' button linking to this issue (e.g. slug from Backoffice after Publish to Shopify)."
+    },
+    {
+      "type": "text",
+      "id": "current_issue_label",
+      "label": "Current issue button label",
+      "default": "Current issue"
+    },
+    {
+      "type": "text",
+      "id": "current_issue_aria_label",
+      "label": "Current issue button accessibility label"
     },
     {
       "type": "header",
