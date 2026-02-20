@@ -28,9 +28,9 @@ function getGlobeConfigForTheme(theme: "light" | "dark"): COBEOptions {
       dark: 1,
       mapBrightness: 5,
       mapBaseBrightness: 0,
-      baseColor: [200 / 255, 196 / 255, 196 / 255],
-      markerColor: [200 / 255, 196 / 255, 196 / 255],
-      glowColor: [0.45, 0.43, 0.48],
+      baseColor: [148 / 255, 163 / 255, 184 / 255],
+      markerColor: [148 / 255, 163 / 255, 184 / 255],
+      glowColor: [120 / 255, 135 / 255, 155 / 255],
     };
   }
   return {

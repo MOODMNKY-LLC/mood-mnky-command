@@ -44,11 +44,11 @@ const VERSE_GLOBE = {
     markerColor: [0.3, 0.35, 0.4] as [number, number, number],
     glowColor: [0.6, 0.6, 0.65] as [number, number, number],
   },
-  /** Dark theme: dark base with lighter markers (locations “lighting up” in the dark). Base = verse-bg #181619; markers = verse-text #c8c4c4. */
+  /** Dark theme: lit dots use project light blue (--status-ready 200 50% 55%). “lighting up” */
   darkTheme: {
-    baseColor: [200 / 255, 196 / 255, 196 / 255] as [number, number, number],
-    markerColor: [200 / 255, 196 / 255, 196 / 255] as [number, number, number],
-    glowColor: [0.45, 0.43, 0.48] as [number, number, number],
+    baseColor: [148 / 255, 163 / 255, 184 / 255] as [number, number, number],
+    markerColor: [148 / 255, 163 / 255, 184 / 255] as [number, number, number],
+    glowColor: [120 / 255, 135 / 255, 155 / 255] as [number, number, number],
   },
 };
 
