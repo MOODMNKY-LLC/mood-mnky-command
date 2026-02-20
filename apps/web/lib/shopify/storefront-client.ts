@@ -10,14 +10,17 @@ const privateToken = process.env.PRIVATE_STOREFRONT_API_TOKEN || "";
 
 /**
  * Storefront API client for MNKY VERSE.
- * Use public token on client; use private token on server for initial data.
+ * Only created when storeDomain is set so build (e.g. Vercel) does not throw when env is not yet available.
  */
-export const storefrontClient: StorefrontClientReturn = createStorefrontClient({
-  storeDomain,
-  publicStorefrontToken: publicToken,
-  privateStorefrontToken: privateToken,
-  storefrontApiVersion: "2026-01",
-});
+export const storefrontClient: StorefrontClientReturn | null =
+  storeDomain
+    ? createStorefrontClient({
+        storeDomain,
+        publicStorefrontToken: publicToken,
+        privateStorefrontToken: privateToken,
+        storefrontApiVersion: "2026-01",
+      })
+    : null;
 
 /**
  * Extract buyer IP from request headers for Storefront API analytics.
@@ -48,6 +51,11 @@ export async function storefrontFetch<T>(
   variables?: Record<string, unknown>,
   options?: StorefrontFetchOptions
 ): Promise<T> {
+  if (!storefrontClient) {
+    throw new Error(
+      "Storefront client not configured. Set PUBLIC_STORE_DOMAIN or SHOPIFY_STORE_DOMAIN and storefront API tokens."
+    )
+  }
   const buyerIp = options?.headers
     ? getBuyerIpFromHeaders(options.headers)
     : undefined;
