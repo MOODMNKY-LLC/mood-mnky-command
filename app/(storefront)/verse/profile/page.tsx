@@ -4,7 +4,7 @@ import { getCustomerAccessToken } from "@/lib/shopify/customer-account-client";
 import { VerseProfileClient } from "./verse-profile-client";
 
 const profileSelect =
-  "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id";
+  "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id, role";
 
 function getStoreAccountUrl(): string | undefined {
   const domain = process.env.NEXT_PUBLIC_STORE_DOMAIN || process.env.PUBLIC_STORE_DOMAIN;
@@ -104,6 +104,7 @@ export default async function VerseProfilePage({
         rewardClaimsCount={rewardClaimsCount}
         savedBlendsCount={savedBlendsCount}
         hasFunnelSubmission={hasFunnelSubmission}
+        role={profile?.role ?? undefined}
       />
     </div>
   );

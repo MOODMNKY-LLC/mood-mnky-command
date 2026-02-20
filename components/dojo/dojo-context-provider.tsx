@@ -51,7 +51,7 @@ export function DojoContextProvider({
   // Hydrate from localStorage on mount (client-only) to restore persisted context
   React.useEffect(() => {
     const stored = localStorage.getItem(DOJO_CONTEXT_STORAGE_KEY);
-    if (stored && (["home", "crafting", "verse"] as const).includes(stored as DojoContextId)) {
+    if (stored && (["home", "crafting", "verse", "chat"] as const).includes(stored as DojoContextId)) {
       setContextIdState(stored as DojoContextId);
     }
   }, []);
@@ -59,7 +59,9 @@ export function DojoContextProvider({
   // Sync context from pathname on mount/navigation (pathname overrides persisted)
   React.useEffect(() => {
     if (!pathname) return;
-    if (pathname.startsWith("/dojo/crafting")) {
+    if (pathname.startsWith("/dojo/chat")) {
+      setContextIdState("chat");
+    } else if (pathname.startsWith("/dojo/crafting")) {
       setContextIdState("crafting");
     } else if (pathname.startsWith("/verse")) {
       setContextIdState("verse");

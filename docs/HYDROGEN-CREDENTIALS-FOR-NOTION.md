@@ -2,6 +2,8 @@
 
 Source: Shopify Admin → Hydrogen → MNKY VERSE → Environments and variables.
 
+**Oxygen deployments:** For Git-based deploys and deployment tokens (Shopify Admin → Hydrogen → MNKY VERSE → Oxygen deployments), see [OXYGEN-DEPLOYMENTS-MNKY-VERSE.md](./OXYGEN-DEPLOYMENTS-MNKY-VERSE.md).
+
 **Consolidation:** See [CREDENTIALS-CONSOLIDATION-GUIDE.md](./CREDENTIALS-CONSOLIDATION-GUIDE.md) for updating the 11 credential pages to match the "Shopify Hydrogen & Oxygen" / "MNKY VERSE" schema and removing duplicates.
 
 | Page | URL |

@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { getFlowiseClient } from "@/lib/flowise/client"
+import { decryptFlowiseApiKey } from "@/lib/flowise/profile-api-key"
 
 export const maxDuration = 60
 
@@ -9,6 +11,7 @@ interface PredictBody {
   history?: Array<{ message: string; type: string }>
   overrideConfig?: Record<string, unknown>
   streaming?: boolean
+  uploads?: Array<{ data?: string; type: string; name: string; mime: string }>
 }
 
 export async function POST(request: Request) {
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
     })
   }
 
-  const { chatflowId, question, history, overrideConfig, streaming = false } = body
+  const { chatflowId, question, history, overrideConfig: bodyOverrides, streaming = false, uploads } = body
   if (!chatflowId || typeof question !== "string") {
     return new Response(
       JSON.stringify({ error: "chatflowId and question are required" }),
@@ -41,14 +44,42 @@ export async function POST(request: Request) {
     )
   }
 
-  const client = getFlowiseClient()
+  const admin = createAdminClient()
+  const [assignmentRes, profileRes] = await Promise.all([
+    admin
+      .from("flowise_chatflow_assignments")
+      .select("override_config")
+      .eq("profile_id", user.id)
+      .eq("chatflow_id", chatflowId)
+      .maybeSingle(),
+    admin
+      .from("profiles")
+      .select("flowise_api_key_encrypted")
+      .eq("id", user.id)
+      .single(),
+  ])
+
+  const assignmentOverrides = (assignmentRes.data?.override_config as Record<string, unknown> | null) ?? {}
+  const mergedOverrideConfig = { ...assignmentOverrides, ...(bodyOverrides ?? {}) }
+
+  let userApiKey: string | null = null
+  if (profileRes.data?.flowise_api_key_encrypted) {
+    try {
+      userApiKey = decryptFlowiseApiKey(profileRes.data.flowise_api_key_encrypted)
+    } catch {
+      // use system key
+    }
+  }
+
+  const client = getFlowiseClient(userApiKey)
   try {
     const result = await client.createPrediction({
       chatflowId,
       question,
       history,
-      overrideConfig,
+      overrideConfig: Object.keys(mergedOverrideConfig).length > 0 ? mergedOverrideConfig : undefined,
       streaming,
+      ...(uploads && uploads.length > 0 ? { uploads } : {}),
     })
 
     if (streaming && result && typeof (result as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator] === "function") {

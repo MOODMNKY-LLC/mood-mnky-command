@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -78,6 +79,12 @@ interface ToolItem {
   updatedDate?: string;
 }
 
+interface CredentialItem {
+  id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
 const FLOWISE_INSTANCE_URL = "https://flowise-dev.moodmnky.com";
 
 function truncate(str: string, len: number) {
@@ -140,11 +147,29 @@ export default function FlowisePage() {
   const [viewChatflow, setViewChatflow] = useState<ChatflowItem | null>(null);
   const [viewTool, setViewTool] = useState<ToolItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: "chatflow" | "variable" | "tool";
+    type: "chatflow" | "variable" | "tool" | "credential";
     id: string;
     name: string;
   } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [credentialForm, setCredentialForm] = useState<{
+    open: boolean;
+    bodyJson: string;
+  }>({ open: false, bodyJson: "{}" });
+  const [executeForm, setExecuteForm] = useState<{
+    open: boolean;
+    chatflowId: string;
+    inputsJson: string;
+    result: string | null;
+    loading: boolean;
+  }>({ open: false, chatflowId: "", inputsJson: "{}", result: null, loading: false });
+  const [importForm, setImportForm] = useState<{
+    open: boolean;
+    file: File | null;
+    pasteJson: string;
+    result: string | null;
+    loading: boolean;
+  }>({ open: false, file: null, pasteJson: "", result: null, loading: false });
   const [embedForm, setEmbedForm] = useState<{
     scope: string;
     chatflowId: string;
@@ -180,6 +205,15 @@ export default function FlowisePage() {
   const { data: toolsData, error: toolsError, isLoading: toolsLoading, mutate: mutateTools } = useSWR<
     ToolItem[] | { error?: string }
   >("/api/flowise/tools", fetcher, { revalidateOnFocus: false });
+  const { data: credentialsData, error: credentialsError, isLoading: credentialsLoading, mutate: mutateCredentials } =
+    useSWR<CredentialItem[] | { error?: string }>("/api/flowise/credentials", fetcher, { revalidateOnFocus: false });
+  const { data: deploymentsData, error: deploymentsError, isLoading: deploymentsLoading, mutate: mutateDeployments } =
+    useSWR<unknown[] | { error?: string }>("/api/flowise/deployments", fetcher, { revalidateOnFocus: false });
+  const { data: nodesData, error: nodesError, isLoading: nodesLoading, mutate: mutateNodes } = useSWR<
+    unknown[] | { error?: string }
+  >("/api/flowise/nodes", fetcher, { revalidateOnFocus: false });
+  const { data: systemInfoData, error: systemInfoError, isLoading: systemInfoLoading, mutate: mutateSystemInfo } =
+    useSWR<Record<string, unknown> | { error?: string }>("/api/flowise/system/info", fetcher, { revalidateOnFocus: false });
 
   const { data: embedConfigData } = useSWR<{
     chatflowId?: string;
@@ -215,9 +249,16 @@ export default function FlowisePage() {
   const chatflowsList = Array.isArray(chatflowsData) ? chatflowsData : [];
   const variablesList = Array.isArray(variablesData) ? variablesData : [];
   const toolsList = Array.isArray(toolsData) ? toolsData : [];
+  const credentialsList = Array.isArray(credentialsData) ? credentialsData : [];
+  const deploymentsList = Array.isArray(deploymentsData) ? deploymentsData : [];
+  const nodesList = Array.isArray(nodesData) ? nodesData : [];
   const chatflowsHasError = Boolean(chatflowsError || (chatflowsData && !Array.isArray(chatflowsData)));
   const variablesHasError = Boolean(variablesError || (variablesData && !Array.isArray(variablesData)));
   const toolsHasError = Boolean(toolsError || (toolsData && !Array.isArray(toolsData)));
+  const credentialsHasError = Boolean(credentialsError || (credentialsData && !Array.isArray(credentialsData)));
+  const deploymentsHasError = Boolean(deploymentsError || (deploymentsData && !Array.isArray(deploymentsData)));
+  const nodesHasError = Boolean(nodesError || (nodesData && !Array.isArray(nodesData)));
+  const systemInfoHasError = Boolean(systemInfoError || (systemInfoData && Array.isArray(systemInfoData)));
 
   const runTest = useCallback(() => {
     if (!testFlowId || !testQuestion.trim()) return;
@@ -481,14 +522,167 @@ export default function FlowisePage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     const { type, id } = deleteTarget;
-    const path = type === "chatflow" ? "chatflows" : type === "variable" ? "variables" : "tools";
+    const path =
+      type === "chatflow"
+        ? "chatflows"
+        : type === "variable"
+          ? "variables"
+          : type === "credential"
+            ? "credentials"
+            : "tools";
     const res = await fetch(`/api/flowise/${path}/${id}`, { method: "DELETE" });
     if (res.ok) {
       if (type === "chatflow") mutateChatflows();
       else if (type === "variable") mutateVariables();
+      else if (type === "credential") mutateCredentials();
       else mutateTools();
     }
     setDeleteTarget(null);
+  };
+
+  const exportChatflow = async (id: string) => {
+    try {
+      const res = await fetch(`/api/flowise/chatflows/export/${id}`);
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const chatflow = chatflowsList.find((c) => c.id === id);
+      const name = (chatflow?.name ?? "chatflow").replace(/[^a-z0-9-_]/gi, "_");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}_${id}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Export failed");
+    }
+  };
+
+  const openExecute = (chatflowId?: string) => {
+    setExecuteForm({
+      open: true,
+      chatflowId: chatflowId ?? "",
+      inputsJson: "{}",
+      result: null,
+      loading: false,
+    });
+  };
+  const runExecute = async () => {
+    const id = executeForm.chatflowId.trim();
+    if (!id) return;
+    let inputs: Record<string, unknown> = {};
+    try {
+      inputs = JSON.parse(executeForm.inputsJson || "{}") as Record<string, unknown>;
+    } catch {
+      setExecuteForm((prev) => ({ ...prev, result: "Invalid JSON in inputs" }));
+      return;
+    }
+    setExecuteForm((prev) => ({ ...prev, loading: true, result: null }));
+    try {
+      const res = await fetch(`/api/flowise/chatflows/${id}/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const resultText = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      setExecuteForm((prev) => ({ ...prev, loading: false, result: resultText }));
+    } catch (e) {
+      setExecuteForm((prev) => ({
+        ...prev,
+        loading: false,
+        result: e instanceof Error ? e.message : "Execute failed",
+      }));
+    }
+  };
+
+  const openImport = () => {
+    setImportForm({ open: true, file: null, pasteJson: "", result: null, loading: false });
+  };
+  const runImport = async () => {
+    setImportForm((prev) => ({ ...prev, loading: true, result: null }));
+    try {
+      if (importForm.file) {
+        const form = new FormData();
+        form.append("file", importForm.file);
+        const res = await fetch("/api/flowise/chatflows/import", {
+          method: "POST",
+          body: form,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setImportForm((prev) => ({
+            ...prev,
+            loading: false,
+            result: (data as { error?: string }).error ?? "Import failed",
+          }));
+          return;
+        }
+        setImportForm((prev) => ({
+          ...prev,
+          loading: false,
+          result: typeof data === "string" ? data : JSON.stringify(data, null, 2),
+        }));
+        mutateChatflows();
+      } else if (importForm.pasteJson.trim()) {
+        const body = JSON.parse(importForm.pasteJson) as Record<string, unknown>;
+        const res = await fetch("/api/flowise/chatflows/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setImportForm((prev) => ({
+            ...prev,
+            loading: false,
+            result: (data as { error?: string }).error ?? "Import failed",
+          }));
+          return;
+        }
+        setImportForm((prev) => ({
+          ...prev,
+          loading: false,
+          result: typeof data === "string" ? data : JSON.stringify(data, null, 2),
+        }));
+        mutateChatflows();
+      } else {
+        setImportForm((prev) => ({ ...prev, loading: false, result: "Provide a file or paste JSON." }));
+        return;
+      }
+    } catch (e) {
+      setImportForm((prev) => ({
+        ...prev,
+        loading: false,
+        result: e instanceof Error ? e.message : "Import failed",
+      }));
+    }
+  };
+
+  const openCredentialCreate = () => {
+    setCredentialForm({ open: true, bodyJson: "{}" });
+    setSaveError(null);
+  };
+  const saveCredential = async () => {
+    setSaveError(null);
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse(credentialForm.bodyJson.trim() || "{}") as Record<string, unknown>;
+    } catch {
+      setSaveError("Body must be valid JSON");
+      return;
+    }
+    const res = await fetch("/api/flowise/credentials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setSaveError((data as { error?: string }).error ?? "Failed to create credential");
+      return;
+    }
+    setCredentialForm((prev) => ({ ...prev, open: false }));
+    mutateCredentials();
   };
 
   return (
@@ -508,22 +702,51 @@ export default function FlowisePage() {
         )}
       </div>
 
-      {(chatflowsHasError || variablesHasError || toolsHasError) && (
+      {(chatflowsHasError ||
+        variablesHasError ||
+        toolsHasError ||
+        credentialsHasError ||
+        deploymentsHasError ||
+        nodesHasError ||
+        systemInfoHasError) && (
         <Alert variant="destructive">
           <AlertDescription>
             {chatflowsHasError &&
               (typeof (chatflowsData as { error?: string })?.error === "string"
                 ? (chatflowsData as { error: string }).error
-                : "Failed to load chatflows.")}
+                : "Failed to load chatflows. ")}
             {variablesHasError &&
               (typeof (variablesData as { error?: string })?.error === "string"
                 ? (variablesData as { error: string }).error
-                : " Failed to load variables.")}
+                : "Failed to load variables. ")}
             {toolsHasError &&
               (typeof (toolsData as { error?: string })?.error === "string"
                 ? (toolsData as { error: string }).error
-                : " Failed to load tools.")}
-            {!chatflowsHasError && !variablesHasError && !toolsHasError && "Check FLOWISE_API_KEY and instance URL."}
+                : "Failed to load tools. ")}
+            {credentialsHasError &&
+              (typeof (credentialsData as { error?: string })?.error === "string"
+                ? (credentialsData as { error: string }).error
+                : "Failed to load credentials. ")}
+            {deploymentsHasError &&
+              (typeof (deploymentsData as { error?: string })?.error === "string"
+                ? (deploymentsData as { error: string }).error
+                : "Failed to load deployments. ")}
+            {nodesHasError &&
+              (typeof (nodesData as { error?: string })?.error === "string"
+                ? (nodesData as { error: string }).error
+                : "Failed to load nodes. ")}
+            {systemInfoHasError &&
+              (typeof (systemInfoData as { error?: string })?.error === "string"
+                ? (systemInfoData as { error: string }).error
+                : "Failed to load system info. ")}
+            {!chatflowsHasError &&
+              !variablesHasError &&
+              !toolsHasError &&
+              !credentialsHasError &&
+              !deploymentsHasError &&
+              !nodesHasError &&
+              !systemInfoHasError &&
+              "Check FLOWISE_API_KEY and instance URL."}
           </AlertDescription>
         </Alert>
       )}
@@ -531,6 +754,10 @@ export default function FlowisePage() {
       <Tabs defaultValue="chatflows" className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="chatflows">Chatflows</TabsTrigger>
+          <TabsTrigger value="credentials">Credentials</TabsTrigger>
+          <TabsTrigger value="deployments">Deployments</TabsTrigger>
+          <TabsTrigger value="nodes">Nodes</TabsTrigger>
+          <TabsTrigger value="system">System</TabsTrigger>
           <TabsTrigger value="variables">Variables</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
           <TabsTrigger value="embed">Embed Config</TabsTrigger>
@@ -545,10 +772,18 @@ export default function FlowisePage() {
                 <CardTitle className="text-base">Chatflows</CardTitle>
                 <CardDescription>Create, edit, and run flows on the instance.</CardDescription>
               </div>
-              <Button size="sm" onClick={openChatflowCreate}>
-                <Plus className="h-4 w-4 mr-1" />
-                Create
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" onClick={openImport}>
+                  Import
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => openExecute()}>
+                  Execute
+                </Button>
+                <Button size="sm" onClick={openChatflowCreate}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {chatflowsLoading ? (
@@ -609,6 +844,12 @@ export default function FlowisePage() {
                                 >
                                   Test
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => exportChatflow(flow.id)}>
+                                  Export
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openExecute(flow.id)}>
+                                  Execute
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive"
                                   onClick={() => setDeleteTarget({ type: "chatflow", id: flow.id, name: flow.name || flow.id })}
@@ -623,6 +864,176 @@ export default function FlowisePage() {
                     </TableBody>
                   </Table>
                 </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="credentials" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-base">Credentials</CardTitle>
+                <CardDescription>API credentials for Flowise (OpenAPI).</CardDescription>
+              </div>
+              <Button size="sm" onClick={openCredentialCreate}>
+                <Plus className="h-4 w-4 mr-1" />
+                Create
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {credentialsLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : credentialsList.length === 0 && !credentialsHasError ? (
+                <p className="text-sm text-muted-foreground">No credentials.</p>
+              ) : (
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID / Name</TableHead>
+                        <TableHead className="w-[80px]">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {credentialsList.map((c, i) => {
+                        const id = (c as { id?: string }).id ?? (c as { credentialName?: string }).credentialName ?? `credential-${i}`;
+                        const name = (c as { name?: string }).name ?? (c as { credentialName?: string }).credentialName ?? id;
+                        return (
+                          <TableRow key={id}>
+                            <TableCell className="font-medium">{name}</TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    className="text-destructive"
+                                    onClick={() => setDeleteTarget({ type: "credential", id, name: String(name) })}
+                                  >
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="deployments" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-base">Deployments</CardTitle>
+                <CardDescription>Deployed flows (read-only).</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => mutateDeployments()}>
+                Refetch
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {deploymentsLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : deploymentsList.length === 0 && !deploymentsHasError ? (
+                <p className="text-sm text-muted-foreground">No deployments.</p>
+              ) : (
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Deployment</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {deploymentsList.map((d, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-mono text-xs">
+                            {typeof d === "object" && d !== null
+                              ? JSON.stringify(d)
+                              : String(d)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="nodes" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-base">Nodes</CardTitle>
+                <CardDescription>Available flow nodes (read-only).</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => mutateNodes()}>
+                Refetch
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {nodesLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : nodesList.length === 0 && !nodesHasError ? (
+                <p className="text-sm text-muted-foreground">No nodes.</p>
+              ) : (
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Node</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {nodesList.map((n, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-mono text-xs">
+                            {typeof n === "object" && n !== null ? JSON.stringify(n) : String(n)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-base">System</CardTitle>
+                <CardDescription>Flowise instance info (read-only).</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => mutateSystemInfo()}>
+                Refetch
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {systemInfoLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : systemInfoHasError ? (
+                <p className="text-sm text-destructive">Failed to load system info.</p>
+              ) : systemInfoData && typeof systemInfoData === "object" && !Array.isArray(systemInfoData) ? (
+                <pre className="text-xs font-mono bg-muted/50 p-4 rounded-md overflow-auto max-h-[400px]">
+                  {JSON.stringify(systemInfoData, null, 2)}
+                </pre>
+              ) : (
+                <p className="text-sm text-muted-foreground">No system info.</p>
               )}
             </CardContent>
           </Card>
@@ -1227,6 +1638,139 @@ export default function FlowisePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Execute chatflow */}
+      <Dialog
+        open={executeForm.open}
+        onOpenChange={(o) => setExecuteForm((prev) => ({ ...prev, open: o }))}
+      >
+        <DialogContent className="bg-background/95 backdrop-blur border-border max-w-lg max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Execute chatflow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label>Chatflow</Label>
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                value={executeForm.chatflowId}
+                onChange={(e) => setExecuteForm((prev) => ({ ...prev, chatflowId: e.target.value }))}
+              >
+                <option value="">Select a flow</option>
+                {chatflowsList.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name ?? f.id}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Inputs (JSON)</Label>
+              <Textarea
+                className="font-mono text-xs min-h-[120px]"
+                value={executeForm.inputsJson}
+                onChange={(e) => setExecuteForm((prev) => ({ ...prev, inputsJson: e.target.value }))}
+                placeholder='{"key": "value"}'
+              />
+            </div>
+            {executeForm.result != null && (
+              <div className="grid gap-2">
+                <Label>Result</Label>
+                <pre className="text-xs font-mono bg-muted/50 p-3 rounded-md overflow-auto max-h-[200px]">
+                  {executeForm.result}
+                </pre>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExecuteForm((prev) => ({ ...prev, open: false }))}>
+              Close
+            </Button>
+            <Button onClick={runExecute} disabled={executeForm.loading}>
+              {executeForm.loading ? "Running…" : "Run"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import chatflow */}
+      <Dialog
+        open={importForm.open}
+        onOpenChange={(o) => setImportForm((prev) => ({ ...prev, open: o }))}
+      >
+        <DialogContent className="bg-background/95 backdrop-blur border-border max-w-lg max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Import chatflow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label>File</Label>
+              <Input
+                type="file"
+                accept=".json,application/json"
+                onChange={(e) => setImportForm((prev) => ({ ...prev, file: e.target.files?.[0] ?? null }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Or paste JSON</Label>
+              <Textarea
+                className="font-mono text-xs min-h-[120px]"
+                value={importForm.pasteJson}
+                onChange={(e) => setImportForm((prev) => ({ ...prev, pasteJson: e.target.value }))}
+                placeholder="Paste chatflow JSON…"
+              />
+            </div>
+            {importForm.result != null && (
+              <div className="grid gap-2">
+                <Label>Result</Label>
+                <pre className="text-xs font-mono bg-muted/50 p-3 rounded-md overflow-auto max-h-[200px]">
+                  {importForm.result}
+                </pre>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportForm((prev) => ({ ...prev, open: false }))}>
+              Close
+            </Button>
+            <Button onClick={runImport} disabled={importForm.loading}>
+              {importForm.loading ? "Importing…" : "Import"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create credential */}
+      <Dialog
+        open={credentialForm.open}
+        onOpenChange={(o) => setCredentialForm((prev) => ({ ...prev, open: o }))}
+      >
+        <DialogContent className="bg-background/95 backdrop-blur border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create credential</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label>Body (JSON)</Label>
+              <Textarea
+                className="font-mono text-xs min-h-[160px]"
+                value={credentialForm.bodyJson}
+                onChange={(e) => setCredentialForm((prev) => ({ ...prev, bodyJson: e.target.value }))}
+                placeholder='{"credentialName": "my-cred", ...}'
+              />
+            </div>
+            {saveError && (
+              <p className="text-sm text-destructive">{saveError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCredentialForm((prev) => ({ ...prev, open: false }))}>
+              Cancel
+            </Button>
+            <Button onClick={saveCredential}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Test flow dialog (optional quick open from Chatflows tab) */}
       <Dialog

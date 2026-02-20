@@ -17,6 +17,9 @@ import {
   Image,
   FlaskConical,
   Palette,
+  Bot,
+  FolderOpen,
+  Sliders,
 } from "lucide-react";
 
 /** Logo component for The Dojo team */
@@ -34,7 +37,7 @@ function DojoLogo({ className }: { className?: string }) {
 }
 
 /** Context IDs for Dojo workspace switcher */
-export const DOJO_CONTEXT_IDS = ["home", "crafting", "verse"] as const;
+export const DOJO_CONTEXT_IDS = ["home", "crafting", "verse", "chat"] as const;
 export type DojoContextId = (typeof DOJO_CONTEXT_IDS)[number];
 
 /** Default context when none persisted */
@@ -65,6 +68,13 @@ export const dojoContexts: {
     logo: Palette,
     plan: "MNKY VERSE",
     href: "/verse",
+  },
+  {
+    id: "chat",
+    name: "Chat",
+    logo: Bot,
+    plan: "MNKY Chat",
+    href: "/dojo/chat",
   },
 ];
 
@@ -116,6 +126,7 @@ export const dojoNavGroups: DojoNavGroup[] = [
     label: "Dojo",
     items: [
       { title: "Home", url: "/dojo", icon: Home, isActive: true },
+      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
     ],
   },
@@ -137,6 +148,7 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
     items: [
       { title: "Blending Lab", url: "/dojo/crafting", icon: FlaskConical, isActive: true },
       { title: "Saved Blends", url: "/dojo/crafting/saved", icon: BookMarked },
+      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
     ],
   },
@@ -146,6 +158,20 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
       { title: "Verse Home", url: "/verse", icon: Globe },
       { title: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
       { title: "Glossary", url: "/verse/glossary", icon: BookMarked },
+    ],
+  },
+];
+
+/** Chat context: sidebar shows New Chat, Saved Chats, Folders, Flowise config, Settings */
+export const dojoChatNavGroups: DojoNavGroup[] = [
+  {
+    label: "Chat",
+    items: [
+      { title: "New chat", url: "/dojo/chat", icon: MessageSquare },
+      { title: "Saved chats", url: "/dojo/chat#saved", icon: BookMarked },
+      { title: "Folders", url: "/dojo/chat#folders", icon: FolderOpen },
+      { title: "Flowise config", url: "/dojo/chat#flowise", icon: Sliders },
+      { title: "Settings", url: "/dojo/chat#settings", icon: Settings },
     ],
   },
 ];
@@ -167,6 +193,7 @@ export const dojoVerseNavGroups: DojoNavGroup[] = [
     label: "Dojo",
     items: [
       { title: "Home", url: "/dojo", icon: Home },
+      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
       { title: "Crafting", url: "/dojo/crafting", icon: FlaskConical },
     ],
   },
@@ -179,6 +206,8 @@ export function getDojoNavGroupsForContext(contextId: DojoContextId): DojoNavGro
       return dojoCraftingNavGroups;
     case "verse":
       return dojoVerseNavGroups;
+    case "chat":
+      return dojoChatNavGroups;
     default:
       return dojoNavGroups;
   }
@@ -201,10 +230,17 @@ export const dojoCraftingQuickAccessItems: { name: string; url: string; icon: Lu
   { name: "Verse Shop", url: "/verse/shop", icon: ShoppingBag },
 ];
 
+/** Chat quick access (optional) */
+export const dojoChatQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
+  { name: "New chat", url: "/dojo/chat", icon: MessageSquare },
+  { name: "Flowise config", url: "/dojo/flowise", icon: Sliders },
+];
+
 /** Get quick access items for the active context */
 export function getDojoQuickAccessForContext(
   contextId: DojoContextId
 ): { name: string; url: string; icon: LucideIcon }[] {
   if (contextId === "crafting") return dojoCraftingQuickAccessItems;
+  if (contextId === "chat") return dojoChatQuickAccessItems;
   return dojoQuickAccessItems;
 }

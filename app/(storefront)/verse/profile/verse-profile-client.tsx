@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink } from "lucide-react";
+import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink, Key } from "lucide-react";
 import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
 import { isAgentSlug } from "@/lib/agents";
 import { VerseAudioDropzone } from "@/components/verse/verse-audio-dropzone";
@@ -80,6 +80,7 @@ export function VerseProfileClient({
   rewardClaimsCount = 0,
   savedBlendsCount = 0,
   hasFunnelSubmission = false,
+  role,
 }: {
   userId: string;
   email: string;
@@ -102,6 +103,7 @@ export function VerseProfileClient({
   rewardClaimsCount?: number;
   savedBlendsCount?: number;
   hasFunnelSubmission?: boolean;
+  role?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -120,9 +122,18 @@ export function VerseProfileClient({
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [shopifySuccessDismissed, setShopifySuccessDismissed] = useState(false);
   const [shopifyUnlinking, setShopifyUnlinking] = useState(false);
+  const [flowiseKeyInput, setFlowiseKeyInput] = useState("");
+  const [flowiseSaving, setFlowiseSaving] = useState(false);
+  const [flowiseVerifying, setFlowiseVerifying] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const showShopifyLinkedSuccess = shopifyLinkedSuccess && !shopifySuccessDismissed;
+
+  const canUseFlowiseKey = role === "admin" || role === "moderator" || role === "user";
+  const { data: flowiseKeyStatus, mutate: mutateFlowiseKeyStatus } = useSWR<{
+    hasKey: boolean;
+    verifiedAt: string | null;
+  }>(canUseFlowiseKey ? "/api/flowise/api-key/status" : null, fetcher);
 
   useEffect(() => {
     if (!showShopifyLinkedSuccess) return;
@@ -639,6 +650,79 @@ export function VerseProfileClient({
               </Button>
             )}
           </div>
+          {canUseFlowiseKey && (
+            <div className="flex flex-col gap-2 rounded-lg border border-verse-text/15 bg-verse-bg/40 px-3 py-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-verse-text flex items-center gap-2">
+                  <Key className="h-4 w-4" />
+                  Flowise API key
+                </span>
+                <span className="text-xs text-verse-text-muted">
+                  {flowiseKeyStatus?.hasKey
+                    ? flowiseKeyStatus.verifiedAt
+                      ? `Verified ${formatDate(flowiseKeyStatus.verifiedAt)}`
+                      : "Stored"
+                    : "Not set"}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="password"
+                  placeholder="Flowise API key"
+                  value={flowiseKeyInput}
+                  onChange={(e) => setFlowiseKeyInput(e.target.value)}
+                  className="max-w-xs font-mono text-sm"
+                  autoComplete="off"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!flowiseKeyInput.trim() || flowiseSaving}
+                  onClick={async () => {
+                    setFlowiseSaving(true);
+                    try {
+                      const res = await fetch("/api/flowise/api-key", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ apiKey: flowiseKeyInput }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error ?? "Failed to save");
+                      setFlowiseKeyInput("");
+                      mutateFlowiseKeyStatus();
+                    } catch (e) {
+                      setProfileError(e instanceof Error ? e.message : "Failed to save key");
+                    } finally {
+                      setFlowiseSaving(false);
+                    }
+                  }}
+                >
+                  {flowiseSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!flowiseKeyStatus?.hasKey || flowiseVerifying}
+                  onClick={async () => {
+                    setFlowiseVerifying(true);
+                    setProfileError(null);
+                    try {
+                      const res = await fetch("/api/flowise/verify-api-key", { method: "POST" });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error ?? "Verification failed");
+                      mutateFlowiseKeyStatus();
+                    } catch (e) {
+                      setProfileError(e instanceof Error ? e.message : "Verification failed");
+                    } finally {
+                      setFlowiseVerifying(false);
+                    }
+                  }}
+                >
+                  {flowiseVerifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify"}
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
