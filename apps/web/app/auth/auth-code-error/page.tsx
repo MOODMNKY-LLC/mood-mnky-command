@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { AuthPageLayout } from "@/components/auth/auth-page-layout"
 
 /**
  * Shown when OAuth code exchange fails (e.g. GitHub callback with invalid/expired code).
@@ -8,14 +9,14 @@ import { Button } from "@/components/ui/button"
  */
 export default function AuthCodeErrorPage() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <AuthPageLayout>
       <div className="w-full max-w-sm space-y-4">
-        <Card className="border-border bg-card">
+        <Card className="auth-card w-full">
           <CardHeader>
-            <CardTitle className="text-lg">Sign-in link invalid or expired</CardTitle>
+            <CardTitle className="text-lg text-[var(--verse-text)]">Sign-in link invalid or expired</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--verse-text-muted)]">
               The sign-in link could not be completed. This can happen if the link was already
               used, has expired, or there was a configuration problem. Please try signing in again.
             </p>
@@ -25,6 +26,6 @@ export default function AuthCodeErrorPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthPageLayout>
   )
 }

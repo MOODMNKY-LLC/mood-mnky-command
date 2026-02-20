@@ -5,25 +5,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { AuthPageLayout } from "@/components/auth/auth-page-layout"
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <AuthPageLayout>
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-1">
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-xl font-semibold tracking-tight text-[var(--verse-text)]">
               MOOD MNKY LABZ
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--verse-text-muted)]">
               Reset your password
             </p>
           </div>
-          <Card className="w-full border-border bg-card">
+          <Card className="auth-card w-full">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Forgot password</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg text-[var(--verse-text)]">Forgot password</CardTitle>
+              <CardDescription className="text-[var(--verse-text-muted)]">
                 {"We'll send you a link to reset it"}
               </CardDescription>
             </CardHeader>
@@ -33,6 +34,6 @@ export default function ForgotPasswordPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </AuthPageLayout>
   )
 }

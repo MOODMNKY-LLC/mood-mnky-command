@@ -2,6 +2,7 @@
 
 import React from "react"
 import Link from "next/link"
+import { SiDiscord, SiGithub } from "react-icons/si"
 import { cn } from "@/lib/utils"
 import {
   Tabs,
@@ -43,7 +44,7 @@ export function DualAuthTabs({
     <Tabs
       value={value ?? defaultTab}
       defaultValue={defaultTab}
-      className="w-full max-w-md"
+      className="w-full max-w-md min-h-[340px]"
       onValueChange={(v) => onTabChange?.(v as AuthTab)}
     >
       <TabsList
@@ -76,10 +77,10 @@ export function DualAuthTabs({
       </TabsList>
 
       <TabsContent value="verse">
-        <Card className="border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+        <Card className="border border-[var(--verse-border)] bg-[rgba(var(--verse-bg-rgb),0.85)] shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Login to the MNKY VERSE</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg text-[var(--verse-text)]">Login to the MNKY VERSE</CardTitle>
+            <CardDescription className="text-[var(--verse-text-muted)]">
               Your gateway to the universe of scents
             </CardDescription>
           </CardHeader>
@@ -87,15 +88,16 @@ export function DualAuthTabs({
             <OAuthProviderButton
               provider="discord"
               redirectTo={`/verse/auth/callback?next=${encodeURIComponent(verseRedirectTo)}`}
-              className="inline-flex items-center justify-center rounded-md bg-[#5865F2] text-white text-sm font-medium hover:bg-[#4752C4] h-10 px-4 w-full transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--verse-button)] text-[var(--verse-button-text)] text-sm font-medium hover:opacity-90 h-10 px-4 w-full transition-opacity"
             >
+              <SiDiscord className="size-5 shrink-0" aria-hidden />
               Login with Discord
             </OAuthProviderButton>
             <LoginForm redirectTo={verseRedirectTo} />
             <div className="text-center">
               <Link
                 href="/verse"
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                className="text-xs text-[var(--verse-text-muted)] hover:text-[var(--verse-text)] transition-colors"
               >
                 Continue as guest
               </Link>
@@ -105,42 +107,33 @@ export function DualAuthTabs({
       </TabsContent>
 
       <TabsContent value="labz">
-        <Card
-          className={cn(
-            isLight
-              ? "border-gray-200/80 bg-white/95 text-gray-900 shadow-lg backdrop-blur"
-              : "border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80"
-          )}
-        >
+        <Card className="border border-[var(--verse-border)] bg-[rgba(var(--verse-bg-rgb),0.85)] shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
           <CardHeader className="pb-4">
-            <CardTitle
-              className={cn(
-                "text-lg",
-                isLight && "text-gray-900"
-              )}
-            >
+            <CardTitle className="text-lg text-[var(--verse-text)]">
               Login to MNKY LABZ
             </CardTitle>
-            <CardDescription
-              className={isLight ? "text-gray-600" : undefined}
-            >
-              Admin access to manage your product lab
+            <CardDescription className="text-[var(--verse-text-muted)]">
+              MNKY VERSE COMMAND CENTER
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <OAuthProviderButton
               provider="github"
               redirectTo="/auth/callback?next=/"
-              className={cn(
-                "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 w-full transition-colors",
-                isLight
-                  ? "bg-gray-900 text-white hover:bg-gray-800"
-                  : "bg-[#24292f] text-white hover:bg-[#2d333b]"
-              )}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--verse-button)] text-[var(--verse-button-text)] text-sm font-medium hover:opacity-90 h-10 px-4 w-full transition-opacity"
             >
+              <SiGithub className="size-5 shrink-0" aria-hidden />
               Login with GitHub
             </OAuthProviderButton>
-            <LoginForm variant={isLight ? "light" : "default"} />
+            <LoginForm variant="default" />
+            <div className="text-center">
+              <Link
+                href="/verse"
+                className="text-xs text-[var(--verse-text-muted)] hover:text-[var(--verse-text)] transition-colors"
+              >
+                Visit MNKY VERSE
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </TabsContent>

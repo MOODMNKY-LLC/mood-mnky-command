@@ -22,7 +22,7 @@ const nextConfig = {
     return config
   },
   experimental: {
-    middlewareClientMaxBodySize: "60mb",
+    proxyClientMaxBodySize: "60mb",
   },
   typescript: {
     ignoreBuildErrors: true,

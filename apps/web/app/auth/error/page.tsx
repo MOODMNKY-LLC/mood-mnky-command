@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AuthPageLayout } from "@/components/auth/auth-page-layout"
 
 export default async function AuthErrorPage({
   searchParams,
@@ -8,25 +9,25 @@ export default async function AuthErrorPage({
   const params = await searchParams
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <AuthPageLayout>
       <div className="w-full max-w-sm">
-        <Card className="border-border bg-card">
+        <Card className="auth-card w-full">
           <CardHeader>
-            <CardTitle className="text-lg">Authentication error</CardTitle>
+            <CardTitle className="text-lg text-[var(--verse-text)]">Authentication error</CardTitle>
           </CardHeader>
           <CardContent>
             {params?.error ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--verse-text-muted)]">
                 Error: {params.error}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--verse-text-muted)]">
                 An unspecified error occurred during authentication.
               </p>
             )}
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthPageLayout>
   )
 }

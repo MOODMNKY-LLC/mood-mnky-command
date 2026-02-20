@@ -16,6 +16,10 @@ flowchart TB
         verseGlass[verse-glass.css]
         verseComps[components/verse]
     end
+    subgraph Auth [Auth Section]
+        authShell[auth-shell.css]
+        authLayout[AuthPageLayout]
+    end
     subgraph Labz [LABZ / Dashboard]
         appSidebar[app-sidebar]
         dashboardLayout[dashboard layout]
@@ -27,10 +31,13 @@ flowchart TB
     globals --> tailwind
     globals --> shadcn
     verseCss --> verseComps
+    verseCss --> authShell
+    verseGlass --> authShell
     verseComps --> verseCss
     tailwind --> verseComps
     tailwind --> appSidebar
     tailwind --> dojoSidebar
+    authShell --> authLayout
 ```
 
 ---
@@ -125,6 +132,37 @@ This ensures the LABZ auth card always renders in light mode, regardless of syst
 
 ---
 
+## Auth
+
+Auth pages (`app/auth/`) use the **Verse design system** for consistent aesthetic with the storefront. They consume verse-storefront tokens via an auth shell.
+
+### Auth Shell
+
+- **Layout**: `app/auth/layout.tsx` imports `verse-storefront.css`, `verse-glass.css`, and `auth-shell.css`
+- **AuthVerseShell**: Client component that syncs `next-themes` resolved theme to `data-verse-theme` so verse tokens (light/dark) apply correctly
+- **AuthPageLayout**: Shared wrapper for all auth pages—provides verse-bg + DottedMap background, optional mascot slot, BlurFade content wrapper
+- **Theme sync**: Auth uses `next-themes` (AuthModeToggle); `AuthVerseShell` maps `resolvedTheme` to `data-verse-theme` for verse CSS variables
+
+### Auth Page Structure
+
+- **Login** (`/auth/login`): Uses `AuthPageLayout` with mascot (Verse or LABZ per tab), DualAuthTabs with glass-style cards
+- **Other pages** (sign-up, forgot-password, update-password, etc.): Use `AuthPageLayout` (no mascot), glass `.auth-card` for form containers
+
+### Auth Design Tokens
+
+Auth pages inherit verse tokens via `.verse-storefront.auth-shell`:
+
+- Background: `var(--verse-bg)`
+- Text: `var(--verse-text)`, muted: `var(--verse-text-muted)`
+- Borders: `var(--verse-border)`
+- Glass cards: `rgba(var(--verse-bg-rgb), 0.85)`, `backdrop-blur-xl`
+
+### Files
+
+- `app/auth/auth-shell.css` — auth-scoped styles, `.auth-card` glass panel
+- `components/auth/auth-verse-shell.tsx` — theme sync wrapper
+- `components/auth/auth-page-layout.tsx` — shared background + DottedMap + content slot
+
 ---
 
 ## Dojo
@@ -158,6 +196,7 @@ If LABZ-specific overrides are needed later:
 ## References
 
 - Root tokens: `app/globals.css`
+- Auth shell: `app/auth/auth-shell.css`, `components/auth/auth-verse-shell.tsx`, `components/auth/auth-page-layout.tsx`
 - Dojo: `app/dojo/layout.tsx`, `docs/DOJO-SECTION.md`
 - Verse tokens: `app/(storefront)/verse/verse-storefront.css`
 - Glass effects: `app/(storefront)/verse/verse-glass.css`
