@@ -8,6 +8,7 @@ import {
 } from "@/components/dojo/dojo-quests-card";
 import { DojoQuickActionsCard } from "@/components/dojo/dojo-quick-actions-card";
 import { DojoHomeSections } from "@/components/dojo/dojo-home-sections";
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 
 function getQuestAction(rule: unknown, issueSlugById: Record<string, string>): { href: string; label: string } | null {
   const r = rule as { requirements?: Array<{ type?: string; issueId?: string }> } | null;
@@ -48,7 +49,7 @@ export default async function DojoPage() {
     profileId
       ? supabase
           .from("profiles")
-          .select("id, display_name, full_name, avatar_url, email, handle, shopify_customer_id")
+          .select("id, display_name, full_name, avatar_url, email, handle, shopify_customer_id, preferences, shopify_metafields_synced_at")
           .eq("id", profileId)
           .single()
       : Promise.resolve({ data: null, error: null }),
@@ -166,7 +167,21 @@ export default async function DojoPage() {
     email?: string | null;
     handle?: string | null;
     shopify_customer_id?: string | null;
+    preferences?: Record<string, unknown> | null;
+    shopify_metafields_synced_at?: string | null;
   } | null;
+  const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const shopifyLinked = !!profile?.shopify_customer_id;
+  const wishlistCount = Array.isArray(prefs?.wishlist) ? (prefs.wishlist as unknown[]).length : 0;
+  const scentPersonality = String(prefs?.scent_personality ?? "");
+  const lastSyncAt = profile?.shopify_metafields_synced_at ?? null;
+  const favoriteNotes =
+    Array.isArray(prefs.favorite_notes)
+      ? (prefs.favorite_notes as string[]).join(", ")
+      : typeof prefs.favorite_notes === "string"
+        ? prefs.favorite_notes
+        : "";
+  const sizePreferences = (prefs.size_preferences ?? {}) as Record<string, string>;
   const savedBlendsCount = blendsCountResult.count ?? 0;
   const hasDiscordLink = !!discordResult.data;
 
@@ -228,6 +243,7 @@ export default async function DojoPage() {
           xpTotal={xpTotal}
           level={level}
           handle={profile?.handle}
+          shopifyLinked={shopifyLinked}
         />
         <DojoXpCard xpTotal={xpTotal} level={level} />
         <DojoQuestsCard
@@ -237,15 +253,37 @@ export default async function DojoPage() {
         />
         <DojoQuickActionsCard />
       </div>
-      <div className="min-h-0 flex-1 space-y-4 rounded-xl bg-muted/50 p-4">
-        <h2 className="text-lg font-semibold">Your space</h2>
-        <DojoHomeSections
-          rewardClaims={rewardClaims}
-          savedBlendsCount={savedBlendsCount}
-          funnelProfile={funnelProfile}
-          linkedAccounts={{ discord: hasDiscordLink }}
-          featuredIssue={featuredIssue}
-        />
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted/50 p-4">
+        <div
+          className="absolute inset-0 overflow-hidden rounded-xl"
+          aria-hidden
+        >
+          <AnimatedGridPattern
+            numSquares={50}
+            maxOpacity={0.15}
+            duration={4}
+            repeatDelay={0.5}
+            width={40}
+            height={40}
+            className="fill-muted-foreground/15 stroke-muted-foreground/15"
+          />
+        </div>
+        <div className="relative z-10 space-y-4">
+          <h2 className="text-lg font-semibold">Your space</h2>
+          <DojoHomeSections
+            rewardClaims={rewardClaims}
+            savedBlendsCount={savedBlendsCount}
+            funnelProfile={funnelProfile}
+            linkedAccounts={{ discord: hasDiscordLink }}
+            featuredIssue={featuredIssue}
+            shopifyLinked={shopifyLinked}
+            wishlistCount={wishlistCount}
+            scentPersonality={scentPersonality}
+            lastSyncAt={lastSyncAt}
+            favoriteNotes={favoriteNotes}
+            sizePreferences={sizePreferences}
+          />
+        </div>
       </div>
     </div>
   );

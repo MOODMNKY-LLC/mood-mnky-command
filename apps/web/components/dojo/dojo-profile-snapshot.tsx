@@ -3,6 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Store } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DojoProfileSnapshotProps {
   displayName: string | null;
@@ -11,6 +18,7 @@ interface DojoProfileSnapshotProps {
   xpTotal: number;
   level: number;
   handle?: string | null;
+  shopifyLinked?: boolean;
 }
 
 export function DojoProfileSnapshot({
@@ -20,6 +28,7 @@ export function DojoProfileSnapshot({
   xpTotal,
   level,
   handle,
+  shopifyLinked = false,
 }: DojoProfileSnapshotProps) {
   const initials =
     displayName
@@ -47,9 +56,25 @@ export function DojoProfileSnapshot({
               <p className="text-muted-foreground text-xs truncate">@{handle}</p>
             )}
           </div>
-          <Badge variant="secondary" className="shrink-0">
-            Lvl {level}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-2">
+            {shopifyLinked && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5" aria-label="Shop linked">
+                      <Store className="h-3.5 w-3.5 text-primary" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Shop linked</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            <Badge variant="secondary">
+              Lvl {level}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

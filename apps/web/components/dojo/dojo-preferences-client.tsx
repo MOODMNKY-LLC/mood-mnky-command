@@ -17,6 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useVerseUser } from "@/components/verse/verse-user-context";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Save, Store, RefreshCw, Check, FlaskConical, Heart, Shirt, Download, AlertTriangle, X } from "lucide-react";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 
 interface AgentSummary {
   slug: string;
@@ -342,17 +344,35 @@ export function DojoPreferencesClient() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 p-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Preferences
-        </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          Customize your Verse experience.
-        </p>
+    <div className="relative min-h-full w-full overflow-hidden">
+      <div
+        className="fixed inset-0 -z-10 overflow-hidden"
+        aria-hidden
+      >
+        <AnimatedGridPattern
+          numSquares={50}
+          maxOpacity={0.2}
+          duration={4}
+          repeatDelay={0.5}
+          width={40}
+          height={40}
+          className="fill-muted-foreground/15 stroke-muted-foreground/15"
+        />
       </div>
+      <div className="relative z-10 mx-auto max-w-2xl space-y-8 p-6">
+        <BlurFade delay={0.05} inView inViewMargin="-20px">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Preferences
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Customize your Verse experience.
+            </p>
+          </div>
+        </BlurFade>
 
-      <Card>
+        <BlurFade delay={0.1} inView inViewMargin="-20px">
+          <Card className="dojo-glass-panel">
         <CardHeader>
           <CardTitle>Default agent</CardTitle>
           <CardDescription>
@@ -396,9 +416,11 @@ export function DojoPreferencesClient() {
             </p>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </BlurFade>
 
-      <Card>
+        <BlurFade delay={0.15} inView inViewMargin="-20px">
+          <Card className="dojo-glass-panel">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FlaskConical className="h-5 w-5" />
@@ -443,9 +465,14 @@ export function DojoPreferencesClient() {
           </div>
         </CardContent>
       </Card>
+        </BlurFade>
 
       {shopLinked && (
-        <Card>
+        <BlurFade delay={0.2} inView inViewMargin="-20px">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Shopper Profile &amp; Shopify Sync
+          </h2>
+          <Card className="dojo-glass-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Store className="h-5 w-5" />
@@ -719,11 +746,15 @@ export function DojoPreferencesClient() {
             )}
           </CardContent>
         </Card>
+        </BlurFade>
       )}
 
+        <BlurFade delay={0.25} inView inViewMargin="-20px">
       <Button variant="outline" asChild>
         <Link href="/dojo">Back to Dojo</Link>
       </Button>
+        </BlurFade>
+      </div>
     </div>
   );
 }
