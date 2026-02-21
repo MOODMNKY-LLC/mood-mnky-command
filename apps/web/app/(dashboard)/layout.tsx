@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { LabzContextProvider } from "@/components/labz-context-provider"
 import { Separator } from "@/components/ui/separator"
 import { AppInfoDialog } from "@/components/app-info-dialog"
 import { DocsButton } from "@/components/docs/docs-button"
@@ -57,8 +58,9 @@ export default function DashboardLayout({
   return (
     <DocsProvider>
       <Toaster />
-      <SidebarProvider>
-        <AppSidebar />
+      <LabzContextProvider>
+        <SidebarProvider>
+          <AppSidebar />
         <SidebarInset>
           <header className="flex h-14 min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-border px-4">
             <div className="flex items-center gap-2">
@@ -75,10 +77,11 @@ export default function DashboardLayout({
           </header>
           <div className="flex-1 overflow-auto">{children}</div>
         </SidebarInset>
-        <LabzPersonaStateProvider>
-          <LabzDock />
-        </LabzPersonaStateProvider>
-      </SidebarProvider>
+          <LabzPersonaStateProvider>
+            <LabzDock />
+          </LabzPersonaStateProvider>
+        </SidebarProvider>
+      </LabzContextProvider>
     </DocsProvider>
   )
 }

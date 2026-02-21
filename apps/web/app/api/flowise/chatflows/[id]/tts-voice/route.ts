@@ -1,8 +1,8 @@
 /**
- * PUT /api/flowise/chatflows/[chatflowId]/tts-voice (admin only)
+ * PUT /api/flowise/chatflows/[id]/tts-voice (admin only)
  * Body: { voice: string }. Upserts per-chatflow TTS voice override.
  *
- * DELETE /api/flowise/chatflows/[chatflowId]/tts-voice (admin only)
+ * DELETE /api/flowise/chatflows/[id]/tts-voice (admin only)
  * Removes override so chatflow uses app default.
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -38,17 +38,17 @@ async function requireAdmin() {
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ chatflowId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAdmin();
   if (!auth.ok) {
     return NextResponse.json(auth.body, { status: auth.status });
   }
 
-  const { chatflowId } = await context.params;
+  const { id: chatflowId } = await context.params;
   if (!chatflowId?.trim()) {
     return NextResponse.json(
-      { error: "Missing chatflowId" },
+      { error: "Missing chatflow id" },
       { status: 400 }
     );
   }
@@ -97,17 +97,17 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  context: { params: Promise<{ chatflowId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAdmin();
   if (!auth.ok) {
     return NextResponse.json(auth.body, { status: auth.status });
   }
 
-  const { chatflowId } = await context.params;
+  const { id: chatflowId } = await context.params;
   if (!chatflowId?.trim()) {
     return NextResponse.json(
-      { error: "Missing chatflowId" },
+      { error: "Missing chatflow id" },
       { status: 400 }
     );
   }

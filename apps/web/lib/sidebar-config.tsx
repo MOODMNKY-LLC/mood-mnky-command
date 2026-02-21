@@ -51,6 +51,7 @@ export interface NavItemWithChildren extends NavItem {
   children?: { title: string; href: string }[]
 }
 
+/** @deprecated Use productDataItems + productBuilderItems + aiToolsItems. */
 export const labItems: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Formulas", href: "/formulas", icon: FlaskConical },
@@ -61,6 +62,36 @@ export const labItems: NavItem[] = [
   { title: "Product Builder", href: "/products", icon: Package },
   { title: "CODE MNKY", href: "/code-mnky", icon: Bot },
 ]
+
+/** Product Data: Dashboard, Formulas, Fragrance Oils, Glossary, Blending Lab, Wicks & Wax. */
+export const productDataItems: NavItem[] = [
+  { title: "Dashboard", href: "/", icon: LayoutDashboard },
+  { title: "Formulas", href: "/formulas", icon: FlaskConical },
+  { title: "Fragrance Oils", href: "/fragrances", icon: Droplets },
+  { title: "Glossary", href: "/glossary", icon: BookOpen },
+  { title: "Blending Lab", href: "/blending", icon: Palette },
+  { title: "Wicks & Wax", href: "/wicks", icon: Flame },
+]
+
+/** Product Builder: single item. */
+export const productBuilderItems: NavItem[] = [
+  { title: "Product Builder", href: "/products", icon: Package },
+]
+
+/** Create & Chat with CODE MNKY first (AI Tools group). */
+export const createAndChatItems: NavItem[] = [
+  { title: "CODE MNKY", href: "/code-mnky", icon: Bot },
+  { title: "AI Chat", href: "/chat", icon: MessageSquare },
+  { title: "Agents", href: "/chat/agents", icon: Bot },
+  { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
+  { title: "Image Studio", href: "/studio", icon: Sparkles },
+  { title: "Audio Studio", href: "/studio/audio", icon: Mic },
+  { title: "Video Studio", href: "/studio/video", icon: Video },
+  { title: "Media Library", href: "/media", icon: ImagePlus },
+]
+
+/** AI Tools = Create & Chat (includes CODE MNKY). Alias for clarity. */
+export const aiToolsItems: NavItem[] = createAndChatItems
 
 export const storeItems: NavItemWithChildren[] = [
   { title: "Store Overview", href: "/store", icon: Store },
@@ -101,17 +132,8 @@ export const storeItems: NavItemWithChildren[] = [
 /** Integrations: Notion Sync, etc. Extensible for future sources. */
 export const integrationsItems: NavItem[] = [
   { title: "Notion Sync", href: "/notion", icon: Database },
-]
-
-/** Create & Chat: merged MNKY Chat + Studio for a single collapsible group. */
-export const createAndChatItems: NavItem[] = [
-  { title: "AI Chat", href: "/chat", icon: MessageSquare },
-  { title: "Agents", href: "/chat/agents", icon: Bot },
-  { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
-  { title: "Image Studio", href: "/studio", icon: Sparkles },
-  { title: "Audio Studio", href: "/studio/audio", icon: Mic },
-  { title: "Video Studio", href: "/studio/video", icon: Video },
-  { title: "Media Library", href: "/media", icon: ImagePlus },
+  { title: "Flowise", href: "/platform/flowise", icon: Workflow },
+  { title: "Discord", href: "/platform/discord", icon: MessageSquare },
 ]
 
 /** @deprecated Use createAndChatItems; kept for backwards compatibility. */
@@ -137,16 +159,32 @@ export const verseBackofficeItems: NavItem[] = [
   { title: "Discord Events", href: "/verse-backoffice/discord-events", icon: Activity },
 ]
 
-/** Platform (Supabase, funnels, tables, etc.). */
-export const platformItems: NavItem[] = [
+/** Verse group: public + backoffice for single collapsible "Verse" with sub-sections. */
+export const verseItemsWithBackoffice = {
+  public: verseItems,
+  backoffice: verseBackofficeItems,
+} as const
+
+/** Platform: Data & Admin (tables, SQL, storage, members). */
+export const platformDataAdminItems: NavItem[] = [
   { title: "Overview", href: "/platform", icon: Server },
-  { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
   { title: "Table Editor", href: "/platform/tables", icon: Table2 },
   { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
-  { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
-  { title: "Flowise", href: "/platform/flowise", icon: Workflow },
   { title: "Storage", href: "/platform/storage", icon: HardDrive },
   { title: "Members", href: "/members", icon: Users },
+]
+
+/** Platform: Automation & Workflows (funnels, Flowise, storefront assistant). */
+export const platformAutomationItems: NavItem[] = [
+  { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
+  { title: "Flowise", href: "/platform/flowise", icon: Workflow },
+  { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
+]
+
+/** Platform (Supabase, funnels, tables, etc.). Combined for backward compatibility. */
+export const platformItems: NavItem[] = [
+  ...platformDataAdminItems,
+  ...platformAutomationItems,
 ]
 
 /** @deprecated Use platformItems. */
