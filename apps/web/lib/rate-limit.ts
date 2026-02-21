@@ -1,18 +1,15 @@
 import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
-
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+import { getRedis } from "@/lib/redis"
 
 /**
  * Rate limiter for public-facing mag/ugc endpoints.
  * Sliding window: 10 requests per 60 seconds per identifier.
  * When Upstash is not configured, limits are not enforced (graceful degradation).
+ * Uses shared Redis client from @/lib/redis.
  */
 let ratelimit: Ratelimit | null = null
-
-if (redisUrl && redisToken) {
-  const redis = new Redis({ url: redisUrl, token: redisToken })
+const redis = getRedis()
+if (redis) {
   ratelimit = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(10, "60 s"),

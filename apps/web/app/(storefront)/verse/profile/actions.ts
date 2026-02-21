@@ -103,5 +103,6 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileRe
   }
 
   revalidatePath("/verse/profile", "page")
+  revalidatePath("/dojo/profile", "page")
   return { success: true }
 }

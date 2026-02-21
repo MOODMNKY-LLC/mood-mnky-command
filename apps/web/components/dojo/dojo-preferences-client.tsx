@@ -480,7 +480,7 @@ export function DojoPreferencesClient() {
             </CardTitle>
             <CardDescription>
               Sync your nickname and bio to your Shopify account for checkout personalization and email flows.{" "}
-              <Link href="/verse/profile" className="underline hover:no-underline">
+              <Link href="/dojo/profile" className="underline hover:no-underline">
                 Edit full profile
               </Link>
             </CardDescription>

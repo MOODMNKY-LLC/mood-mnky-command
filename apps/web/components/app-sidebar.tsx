@@ -242,12 +242,12 @@ export function AppSidebar() {
               </SidebarGroup>
         </Collapsible>
 
-        {/* ======== Verse Backoffice (Manga, XP, UGC, Discord) ======== */}
+        {/* ======== Community (Manga, XP, UGC, Discord) ======== */}
         <Collapsible defaultOpen className="group/verse-backoffice">
           <SidebarGroup>
             <SidebarGroupLabel asChild>
               <CollapsibleTrigger className="flex w-full items-center">
-                Verse Backoffice
+                Community
                 <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/verse-backoffice:rotate-90" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>

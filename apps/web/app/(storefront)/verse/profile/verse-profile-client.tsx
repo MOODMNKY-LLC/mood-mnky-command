@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink, Key, Store } from "lucide-react";
+import { LogOut, FileAudio, Trash2, Loader2, User, Award, Link2, Music, ExternalLink, Key, Store, MessageCircle } from "lucide-react";
+import { SiGithub } from "react-icons/si";
 import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
 import { isAgentSlug } from "@/lib/agents";
 import { VerseAudioDropzone } from "@/components/verse/verse-audio-dropzone";
@@ -75,6 +76,7 @@ export function VerseProfileClient({
   shopifyLinkedSuccess = false,
   storeAccountUrl,
   discordLinked = false,
+  githubLinked = false,
   xpTotal = 0,
   level = 1,
   rewardClaimsCount = 0,
@@ -98,6 +100,7 @@ export function VerseProfileClient({
   shopifyLinkedSuccess?: boolean;
   storeAccountUrl?: string | null;
   discordLinked?: boolean;
+  githubLinked?: boolean;
   xpTotal?: number;
   level?: number;
   rewardClaimsCount?: number;
@@ -652,7 +655,10 @@ export function VerseProfileClient({
             )}
           </div>
           <div className="flex items-center justify-between rounded-lg border border-verse-text/15 bg-verse-bg/40 px-3 py-2">
-            <span className="text-sm font-medium text-verse-text">Discord</span>
+            <span className="text-sm font-medium text-verse-text flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-verse-text-muted" />
+              Discord
+            </span>
             {discordLinked ? (
               <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
                 Linked
@@ -660,6 +666,21 @@ export function VerseProfileClient({
             ) : (
               <Button variant="outline" size="sm" asChild>
                 <Link href="/verse/auth/discord/link">Link account</Link>
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-verse-text/15 bg-verse-bg/40 px-3 py-2">
+            <span className="text-sm font-medium text-verse-text flex items-center gap-2">
+              <SiGithub className="h-4 w-4 text-verse-text-muted" />
+              GitHub
+            </span>
+            {githubLinked ? (
+              <span className="text-xs font-medium uppercase tracking-wider text-verse-text-muted">
+                Linked
+              </span>
+            ) : (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/verse/auth/github/link">Link account</Link>
               </Button>
             )}
           </div>

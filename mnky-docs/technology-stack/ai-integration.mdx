@@ -30,6 +30,24 @@ MOOD MNKY leverages cutting-edge AI technologies to enhance product personalizat
   </Tab>
 </Tabs>
 
+## Flowise vs OpenAI Separation
+
+MOOD MNKY uses a clear architectural separation between chatflow/chatbot workflows and server-side AI processing:
+
+**Flowise (primary for chatflows/chatbots):**
+- Dojo Blending Lab chat, custom tools, document store RAG
+- Hosted Flowise instance with S3/MinIO for document storage
+- Elements AI SDK for chat UI; flowise-sdk as app bridge
+- Automatic fallback to OpenAI when Flowise is unavailable
+
+**OpenAI (exclusive for server-side):**
+- LABZ chat, Verse chat, storefront assistant
+- Platform AI-SQL, blend description, image/video generation
+- Vercel AI SDK (streamText, useChat) and OpenAI Agents SDK (stub)
+- Not routed through Flowise
+
+See [Flowise vs OpenAI Separation](/technology-stack/flowise-openai-separation) for architecture, env vars, and document store setup.
+
 ## AI Agents Architecture
 
 Our AI system is built around specialized agents that work together to deliver personalized experiences:

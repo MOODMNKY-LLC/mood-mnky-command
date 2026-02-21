@@ -9,7 +9,9 @@ import {
   Image,
   ChevronRight,
   Heart,
+  Store,
 } from "lucide-react";
+import { SiGithub } from "react-icons/si";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,11 +26,21 @@ export type RewardClaim = {
   payload: Record<string, unknown>;
 };
 
+export type LinkedAccountEntry = {
+  linked: boolean;
+  linkUrl: string;
+  manageUrl?: string;
+};
+
 interface DojoHomeSectionsProps {
   rewardClaims: RewardClaim[];
   savedBlendsCount: number;
   funnelProfile: Record<string, unknown> | null;
-  linkedAccounts: { discord: boolean };
+  linkedAccounts: {
+    shopify: LinkedAccountEntry;
+    discord: Pick<LinkedAccountEntry, "linked" | "linkUrl">;
+    github: Pick<LinkedAccountEntry, "linked" | "linkUrl">;
+  };
   /** When set, show "Current issue" link in Manga & Issues card (env NEXT_PUBLIC_FEATURED_ISSUE_SLUG or first published). */
   featuredIssue?: { slug: string; title: string } | null;
   shopifyLinked?: boolean;
@@ -153,15 +165,62 @@ export function DojoHomeSections({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="flex items-center justify-between rounded-md border px-3 py-2">
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Discord</span>
+          {[
+            {
+              key: "shopify",
+              label: "Shopify",
+              icon: Store,
+              linked: linkedAccounts.shopify.linked,
+              linkUrl: linkedAccounts.shopify.linkUrl,
+              manageUrl: linkedAccounts.shopify.manageUrl,
+            },
+            {
+              key: "discord",
+              label: "Discord",
+              icon: MessageCircle,
+              linked: linkedAccounts.discord.linked,
+              linkUrl: linkedAccounts.discord.linkUrl,
+              manageUrl: undefined,
+            },
+            {
+              key: "github",
+              label: "GitHub",
+              icon: SiGithub,
+              linked: linkedAccounts.github.linked,
+              linkUrl: linkedAccounts.github.linkUrl,
+              manageUrl: undefined,
+            },
+          ].map(({ key, label, icon: Icon, linked, linkUrl, manageUrl }) => (
+            <div
+              key={key}
+              className="flex items-center justify-between rounded-md border px-3 py-2"
+            >
+              <div className="flex items-center gap-2">
+                <Icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">{label}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={linked ? "default" : "secondary"}>
+                  {linked ? "Linked" : "Not linked"}
+                </Badge>
+                {!linked ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={linkUrl}>Link</a>
+                  </Button>
+                ) : manageUrl ? (
+                  <Button variant="ghost" size="sm" asChild>
+                    <a href={manageUrl} target="_blank" rel="noopener noreferrer">
+                      Manage
+                    </a>
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/dojo/profile">Manage</Link>
+                  </Button>
+                )}
+              </div>
             </div>
-            <Badge variant={linkedAccounts.discord ? "default" : "secondary"}>
-              {linkedAccounts.discord ? "Linked" : "Not linked"}
-            </Badge>
-          </div>
+          ))}
         </CardContent>
       </Card>
 

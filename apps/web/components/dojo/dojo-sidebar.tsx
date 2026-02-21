@@ -22,8 +22,10 @@ import {
   getDojoNavGroupsForContext,
   getDojoQuickAccessForContext,
 } from "@/lib/dojo-sidebar-config";
+import { useMounted } from "@/lib/use-mounted";
 
 export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const mounted = useMounted();
   const { contextId } = useDojoContext();
   const navGroups = getDojoNavGroupsForContext(contextId);
   const quickAccessItems = getDojoQuickAccessForContext(contextId);
@@ -31,7 +33,13 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 border-b border-sidebar-border px-2 py-3">
-        <DojoTeamSwitcher />
+        {mounted ? (
+          <DojoTeamSwitcher />
+        ) : (
+          <div className="flex flex-1 items-center gap-2 overflow-hidden rounded-lg px-2 py-1.5 text-sm font-medium">
+            <span className="truncate">Dojo</span>
+          </div>
+        )}
         <ThemeToggle
           className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
           aria-label="Toggle theme"
@@ -39,9 +47,15 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
       </SidebarHeader>
 
       <SidebarContent>
-        <DojoNavMain groups={navGroups} />
-        <SidebarSeparator />
-        <DojoNavProjects projects={quickAccessItems} />
+        {mounted ? (
+          <>
+            <DojoNavMain groups={navGroups} />
+            <SidebarSeparator />
+            <DojoNavProjects projects={quickAccessItems} />
+          </>
+        ) : (
+          <div className="px-2 py-4 text-muted-foreground text-xs">Loading…</div>
+        )}
       </SidebarContent>
 
       <SidebarGroup className="shrink-0 border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
@@ -50,7 +64,7 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
       </SidebarGroup>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <DojoSidebarFooter />
+        {mounted ? <DojoSidebarFooter /> : <div className="h-10" />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

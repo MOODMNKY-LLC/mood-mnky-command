@@ -23,7 +23,7 @@ export function DojoXpCard({ xpTotal, level }: DojoXpCardProps) {
           {xpTotal.toLocaleString()} XP total
         </p>
         <Button asChild variant="outline" size="sm" className="mt-3">
-          <Link href="/verse/profile">View Profile</Link>
+          <Link href="/dojo/profile">View Profile</Link>
         </Button>
       </CardContent>
     </Card>

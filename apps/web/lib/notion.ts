@@ -280,6 +280,99 @@ export async function updatePageProperties(
   })
 }
 
+// ---- Manga 2-way sync (Supabase → Notion) ----
+
+/** Build Notion property payload for MNKY Manga Issues "Cover URL" */
+export function buildNotionIssueCoverUrlProperty(url: string): Record<string, unknown> {
+  return { "Cover URL": { type: "url", url: url || null } }
+}
+
+/** Push issue cover URL from Supabase to Notion (2-way sync). Call after uploading cover in LABZ. */
+export async function pushMangaIssueCoverToNotion(notionPageId: string, coverUrl: string): Promise<void> {
+  if (!isConfigured()) return
+  await updatePageProperties(notionPageId, buildNotionIssueCoverUrlProperty(coverUrl))
+}
+
+/** Build Notion property payload for MNKY Manga Panels "Asset URL". Use when pushing panel image URL. */
+export function buildNotionPanelAssetUrlProperty(url: string): Record<string, unknown> {
+  return { "Asset URL": { type: "url", url: url || null } }
+}
+
+/** Push panel asset URL to Notion. Call after uploading panel image in LABZ when panel has notion_id. */
+export async function pushMangaPanelAssetUrlToNotion(notionPageId: string, assetUrl: string): Promise<void> {
+  if (!isConfigured()) return
+  await updatePageProperties(notionPageId, buildNotionPanelAssetUrlProperty(assetUrl))
+}
+
+/** Params for pushing full issue metadata to MNKY Manga Issues. */
+export interface NotionIssueMetadataParams {
+  title: string
+  slug: string
+  status: "draft" | "published"
+  arc_summary: string | null
+  published_at: string | null
+  collection_notion_id?: string | null
+}
+
+/** Build Notion property payload for MNKY Manga Issues (Title, Slug, Status, Arc Summary, Published Date, Collection). */
+export function buildNotionIssueMetadataProperties(params: NotionIssueMetadataParams): Record<string, unknown> {
+  const props: Record<string, unknown> = {
+    Title: { type: "title", title: [{ type: "text", text: { content: params.title || "Untitled" } }] },
+    Slug: {
+      type: "rich_text",
+      rich_text: params.slug ? [{ type: "text", text: { content: params.slug } }] : [],
+    },
+    Status: { type: "select", select: { name: params.status === "published" ? "published" : "draft" } },
+    "Arc Summary": {
+      type: "rich_text",
+      rich_text: params.arc_summary ? [{ type: "text", text: { content: params.arc_summary } }] : [],
+    },
+    "Published Date": {
+      type: "date",
+      date: params.published_at
+        ? { start: params.published_at.slice(0, 10), end: null }
+        : null,
+    },
+  }
+  if (params.collection_notion_id) {
+    props.Collection = { type: "relation", relation: [{ id: params.collection_notion_id }] }
+  }
+  return props
+}
+
+/** Push full issue metadata from Supabase to Notion. Call after editing issue in LABZ when issue has notion_id. */
+export async function pushMangaIssueMetadataToNotion(
+  notionPageId: string,
+  params: NotionIssueMetadataParams
+): Promise<void> {
+  if (!isConfigured()) return
+  await updatePageProperties(notionPageId, buildNotionIssueMetadataProperties(params))
+}
+
+/** Build Notion property payload for MNKY Manga Collections (Name, Slug). */
+export function buildNotionCollectionMetadataProperties(
+  name: string,
+  slug: string
+): Record<string, unknown> {
+  return {
+    Name: { type: "title", title: [{ type: "text", text: { content: name || "Untitled" } }] },
+    Slug: {
+      type: "rich_text",
+      rich_text: slug ? [{ type: "text", text: { content: slug } }] : [],
+    },
+  }
+}
+
+/** Push collection name/slug to Notion. Call after editing collection in LABZ when collection has notion_id. */
+export async function pushMangaCollectionToNotion(
+  notionPageId: string,
+  name: string,
+  slug: string
+): Promise<void> {
+  if (!isConfigured()) return
+  await updatePageProperties(notionPageId, buildNotionCollectionMetadataProperties(name, slug))
+}
+
 // ---- Property Extractors ----
 
 export function getTitle(prop: NotionProperty | undefined): string {

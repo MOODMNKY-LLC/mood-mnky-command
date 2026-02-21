@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   const origin = request.nextUrl.origin
-  const callbackUrl = `${origin}/verse/auth/callback?next=/verse/profile`
+  const callbackUrl = `${origin}/verse/auth/callback?next=/dojo/profile`
 
   const { data, error } = await supabase.auth.linkIdentity({
     provider: "discord",

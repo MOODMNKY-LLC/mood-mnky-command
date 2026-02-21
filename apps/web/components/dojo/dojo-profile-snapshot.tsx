@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Store } from "lucide-react";
+import { Store, User } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +20,8 @@ interface DojoProfileSnapshotProps {
   level: number;
   handle?: string | null;
   shopifyLinked?: boolean;
+  /** When false, hides the "Profile & account" link (e.g. when already on profile page). Default true. */
+  showProfileLink?: boolean;
 }
 
 export function DojoProfileSnapshot({
@@ -29,6 +32,7 @@ export function DojoProfileSnapshot({
   level,
   handle,
   shopifyLinked = false,
+  showProfileLink = true,
 }: DojoProfileSnapshotProps) {
   const initials =
     displayName
@@ -77,11 +81,20 @@ export function DojoProfileSnapshot({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">XP</span>
           <span className="font-medium tabular-nums">{xpTotal.toLocaleString()}</span>
         </div>
+        {showProfileLink && (
+          <Link
+            href="/dojo/profile"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            <User className="h-3.5 w-3.5" />
+            Profile & account
+          </Link>
+        )}
       </CardContent>
     </Card>
   );

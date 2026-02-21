@@ -48,6 +48,9 @@ export async function POST(
   const contentType = request.headers.get("content-type") ?? "";
   if (contentType.includes("multipart/form-data")) {
     const formData = await request.formData();
+    // Inject profile_id into metadata for Supabase vector store filtering (match_documents filter)
+    const metadata = { profile_id: user.id };
+    formData.set("metadata", JSON.stringify(metadata));
     const res = await fetch(url, {
       method: "POST",
       headers: {

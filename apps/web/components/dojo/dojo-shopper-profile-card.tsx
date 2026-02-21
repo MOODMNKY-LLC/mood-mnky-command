@@ -71,7 +71,7 @@ export function DojoShopperProfileCard({
             </>
           ) : (
             <Button variant="default" size="sm" className="w-full gap-2" asChild>
-              <Link href="/verse/profile">
+              <Link href="/dojo/profile">
                 <Store className="h-4 w-4" />
                 Link Shopify account
               </Link>

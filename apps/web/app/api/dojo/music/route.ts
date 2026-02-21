@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient, getSupabaseConfigMissing } from "@/lib/supabase/admin"
 
 const ASSET_SELECT =
   "id, storage_path, file_name, mime_type, file_size, public_url, audio_title, audio_artist, audio_album, cover_art_url, duration_seconds, created_at"
@@ -11,6 +11,10 @@ const ASSET_SELECT =
  * Else (or if unauthenticated) returns full Verse admin playlist.
  */
 export async function GET() {
+  if (getSupabaseConfigMissing()) {
+    return NextResponse.json({ tracks: [] })
+  }
+
   const supabase = await createClient()
   const admin = createAdminClient()
 

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { getFlowiseBaseUrl, getFlowiseAuthHeaders } from "@/lib/flowise/client"
+import { checkFlowiseHealth } from "@/lib/flowise/health"
 
 export async function GET() {
   const supabase = await createClient()
@@ -13,27 +13,15 @@ export async function GET() {
     })
   }
 
-  const baseUrl = getFlowiseBaseUrl()
-  const headers = getFlowiseAuthHeaders()
-
-  try {
-    const res = await fetch(`${baseUrl}/api/v1/ping`, { headers })
-    if (!res.ok) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Flowise instance not reachable", status: res.status }),
-        { status: 502, headers: { "Content-Type": "application/json" } },
-      )
-    }
-    const text = await res.text()
-    return new Response(JSON.stringify({ ok: true, message: text || "pong" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error"
+  const result = await checkFlowiseHealth()
+  if (!result.ok) {
     return new Response(
-      JSON.stringify({ ok: false, error: message }),
+      JSON.stringify({ ok: false, error: result.error ?? "Flowise unavailable", status: result.status }),
       { status: 502, headers: { "Content-Type": "application/json" } },
     )
   }
+  return new Response(JSON.stringify({ ok: true, message: "pong" }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  })
 }

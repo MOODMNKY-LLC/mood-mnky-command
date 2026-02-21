@@ -1179,8 +1179,7 @@ export default function FlowisePage() {
             <CardHeader>
               <CardTitle className="text-base">Embed Config</CardTitle>
               <CardDescription>
-                Configure the Flowise bubble embed (Dojo Blending Lab). Stored in Supabase; used by{" "}
-                <code className="text-xs">DojoFlowiseBubble</code>.
+                Embed settings stored in Supabase (scope: dojo). The bubble chat has been removed.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

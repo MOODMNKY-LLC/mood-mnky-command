@@ -15,6 +15,7 @@ export const BUCKETS = {
   chatAttachments: "chat-attachments",
   mnkyVerseTracks: "mnky-verse-tracks",
   ugcSubmissions: "ugc-submissions",
+  mangaAssets: "manga-assets",
 } as const
 
 export type BucketId = (typeof BUCKETS)[keyof typeof BUCKETS]
@@ -189,6 +190,13 @@ export const BUCKET_CONFIG: Record<
     maxSizeMB: 10,
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"],
     isPublic: false,
+  },
+  "manga-assets": {
+    label: "Manga Assets",
+    description: "Issue covers and panel images for manga",
+    maxSizeMB: 10,
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    isPublic: true,
   },
 }
 

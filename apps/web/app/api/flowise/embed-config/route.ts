@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, getSupabaseConfigMissing } from "@/lib/supabase/admin";
 
 const DEFAULT_SCOPE = "dojo";
 
@@ -12,6 +12,15 @@ const DEFAULT_SCOPE = "dojo";
 export async function GET(request: NextRequest) {
   const scope =
     request.nextUrl.searchParams.get("scope")?.trim() || DEFAULT_SCOPE;
+
+  if (getSupabaseConfigMissing()) {
+    return NextResponse.json({
+      chatflowId: process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID ?? "",
+      apiHost: process.env.NEXT_PUBLIC_FLOWISE_HOST ?? "",
+      theme: {},
+      chatflowConfig: {},
+    });
+  }
 
   const admin = createAdminClient();
   const { data: row, error } = await admin
@@ -57,6 +66,13 @@ export async function PUT(request: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (getSupabaseConfigMissing()) {
+    return NextResponse.json(
+      { error: "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY." },
+      { status: 503 }
+    );
   }
 
   const admin = createAdminClient();

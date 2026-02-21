@@ -1,3 +1,7 @@
+/**
+ * Server-side OpenAI — not routed through Flowise.
+ * Used as fallback when Flowise is unavailable. See docs/AI-SEPARATION-REPORT.md.
+ */
 import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { createClient } from "@/lib/supabase/server"

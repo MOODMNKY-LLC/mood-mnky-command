@@ -250,7 +250,8 @@
               "technology-stack/tech-stack-reference",
               "technology-stack/frontend-technologies",
               "technology-stack/supabase",
-              "technology-stack/ai-integration"
+              "technology-stack/ai-integration",
+              "technology-stack/flowise-openai-separation"
             ]
           },
           {

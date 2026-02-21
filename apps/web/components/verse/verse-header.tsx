@@ -157,7 +157,7 @@ export function VerseHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="verse-dropdown">
                 <DropdownMenuItem asChild>
-                  <Link href="/verse/profile" className="flex items-center gap-2">
+                  <Link href="/dojo/profile" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     Profile
                   </Link>

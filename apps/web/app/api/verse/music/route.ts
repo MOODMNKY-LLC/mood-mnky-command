@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { createAdminClient, getSupabaseConfigMissing } from "@/lib/supabase/admin"
 
 /**
  * GET: Returns the Verse music playlist (admin-configured).
@@ -7,6 +7,12 @@ import { createAdminClient } from "@/lib/supabase/admin"
  * Uses admin client to bypass RLS (playlist tracks may belong to any user).
  */
 export async function GET() {
+  const configMissing = getSupabaseConfigMissing()
+  if (configMissing) {
+    console.warn("Verse music: Supabase not configured:", configMissing)
+    return NextResponse.json({ tracks: [] })
+  }
+
   const supabase = createAdminClient()
 
   const { data: playlistRows, error: playlistError } = await supabase

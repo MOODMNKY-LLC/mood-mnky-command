@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { nanoid } from "nanoid";
 import Image from "next/image";
@@ -64,12 +64,14 @@ import {
   ToolOutput,
 } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { FlowisePlan, FlowisePreview } from "@/components/flowise-mnky";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { filePartsToFlowiseUploads } from "@/lib/flowise-uploads";
+import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 import { CopyIcon, FilesIcon, MessageSquare, PlusIcon } from "lucide-react";
 
@@ -97,6 +99,68 @@ interface ChatMessage {
   content: string;
   sourceDocuments?: unknown[];
   usedTools?: unknown[];
+  /** Preview URL from tools or previewUrl stream event (WebPreview). */
+  previewUrl?: string;
+  /** Plan steps from tools or plan stream event (FlowisePlan). */
+  planSteps?: Array<{ title: string; description?: string; content?: string }>;
+}
+
+/** Extract first previewable URL from usedTools output. */
+function extractPreviewUrl(usedTools: unknown[] | undefined): string | null {
+  if (!Array.isArray(usedTools)) return null;
+  const urlLike = /^https?:\/\/[^\s]+$/i;
+  for (const t of usedTools) {
+    if (typeof t === "object" && t !== null) {
+      const obj = t as Record<string, unknown>;
+      if (typeof obj.output === "string" && urlLike.test(obj.output.trim())) return obj.output.trim();
+      if (typeof obj.url === "string" && urlLike.test(obj.url.trim())) return obj.url.trim();
+      if (typeof obj.result === "string" && urlLike.test(obj.result.trim())) return obj.result.trim();
+    }
+  }
+  return null;
+}
+
+function normalizePlanStep(s: unknown): { title: string; description?: string; content?: string } | null {
+  if (typeof s !== "object" || s === null) return null;
+  const step = s as Record<string, unknown>;
+  const title = typeof step.title === "string" ? step.title : typeof step.name === "string" ? step.name : String(step.step ?? step ?? "");
+  if (!title?.trim()) return null;
+  return {
+    title: title.trim(),
+    description: typeof step.description === "string" ? step.description : undefined,
+    content: typeof step.content === "string" ? step.content : undefined,
+  };
+}
+
+/** Extract plan steps from usedTools output (Flowise agent plan tools). */
+function extractPlanSteps(usedTools: unknown[] | undefined): Array<{ title: string; description?: string; content?: string }> | null {
+  if (!Array.isArray(usedTools)) return null;
+  for (const t of usedTools) {
+    if (typeof t !== "object" || t === null) continue;
+    const obj = t as Record<string, unknown>;
+    const raw = obj.output ?? obj.plan ?? obj.steps ?? obj.result;
+    if (raw === undefined) continue;
+    let steps: unknown[];
+    if (Array.isArray(raw)) {
+      steps = raw;
+    } else if (typeof raw === "object" && raw !== null && "steps" in raw) {
+      steps = Array.isArray((raw as { steps: unknown }).steps) ? (raw as { steps: unknown[] }).steps : [];
+    } else if (typeof raw === "object" && raw !== null && (typeof (raw as Record<string, unknown>).title === "string" || typeof (raw as Record<string, unknown>).name === "string")) {
+      steps = [raw];
+    } else if (typeof raw === "string") {
+      try {
+        const parsed = JSON.parse(raw) as unknown;
+        steps = Array.isArray(parsed) ? parsed : Array.isArray((parsed as { steps?: unknown[] })?.steps) ? (parsed as { steps: unknown[] }).steps : [];
+      } catch {
+        continue;
+      }
+    } else {
+      continue;
+    }
+    const result = steps.map(normalizePlanStep).filter((s): s is { title: string; description?: string; content?: string } => s !== null);
+    if (result.length > 0) return result;
+  }
+  return null;
 }
 
 const embedConfigFetcher = async (url: string) => {
@@ -267,6 +331,29 @@ export function DojoFlowiseChatbot({
       ? process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID
       : "");
 
+  const { data: flowisePing, mutate: mutateFlowisePing } = useSWR<{ ok?: boolean }>(
+    chatflowId ? "/api/flowise/ping" : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      const data = await r.json().catch(() => ({}));
+      return data as { ok?: boolean };
+    },
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+
+  const flowiseAvailable = flowisePing === undefined ? true : flowisePing?.ok === true;
+
+  useEffect(() => {
+    if (chatflowId && flowisePing !== undefined && !flowisePing?.ok && provider === "flowise") {
+      setProvider("openai");
+      toast({
+        title: "Flowise unavailable",
+        description: "Using OpenAI fallback for chat.",
+        variant: "default",
+      });
+    }
+  }, [chatflowId, flowisePing, provider, toast]);
+
   const mergedOverrideConfig = useMemo(() => {
     const base = { sessionId, ...(config?.chatflowConfig ?? {}), ...(propOverrideConfig ?? {}) };
     return base;
@@ -385,14 +472,59 @@ export function DojoFlowiseChatbot({
                   } catch {
                     usedTools = payload.data != null ? [payload.data] : undefined;
                   }
+                  const previewUrl = extractPreviewUrl(usedTools);
+                  const planSteps = extractPlanSteps(usedTools);
                   setMessages((prev) => {
                     const next = [...prev];
                     const last = next[next.length - 1];
                     if (last?.role === "assistant") {
-                      next[next.length - 1] = { ...last, usedTools };
+                      next[next.length - 1] = {
+                        ...last,
+                        usedTools,
+                        ...(previewUrl ? { previewUrl } : {}),
+                        ...(planSteps ? { planSteps } : {}),
+                      };
                     }
                     return next;
                   });
+                } else if (ev === "plan") {
+                  try {
+                    const planData = typeof payload.data === "string" ? JSON.parse(payload.data) : payload.data;
+                    const rawSteps = Array.isArray(planData)
+                      ? planData
+                      : typeof planData === "object" && planData !== null && "steps" in planData
+                        ? (planData as { steps: unknown[] }).steps
+                        : typeof planData === "object" && planData !== null
+                          ? [planData]
+                          : [];
+                    const steps = extractPlanSteps(
+                      Array.isArray(rawSteps) ? rawSteps.map((s) => ({ output: s })) : []
+                    );
+                    if (steps && steps.length > 0) {
+                      setMessages((prev) => {
+                        const next = [...prev];
+                        const last = next[next.length - 1];
+                        if (last?.role === "assistant") {
+                          next[next.length - 1] = { ...last, planSteps: steps };
+                        }
+                        return next;
+                      });
+                    }
+                  } catch {
+                    // skip malformed plan
+                  }
+                } else if (ev === "previewUrl" && typeof payload.data === "string") {
+                  const previewUrl = payload.data.trim();
+                  if (/^https?:\/\//i.test(previewUrl)) {
+                    setMessages((prev) => {
+                      const next = [...prev];
+                      const last = next[next.length - 1];
+                      if (last?.role === "assistant") {
+                        next[next.length - 1] = { ...last, previewUrl };
+                      }
+                      return next;
+                    });
+                  }
                 }
               } catch {
                 // skip malformed line
@@ -483,6 +615,7 @@ export function DojoFlowiseChatbot({
 
   const noConfig = provider === "flowise" && !chatflowId;
   const isUnauth = displayError === "Sign in to use MNKY CHAT";
+  const mounted = useMounted();
 
   return (
     <div
@@ -505,20 +638,41 @@ export function DojoFlowiseChatbot({
           <h2 className="font-semibold text-foreground">MNKY CHAT</h2>
           <p className="text-muted-foreground text-xs">Ask about fragrance blending</p>
         </div>
-        <Tabs
-          value={provider}
-          onValueChange={(v) => setProvider(v as "flowise" | "openai")}
-          className="shrink-0"
-        >
-          <TabsList className="h-8">
-            <TabsTrigger value="flowise" className="text-xs">
-              Flowise
-            </TabsTrigger>
-            <TabsTrigger value="openai" className="text-xs">
-              OpenAI
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex shrink-0 items-center gap-2">
+          {!flowiseAvailable && provider === "openai" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-muted-foreground"
+              onClick={() => {
+                void mutateFlowisePing();
+                setProvider("flowise");
+              }}
+            >
+              Retry Flowise
+            </Button>
+          ) : null}
+          {mounted ? (
+            <Tabs
+              value={provider}
+              onValueChange={(v) => setProvider(v as "flowise" | "openai")}
+              className="shrink-0"
+            >
+              <TabsList className="h-8">
+                <TabsTrigger value="flowise" className="text-xs" disabled={!flowiseAvailable}>
+                  Flowise
+                </TabsTrigger>
+                <TabsTrigger value="openai" className="text-xs">
+                  {flowiseAvailable ? "Fallback" : "OpenAI"}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          ) : (
+            <div className="inline-flex h-8 items-center justify-center rounded-md bg-muted px-3 text-xs text-muted-foreground">
+              {provider === "flowise" ? "Flowise" : flowiseAvailable ? "Fallback" : "OpenAI"}
+            </div>
+          )}
+        </div>
       </header>
 
       {noConfig ? (
@@ -534,6 +688,11 @@ export function DojoFlowiseChatbot({
         </div>
       ) : (
         <>
+          {provider === "openai" && !flowiseAvailable ? (
+            <div className="shrink-0 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-amber-800 text-xs dark:text-amber-200 dark:bg-amber-500/20">
+              Using OpenAI fallback — Flowise is unavailable.
+            </div>
+          ) : null}
           <Conversation className="relative flex-1 overflow-y-auto">
             {downloadMessages.length > 0 && (
               <ConversationDownload
@@ -622,6 +781,19 @@ export function DojoFlowiseChatbot({
                               <Spinner className="size-4" />
                               <span>Thinking…</span>
                             </span>
+                          ) : null}
+                          {msg.role === "assistant" && msg.previewUrl ? (
+                            <div className="mt-3 rounded-lg border border-border/60 overflow-hidden">
+                              <FlowisePreview url={msg.previewUrl} className="h-[280px]" />
+                            </div>
+                          ) : null}
+                          {msg.role === "assistant" && msg.planSteps && msg.planSteps.length > 0 ? (
+                            <div className="mt-3">
+                              <FlowisePlan
+                                steps={msg.planSteps}
+                                isStreaming={isLoading && messages[messages.length - 1]?.id === msg.id}
+                              />
+                            </div>
                           ) : null}
                         </MessageContent>
                       </Message>
@@ -828,18 +1000,28 @@ export function DojoFlowiseChatbot({
                         onListeningChange={setIsListening}
                         className="size-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                       />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex shrink-0">
-                            <PromptInputSubmit
-                              status={isStreaming ? "streaming" : "ready"}
-                              disabled={isStreaming}
-                              className="size-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity disabled:opacity-70"
-                            />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">Send</TooltipContent>
-                      </Tooltip>
+                      {mounted ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex shrink-0">
+                              <PromptInputSubmit
+                                status={isStreaming ? "streaming" : "ready"}
+                                disabled={isStreaming}
+                                className="size-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity disabled:opacity-70"
+                              />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">Send</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="inline-flex shrink-0">
+                          <PromptInputSubmit
+                            status={isStreaming ? "streaming" : "ready"}
+                            disabled={isStreaming}
+                            className="size-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity disabled:opacity-70"
+                          />
+                        </span>
+                      )}
                     </div>
                     <p className="text-center text-muted-foreground text-xs pt-1">
                       MNKY CHAT can make mistakes. Check important info.

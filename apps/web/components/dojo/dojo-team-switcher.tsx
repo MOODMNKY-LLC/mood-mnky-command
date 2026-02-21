@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown } from "lucide-react";
+import Link from "next/link";
+import { ChevronsUpDown, MessageCircle } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -17,7 +19,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useDojoContext } from "@/components/dojo/dojo-context-provider";
-import { dojoContexts } from "@/lib/dojo-sidebar-config";
+import {
+  dojoContexts,
+  dojoCommunityLinks,
+  DISCORD_INVITE_URL,
+} from "@/lib/dojo-sidebar-config";
 
 export function DojoTeamSwitcher() {
   const { isMobile } = useSidebar();
@@ -69,6 +75,49 @@ export function DojoTeamSwitcher() {
                     <span>{ctx.name}</span>
                     <span className="text-muted-foreground text-xs">{ctx.plan}</span>
                   </div>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+              Community
+            </DropdownMenuLabel>
+            {DISCORD_INVITE_URL ? (
+              <DropdownMenuItem asChild>
+                <a
+                  href={DISCORD_INVITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex cursor-pointer items-center gap-2 p-2"
+                >
+                  <MessageCircle className="size-4 shrink-0" />
+                  <span>Join Discord</span>
+                </a>
+              </DropdownMenuItem>
+            ) : null}
+            {dojoCommunityLinks.map((item) => {
+              const Icon = item.icon;
+              if (item.external) {
+                return (
+                  <DropdownMenuItem key={item.href + item.label} asChild>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex cursor-pointer items-center gap-2 p-2"
+                    >
+                      <Icon className="size-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </a>
+                  </DropdownMenuItem>
+                );
+              }
+              return (
+                <DropdownMenuItem key={item.href + item.label} asChild>
+                  <Link href={item.href} className="flex items-center gap-2 p-2">
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
                 </DropdownMenuItem>
               );
             })}

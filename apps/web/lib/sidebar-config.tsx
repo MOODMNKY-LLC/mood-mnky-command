@@ -38,6 +38,7 @@ import {
   BookMarked,
   Trophy,
   Activity,
+  HardDrive,
 } from "lucide-react"
 
 export interface NavItem {
@@ -127,9 +128,10 @@ export const verseItems: NavItem[] = [
   { title: "Discord", href: "/platform/discord", icon: MessageSquare },
 ]
 
-/** MNKY VERSE Backoffice: Manga, XP & Quests, UGC, Discord events (dashboard control panels). */
+/** Community (LAB sidebar group): Manga, XP & Quests, UGC, Discord events. */
 export const verseBackofficeItems: NavItem[] = [
   { title: "Manga / Issues", href: "/verse-backoffice/manga", icon: BookMarked },
+  { title: "Manga Collections", href: "/verse-backoffice/manga/collections", icon: Tags },
   { title: "XP & Quests", href: "/verse-backoffice/xp", icon: Trophy },
   { title: "UGC Moderation", href: "/verse-backoffice/ugc", icon: ImagePlus },
   { title: "Discord Events", href: "/verse-backoffice/discord-events", icon: Activity },
@@ -143,6 +145,7 @@ export const platformItems: NavItem[] = [
   { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
   { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
   { title: "Flowise", href: "/platform/flowise", icon: Workflow },
+  { title: "Storage", href: "/platform/storage", icon: HardDrive },
   { title: "Members", href: "/members", icon: Users },
 ]
 

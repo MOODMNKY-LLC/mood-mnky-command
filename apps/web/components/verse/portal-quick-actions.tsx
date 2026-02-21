@@ -26,7 +26,7 @@ const ACTIONS = [
   {
     name: "Profile",
     description: "Account settings and scent preferences.",
-    href: "/verse/profile",
+    href: "/dojo/profile",
     cta: "Profile",
     Icon: User,
     className: "col-span-3 lg:col-span-1",

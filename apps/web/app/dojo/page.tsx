@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { DojoWelcomeHero } from "@/components/dojo/dojo-welcome-hero";
-import { DojoProfileSnapshot } from "@/components/dojo/dojo-profile-snapshot";
+import { DojoCharacterCard } from "@/components/dojo/dojo-character-card";
 import { DojoXpCard } from "@/components/dojo/dojo-xp-card";
 import {
   DojoQuestsCard,
@@ -45,6 +45,7 @@ export default async function DojoPage() {
     blendsCountResult,
     funnelResult,
     discordResult,
+    identitiesResult,
   ] = await Promise.all([
     profileId
       ? supabase
@@ -112,6 +113,7 @@ export default async function DojoPage() {
           .limit(1)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    user ? supabase.auth.getUserIdentities() : Promise.resolve({ data: null }),
   ]);
 
   const xpTotal = xpResult.data?.xp_total ?? 0;
@@ -184,6 +186,41 @@ export default async function DojoPage() {
   const sizePreferences = (prefs.size_preferences ?? {}) as Record<string, string>;
   const savedBlendsCount = blendsCountResult.count ?? 0;
   const hasDiscordLink = !!discordResult.data;
+  const identityList = (() => {
+    const raw = (identitiesResult as { data?: unknown })?.data;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw as { provider?: string }[];
+    const inner = (raw as { identities?: { provider?: string }[] }).identities;
+    return Array.isArray(inner) ? inner : [];
+  })();
+  const hasGithubLink = identityList.some((i) => i?.provider === "github");
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "http://localhost:3000";
+  const storeDomain =
+    (process.env.NEXT_PUBLIC_STORE_DOMAIN ||
+      process.env.PUBLIC_STORE_DOMAIN)?.trim() ?? "";
+  const storeAccountUrl = storeDomain
+    ? `https://${storeDomain}/account`
+    : `${baseUrl}/dojo/profile`;
+
+  const linkedAccounts = {
+    shopify: {
+      linked: shopifyLinked,
+      linkUrl: `${baseUrl}/api/customer-account-api/auth`,
+      manageUrl: storeAccountUrl,
+    },
+    discord: {
+      linked: hasDiscordLink,
+      linkUrl: `${baseUrl}/verse/auth/discord/link`,
+    },
+    github: {
+      linked: hasGithubLink,
+      linkUrl: `${baseUrl}/verse/auth/github/link`,
+    },
+  };
 
   let funnelProfile: Record<string, unknown> | null = null;
   if (funnelResult.data) {
@@ -236,7 +273,7 @@ export default async function DojoPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <DojoWelcomeHero displayName={displayName} isReturning={!!user} />
       <div className="grid auto-rows-min gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <DojoProfileSnapshot
+        <DojoCharacterCard
           displayName={displayName}
           avatarUrl={profile?.avatar_url ?? null}
           email={user?.email ?? null}
@@ -274,7 +311,7 @@ export default async function DojoPage() {
             rewardClaims={rewardClaims}
             savedBlendsCount={savedBlendsCount}
             funnelProfile={funnelProfile}
-            linkedAccounts={{ discord: hasDiscordLink }}
+            linkedAccounts={linkedAccounts}
             featuredIssue={featuredIssue}
             shopifyLinked={shopifyLinked}
             wishlistCount={wishlistCount}

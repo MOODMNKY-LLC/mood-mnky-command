@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings, User, CreditCard } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -25,6 +26,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useVerseUser } from "@/components/verse/verse-user-context";
+import { DojoProfileDialog } from "@/components/dojo/dojo-profile-dialog";
+import { DojoAccountDialog } from "@/components/dojo/dojo-account-dialog";
 
 function getInitials(displayName?: string, email?: string): string {
   if (displayName) {
@@ -44,6 +47,8 @@ export function DojoSidebarFooter() {
   const { isMobile } = useSidebar();
   const user = useVerseUser();
   const router = useRouter();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -103,11 +108,13 @@ export function DojoSidebarFooter() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link href="/verse/profile">
-                  <User className="h-4 w-4" />
-                  Profile
-                </Link>
+              <DropdownMenuItem onSelect={() => setProfileDialogOpen(true)}>
+                <User className="h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setAccountDialogOpen(true)}>
+                <CreditCard className="h-4 w-4" />
+                Account
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/dojo/preferences">
@@ -123,6 +130,14 @@ export function DojoSidebarFooter() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <DojoProfileDialog
+          open={profileDialogOpen}
+          onOpenChange={setProfileDialogOpen}
+        />
+        <DojoAccountDialog
+          open={accountDialogOpen}
+          onOpenChange={setAccountDialogOpen}
+        />
       </SidebarMenuItem>
     </SidebarMenu>
   );

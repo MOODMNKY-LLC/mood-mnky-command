@@ -1,7 +1,7 @@
 /**
  * Dojo sidebar navigation configuration.
- * Members' private hub nav: Home, Preferences, Crafting, and links to Verse.
- * Supports context switching (Home, Crafting, Verse) with persisted selection.
+ * Members' private hub nav: Home, Chat, Profile, Preferences, Crafting (dashboard-only).
+ * Context switching: Home, Crafting, Chat (no Verse context; community links in switcher).
  */
 
 import * as React from "react";
@@ -9,17 +9,17 @@ import type { LucideIcon } from "lucide-react";
 import {
   Home,
   Settings,
-  ShoppingBag,
   MessageSquare,
   User,
-  Globe,
   BookMarked,
-  Image,
   FlaskConical,
-  Palette,
   Bot,
   FolderOpen,
   Sliders,
+  MessageCircle,
+  Newspaper,
+  Trophy,
+  Users,
 } from "lucide-react";
 
 /** Logo component for The Dojo team */
@@ -36,8 +36,8 @@ function DojoLogo({ className }: { className?: string }) {
   );
 }
 
-/** Context IDs for Dojo workspace switcher */
-export const DOJO_CONTEXT_IDS = ["home", "crafting", "verse", "chat"] as const;
+/** Context IDs for Dojo workspace switcher (Verse removed; use Community section for Verse links) */
+export const DOJO_CONTEXT_IDS = ["home", "crafting", "chat"] as const;
 export type DojoContextId = (typeof DOJO_CONTEXT_IDS)[number];
 
 /** Default context when none persisted */
@@ -63,13 +63,6 @@ export const dojoContexts: {
     href: "/dojo/crafting",
   },
   {
-    id: "verse",
-    name: "MNKY VERSE",
-    logo: Palette,
-    plan: "MNKY VERSE",
-    href: "/verse",
-  },
-  {
     id: "chat",
     name: "Chat",
     logo: Bot,
@@ -92,18 +85,15 @@ export interface DojoNavItem {
   isAction?: boolean;
 }
 
-/** Dojo section: Home, Preferences */
+/** Dojo section: dashboard-only */
 export const dojoItems: DojoNavItem[] = [
   { title: "Home", href: "/dojo", icon: Home },
   { title: "Preferences", href: "/dojo/preferences", icon: Settings },
 ];
 
-/** MNKY VERSE section: links to public-facing parts */
+/** @deprecated Verse links moved to Community section in team switcher; do not use in sidebar nav */
 export const verseLinkItems: DojoNavItem[] = [
-  { title: "MNKY VERSE Home", href: "/verse", icon: Globe },
-  { title: "MNKY VERSE Shop", href: "/verse/shop", icon: ShoppingBag },
-  { title: "Chat", href: "/verse/chat", icon: MessageSquare },
-  { title: "Profile", href: "/verse/profile", icon: User },
+  { title: "Community hub", href: "/dojo/community", icon: Users },
 ];
 
 /** Nav group item shape */
@@ -120,28 +110,20 @@ export type DojoNavGroup = {
   items: DojoNavGroupItem[];
 };
 
-/** Nav groups for sidebar-07 NavMain (collapsible) */
+/** Nav groups for sidebar (dashboard-only) */
 export const dojoNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
       { title: "Home", url: "/dojo", icon: Home, isActive: true },
       { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
+      { title: "Profile", url: "/dojo/profile", icon: User },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
-    ],
-  },
-  {
-    label: "MNKY VERSE",
-    items: [
-      { title: "MNKY VERSE Home", url: "/verse", icon: Globe },
-      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
-      { title: "Chat", url: "/verse/chat", icon: MessageSquare },
-      { title: "Profile", url: "/verse/profile", icon: User },
     ],
   },
 ];
 
-/** Crafting-specific nav groups */
+/** Crafting-specific nav groups (dashboard-only) */
 export const dojoCraftingNavGroups: DojoNavGroup[] = [
   {
     label: "Crafting",
@@ -153,16 +135,15 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
     ],
   },
   {
-    label: "MNKY VERSE",
+    label: "Dojo",
     items: [
-      { title: "MNKY VERSE Home", url: "/verse", icon: Globe },
-      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
-      { title: "Glossary", url: "/verse/glossary", icon: BookMarked },
+      { title: "Home", url: "/dojo", icon: Home },
+      { title: "Profile", url: "/dojo/profile", icon: User },
     ],
   },
 ];
 
-/** Chat context: sidebar shows New Chat, Saved Chats, Folders, Flowise config, Settings */
+/** Chat context: sidebar shows Chat group + minimal Dojo */
 export const dojoChatNavGroups: DojoNavGroup[] = [
   {
     label: "Chat",
@@ -174,27 +155,11 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
       { title: "Settings", url: "/dojo/chat#settings", icon: Settings },
     ],
   },
-];
-
-/** MNKY VERSE-focused nav groups (when context is Verse) */
-export const dojoVerseNavGroups: DojoNavGroup[] = [
-  {
-    label: "MNKY VERSE",
-    items: [
-      { title: "MNKY VERSE Home", url: "/verse", icon: Globe, isActive: true },
-      { title: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
-      { title: "Chat", url: "/verse/chat", icon: MessageSquare },
-      { title: "Profile", url: "/verse/profile", icon: User },
-      { title: "Issues", url: "/verse/issues", icon: BookMarked },
-      { title: "UGC", url: "/verse/ugc", icon: Image },
-    ],
-  },
   {
     label: "Dojo",
     items: [
       { title: "Home", url: "/dojo", icon: Home },
-      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
-      { title: "Crafting", url: "/dojo/crafting", icon: FlaskConical },
+      { title: "Preferences", url: "/dojo/preferences", icon: Settings },
     ],
   },
 ];
@@ -204,8 +169,6 @@ export function getDojoNavGroupsForContext(contextId: DojoContextId): DojoNavGro
   switch (contextId) {
     case "crafting":
       return dojoCraftingNavGroups;
-    case "verse":
-      return dojoVerseNavGroups;
     case "chat":
       return dojoChatNavGroups;
     default:
@@ -213,24 +176,22 @@ export function getDojoNavGroupsForContext(contextId: DojoContextId): DojoNavGro
   }
 }
 
-/** Quick access / projects for sidebar-07 NavProjects */
+/** Quick access (dashboard-only) */
 export const dojoQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
-  { name: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
-  { name: "Chat", url: "/verse/chat", icon: MessageSquare },
-  { name: "Profile", url: "/verse/profile", icon: User },
-  { name: "Issues", url: "/verse/issues", icon: BookMarked },
-  { name: "UGC", url: "/verse/ugc", icon: Image },
+  { name: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
+  { name: "Profile", url: "/dojo/profile", icon: User },
+  { name: "Community hub", url: "/dojo/community", icon: Users },
 ];
 
-/** Crafting quick access */
+/** Crafting quick access (dashboard-only) */
 export const dojoCraftingQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
   { name: "Blending Lab", url: "/dojo/crafting", icon: FlaskConical },
   { name: "Saved Blends", url: "/dojo/crafting/saved", icon: BookMarked },
-  { name: "Glossary", url: "/verse/glossary", icon: BookMarked },
-  { name: "MNKY VERSE Shop", url: "/verse/shop", icon: ShoppingBag },
+  { name: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
+  { name: "Community hub", url: "/dojo/community", icon: Users },
 ];
 
-/** Chat quick access (optional) */
+/** Chat quick access */
 export const dojoChatQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
   { name: "New chat", url: "/dojo/chat", icon: MessageSquare },
   { name: "Flowise config", url: "/dojo/flowise", icon: Sliders },
@@ -244,3 +205,22 @@ export function getDojoQuickAccessForContext(
   if (contextId === "chat") return dojoChatQuickAccessItems;
   return dojoQuickAccessItems;
 }
+
+/** Community section links for team switcher dropdown (external = open in new tab) */
+export const dojoCommunityLinks: {
+  label: string;
+  href: string;
+  external: boolean;
+  icon: LucideIcon;
+}[] = [
+  { label: "Community hub", href: "/dojo/community", external: false, icon: Users },
+  { label: "MNKY VERSE Blog", href: "/verse/blog", external: true, icon: Newspaper },
+  { label: "Quests & XP", href: "/verse/quests", external: true, icon: Trophy },
+  { label: "Manga & Issues", href: "/verse/issues", external: true, icon: BookMarked },
+  { label: "Link Discord account", href: "/verse/auth/discord/link", external: false, icon: MessageCircle },
+];
+
+/** Discord invite URL (build-time); when set, "Join Discord" is shown in Community section */
+export const DISCORD_INVITE_URL = typeof process.env.NEXT_PUBLIC_DISCORD_INVITE_URL === "string"
+  ? process.env.NEXT_PUBLIC_DISCORD_INVITE_URL
+  : "";

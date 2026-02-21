@@ -1,3 +1,7 @@
+/**
+ * Server-side OpenAI — not routed through Flowise.
+ * See docs/AI-SEPARATION-REPORT.md.
+ */
 import { NextRequest, NextResponse } from "next/server"
 import { listTables, isManagementConfigured } from "@/lib/supabase/management"
 

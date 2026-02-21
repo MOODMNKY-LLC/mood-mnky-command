@@ -1,7 +1,7 @@
 "use client";
 
 import type { Tool } from "ai";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import {
   Accordion,
@@ -25,10 +25,12 @@ Agent.displayName = "Agent";
 export type AgentHeaderProps = ComponentProps<"div"> & {
   name: string;
   model?: string;
+  /** When provided, renders instead of the default BotIcon (e.g. user Avatar for profile/character cards). */
+  icon?: ReactNode;
 };
 
 export const AgentHeader = memo(
-  ({ className, name, model, ...props }: AgentHeaderProps) => (
+  ({ className, name, model, icon, ...props }: AgentHeaderProps) => (
     <div
       className={cn(
         "flex flex-wrap items-center gap-2 border-b px-4 py-3",
@@ -36,7 +38,7 @@ export const AgentHeader = memo(
       )}
       {...props}
     >
-      <BotIcon className="h-5 w-5 text-muted-foreground" />
+      {icon ?? <BotIcon className="h-5 w-5 text-muted-foreground" />}
       <span className="font-semibold">{name}</span>
       {model && (
         <Badge variant="secondary" className="font-mono text-xs">
@@ -59,12 +61,14 @@ AgentContent.displayName = "AgentContent";
 
 export type AgentInstructionsProps = ComponentProps<"div"> & {
   children: string;
+  /** Optional section heading (default: "Instructions"). Use e.g. "Summary" for profile/character cards. */
+  label?: string;
 };
 
 export const AgentInstructions = memo(
-  ({ className, children, ...props }: AgentInstructionsProps) => (
+  ({ className, children, label = "Instructions", ...props }: AgentInstructionsProps) => (
     <div className={cn("space-y-2", className)} {...props}>
-      <h4 className="text-sm font-medium text-muted-foreground">Instructions</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{label}</h4>
       <div className="whitespace-pre-wrap rounded-md border bg-muted/30 p-3 text-sm">
         {children}
       </div>

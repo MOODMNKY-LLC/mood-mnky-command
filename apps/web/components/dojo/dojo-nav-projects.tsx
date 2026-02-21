@@ -93,9 +93,9 @@ export function DojoNavProjects({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton asChild className="text-sidebar-foreground/70">
-            <Link href="/verse">
+            <Link href="/dojo/community">
               <MoreHorizontal className="text-sidebar-foreground/70 h-4 w-4" />
-              <span>More</span>
+              <span>Community</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

@@ -13,6 +13,7 @@ node_modules/
 .turbo/
 .env
 .env*.local
+.env.tmp
 .env.production
 .env*.backup
 .DS_Store

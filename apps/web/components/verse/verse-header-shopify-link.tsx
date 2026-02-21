@@ -87,7 +87,7 @@ export function VerseHeaderShopifyLink({
         </p>
       )}
       <p className="text-xs text-verse-text-muted">
-        <Link href="/verse/profile" className="underline hover:no-underline">
+        <Link href="/dojo/profile" className="underline hover:no-underline">
           Manage in Profile
         </Link>
       </p>
