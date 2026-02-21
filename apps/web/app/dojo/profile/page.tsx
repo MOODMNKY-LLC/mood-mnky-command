@@ -6,7 +6,7 @@ import { DojoProfileClient } from "@/components/dojo/dojo-profile-client";
 import { ChevronLeft } from "lucide-react";
 
 const profileSelect =
-  "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id, role";
+  "display_name, full_name, username, handle, website, avatar_url, bio, email, last_sign_in_at, created_at, preferences, shopify_customer_id, role, default_chatflow_id";
 
 function getStoreAccountUrl(): string | undefined {
   const domain =
@@ -117,7 +117,7 @@ export default async function DojoProfilePage({
         bio={profile?.bio ?? undefined}
         lastSignInAt={profile?.last_sign_in_at ?? undefined}
         createdAt={profile?.created_at ?? undefined}
-        defaultAgentSlug={(profile?.preferences?.default_agent_slug as string) ?? "mood_mnky"}
+        defaultChatflowId={(profile?.default_chatflow_id as string) ?? undefined}
         shopifyLinked={shopifyLinked}
         shopifyLinkedSuccess={shopifyLinkedSuccess}
         storeAccountUrl={getStoreAccountUrl()}

@@ -1,11 +1,62 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient, getSupabaseConfigMissing } from "@/lib/supabase/admin"
-import { getFlowiseClient } from "@/lib/flowise/client"
+import { getFlowiseClient, flowiseFetch } from "@/lib/flowise/client"
 import { decryptFlowiseApiKey } from "@/lib/flowise/profile-api-key"
 import { getIdempotencySeen, setIdempotencyKey, sessionMetadataSet } from "@/lib/redis"
 
 /** Predict endpoint forwards to Flowise; see temp/flowise-api-upgraded.json for high-level Flowise REST API. */
 export const maxDuration = 60
+
+/**
+ * Flowise sends SSE as "event: X" then "data: Y" (Y may be plain text). We re-emit as
+ * data: {"event":"X","data":"Y"}\n\n so the client parser (expecting JSON in data:) works.
+ */
+function normalizeFlowiseSSEToJSON(
+  readable: ReadableStream<Uint8Array>
+): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder()
+  let buffer = ""
+  let currentEvent: string | null = null
+
+  return new ReadableStream({
+    async start(controller) {
+      const reader = readable.getReader()
+      const decoder = new TextDecoder()
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split("\n")
+          buffer = lines.pop() ?? ""
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed) continue
+            if (trimmed.startsWith("event:")) {
+              currentEvent = trimmed.slice(6).trim()
+              continue
+            }
+            if (trimmed.startsWith("data:")) {
+              const data = trimmed.slice(5).trim()
+              const event = currentEvent ?? "token"
+              currentEvent = null
+              if (process.env.FLOWISE_SSE_DEBUG === "true") {
+                // eslint-disable-next-line no-console
+                console.debug("[flowise-sse]", event, data?.slice(0, 100))
+              }
+              const chunk = { event, data }
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`))
+            }
+          }
+        }
+        reader.releaseLock()
+        controller.close()
+      } catch (e) {
+        controller.error(e)
+      }
+    },
+  })
+}
 
 interface PredictBody {
   chatflowId: string
@@ -117,41 +168,58 @@ export async function POST(request: Request) {
     )
   }
 
-  const client = getFlowiseClient(userApiKey)
-  try {
-    const result = await client.createPrediction({
-      chatflowId,
-      question,
-      history,
-      overrideConfig: Object.keys(mergedOverrideConfig).length > 0 ? mergedOverrideConfig : undefined,
-      streaming,
-      ...(uploads && uploads.length > 0 ? { uploads } : {}),
-    })
+  // Use sessionId from body or from overrideConfig (Dojo sends it in overrideConfig for Flowise memory)
+  const effectiveSessionId =
+    typeof sessionId === "string"
+      ? sessionId.trim() || undefined
+      : typeof mergedOverrideConfig.sessionId === "string"
+        ? (mergedOverrideConfig.sessionId as string).trim() || undefined
+        : undefined
 
-    if (streaming && result && typeof (result as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator] === "function") {
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of result as AsyncGenerator<{ event?: string; data?: string }>) {
-              const line = `data: ${JSON.stringify(chunk)}\n\n`
-              controller.enqueue(new TextEncoder().encode(line))
-            }
-            controller.close()
-          } catch (e) {
-            controller.error(e)
-          }
+  const client = getFlowiseClient(userApiKey)
+  const predictionPayload = {
+    chatflowId,
+    question,
+    history,
+    overrideConfig: Object.keys(mergedOverrideConfig).length > 0 ? mergedOverrideConfig : undefined,
+    ...(uploads && uploads.length > 0 ? { uploads } : {}),
+  }
+
+  try {
+    // Fix 2: When client requests streaming, bypass SDK (broken SSE parsing) and proxy Flowise stream,
+    // normalizing event/data lines to data: {"event","data"} so the client parser works.
+    if (streaming) {
+      const res = await flowiseFetch(
+        `prediction/${chatflowId}`,
+        {
+          method: "POST",
+          body: { ...predictionPayload, streaming: true },
         },
-      })
-      if (sessionId?.trim()) {
-        await sessionMetadataSet(sessionId.trim(), "lastRequestAt", Date.now())
+        userApiKey
+      )
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(res.status === 401 ? "Unauthorized" : text || `Flowise ${res.status}`)
+      }
+      const body = res.body
+      if (!body) throw new Error("Flowise returned no body")
+      const stream = normalizeFlowiseSSEToJSON(body)
+      if (effectiveSessionId) {
+        await sessionMetadataSet(effectiveSessionId, "lastRequestAt", Date.now())
       }
       return new Response(stream, {
         headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
       })
     }
 
-    if (sessionId?.trim()) {
-      await sessionMetadataSet(sessionId.trim(), "lastRequestAt", Date.now())
+    // Fix 1 / non-streaming: use SDK with streaming: false so we get a single JSON response.
+    const result = await client.createPrediction({
+      ...predictionPayload,
+      streaming: false,
+    })
+
+    if (effectiveSessionId) {
+      await sessionMetadataSet(effectiveSessionId, "lastRequestAt", Date.now())
     }
     return Response.json(result)
   } catch (err) {

@@ -32,8 +32,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { SiGithub } from "react-icons/si";
-import { AGENT_DISPLAY_NAME } from "@/lib/verse-blog";
-import { isAgentSlug } from "@/lib/agents";
 import { VerseAudioDropzone } from "@/components/verse/verse-audio-dropzone";
 import { BUCKETS } from "@/lib/supabase/storage";
 import type { MediaAsset } from "@/lib/supabase/storage";
@@ -43,14 +41,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const DISPLAY_NAMES: Record<string, string> = {
-  mood_mnky: "MOOD MNKY",
-  sage_mnky: "SAGE MNKY",
-  code_mnky: "CODE MNKY",
-};
-
 const USERNAME_MIN_LENGTH = 3;
-const AGENT_SLUGS = ["mood_mnky", "sage_mnky", "code_mnky"] as const;
 
 function getAvatarDisplayUrl(
   supabase: ReturnType<typeof createClient>,
@@ -86,7 +77,7 @@ export interface DojoProfileClientProps {
   bio?: string | null;
   lastSignInAt?: string | null;
   createdAt?: string | null;
-  defaultAgentSlug?: string;
+  defaultChatflowId?: string | null;
   shopifyLinked?: boolean;
   shopifyLinkedSuccess?: boolean;
   storeAccountUrl?: string | null;
@@ -112,7 +103,7 @@ export function DojoProfileClient({
   bio: initialBio,
   lastSignInAt,
   createdAt,
-  defaultAgentSlug = "mood_mnky",
+  defaultChatflowId,
   shopifyLinked = false,
   shopifyLinkedSuccess = false,
   storeAccountUrl,
@@ -135,7 +126,7 @@ export function DojoProfileClient({
   const [websiteValue, setWebsiteValue] = useState(initialWebsite ?? "");
   const [bioValue, setBioValue] = useState(initialBio ?? "");
   const [avatarUrlValue, setAvatarUrlValue] = useState(initialAvatarUrl ?? "");
-  const [defaultAgentValue, setDefaultAgentValue] = useState(defaultAgentSlug);
+  const [defaultChatflowValue, setDefaultChatflowValue] = useState<string>(defaultChatflowId ?? "");
   const [profileSaving, setProfileSaving] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -165,6 +156,28 @@ export function DojoProfileClient({
     needsReconnect?: boolean;
     email?: string;
   }>(shopifyLinked ? "/api/customer-account-api/connection" : null, fetcher);
+
+  type FlowiseAssignment = { id: string; chatflow_id: string; display_name: string | null };
+  const { data: assignmentsData } = useSWR<{ assignments: FlowiseAssignment[] }>(
+    "/api/flowise/assignments",
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+  const assignments = assignmentsData?.assignments ?? [];
+  const { data: chatflowsList } = useSWR<{ id: string; name?: string }[]>(
+    assignments.length > 0 ? "/api/flowise/chatflows" : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return [];
+      const json = await r.json();
+      return Array.isArray(json) ? json : [];
+    },
+    { revalidateOnFocus: false, dedupingInterval: 60_000 }
+  );
+  const chatflows = chatflowsList ?? [];
+  useEffect(() => {
+    setDefaultChatflowValue(defaultChatflowId ?? "");
+  }, [defaultChatflowId]);
 
   const canUseFlowiseKey = role === "admin" || role === "moderator" || role === "user";
   const { data: flowiseKeyStatus, mutate: mutateFlowiseKeyStatus } = useSWR<{
@@ -513,25 +526,41 @@ export function DojoProfileClient({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Preferences</CardTitle>
-            <CardDescription>Default agent for chat and voice.</CardDescription>
+            <CardDescription>Default chatflow for Dojo chat.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="dojo_default_agent">Default agent</Label>
-              <Select value={defaultAgentValue} onValueChange={(v) => setDefaultAgentValue(v)}>
-                <SelectTrigger id="dojo_default_agent">
-                  <SelectValue placeholder="Choose agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AGENT_SLUGS.map((slug) => (
-                    <SelectItem key={slug} value={slug}>
-                      {isAgentSlug(slug) ? AGENT_DISPLAY_NAME[slug] : DISPLAY_NAMES[slug] ?? slug}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="dojo_default_chatflow">Default chatflow</Label>
+              {assignments.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No chatflows assigned. An admin can assign chatflows in Members.
+                </p>
+              ) : (
+                <Select
+                  value={defaultChatflowValue || "__none__"}
+                  onValueChange={(v) => setDefaultChatflowValue(v === "__none__" ? "" : v)}
+                >
+                  <SelectTrigger id="dojo_default_chatflow">
+                    <SelectValue placeholder="Choose chatflow" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No default</SelectItem>
+                    {assignments.map((a) => (
+                      <SelectItem key={a.id} value={a.chatflow_id}>
+                        {a.display_name?.trim() ||
+                          chatflows.find((c) => c.id === a.chatflow_id)?.name ||
+                          a.chatflow_id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
-            <Button size="sm" onClick={handleSavePreferences} disabled={prefsSaving}>
+            <Button
+              size="sm"
+              onClick={handleSavePreferences}
+              disabled={prefsSaving || assignments.length === 0}
+            >
               {prefsSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save preferences"}
             </Button>
             <Button variant="outline" size="sm" asChild>

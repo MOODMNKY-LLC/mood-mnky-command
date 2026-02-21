@@ -14,6 +14,7 @@ export type VerseUser = {
   id: string;
   email?: string;
   displayName?: string;
+  isAdmin?: boolean;
 } | null;
 
 export function VerseStorefrontShell({

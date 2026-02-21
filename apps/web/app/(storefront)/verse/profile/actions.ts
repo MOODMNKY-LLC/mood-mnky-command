@@ -43,6 +43,9 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileRe
   const default_agent_slug = formData.has("default_agent_slug")
     ? (formData.get("default_agent_slug") as string)
     : undefined
+  const default_chatflow_id = formData.has("default_chatflow_id")
+    ? (formData.get("default_chatflow_id") as string)
+    : undefined
 
   const username =
     rawUsername != null && String(rawUsername).trim() !== ""
@@ -66,6 +69,7 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileRe
     display_name?: string | null
     handle?: string | null
     bio?: string | null
+    default_chatflow_id?: string | null
     preferences?: Record<string, unknown>
     updated_at: string
   } = {
@@ -78,6 +82,7 @@ export async function updateProfile(formData: FormData): Promise<UpdateProfileRe
   if (display_name !== undefined) updates.display_name = display_name ?? null
   if (handle !== undefined) updates.handle = handle?.trim() || null
   if (bio !== undefined) updates.bio = bio ?? null
+  if (default_chatflow_id !== undefined) updates.default_chatflow_id = default_chatflow_id?.trim() || null
 
   if (default_agent_slug !== undefined) {
     const { data: existing } = await supabase

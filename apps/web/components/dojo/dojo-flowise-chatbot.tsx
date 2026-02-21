@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,10 +65,23 @@ import {
   ToolOutput,
 } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import {
+  Agent,
+  AgentContent,
+  AgentHeader,
+  AgentInstructions,
+} from "@/components/ai-elements/agent";
 import { FlowisePlan, FlowisePreview } from "@/components/flowise-mnky";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { filePartsToFlowiseUploads } from "@/lib/flowise-uploads";
@@ -181,14 +195,31 @@ function messagesToHistory(messages: ChatMessage[]): { message: string; type: "u
   }));
 }
 
+/** Extract assistant reply from Flowise non-streaming response (various shapes). */
 function extractReplyText(body: Record<string, unknown>): string {
-  if (typeof body.text === "string") return body.text;
-  if (typeof body.data === "string") return body.data;
+  if (typeof body.text === "string" && body.text.trim()) return body.text;
+  if (typeof body.data === "string" && body.data.trim()) return body.data;
   if (body.message && typeof (body.message as Record<string, unknown>).text === "string") {
-    return (body.message as Record<string, unknown>).text as string;
+    const t = (body.message as Record<string, unknown>).text as string;
+    if (t.trim()) return t;
   }
-  if (typeof body.result === "string") return body.result;
-  return JSON.stringify(body);
+  if (typeof body.result === "string" && body.result.trim()) return body.result;
+  if (typeof body.answer === "string" && body.answer.trim()) return body.answer;
+  if (typeof body.output === "string" && body.output.trim()) return body.output;
+  if (typeof body.response === "string" && body.response.trim()) return body.response;
+  return "";
+}
+
+/** Extract streaming token text from Flowise payload.data (string or object with text/content/chunk). */
+function tokenDataToText(data: string | unknown): string {
+  if (typeof data === "string") return data;
+  if (data != null && typeof data === "object") {
+    const o = data as Record<string, unknown>;
+    if (typeof o.text === "string") return o.text;
+    if (typeof o.content === "string") return o.content;
+    if (typeof o.chunk === "string") return o.chunk;
+  }
+  return "";
 }
 
 function isToolPart(part: { type: string }): part is ToolUIPart | DynamicToolUIPart {
@@ -285,17 +316,30 @@ export interface DojoFlowiseChatbotProps {
   className?: string;
 }
 
+type AssignmentItem = {
+  id: string;
+  chatflow_id: string;
+  display_name: string | null;
+  override_config?: Record<string, unknown>;
+};
+
 export function DojoFlowiseChatbot({
   chatflowId: propChatflowId,
   overrideConfig: propOverrideConfig,
   className,
 }: DojoFlowiseChatbotProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [provider, setProvider] = useState<"flowise" | "openai">("flowise");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
+  /** User-selected chatflow (from switcher). When set, overrides propChatflowId for this session. */
+  const [selectedChatflowId, setSelectedChatflowId] = useState<string | undefined>(undefined);
+  /** When stream ended with no tokens, allow one-time retry with streaming: false */
+  const [noTokensRetryQuestion, setNoTokensRetryQuestion] = useState<string | null>(null);
+  const conversationEndRef = useRef<HTMLDivElement>(null);
 
   const sessionId = useMemo(() => nanoid(), []);
 
@@ -324,12 +368,65 @@ export function DojoFlowiseChatbot({
     dedupingInterval: 60_000,
   });
 
-  const chatflowId =
+  const resolvedPropChatflowId =
     propChatflowId ??
     config?.chatflowId ??
     (typeof process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID === "string"
       ? process.env.NEXT_PUBLIC_FLOWISE_CHATFLOW_ID
       : "");
+
+  const { data: assignmentsData } = useSWR<{ assignments: AssignmentItem[] }>(
+    provider === "flowise" ? "/api/flowise/assignments" : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      const json = await r.json();
+      if (!r.ok) throw new Error((json as { error?: string }).error ?? "Failed to load");
+      return json as { assignments: AssignmentItem[] };
+    },
+    { revalidateOnFocus: false }
+  );
+  const assignments = assignmentsData?.assignments ?? [];
+  const hasMultipleAssignments = assignments.length > 1;
+
+  type FlowiseChatflowListItem = { id: string; name?: string };
+  const { data: chatflowsList } = useSWR<FlowiseChatflowListItem[]>(
+    provider === "flowise" ? "/api/flowise/chatflows" : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return [];
+      const json = await r.json();
+      return Array.isArray(json) ? json : [];
+    },
+    { revalidateOnFocus: false, dedupingInterval: 60_000 }
+  );
+  const chatflows = chatflowsList ?? [];
+
+  /** Effective chatflow: user selection > prop/config/env. */
+  const chatflowId = (selectedChatflowId ?? resolvedPropChatflowId) || "";
+
+  const setDefaultChatflowMutation = useCallback(async () => {
+    if (!chatflowId || !assignments.some((a) => a.chatflow_id === chatflowId)) return;
+    try {
+      const res = await fetch("/api/me/default-chatflow", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ chatflowId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as { error?: string }).error ?? "Failed to set default");
+      }
+      toast({ title: "Default chatflow updated", variant: "default" });
+      router.refresh();
+    } catch (e) {
+      toast({
+        title: "Could not set default",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  }, [chatflowId, assignments, toast, router]);
 
   const { data: flowisePing, mutate: mutateFlowisePing } = useSWR<{ ok?: boolean }>(
     chatflowId ? "/api/flowise/ping" : null,
@@ -375,6 +472,7 @@ export function DojoFlowiseChatbot({
       setMessages((prev) => [...prev, userMsg, assistantPlaceholder]);
       setIsLoading(true);
       setError(null);
+      setNoTokensRetryQuestion(null);
 
       const history = messagesToHistory([...messages, userMsg]);
 
@@ -387,6 +485,7 @@ export function DojoFlowiseChatbot({
             chatflowId,
             question: displayText,
             history,
+            sessionId,
             overrideConfig: mergedOverrideConfig,
             streaming: true,
             ...(uploads && uploads.length > 0 ? { uploads } : {}),
@@ -433,23 +532,32 @@ export function DojoFlowiseChatbot({
                   data?: string | unknown;
                 };
                 const ev = payload.event;
-                if (ev === "token" && typeof payload.data === "string") {
-                  assistantContent += payload.data;
-                  setMessages((prev) => {
-                    const next = [...prev];
-                    const last = next[next.length - 1];
-                    if (last?.role === "assistant") {
-                      next[next.length - 1] = {
-                        ...last,
-                        content: assistantContent,
-                        sourceDocuments,
-                        usedTools,
-                      };
-                    }
-                    return next;
-                  });
-                } else if (ev === "error" && typeof payload.data === "string") {
-                  setError(payload.data);
+                if (ev === "token") {
+                  const tokenText = tokenDataToText(payload.data);
+                  if (tokenText) {
+                    assistantContent += tokenText;
+                    setMessages((prev) => {
+                      const next = [...prev];
+                      const last = next[next.length - 1];
+                      if (last?.role === "assistant") {
+                        next[next.length - 1] = {
+                          ...last,
+                          content: assistantContent,
+                          sourceDocuments,
+                          usedTools,
+                        };
+                      }
+                      return next;
+                    });
+                  }
+                } else if (ev === "error") {
+                  const errMsg =
+                    typeof payload.data === "string"
+                      ? payload.data
+                      : payload.data != null && typeof payload.data === "object" && "message" in (payload.data as object)
+                        ? String((payload.data as { message: unknown }).message)
+                        : String(payload.data);
+                  setError(errMsg);
                 } else if (ev === "sourceDocuments") {
                   try {
                     sourceDocuments = typeof payload.data === "string" ? JSON.parse(payload.data) : payload.data;
@@ -525,10 +633,123 @@ export function DojoFlowiseChatbot({
                       return next;
                     });
                   }
+                } else if (ev === "metadata" && payload.data != null && typeof payload.data === "object") {
+                  const meta = payload.data as Record<string, unknown>;
+                  const text =
+                    typeof meta.text === "string"
+                      ? meta.text
+                      : typeof meta.response === "string"
+                        ? meta.response
+                        : typeof meta.content === "string"
+                          ? meta.content
+                          : typeof meta.message === "string"
+                            ? meta.message
+                            : "";
+                  if (text.trim()) {
+                    assistantContent += text.trim();
+                    setMessages((prev) => {
+                      const next = [...prev];
+                      const last = next[next.length - 1];
+                      if (last?.role === "assistant") {
+                        next[next.length - 1] = { ...last, content: assistantContent, sourceDocuments, usedTools };
+                      }
+                      return next;
+                    });
+                  }
+                } else if (ev === "end" && typeof payload.data === "string") {
+                  const endData = payload.data.trim();
+                  if (endData && endData !== "[DONE]") {
+                    assistantContent += endData;
+                    setMessages((prev) => {
+                      const next = [...prev];
+                      const last = next[next.length - 1];
+                      if (last?.role === "assistant") {
+                        next[next.length - 1] = { ...last, content: assistantContent, sourceDocuments, usedTools };
+                      }
+                      return next;
+                    });
+                  }
                 }
               } catch {
                 // skip malformed line
               }
+            }
+          }
+          // Stream ended with no tokens (e.g. agent flows that don't stream): fetch full reply via non-streaming and show it
+          if (!assistantContent.trim() && displayText?.trim()) {
+            setMessages((prev) => {
+              const next = [...prev];
+              const last = next[next.length - 1];
+              if (last?.role === "assistant") {
+                next[next.length - 1] = {
+                  ...last,
+                  content: "Getting response…",
+                  sourceDocuments,
+                  usedTools,
+                };
+              }
+              return next;
+            });
+            setNoTokensRetryQuestion(displayText);
+            setTimeout(() => conversationEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+            try {
+              const history = messagesToHistory(messages.slice(0, -2));
+              const res = await fetch("/api/flowise/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                  chatflowId,
+                  question: displayText.trim(),
+                  history,
+                  sessionId,
+                  overrideConfig: mergedOverrideConfig,
+                  streaming: false,
+                }),
+              });
+              if (res.ok) {
+                const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+                const replyText = extractReplyText(data);
+                if (replyText?.trim()) {
+                  setMessages((prev) => {
+                    const next = [...prev];
+                    const last = next[next.length - 1];
+                    if (last?.role === "assistant") {
+                      next[next.length - 1] = { ...last, content: replyText.trim(), sourceDocuments, usedTools };
+                    }
+                    return next;
+                  });
+                  setNoTokensRetryQuestion(null);
+                } else {
+                  setMessages((prev) => {
+                    const next = [...prev];
+                    const last = next[next.length - 1];
+                    if (last?.role === "assistant") {
+                      next[next.length - 1] = {
+                        ...last,
+                        content: usedTools?.length ? "Response completed (tools used)." : sourceDocuments?.length ? "Response completed (sources retrieved)." : "No text in response.",
+                        sourceDocuments,
+                        usedTools,
+                      };
+                    }
+                    return next;
+                  });
+                }
+              }
+            } catch {
+              setMessages((prev) => {
+                const next = [...prev];
+                const last = next[next.length - 1];
+                if (last?.role === "assistant") {
+                  next[next.length - 1] = {
+                    ...last,
+                    content: "Response failed. Try “Get response (non-streaming)” below.",
+                    sourceDocuments,
+                    usedTools,
+                  };
+                }
+                return next;
+              });
             }
           }
         } else {
@@ -553,6 +774,50 @@ export function DojoFlowiseChatbot({
     },
     [chatflowId, messages, mergedOverrideConfig]
   );
+
+  const handleNoTokensRetry = useCallback(async () => {
+    const question = noTokensRetryQuestion;
+    if (!question?.trim() || !chatflowId) return;
+    setNoTokensRetryQuestion(null);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const history = messagesToHistory(messages.slice(0, -2));
+      const res = await fetch("/api/flowise/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          chatflowId,
+          question: question.trim(),
+          history,
+          sessionId,
+          overrideConfig: mergedOverrideConfig,
+          streaming: false,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        const detail = (errBody as { error?: string; detail?: string })?.detail ?? (errBody as { error?: string })?.error;
+        setError(detail ?? "Retry failed");
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      const replyText = extractReplyText(data);
+      setMessages((prev) => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === "assistant") {
+          next[next.length - 1] = { ...last, content: replyText || last.content };
+        }
+        return next;
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Request failed");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [noTokensRetryQuestion, chatflowId, messages, sessionId, mergedOverrideConfig]);
 
   const handleSubmit = useCallback(
     (message: PromptInputMessage, _event: FormEvent<HTMLFormElement>) => {
@@ -617,6 +882,31 @@ export function DojoFlowiseChatbot({
   const isUnauth = displayError === "Sign in to use MNKY CHAT";
   const mounted = useMounted();
 
+  const currentAssignment = useMemo(
+    () => assignments.find((a) => a.chatflow_id === chatflowId),
+    [assignments, chatflowId]
+  );
+
+  const { data: chatflowDetails } = useSWR<{ name?: string; nodes?: unknown[] }>(
+    provider === "flowise" && chatflowId ? `/api/flowise/chatflows/${chatflowId}` : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return undefined;
+      return r.json();
+    },
+    { revalidateOnFocus: false, dedupingInterval: 60_000 }
+  );
+
+  const chatflowDisplayName = useMemo(() => {
+    const name =
+      currentAssignment?.display_name?.trim() ||
+      chatflows.find((c) => c.id === chatflowId)?.name ||
+      chatflowDetails?.name ||
+      chatflowId ||
+      "MNKY CHAT";
+    return name;
+  }, [currentAssignment?.display_name, chatflows, chatflowId, chatflowDetails?.name]);
+
   return (
     <div
       className={cn(
@@ -628,17 +918,74 @@ export function DojoFlowiseChatbot({
         <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
           <Image
             src={DOJO_MNKY_AVATAR}
-            alt="MNKY CHAT"
+            alt={chatflowDisplayName}
             fill
             className="object-cover"
             unoptimized
           />
         </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-semibold text-foreground">MNKY CHAT</h2>
-          <p className="text-muted-foreground text-xs">Ask about fragrance blending</p>
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+          <h2 className="flex items-center gap-2 font-semibold text-foreground">
+            {provider === "flowise" && chatflowId ? (
+              <>
+                <span className="truncate">{chatflowDisplayName}</span>
+                {flowiseAvailable && (
+                  <span
+                    className="size-2 shrink-0 rounded-full bg-green-500"
+                    title="Chatflow active"
+                    aria-hidden
+                  />
+                )}
+              </>
+            ) : (
+              "MNKY CHAT"
+            )}
+          </h2>
+          <p className="text-muted-foreground text-xs">
+            {provider === "flowise" && chatflowId
+              ? "Ask about fragrance blending"
+              : "Ask about fragrance blending"}
+          </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {provider === "flowise" && hasMultipleAssignments && (
+            <Select
+              value={chatflowId || "__none__"}
+              onValueChange={(v) => {
+                const id = v === "__none__" ? undefined : v;
+                setSelectedChatflowId(id);
+                if (typeof window !== "undefined" && window.history?.replaceState) {
+                  const u = new URL(window.location.href);
+                  if (id) u.searchParams.set("chatflowId", id);
+                  else u.searchParams.delete("chatflowId");
+                  window.history.replaceState({}, "", u.pathname + u.search);
+                }
+              }}
+            >
+              <SelectTrigger className="h-8 w-[180px] text-xs">
+                <SelectValue placeholder="Chatflow" />
+              </SelectTrigger>
+              <SelectContent>
+                {assignments.map((a) => (
+                  <SelectItem key={a.id} value={a.chatflow_id}>
+                    {a.display_name?.trim() ||
+                      chatflows.find((c) => c.id === a.chatflow_id)?.name ||
+                      a.chatflow_id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {provider === "flowise" && chatflowId && assignments.some((a) => a.chatflow_id === chatflowId) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-muted-foreground"
+              onClick={() => setDefaultChatflowMutation()}
+            >
+              Set as default
+            </Button>
+          )}
           {!flowiseAvailable && provider === "openai" ? (
             <Button
               variant="ghost"
@@ -675,6 +1022,27 @@ export function DojoFlowiseChatbot({
         </div>
       </header>
 
+      {provider === "flowise" && chatflowId && currentAssignment && (
+        <div className="shrink-0 overflow-hidden border-b border-border/30 bg-muted/30 px-2 py-1.5">
+          <div className="flex w-max animate-marquee gap-8 whitespace-nowrap text-xs text-muted-foreground">
+            <span>{chatflowDisplayName}</span>
+            <span>•</span>
+            <span>
+              {currentAssignment.override_config?.returnSourceDocuments ? "Sources on" : "Sources off"}
+            </span>
+            <span>•</span>
+            <span>{typeof currentAssignment.override_config?.systemMessage === "string" ? "Custom prompt" : "Default prompt"}</span>
+            <span>{chatflowDisplayName}</span>
+            <span>•</span>
+            <span>
+              {currentAssignment.override_config?.returnSourceDocuments ? "Sources on" : "Sources off"}
+            </span>
+            <span>•</span>
+            <span>{typeof currentAssignment.override_config?.systemMessage === "string" ? "Custom prompt" : "Default prompt"}</span>
+          </div>
+        </div>
+      )}
+
       {noConfig ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-muted-foreground text-sm">
           <p>Chat not configured. Set embed config or NEXT_PUBLIC_FLOWISE_CHATFLOW_ID.</p>
@@ -704,26 +1072,54 @@ export function DojoFlowiseChatbot({
             <ConversationContent className="flex flex-col gap-6 p-4">
               {provider === "flowise" ? (
                 messages.length === 0 ? (
-                  <ConversationEmptyState
-                    title="MNKY CHAT"
-                    description="Ask about fragrance blending—suggest oils, proportions, and blend ideas."
-                    icon={<MessageSquare className="size-12 text-muted-foreground" />}
-                  >
-                    <div className="mt-4 flex flex-wrap justify-center gap-2">
-                      {STARTER_PROMPTS.map((prompt) => (
-                        <Button
-                          key={prompt}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs"
-                          onClick={() => sendMessageFlowise(prompt)}
-                        >
-                          {prompt}
-                        </Button>
-                      ))}
-                    </div>
-                  </ConversationEmptyState>
+                  <div className="flex flex-col gap-6 p-4">
+                    {chatflowId && currentAssignment ? (
+                      <Shimmer className="rounded-lg border border-border/60">
+                        <Agent className="rounded-lg border-0 bg-transparent shadow-none">
+                          <AgentHeader
+                            name={chatflowDisplayName}
+                            model={
+                              chatflowDisplayName !== chatflowId
+                                ? chatflowDisplayName
+                                : chatflowId.length > 24
+                                  ? `${chatflowId.slice(0, 24)}…`
+                                  : chatflowId
+                            }
+                          />
+                          <AgentContent>
+                            <AgentInstructions label="About this agent">
+                              {typeof currentAssignment?.override_config?.systemMessage === "string"
+                                ? String(currentAssignment.override_config.systemMessage).slice(0, 300) +
+                                  (String(currentAssignment.override_config.systemMessage).length > 300 ? "…" : "")
+                                : chatflowDetails?.name
+                                  ? `${chatflowDetails.name} is ready. Ask about fragrance blending—suggest oils, proportions, and blend ideas.`
+                                  : "Ask about fragrance blending—suggest oils, proportions, and blend ideas."}
+                            </AgentInstructions>
+                          </AgentContent>
+                        </Agent>
+                      </Shimmer>
+                    ) : null}
+                    <ConversationEmptyState
+                      title={chatflowDisplayName}
+                      description="Ask about fragrance blending—suggest oils, proportions, and blend ideas."
+                      icon={<MessageSquare className="size-12 text-muted-foreground" />}
+                    >
+                      <div className="mt-4 flex flex-wrap justify-center gap-2">
+                        {STARTER_PROMPTS.map((prompt) => (
+                          <Button
+                            key={prompt}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => sendMessageFlowise(prompt)}
+                          >
+                            {prompt}
+                          </Button>
+                        ))}
+                      </div>
+                    </ConversationEmptyState>
+                  </div>
                 ) : (
                   <>
                     {messages.map((msg) => (
@@ -795,9 +1191,26 @@ export function DojoFlowiseChatbot({
                               />
                             </div>
                           ) : null}
+                          {msg.role === "assistant" &&
+                            messages[messages.length - 1]?.id === msg.id &&
+                            noTokensRetryQuestion &&
+                            !isLoading && (
+                              <div className="mt-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => handleNoTokensRetry()}
+                                >
+                                  Get response (non-streaming)
+                                </Button>
+                              </div>
+                            )}
                         </MessageContent>
                       </Message>
                     ))}
+                  {messages.length > 0 && <div ref={conversationEndRef} />}
                   </>
                 )
               ) : openaiMessages.length === 0 ? (

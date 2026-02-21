@@ -22,20 +22,20 @@ export async function DojoAuthContext({
     redirect("/auth/login");
   }
 
-  let profile: { display_name?: string } | null = null;
+  let profile: { display_name?: string; role?: string; is_admin?: boolean } | null = null;
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     try {
       const admin = createAdminClient();
       const { data } = await admin
         .from("profiles")
-        .select("display_name")
+        .select("display_name, role, is_admin")
         .eq("id", user.id)
         .single();
       profile = data;
     } catch {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, role, is_admin")
         .eq("id", user.id)
         .single();
       profile = data;
@@ -43,16 +43,20 @@ export async function DojoAuthContext({
   } else {
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, role, is_admin")
       .eq("id", user.id)
       .single();
     profile = data;
   }
 
+  const isAdmin =
+    profile?.role === "admin" || profile?.is_admin === true;
+
   const userInfo: VerseUser = {
     id: user.id,
     email: user.email ?? undefined,
     displayName: profile?.display_name ?? undefined,
+    isAdmin: isAdmin || undefined,
   };
 
   return <VerseUserProvider user={userInfo}>{children}</VerseUserProvider>;

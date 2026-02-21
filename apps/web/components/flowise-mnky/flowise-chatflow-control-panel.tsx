@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { useVerseUser } from "@/components/verse/verse-user-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { FlowiseAgentCard } from "./flowise-agent-card";
 import { FlowiseOverrideConfigEditor } from "./flowise-override-config-editor";
@@ -28,6 +30,18 @@ export function FlowiseChatflowControlPanel() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [editOverrides, setEditOverrides] = useState<Record<string, string>>({});
   const [userStoreId, setUserStoreId] = useState<string | null>(null);
+
+  const { data: chatflowsList } = useSWR<{ id: string; name?: string }[]>(
+    user?.id ? "/api/flowise/chatflows" : null,
+    async (url) => {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return [];
+      const json = await r.json();
+      return Array.isArray(json) ? json : [];
+    },
+    { revalidateOnFocus: false, dedupingInterval: 60_000 }
+  );
+  const chatflows = chatflowsList ?? [];
 
   useEffect(() => {
     if (!user?.id) return;
@@ -74,25 +88,42 @@ export function FlowiseChatflowControlPanel() {
       return;
     }
     setSavingId(assignment.id);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("flowise_chatflow_assignments")
-      .update({
-        override_config: parsed,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", assignment.id)
-      .eq("profile_id", user?.id);
-    setSavingId(null);
-    if (!error) {
+    try {
+      const res = await fetch(`/api/flowise/assignments/${assignment.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ override_config: parsed }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? "Failed to save");
+      }
+      const data = (await res.json()) as {
+        id: string;
+        override_config: Record<string, unknown>;
+        updated_at: string;
+      };
       setAssignments((prev) =>
         prev.map((a) =>
           a.id === assignment.id
-            ? { ...a, override_config: parsed, updated_at: new Date().toISOString() }
+            ? { ...a, override_config: data.override_config, updated_at: data.updated_at }
             : a,
         ),
       );
-      setEditOverrides((prev) => ({ ...prev, [assignment.id]: JSON.stringify(parsed, null, 2) }));
+      setEditOverrides((prev) => ({
+        ...prev,
+        [assignment.id]: JSON.stringify(data.override_config, null, 2),
+      }));
+      toast({ title: "Saved", variant: "default" });
+    } catch (e) {
+      toast({
+        title: "Could not save",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingId(null);
     }
   };
 
@@ -123,7 +154,11 @@ export function FlowiseChatflowControlPanel() {
             key={a.id}
             id={a.id}
             chatflowId={a.chatflow_id}
-            displayName={a.display_name}
+            displayName={
+              a.display_name?.trim() ||
+              chatflows.find((c) => c.id === a.chatflow_id)?.name ||
+              null
+            }
             overrideConfig={a.override_config}
             chatHref={`/dojo/chat?chatflowId=${encodeURIComponent(a.chatflow_id)}`}
           >
@@ -145,6 +180,7 @@ export function FlowiseChatflowControlPanel() {
               saving={savingId === a.id}
               profileId={user?.id}
               userStoreId={userStoreId}
+              simpleMode
             />
           </FlowiseAgentCard>
         ))}

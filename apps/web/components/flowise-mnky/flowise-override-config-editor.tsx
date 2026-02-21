@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 
 export type OverrideConfig = Record<string, unknown>;
@@ -20,6 +21,8 @@ export interface FlowiseOverrideConfigEditorProps {
   profileId?: string | null;
   /** Optional: user's document store id for preset */
   userStoreId?: string | null;
+  /** When true, only show boolean toggles + system prompt (no raw JSON). For Dojo chat config panel. */
+  simpleMode?: boolean;
   className?: string;
 }
 
@@ -39,6 +42,7 @@ export function FlowiseOverrideConfigEditor({
   saving = false,
   profileId,
   userStoreId,
+  simpleMode = false,
   className,
 }: FlowiseOverrideConfigEditorProps) {
   const [rawJson, setRawJson] = useState(() => JSON.stringify(value, null, 2));
@@ -65,6 +69,40 @@ export function FlowiseOverrideConfigEditor({
     onChange(next);
     setRawJson(JSON.stringify(next, null, 2));
   };
+
+  if (simpleMode) {
+    return (
+      <div className={className}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-xs">Include source documents in response</Label>
+            <Switch
+              checked={Boolean(value.returnSourceDocuments)}
+              onCheckedChange={(checked) =>
+                onChange({ ...value, returnSourceDocuments: checked })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">System prompt override</Label>
+            <Textarea
+              value={(value.systemMessage as string) ?? ""}
+              onChange={(e) =>
+                onChange({ ...value, systemMessage: e.target.value || undefined })
+              }
+              placeholder="Override system prompt for this chatflow"
+              className="min-h-[80px] font-mono text-xs"
+            />
+          </div>
+        </div>
+        {onSave && (
+          <Button size="sm" disabled={saving} onClick={onSave} className="mt-3">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
@@ -125,6 +163,15 @@ export function FlowiseOverrideConfigEditor({
               onChange={(e) => onChange({ ...value, systemMessage: e.target.value || undefined })}
               placeholder="Override system prompt"
               className="min-h-[60px] font-mono text-xs"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-xs">returnSourceDocuments</Label>
+            <Switch
+              checked={Boolean(value.returnSourceDocuments)}
+              onCheckedChange={(checked) =>
+                onChange({ ...value, returnSourceDocuments: checked })
+              }
             />
           </div>
         </TabsContent>

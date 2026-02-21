@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { FileUp, Loader2 } from "lucide-react";
+import { FileUp, Loader2, Upload, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { FlowiseStoreSelector } from "./flowise-store-selector";
 
 export interface FlowiseDocumentUploadProps {
@@ -16,16 +16,15 @@ export function FlowiseDocumentUpload({
   className,
 }: FlowiseDocumentUploadProps) {
   const [storeId, setStoreId] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeId) return;
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const files = formData.getAll("files") as File[];
-    if (!files.length || !files[0]?.size) return;
+    if (!storeId || !files.length) return;
 
     setUploading(true);
     setError(null);
@@ -43,13 +42,29 @@ export function FlowiseDocumentUpload({
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { error?: string })?.error ?? "Upload failed");
       }
-      form.reset();
+      setFiles([]);
       onUploadComplete?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
     }
+  };
+
+  const addFiles = (fileList: FileList | File[]) => {
+    const next = Array.from(fileList).filter((f) => f.size > 0);
+    setFiles((prev) => [...prev, ...next]);
+    setError(null);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
   };
 
   return (
@@ -62,25 +77,95 @@ export function FlowiseDocumentUpload({
         Upload files to a Flowise document store (RAG). Documents are tagged with your profile for
         per-user retrieval when using Supabase vector store.
       </p>
-      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <FlowiseStoreSelector
           value={storeId}
           onValueChange={setStoreId}
           placeholder="Select store"
           disabled={uploading}
         />
-        <div className="space-y-1">
-          <Label className="text-xs">Files</Label>
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOver(true);
+          }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={onDrop}
+          onClick={() => inputRef.current?.click()}
+          className={cn(
+            "relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors px-6 py-8",
+            isDragOver
+              ? "border-primary bg-primary/5"
+              : "border-border bg-card hover:border-muted-foreground/40 hover:bg-accent/50"
+          )}
+        >
+          <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">
+            {isDragOver ? "Drop files here" : "Click or drag files to upload"}
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            PDF, TXT, MD, or other documents
+          </p>
           <input
+            ref={inputRef}
             type="file"
-            name="files"
             multiple
-            className="block w-full max-w-[240px] text-sm file:mr-2 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:text-primary-foreground file:hover:bg-primary/90"
+            accept=".pdf,.txt,.md,text/*,application/pdf"
+            onChange={(e) => {
+              if (e.target.files?.length) {
+                addFiles(e.target.files);
+                e.target.value = "";
+              }
+            }}
+            className="hidden"
           />
         </div>
-        <Button type="submit" size="sm" disabled={!storeId || uploading}>
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload"}
-        </Button>
+        {files.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {files.map((f, i) => (
+              <div
+                key={`${f.name}-${i}`}
+                className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2"
+              >
+                <span className="min-w-0 truncate text-xs font-medium">{f.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile(i);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setFiles([])}
+                disabled={uploading}
+              >
+                Clear
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!storeId || uploading}
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>Upload {files.length} file{files.length !== 1 ? "s" : ""}</>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </form>
       {error && (
         <p className="mt-2 text-sm text-destructive" role="alert">

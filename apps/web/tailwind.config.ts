@@ -214,6 +214,10 @@ const config: Config = {
 			grid: {
 				'0%': { transform: 'translateY(-50%)' },
 				'100%': { transform: 'translateY(0)' }
+			},
+			marquee: {
+				'0%': { transform: 'translateX(0)' },
+				'100%': { transform: 'translateX(-50%)' }
 			}
 		},
 		animation: {
@@ -221,7 +225,8 @@ const config: Config = {
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'progress-indeterminate': 'progress-indeterminate 1.5s ease-in-out infinite',
 			orbit: 'orbit calc(var(--duration) * 1s) linear infinite',
-			grid: 'grid 15s linear infinite'
+			grid: 'grid 15s linear infinite',
+			marquee: 'marquee 25s linear infinite'
 		}
   	}
   },

@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { Server } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -8,6 +10,9 @@ import {
   SidebarHeader,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
@@ -18,6 +23,7 @@ import { DojoNavProjects } from "@/components/dojo/dojo-nav-projects";
 import { DojoSidebarFooter } from "@/components/dojo/dojo-sidebar-footer";
 import { DojoTeamSwitcher } from "@/components/dojo/dojo-team-switcher";
 import { useDojoContext } from "@/components/dojo/dojo-context-provider";
+import { useVerseUser } from "@/components/verse/verse-user-context";
 import {
   getDojoNavGroupsForContext,
   getDojoQuickAccessForContext,
@@ -26,9 +32,11 @@ import { useMounted } from "@/lib/use-mounted";
 
 export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const mounted = useMounted();
+  const user = useVerseUser();
   const { contextId } = useDojoContext();
   const navGroups = getDojoNavGroupsForContext(contextId);
   const quickAccessItems = getDojoQuickAccessForContext(contextId);
+  const isAdmin = user?.isAdmin === true;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -50,6 +58,21 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         {mounted ? (
           <>
             <DojoNavMain groups={navGroups} />
+            {isAdmin ? (
+              <SidebarGroup>
+                <SidebarGroupLabel>Admin</SidebarGroupLabel>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Lab">
+                      <Link href="/platform">
+                        <Server className="h-4 w-4" />
+                        <span>Lab</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroup>
+            ) : null}
             <SidebarSeparator />
             <DojoNavProjects projects={quickAccessItems} />
           </>

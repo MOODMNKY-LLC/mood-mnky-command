@@ -20,6 +20,7 @@ import {
   Newspaper,
   Trophy,
   Users,
+  Globe,
 } from "lucide-react";
 
 /** Logo component for The Dojo team */
@@ -115,6 +116,7 @@ export const dojoNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
+      { title: "Back to VERSE", url: "/verse", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home, isActive: true },
       { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
       { title: "Profile", url: "/dojo/profile", icon: User },
@@ -158,6 +160,7 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
+      { title: "Back to VERSE", url: "/verse", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
     ],

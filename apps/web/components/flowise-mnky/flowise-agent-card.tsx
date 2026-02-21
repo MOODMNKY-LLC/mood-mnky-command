@@ -33,7 +33,11 @@ export function FlowiseAgentCard({
 }: FlowiseAgentCardProps) {
   const name = displayName || chatflowId;
   const modelLabel =
-    chatflowId.length > 20 ? `${chatflowId.slice(0, 20)}…` : chatflowId;
+    name !== chatflowId
+      ? (name.length > 32 ? `${name.slice(0, 32)}…` : name)
+      : chatflowId.length > 20
+        ? `${chatflowId.slice(0, 20)}…`
+        : chatflowId;
   const systemPreview =
     typeof overrideConfig?.systemMessage === "string"
       ? String(overrideConfig.systemMessage).slice(0, 200) +
