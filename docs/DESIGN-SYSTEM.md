@@ -28,7 +28,13 @@ flowchart TB
         dojoLayout[dojo layout]
         dojoSidebar[dojo-sidebar]
     end
+    subgraph Main [Main Section]
+        mainCss[main-site.css]
+        mainLayout["(main)/main layout"]
+    end
     globals --> tailwind
+    globals --> mainLayout
+    mainCss --> mainLayout
     globals --> shadcn
     verseCss --> verseComps
     verseCss --> authShell
@@ -173,6 +179,31 @@ The Dojo home profile block uses the **Elements AI SDK Agent** component (`compo
 
 ---
 
+## Main (main-site.css)
+
+The Main section (`app/(main)/main/`) is the public marketing site served at www.moodmnky.com. It uses **root design tokens** from `globals.css` (no Verse or LABZ overrides). The wrapper class `.main-site` scopes layout utilities.
+
+### Tokens and layout
+
+- **--main-page-width**: `1200px` (content max-width).
+- **--main-spacing-sections**: `32px`.
+- **.main-container**: Centered container with responsive padding (max-width from `--main-page-width`).
+
+Main does not define its own color tokens; it uses root `--background`, `--foreground`, `--primary`, `--muted-foreground`, etc. So the marketing site has a clean, grayscale look consistent with LABZ and works with `next-themes` (light/dark) from the root layout.
+
+### Components and fonts
+
+- **Components**: shadcn (Button, Card, etc.), BlurFade; optional Magic UI for motion. No Verse-specific components.
+- **Fonts**: Root fonts (Inter, Source Code Pro) from the root layout; no separate font loading in Main layout.
+
+### Files
+
+- `app/(main)/main/main-site.css` — scoped layout tokens and `.main-container`
+- `app/(main)/main/layout.tsx` — metadata (title, description, Open Graph, canonical), `.main-site` wrapper
+- `app/(main)/main/main-footer.tsx` — shared footer for Main pages
+
+---
+
 ## Flowise-MNKY Components
 
 The `components/flowise-mnky/` library provides Flowise-specific UI: chatflow control panel, override config editor, document store upload, chat UI, FlowisePreview (live preview via Elements WebPreview when tools return URLs), and FlowisePlan (execution plans via Elements Plan when agents return structured steps). Uses root tokens, shadcn, and Elements AI SDK (Agent, Message, Conversation, PromptInput, Tool, Reasoning, WebPreview, Plan). See `docs/FLOWISE-MNKY-COMPONENTS.md`.
@@ -193,7 +224,7 @@ If LABZ-specific overrides are needed later:
 
 | Font | Usage |
 |------|-------|
-| Inter | Root app, LABZ |
+| Inter | Root app, LABZ, Main |
 | Source Code Pro | Monospace |
 | Oswald | Verse headings |
 | Roboto | Verse body |
@@ -206,6 +237,7 @@ If LABZ-specific overrides are needed later:
 - Root tokens: `app/globals.css`
 - Auth shell: `app/auth/auth-shell.css`, `components/auth/auth-verse-shell.tsx`, `components/auth/auth-page-layout.tsx`
 - Dojo: `app/dojo/layout.tsx`, `docs/DOJO-SECTION.md`
+- Main: `app/(main)/main/main-site.css`, `app/(main)/main/layout.tsx`, `docs/MAIN-SECTION-DOMAINS.md`
 - Verse tokens: `app/(storefront)/verse/verse-storefront.css`
 - Glass effects: `app/(storefront)/verse/verse-glass.css`
 - Tailwind config: `tailwind.config.ts`

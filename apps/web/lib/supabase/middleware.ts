@@ -2,7 +2,15 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 
-export async function updateSession(request: NextRequest) {
+export type UpdateSessionOptions = {
+  /** When set, path-based checks use this instead of request.nextUrl.pathname (for host-based rewrite). */
+  effectivePathname?: string
+}
+
+export async function updateSession(
+  request: NextRequest,
+  options?: UpdateSessionOptions
+) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -43,11 +51,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // If accessing dashboard routes without auth, redirect to login
-  // Allow /auth, /api, /verse/auth (Discord OAuth), and public Verse store-embed routes
-  const pathname = request.nextUrl.pathname
+  // Allow /auth, /api, /verse/auth (Discord OAuth), public Verse store-embed routes, and all /main (public marketing site)
+  const pathname =
+    (options?.effectivePathname as string | undefined) ??
+    request.nextUrl.pathname
   const isAuthRoute = pathname.startsWith("/auth")
   const isApiRoute = pathname.startsWith("/api")
   const isVerseAuthRoute = pathname.startsWith("/verse/auth")
+  const isMainRoute = pathname.startsWith("/main")
   const publicVersePaths = [
     "/verse/fragrance-wheel",
     "/verse/blending-guide",
@@ -63,7 +74,8 @@ export async function updateSession(request: NextRequest) {
     !isAuthRoute &&
     !isApiRoute &&
     !isVerseAuthRoute &&
-    !isPublicVerseRoute
+    !isPublicVerseRoute &&
+    !isMainRoute
   ) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"

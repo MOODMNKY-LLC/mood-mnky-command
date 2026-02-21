@@ -55,6 +55,7 @@ pnpm vercel:env-check
 ### App
 - [ ] `NEXT_PUBLIC_APP_URL` (e.g. `https://mnky-command.moodmnky.com` – admin/dashboard base)
 - [ ] `NEXT_PUBLIC_VERSE_APP_URL` (e.g. `https://mnky-verse.moodmnky.com` – verse storefront base, used when request origin unavailable)
+- [ ] `NEXT_PUBLIC_MAIN_APP_URL` (e.g. `https://www.moodmnky.com` – main public marketing site canonical URL)
 
 ### Optional
 - [ ] `NOTION_API_KEY`
@@ -75,9 +76,9 @@ pnpm vercel:env-check
 
 | Field | Value |
 |-------|-------|
-| **Callback URI(s)** | `https://mnky-verse.moodmnky.com/api/customer-account-api/callback`, `https://mnky-command.moodmnky.com/api/customer-account-api/callback` |
-| **JavaScript origin(s)** | `mnky-verse.moodmnky.com`, `mnky-command.moodmnky.com` (hostname only) |
-| **Logout URI(s)** | `https://mnky-verse.moodmnky.com`, `https://mnky-verse.moodmnky.com/verse`, `https://mnky-command.moodmnky.com`, `https://mnky-command.moodmnky.com/verse` |
+| **Callback URI(s)** | `https://mnky-verse.moodmnky.com/api/customer-account-api/callback`, `https://mnky-command.moodmnky.com/api/customer-account-api/callback`, `https://www.moodmnky.com/api/customer-account-api/callback` |
+| **JavaScript origin(s)** | `https://mnky-verse.moodmnky.com`, `https://mnky-command.moodmnky.com`, `https://www.moodmnky.com` (full HTTPS URL) |
+| **Logout URI(s)** | `https://mnky-verse.moodmnky.com`, `https://mnky-verse.moodmnky.com/verse`, `https://mnky-command.moodmnky.com`, `https://mnky-command.moodmnky.com/verse`, `https://www.moodmnky.com`, `https://www.moodmnky.com/main` |
 
 **Note:** Use **Public** client type to see JavaScript origin(s) and Logout URI options.
 

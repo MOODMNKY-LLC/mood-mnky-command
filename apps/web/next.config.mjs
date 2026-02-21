@@ -15,6 +15,15 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: "/main/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
     ]
   },
   webpack: (config) => {
@@ -79,6 +88,7 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [
     { url: "/~offline", revision },
     { url: "/verse", revision },
+    { url: "/main", revision },
   ],
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",

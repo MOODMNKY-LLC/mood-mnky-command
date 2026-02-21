@@ -6,28 +6,31 @@ Configure these values in **Shopify Admin → Sales channels → Hydrogen → MN
 
 ---
 
-## Production (dual domain)
+## Production (multi-domain)
 
-The app is deployed on Vercel with two domains:
+The app is deployed on Vercel with three domains:
 - **mnky-verse.moodmnky.com** – MNKY VERSE storefront (primary for Login with Shopify)
 - **mnky-command.moodmnky.com** – MNKY LABZ admin/dashboard
+- **www.moodmnky.com** – Main public marketing site (optional auth CTAs to Verse)
 
 ### Callback URI(s)
 
-Add both URLs (required for dual-domain support):
+Add all URLs that may receive the OAuth callback:
 
 ```
 https://mnky-verse.moodmnky.com/api/customer-account-api/callback
 https://mnky-command.moodmnky.com/api/customer-account-api/callback
+https://www.moodmnky.com/api/customer-account-api/callback
 ```
 
 ### JavaScript origin(s)
 
-Add both hostnames (no protocol, no path):
+Add all origins as **full HTTPS URLs** (protocol required; Shopify validates they are secured):
 
 ```
-mnky-verse.moodmnky.com
-mnky-command.moodmnky.com
+https://mnky-verse.moodmnky.com
+https://mnky-command.moodmnky.com
+https://www.moodmnky.com
 ```
 
 ### Logout URI(s)
@@ -39,6 +42,8 @@ https://mnky-verse.moodmnky.com
 https://mnky-verse.moodmnky.com/verse
 https://mnky-command.moodmnky.com
 https://mnky-command.moodmnky.com/verse
+https://www.moodmnky.com
+https://www.moodmnky.com/main
 ```
 
 ---
@@ -90,9 +95,9 @@ Replace `<YOUR-DOMAIN>` with your ngrok domain (e.g. `unupbraiding-unilobed-eust
 https://<YOUR-DOMAIN>/api/customer-account-api/callback
 ```
 
-**JavaScript origin(s):** (hostname only, no protocol)
+**JavaScript origin(s):** (full HTTPS URL; Shopify requires secured origin)
 ```
-<YOUR-DOMAIN>
+https://<YOUR-DOMAIN>
 ```
 
 **Logout URI(s):**

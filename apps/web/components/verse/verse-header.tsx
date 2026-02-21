@@ -61,13 +61,22 @@ export function VerseHeader({
   return (
     <header className="sticky top-0 z-50 verse-header glass-panel">
       <div className="mx-auto grid h-16 max-w-[var(--verse-page-width,1600px)] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6">
-        {/* Left: Logo */}
-        <Link
-          href="/verse"
-          className="font-verse-heading text-xl font-semibold tracking-tight text-verse-text"
-        >
-          MNKY VERSE
-        </Link>
+        {/* Left: Brand + Logo */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/main"
+            className="text-sm font-medium text-verse-text-muted transition-colors hover:text-verse-text"
+            title="MOOD MNKY home"
+          >
+            MOOD MNKY
+          </Link>
+          <Link
+            href="/verse"
+            className="font-verse-heading text-xl font-semibold tracking-tight text-verse-text"
+          >
+            MNKY VERSE
+          </Link>
+        </div>
         {/* Center: Nav links (Lab, Home, Explore, Blog, Agents, Shop, Cart) */}
         <nav className="flex min-w-0 shrink items-center justify-center gap-2 md:gap-6">
           {isAdmin && (

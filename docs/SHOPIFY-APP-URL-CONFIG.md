@@ -8,6 +8,7 @@ The production app is served at:
 
 - **App / LABZ (admin):** `https://mnky-command.moodmnky.com`
 - **Verse (storefront):** `https://mnky-verse.moodmnky.com`
+- **Main (public marketing):** `https://www.moodmnky.com` (see `docs/MAIN-SECTION-DOMAINS.md`)
 
 For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse blog links, etc.), the **App base URL** must point at the **same app**. Both domains serve the same deployment; use one canonical base for the theme:
 
