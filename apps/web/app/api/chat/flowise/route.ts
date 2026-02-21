@@ -1,6 +1,9 @@
 import { handleFlowisePredict } from "@/lib/flowise/predict-handler"
 
-/** Predict endpoint forwards to Flowise; see temp/flowise-api-upgraded.json for high-level Flowise REST API. */
+/**
+ * Alias for POST /api/flowise/predict. Same body and response.
+ * Recommended "chat" namespace for Flowise; predict route remains for backward compatibility.
+ */
 export const maxDuration = 60
 
 export async function POST(request: Request) {

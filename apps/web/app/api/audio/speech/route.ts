@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const voiceParam: TTSVoice | { id: string } =
     typeof voice === "string" && !VOICE_NAMES.includes(voice as TTSVoice)
       ? { id: voice }
-      : (VOICE_NAMES.includes(voice as TTSVoice) ? voice : "alloy") as TTSVoice;
+      : (VOICE_NAMES.includes(voice as TTSVoice) ? voice : "ballad") as TTSVoice;
 
   try {
     const buffer = await createSpeech({

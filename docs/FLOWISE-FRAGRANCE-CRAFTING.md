@@ -43,7 +43,7 @@ Each Flowise Custom Tool POSTs to the corresponding proxy route:
 
 | Tool | Proxy Route | Params | Returns |
 |------|-------------|--------|---------|
-| `getLatestFunnelSubmission` | `POST /api/flowise/tools/submission` | `userId`, `sessionId`, `funnelId?` | Submission or null |
+| `getLatestFunnelSubmission` | `POST /api/flowise/tools/submission` | `userId`, `sessionId`, `funnelId?` | Submission or null (route implemented; auth: Bearer `MOODMNKY_API_KEY` or `FLOWISE_API_KEY`) |
 | `showIntakeForm` | `POST /api/flowise/tools/intake-form` | `userId`, `sessionId`, `funnelId?` | Form schema, runId |
 | `submitIntakeAnswers` | `POST /api/flowise/tools/intake-answers` | `userId`, `runId`, `funnelId`, `answers` | Success/error |
 | `searchFragranceOils` | `POST /api/flowise/tools/search-oils` | `userId`, `sessionId`, `query`, `limit?` | Oils array |
@@ -123,6 +123,28 @@ Phase 1 uses **text-only** output. Tools return JSON; we serialize to a string f
 5. Assign an API key to the chatflow (for Flowise prediction API).
 6. Set `NEXT_PUBLIC_FLOWISE_HOST`, `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID`, `FLOWISE_API_KEY` in the app.
 
+## Session and memory (Dojo chat)
+
+For **Dojo chat** (`/dojo/chat`), conversation memory and session persistence work as follows:
+
+1. **App sends `sessionId`**  
+   Every Flowise predict request includes `sessionId` (in the request body and in `overrideConfig`). Flowise applies `overrideConfig.sessionId` so the same session key is used for chat memory.
+
+2. **Session persistence across refresh**  
+   The app optionally persists `sessionId` in `sessionStorage` under the key `dojo-chat-session-id`. On load, it reads that value or generates a new one and stores it. This keeps the same conversation context after a page reload.
+
+3. **Flowise chatflow memory (Upstash Redis)**  
+   To get persistent conversation history in Flowise:
+   - In the Flowise chatflow, add and connect an **Upstash Redis-Backed Chat Memory** node (or equivalent Redis-backed memory) so that history is keyed by `sessionId`.
+   - In the Flowise environment (Settings or env vars), set:
+     - `UPSTASH_REDIS_REST_URL` (or the variable name your memory node expects)
+     - `UPSTASH_REDIS_REST_TOKEN`
+   - Create the Upstash Redis database in the [Upstash Console](https://console.upstash.com/) if needed.
+   - No app code change is required for sessionId passthrough; the app already sends it.
+
+4. **Cache**  
+   Flowise can also use Upstash Redis for **cache** (e.g. LLM response caching). Configure the cache node with the same Upstash credentials if you use it.
+
 ## Troubleshooting
 
 | Issue | Fix |
@@ -131,3 +153,4 @@ Phase 1 uses **text-only** output. Tools return JSON; we serialize to a string f
 | `userId is required` | Ensure embed passes `chatflowConfig.vars.userId`. Enable Override Configuration for `vars` in chatflow Configuration UI (disabled by default). |
 | Flowise vars not populated | Enable Override Configuration in chatflow Configuration and allow overriding the specific variable. |
 | Embed shows "Flowise not configured" | Set `NEXT_PUBLIC_FLOWISE_HOST` and `NEXT_PUBLIC_FLOWISE_CHATFLOW_ID`. |
+| Chat memory not persisting | Use Upstash Redis-Backed Chat Memory in the chatflow and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in Flowise. Ensure the app sends `sessionId` (it does by default). |

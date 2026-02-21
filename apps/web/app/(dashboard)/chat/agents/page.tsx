@@ -25,9 +25,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Loader2, Bot, ChevronDown, ChevronUp, Save, Volume2 } from "lucide-react";
+import { VoicePreviewButton } from "@/components/ai-elements/voice-preview-button";
+import { Loader2, Bot, ChevronDown, ChevronUp, Save } from "lucide-react";
 import type { AgentProfile } from "@/lib/agents";
-import { OPENAI_VOICES, VOICE_PREVIEW_PHRASE } from "@/lib/voice-preview";
+import { OPENAI_VOICES } from "@/lib/voice-preview";
 
 interface AgentFormState {
   display_name: string;
@@ -62,7 +63,6 @@ export default function AgentsAdminPage() {
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
   const [successSlug, setSuccessSlug] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
-  const [previewingSlug, setPreviewingSlug] = useState<string | null>(null);
   const [formState, setFormState] = useState<Record<string, AgentFormState>>({});
 
   const fetchAgents = useCallback(async () => {
@@ -131,37 +131,6 @@ export default function AgentsAdminPage() {
       ...prev,
       [slug]: { ...(prev[slug] ?? agentToFormState(agents.find((a) => a.slug === slug)!)), ...updates },
     }));
-  };
-
-  const handleVoicePreview = async (slug: string, voice: string) => {
-    setPreviewingSlug(slug);
-    setError(null);
-    try {
-      const res = await fetch("/api/audio/speech", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: VOICE_PREVIEW_PHRASE.replace("{voice}", voice),
-          voice,
-          model: "gpt-4o-mini-tts",
-          saveToLibrary: false,
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Preview failed");
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      await audio.play();
-      audio.onended = () => URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error("Voice preview error:", e);
-      setError(e instanceof Error ? e.message : "Voice preview failed");
-    } finally {
-      setPreviewingSlug(null);
-    }
   };
 
   if (loading) {
@@ -283,20 +252,12 @@ export default function AgentsAdminPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleVoicePreview(agent.slug, state.openai_voice)}
-                            disabled={previewingSlug !== null}
-                            title="Preview voice"
-                          >
-                            {previewingSlug === agent.slug ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Volume2 className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <VoicePreviewButton
+                            voice={state.openai_voice}
+                            disabled={savingSlug !== null}
+                            onError={(msg) => setError(msg)}
+                            aria-label="Preview voice"
+                          />
                         </div>
                       </div>
                     </div>

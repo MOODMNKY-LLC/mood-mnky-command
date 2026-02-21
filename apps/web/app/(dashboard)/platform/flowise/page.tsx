@@ -42,8 +42,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { FlowiseHowToCards } from "@/components/flowise/flowise-how-to-cards";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { VoicePreviewButton } from "@/components/ai-elements/voice-preview-button";
+import { OPENAI_VOICES, VOICE_PERSONA_HINTS } from "@/lib/voice-preview";
+import type { OpenAIVoice } from "@/lib/voice-preview";
+import { useToast } from "@/components/ui/use-toast";
+import { MoreHorizontal, Plus, Volume2 } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -185,8 +197,13 @@ export default function FlowisePage() {
     chatflowConfigJson: "{}",
     customCSS: "",
   });
+  const [embedAutoPlayReadAloud, setEmbedAutoPlayReadAloud] = useState(false);
   const [embedSaveLoading, setEmbedSaveLoading] = useState(false);
   const [embedSaveError, setEmbedSaveError] = useState<string | null>(null);
+
+  const [ttsDefaultVoice, setTtsDefaultVoice] = useState<string>("ballad");
+  const [ttsSavingDefault, setTtsSavingDefault] = useState(false);
+  const [ttsSavingChatflowId, setTtsSavingChatflowId] = useState<string | null>(null);
 
   const { data: pingData } = useSWR<{ ok?: boolean }>("/api/flowise/ping", fetcher, {
     refreshInterval: 30000,
@@ -222,6 +239,18 @@ export default function FlowisePage() {
     chatflowConfig?: Record<string, unknown>;
   }>("/api/flowise/embed-config?scope=dojo", fetcher, { revalidateOnFocus: false });
 
+  const { data: ttsConfigData, mutate: mutateTtsConfig } = useSWR<{
+    defaultVoice?: string;
+    chatflowVoices?: Record<string, string>;
+  }>("/api/flowise/tts-config?admin=1", fetcher, { revalidateOnFocus: false });
+
+  useEffect(() => {
+    const v = ttsConfigData?.defaultVoice?.trim();
+    if (v && OPENAI_VOICES.includes(v as OpenAIVoice)) setTtsDefaultVoice(v);
+  }, [ttsConfigData?.defaultVoice]);
+
+  const { toast } = useToast();
+
   useEffect(() => {
     if (embedConfigData) {
       const theme = embedConfigData.theme ?? {};
@@ -243,6 +272,9 @@ export default function FlowisePage() {
             : "{}",
         customCSS,
       }));
+      setEmbedAutoPlayReadAloud(
+        embedConfigData.chatflowConfig?.autoPlayReadAloud === true
+      );
     }
   }, [embedConfigData]);
 
@@ -499,6 +531,7 @@ export default function FlowisePage() {
         setEmbedSaveLoading(false);
         return;
       }
+      chatflowConfig.autoPlayReadAloud = embedAutoPlayReadAloud;
       if (embedForm.customCSS.trim()) {
         theme.customCSS = embedForm.customCSS.trim();
       }
@@ -520,6 +553,70 @@ export default function FlowisePage() {
       }
     } finally {
       setEmbedSaveLoading(false);
+    }
+  };
+
+  const saveTtsDefault = async () => {
+    setTtsSavingDefault(true);
+    try {
+      const res = await fetch("/api/flowise/tts-config", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultVoice: ttsDefaultVoice }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          title: "Failed to save",
+          description: (data as { error?: string }).error ?? "Could not save default voice",
+          variant: "destructive",
+        });
+        return;
+      }
+      await mutateTtsConfig();
+      toast({ title: "Saved", description: "Default read-aloud voice updated." });
+    } finally {
+      setTtsSavingDefault(false);
+    }
+  };
+
+  const setChatflowTtsVoice = async (chatflowId: string, value: string) => {
+    const useDefault = value === "__default__";
+    setTtsSavingChatflowId(chatflowId);
+    try {
+      if (useDefault) {
+        const res = await fetch(`/api/flowise/chatflows/${encodeURIComponent(chatflowId)}/tts-voice`, {
+          method: "DELETE",
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          toast({
+            title: "Failed to clear override",
+            description: (data as { error?: string }).error ?? "Could not clear voice",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        const res = await fetch(`/api/flowise/chatflows/${encodeURIComponent(chatflowId)}/tts-voice`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ voice: value }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast({
+            title: "Failed to save",
+            description: (data as { error?: string }).error ?? "Could not save voice",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      await mutateTtsConfig();
+      toast({ title: "Saved", description: useDefault ? "Using app default for this chatflow." : "Voice updated." });
+    } finally {
+      setTtsSavingChatflowId(null);
     }
   };
 
@@ -756,6 +853,7 @@ export default function FlowisePage() {
           <TabsTrigger value="variables">Variables</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
           <TabsTrigger value="embed">Embed Config</TabsTrigger>
+          <TabsTrigger value="tts">Read aloud</TabsTrigger>
           <TabsTrigger value="test">Test Run</TabsTrigger>
           <TabsTrigger value="howto">How to</TabsTrigger>
         </TabsList>
@@ -1255,6 +1353,16 @@ export default function FlowisePage() {
                     overrideConfig passed to Predict API: topK, systemMessage, vars, etc.
                   </p>
                 </div>
+                <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                  <Switch
+                    id="embed-auto-play-read-aloud"
+                    checked={embedAutoPlayReadAloud}
+                    onCheckedChange={setEmbedAutoPlayReadAloud}
+                  />
+                  <Label htmlFor="embed-auto-play-read-aloud" className="cursor-pointer">
+                    Auto-play read-aloud when assistant message completes
+                  </Label>
+                </div>
                 <div className="grid gap-2 sm:col-span-2">
                   <Label htmlFor="embed-custom-css">Custom CSS</Label>
                   <textarea
@@ -1278,6 +1386,127 @@ export default function FlowisePage() {
               >
                 {embedSaveLoading ? "Saving…" : "Save Embed Config"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tts" className="mt-4">
+          <Card className="bg-background/75 backdrop-blur border-border">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <CardTitle className="text-base">Read aloud (TTS)</CardTitle>
+                  <CardDescription>
+                    Default and per-chatflow voices for Dojo read-aloud. Used when users tap &quot;Read aloud&quot; on
+                    assistant messages.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Default read-aloud voice (app-wide)</Label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select
+                    value={ttsDefaultVoice}
+                    onValueChange={(v) => v && setTtsDefaultVoice(v)}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Voice" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OPENAI_VOICES.map((v) => (
+                        <SelectItem key={v} value={v}>
+                          {v}
+                          {VOICE_PERSONA_HINTS[v] ? ` — ${VOICE_PERSONA_HINTS[v]}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <VoicePreviewButton
+                    voice={ttsDefaultVoice}
+                    disabled={ttsSavingDefault}
+                    aria-label="Preview default voice"
+                  />
+                  <Button
+                    onClick={saveTtsDefault}
+                    disabled={ttsSavingDefault}
+                  >
+                    {ttsSavingDefault ? "Saving…" : "Save"}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Voice per chatflow (optional override)</Label>
+                <p className="text-sm text-muted-foreground">
+                  Override the default voice for a specific chatflow. Choose &quot;Use app default&quot; to remove the
+                  override.
+                </p>
+                {chatflowsList.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No chatflows. Create one in the Chatflows tab.</p>
+                ) : (
+                  <ScrollArea className="w-full rounded-md border border-border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Chatflow</TableHead>
+                          <TableHead className="w-[240px]">Read-aloud voice</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {chatflowsList.map((flow) => {
+                          const current =
+                            ttsConfigData?.chatflowVoices?.[flow.id] ?? "__default__";
+                          const saving = ttsSavingChatflowId === flow.id;
+                          return (
+                            <TableRow key={flow.id}>
+                              <TableCell className="font-medium">
+                                {flow.name || flow.id}
+                                <span className="ml-2 font-mono text-xs text-muted-foreground">
+                                  {truncate(flow.id, 14)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Select
+                                    value={current}
+                                    onValueChange={(v) => v && setChatflowTtsVoice(flow.id, v)}
+                                    disabled={saving}
+                                  >
+                                    <SelectTrigger className="w-full max-w-[220px]">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="__default__">
+                                        Use app default
+                                      </SelectItem>
+                                      {OPENAI_VOICES.map((v) => (
+                                        <SelectItem key={v} value={v}>
+                                          {v}
+                                          {VOICE_PERSONA_HINTS[v] ? ` — ${VOICE_PERSONA_HINTS[v]}` : ""}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <VoicePreviewButton
+                                    voice={current === "__default__" ? ttsDefaultVoice : current}
+                                    disabled={saving}
+                                    aria-label={`Preview voice for ${flow.name || flow.id}`}
+                                  />
+                                  {saving && (
+                                    <span className="text-xs text-muted-foreground">Saving…</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

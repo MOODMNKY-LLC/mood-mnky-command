@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Option B: direct client-to-Flowise embed. Use only for public, low-risk chatflows
+ * (e.g. marketing bots with no secrets). For Dojo / auth-required chat use
+ * DojoFlowiseChatbot + /api/flowise/predict (server-proxy).
+ */
 import dynamic from "next/dynamic";
 
 const FullPageChat = dynamic(

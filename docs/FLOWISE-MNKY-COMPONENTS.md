@@ -2,6 +2,14 @@
 
 Custom components for Flowise integration in the MOOD MNKY app ecosystem.
 
+## Production pattern
+
+- **Client**: UI and streaming consumption only. Sends messages to *your* API (e.g. `POST /api/flowise/predict` or `POST /api/chat/flowise`). No Flowise base URL or API key in the browser.
+- **Server**: All Flowise calls, secrets, auth, rate limiting, and optional audit logging. The predict handler normalizes SSE and enforces input limits.
+- **When to use which**:
+  - **Server-proxy** (DojoFlowiseChatbot + `/api/flowise/predict` or `/api/chat/flowise`): Use for any flow with auth, private tools, RAG, or user-specific data.
+  - **Direct embed** (DojoFlowiseFull with `flowise-embed-react`): Use only for public, low-risk chatflows (e.g. marketing bots with no secrets).
+
 ## Overview
 
 The `flowise-mnky` components provide:
@@ -34,6 +42,7 @@ Flowise predict supports `overrideConfig` for runtime overrides. Key keys:
 | `topK` | Retrieval count for RAG |
 | `systemMessage` | Override system prompt |
 | `returnSourceDocuments` | Include source docs in response |
+| `autoPlayReadAloud` | When `true`, Dojo automatically starts read-aloud (TTS) for the assistant message when the response finishes (streaming or non-streaming). Set in LABZ → Platform → Flowise → Embed Config. |
 
 The predict route automatically merges:
 
@@ -41,6 +50,8 @@ The predict route automatically merges:
 2. User's `documentStoreId` from `flowise_user_document_stores` (scope=dojo)
 3. `supabaseMetadataFilter: { profile_id }` when not explicitly set
 4. Request body `overrideConfig`
+
+Embed config (Dojo scope) is loaded from `GET /api/flowise/embed-config?scope=dojo`. Its `chatflowConfig` is merged into the request as above. The **Auto-play read-aloud when assistant message completes** switch in LABZ → Platform → Flowise → Embed Config sets `chatflowConfig.autoPlayReadAloud`; when `true`, Dojo starts TTS for the latest assistant message as soon as the stream (or non-streaming response) completes.
 
 ## Document Store and Metadata
 
@@ -85,9 +96,17 @@ import { FlowiseChatflowControlPanel, FlowiseChatUI } from "@/components/flowise
 <FlowiseChatUI chatflowId="..." overrideConfig={{ ... }} />
 ```
 
+## API routes
+
+- **POST /api/flowise/predict** — Main predict endpoint; rate-limited, input limits, SSE normalization, optional audit to `flowise_chat_logs`.
+- **POST /api/chat/flowise** — Alias for predict; same body and response. Recommended "chat" namespace for new clients; predict remains for backward compatibility.
+- Document store, assignments, feedback, etc.: see [apps/web/app/api/flowise/](apps/web/app/api/flowise/).
+
 ## Related Files
 
 - [apps/web/components/flowise-mnky/](apps/web/components/flowise-mnky/)
 - [apps/web/app/api/flowise/predict/route.ts](apps/web/app/api/flowise/predict/route.ts)
+- [apps/web/app/api/chat/flowise/route.ts](apps/web/app/api/chat/flowise/route.ts)
+- [apps/web/lib/flowise/predict-handler.ts](apps/web/lib/flowise/predict-handler.ts)
 - `apps/web/app/api/flowise/document-store/upsert/[id]/route.ts`
 - [docs/FLOWISE-USER-SUPABASE.md](docs/FLOWISE-USER-SUPABASE.md)

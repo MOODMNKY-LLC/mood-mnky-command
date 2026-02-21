@@ -87,7 +87,18 @@ import { useToast } from "@/components/ui/use-toast";
 import { filePartsToFlowiseUploads } from "@/lib/flowise-uploads";
 import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
-import { CopyIcon, FilesIcon, MessageSquare, PlusIcon } from "lucide-react";
+import {
+  CopyIcon,
+  FilesIcon,
+  MessageSquare,
+  PauseIcon,
+  PlayIcon,
+  PlusIcon,
+  RefreshCw,
+  StopCircle,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+} from "lucide-react";
 
 /** Max file size for inline uploads (10MB). Larger files would need backend upload + URL. */
 const DOJO_CHAT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -339,9 +350,43 @@ export function DojoFlowiseChatbot({
   const [selectedChatflowId, setSelectedChatflowId] = useState<string | undefined>(undefined);
   /** When stream ended with no tokens, allow one-time retry with streaming: false */
   const [noTokensRetryQuestion, setNoTokensRetryQuestion] = useState<string | null>(null);
+  /** Flowise chatMessageId from metadata event (for feedback). */
+  const [lastAssistantMessageId, setLastAssistantMessageId] = useState<string | null>(null);
+  /** TTS read-aloud: idle | loading | playing | paused. */
+  const [ttsState, setTtsState] = useState<"idle" | "loading" | "playing" | "paused">("idle");
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  /** Per-message feedback: messageId -> 'positive' | 'negative'. */
+  const [feedbackRatings, setFeedbackRatings] = useState<Record<string, "positive" | "negative">>({});
+  /** Which message is currently being read aloud (for per-message TTS). */
+  const [ttsPlayingMessageId, setTtsPlayingMessageId] = useState<string | null>(null);
+  /** Effective TTS voice for read-aloud (from flowise TTS config when provider is flowise). */
+  const [ttsVoice, setTtsVoice] = useState<string>("ballad");
   const conversationEndRef = useRef<HTMLDivElement>(null);
+  /** AbortController for in-flight Flowise streaming request; used for Cancel button. */
+  const flowiseAbortControllerRef = useRef<AbortController | null>(null);
+  /** When auto-play is on, avoid re-triggering TTS for the same message. Cleared when user sends. */
+  const lastAutoPlayedMessageIdRef = useRef<string | null>(null);
+  const prevLoadingRef = useRef(false);
 
-  const sessionId = useMemo(() => nanoid(), []);
+  const [sessionId, setSessionId] = useState(() => nanoid());
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    const key = "dojo-chat-session-id";
+    let stored = sessionStorage.getItem(key);
+    if (!stored) {
+      stored = nanoid();
+      sessionStorage.setItem(key, stored);
+    }
+    setSessionId(stored);
+  }, []);
+
 
   const openaiTransport = useMemo(
     () =>
@@ -441,6 +486,7 @@ export function DojoFlowiseChatbot({
   const flowiseAvailable = flowisePing === undefined ? true : flowisePing?.ok === true;
 
   useEffect(() => {
+    if (!mountedRef.current) return;
     if (chatflowId && flowisePing !== undefined && !flowisePing?.ok && provider === "flowise") {
       setProvider("openai");
       toast({
@@ -450,6 +496,26 @@ export function DojoFlowiseChatbot({
       });
     }
   }, [chatflowId, flowisePing, provider, toast]);
+
+  useEffect(() => {
+    if (provider !== "flowise" || !chatflowId) {
+      setTtsVoice("ballad");
+      return;
+    }
+    let cancelled = false;
+    const url = `/api/flowise/tts-config?chatflowId=${encodeURIComponent(chatflowId)}`;
+    fetch(url, { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { voice?: string } | null) => {
+        if (cancelled || !data) return;
+        const v = typeof data.voice === "string" && data.voice.trim() ? data.voice.trim() : "ballad";
+        setTtsVoice(v);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [provider, chatflowId]);
 
   const mergedOverrideConfig = useMemo(() => {
     const base = { sessionId, ...(config?.chatflowConfig ?? {}), ...(propOverrideConfig ?? {}) };
@@ -473,6 +539,10 @@ export function DojoFlowiseChatbot({
       setIsLoading(true);
       setError(null);
       setNoTokensRetryQuestion(null);
+      lastAutoPlayedMessageIdRef.current = null;
+
+      const controller = new AbortController();
+      flowiseAbortControllerRef.current = controller;
 
       const history = messagesToHistory([...messages, userMsg]);
 
@@ -481,6 +551,7 @@ export function DojoFlowiseChatbot({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
+          signal: controller.signal,
           body: JSON.stringify({
             chatflowId,
             question: displayText,
@@ -511,7 +582,7 @@ export function DojoFlowiseChatbot({
 
         if (isStream && res.body) {
           const reader = res.body.getReader();
-          const decoder = new TextDecoder();
+          const decoder = new TextDecoder("utf-8", { fatal: false });
           let buffer = "";
           let assistantContent = "";
           let sourceDocuments: unknown[] | undefined;
@@ -526,13 +597,27 @@ export function DojoFlowiseChatbot({
             for (const line of lines) {
               const trimmedLine = line.trim();
               if (!trimmedLine || !trimmedLine.startsWith("data:")) continue;
+              const payloadStr = trimmedLine.slice(5).trim();
+              const payloads: { event?: string; data?: string | unknown }[] = [];
               try {
-                const payload = JSON.parse(trimmedLine.slice(5).trim()) as {
-                  event?: string;
-                  data?: string | unknown;
-                };
-                const ev = payload.event;
-                if (ev === "token") {
+                const single = JSON.parse(payloadStr) as { event?: string; data?: string | unknown };
+                payloads.push(single);
+              } catch {
+                const parts = payloadStr.split("}{");
+                for (let i = 0; i < parts.length; i++) {
+                  const wrapped =
+                    i === 0 ? parts[i] + "}" : i === parts.length - 1 ? "{" + parts[i]! : "{" + parts[i] + "}";
+                  try {
+                    payloads.push(JSON.parse(wrapped) as { event?: string; data?: string | unknown });
+                  } catch {
+                    // skip unparseable segment
+                  }
+                }
+              }
+              for (const payload of payloads) {
+                try {
+                  const ev = payload.event;
+                  if (ev === "token") {
                   const tokenText = tokenDataToText(payload.data);
                   if (tokenText) {
                     assistantContent += tokenText;
@@ -635,6 +720,9 @@ export function DojoFlowiseChatbot({
                   }
                 } else if (ev === "metadata" && payload.data != null && typeof payload.data === "object") {
                   const meta = payload.data as Record<string, unknown>;
+                  if (typeof meta.chatMessageId === "string" && meta.chatMessageId.trim()) {
+                    setLastAssistantMessageId(meta.chatMessageId.trim());
+                  }
                   const text =
                     typeof meta.text === "string"
                       ? meta.text
@@ -670,8 +758,9 @@ export function DojoFlowiseChatbot({
                     });
                   }
                 }
-              } catch {
-                // skip malformed line
+                } catch {
+                  // skip malformed payload in concatenated line
+                }
               }
             }
           }
@@ -765,10 +854,11 @@ export function DojoFlowiseChatbot({
           });
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Request failed";
-        setError(message);
+        const isAbort = err instanceof Error && err.name === "AbortError";
+        setError(isAbort ? "Cancelled" : err instanceof Error ? err.message : "Request failed");
         setMessages((prev) => prev.slice(0, -1));
       } finally {
+        flowiseAbortControllerRef.current = null;
         setIsLoading(false);
       }
     },
@@ -864,10 +954,6 @@ export function DojoFlowiseChatbot({
     [toast]
   );
 
-  const displayMessages = provider === "flowise" ? messages : openaiMessages;
-  const isStreaming = provider === "flowise" ? isLoading : openaiStatus === "streaming";
-  const displayError = provider === "flowise" ? error : openaiError?.message ?? null;
-
   const downloadMessages: ConversationMessage[] = useMemo(() => {
     if (provider === "flowise") {
       return messages.map((m) => ({ role: m.role as ConversationMessage["role"], content: m.content }));
@@ -877,6 +963,211 @@ export function DojoFlowiseChatbot({
       content: messagePartsToContent(m.parts ?? []),
     }));
   }, [provider, messages, openaiMessages]);
+
+  const submitChatFeedback = useCallback(
+    async (messageId: string, rating: "positive" | "negative", comment?: string) => {
+      setFeedbackRatings((prev) => ({ ...prev, [messageId]: rating }));
+      try {
+        const res = await fetch("/api/flowise/chat/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            sessionId,
+            messageId: messageId || (lastAssistantMessageId ?? undefined),
+            chatflowId: chatflowId || undefined,
+            rating,
+            comment: comment?.trim() || undefined,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error ?? "Failed to submit");
+        }
+        toast({ title: "Thanks for feedback", description: "Your response helps us improve." });
+      } catch (e) {
+        toast({
+          title: "Feedback failed",
+          description: e instanceof Error ? e.message : "Could not submit feedback.",
+          variant: "destructive",
+        });
+      }
+    },
+    [sessionId, lastAssistantMessageId, chatflowId, toast]
+  );
+
+  const handleTtsToggle = useCallback(
+    async (messageId: string, content: string) => {
+      const text = content?.trim();
+      const sameMessage = ttsPlayingMessageId === messageId;
+
+      if (sameMessage && ttsState === "playing") {
+        if (ttsAudioRef.current) ttsAudioRef.current.pause();
+        setTtsState("paused");
+        return;
+      }
+      if (sameMessage && ttsState === "paused") {
+        setTtsState("playing");
+        return;
+      }
+      if ((ttsState === "playing" || ttsState === "paused") && !sameMessage) {
+        if (ttsAudioRef.current) {
+          ttsAudioRef.current.pause();
+          ttsAudioRef.current.currentTime = 0;
+        }
+        if (ttsAudioUrl) {
+          URL.revokeObjectURL(ttsAudioUrl);
+          setTtsAudioUrl(null);
+        }
+        setTtsState("idle");
+        setTtsPlayingMessageId(null);
+      }
+      if (!text) return;
+      setTtsPlayingMessageId(messageId);
+      setTtsState("loading");
+      try {
+        const res = await fetch("/api/audio/speech", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            input: text.length > 12000 ? text.slice(0, 12000) : text,
+            voice: ttsVoice ?? "ballad",
+            saveToLibrary: false,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error ?? "TTS failed");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setTtsAudioUrl(url);
+        setTtsState("playing");
+      } catch (e) {
+        toast({
+          title: "Read aloud failed",
+          description: e instanceof Error ? e.message : "Could not generate speech.",
+          variant: "destructive",
+        });
+        setTtsState("idle");
+        setTtsPlayingMessageId(null);
+      }
+    },
+    [ttsState, ttsAudioUrl, ttsPlayingMessageId, ttsVoice, toast]
+  );
+
+  const handleRegenerateTts = useCallback(
+    async (messageId: string, content: string) => {
+      const text = content?.trim();
+      if (!text) return;
+      if (ttsPlayingMessageId === messageId && (ttsState === "playing" || ttsState === "paused")) {
+        if (ttsAudioRef.current) {
+          ttsAudioRef.current.pause();
+          ttsAudioRef.current.currentTime = 0;
+        }
+        if (ttsAudioUrl) {
+          URL.revokeObjectURL(ttsAudioUrl);
+          setTtsAudioUrl(null);
+        }
+        setTtsState("idle");
+        setTtsPlayingMessageId(null);
+      }
+      setTtsPlayingMessageId(messageId);
+      setTtsState("loading");
+      try {
+        const res = await fetch("/api/audio/speech", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            input: text.length > 12000 ? text.slice(0, 12000) : text,
+            voice: ttsVoice ?? "ballad",
+            saveToLibrary: false,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error ?? "TTS failed");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setTtsAudioUrl(url);
+        setTtsState("playing");
+      } catch (e) {
+        toast({
+          title: "Read aloud failed",
+          description: e instanceof Error ? e.message : "Could not generate speech.",
+          variant: "destructive",
+        });
+        setTtsState("idle");
+        setTtsPlayingMessageId(null);
+      }
+    },
+    [ttsState, ttsAudioUrl, ttsPlayingMessageId, ttsVoice, toast]
+  );
+
+  useEffect(() => {
+    if (ttsState !== "playing") return;
+    const el = ttsAudioRef.current;
+    if (!el) return;
+    if (ttsAudioUrl && el.src !== ttsAudioUrl) el.src = ttsAudioUrl;
+    if (ttsAudioUrl) {
+      el.play().catch(() => {
+        setTtsState("idle");
+        setTtsPlayingMessageId(null);
+      });
+    }
+  }, [ttsState, ttsAudioUrl]);
+
+  useEffect(() => {
+    const el = ttsAudioRef.current;
+    if (!el) return;
+    const onEnded = () => {
+      setTtsState("idle");
+      setTtsPlayingMessageId(null);
+      setTtsAudioUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+    el.addEventListener("ended", onEnded);
+    return () => el.removeEventListener("ended", onEnded);
+  }, [ttsAudioUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (ttsAudioUrl) URL.revokeObjectURL(ttsAudioUrl);
+    };
+  }, [ttsAudioUrl]);
+
+  const autoPlayReadAloud =
+    typeof config?.chatflowConfig?.autoPlayReadAloud === "boolean"
+      ? config.chatflowConfig.autoPlayReadAloud
+      : false;
+
+  useEffect(() => {
+    if (provider !== "flowise" || !autoPlayReadAloud) {
+      prevLoadingRef.current = isLoading;
+      return;
+    }
+    const justFinished = prevLoadingRef.current && !isLoading;
+    prevLoadingRef.current = isLoading;
+    if (!justFinished || messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    if (
+      last?.role !== "assistant" ||
+      !last.content?.trim() ||
+      lastAutoPlayedMessageIdRef.current === last.id
+    )
+      return;
+    lastAutoPlayedMessageIdRef.current = last.id;
+    handleTtsToggle(last.id, last.content);
+  }, [isLoading, messages, provider, autoPlayReadAloud, handleTtsToggle]);
+
+  const displayMessages = provider === "flowise" ? messages : openaiMessages;
+  const isStreaming = provider === "flowise" ? isLoading : openaiStatus === "streaming";
+  const displayError = provider === "flowise" ? error : openaiError?.message ?? null;
 
   const noConfig = provider === "flowise" && !chatflowId;
   const isUnauth = displayError === "Sign in to use MNKY CHAT";
@@ -914,6 +1205,7 @@ export function DojoFlowiseChatbot({
         className
       )}
     >
+      <audio ref={ttsAudioRef} className="sr-only" aria-hidden />
       <header className="flex shrink-0 items-center gap-3 border-b border-border/50 px-4 py-3">
         <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
           <Image
@@ -986,6 +1278,22 @@ export function DojoFlowiseChatbot({
               Set as default
             </Button>
           )}
+          {provider === "flowise" && isLoading ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-muted-foreground"
+                  onClick={() => flowiseAbortControllerRef.current?.abort()}
+                  aria-label="Cancel response"
+                >
+                  <StopCircle className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Cancel</TooltipContent>
+            </Tooltip>
+          ) : null}
           {!flowiseAvailable && provider === "openai" ? (
             <Button
               variant="ghost"
@@ -1062,19 +1370,12 @@ export function DojoFlowiseChatbot({
             </div>
           ) : null}
           <Conversation className="relative flex-1 overflow-y-auto">
-            {downloadMessages.length > 0 && (
-              <ConversationDownload
-                messages={downloadMessages}
-                filename="mnky-chat-conversation.md"
-                className="absolute top-4 right-4 z-10 rounded-full border border-border/60 bg-background/80 backdrop-blur-md dark:border-white/10 dark:bg-background/70"
-              />
-            )}
             <ConversationContent className="flex flex-col gap-6 p-4">
               {provider === "flowise" ? (
                 messages.length === 0 ? (
                   <div className="flex flex-col gap-6 p-4">
                     {chatflowId && currentAssignment ? (
-                      <Shimmer className="rounded-lg border border-border/60">
+                      <div className="rounded-lg border border-border/60">
                         <Agent className="rounded-lg border-0 bg-transparent shadow-none">
                           <AgentHeader
                             name={chatflowDisplayName}
@@ -1097,7 +1398,7 @@ export function DojoFlowiseChatbot({
                             </AgentInstructions>
                           </AgentContent>
                         </Agent>
-                      </Shimmer>
+                      </div>
                     ) : null}
                     <ConversationEmptyState
                       title={chatflowDisplayName}
@@ -1125,18 +1426,7 @@ export function DojoFlowiseChatbot({
                     {messages.map((msg) => (
                       <Message key={msg.id} from={msg.role}>
                         <MessageContent>
-                          {msg.role === "assistant" && (
-                            <MessageActions className="mb-1">
-                              <MessageAction
-                                tooltip="Copy"
-                                label="Copy"
-                                onClick={() => void navigator.clipboard.writeText(msg.content)}
-                              >
-                                <CopyIcon className="size-3.5" />
-                              </MessageAction>
-                            </MessageActions>
-                          )}
-                          {/* Future TTS: if Flowise/backend returns audio (e.g. base64 in stream), render with AudioPlayer + AudioPlayerElement from @/components/ai-elements/audio-player */}
+                          {/* If Flowise ever streams a reasoning event, render with Reasoning/ReasoningTrigger/ReasoningContent/ReasoningText from @/components/ai-elements/reasoning */}
                           {msg.role === "assistant" && msg.content ? (
                             <MessageResponse parseIncompleteMarkdown>{msg.content}</MessageResponse>
                           ) : msg.role === "user" ? (
@@ -1157,26 +1447,59 @@ export function DojoFlowiseChatbot({
                             </div>
                           )}
                           {msg.role === "assistant" && msg.usedTools && msg.usedTools.length > 0 && (
-                            <div className="mt-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-muted-foreground text-xs">
-                              <span className="font-medium">Tools used</span>
-                              <ul className="mt-1 list-disc pl-4">
-                                {msg.usedTools.slice(0, 5).map((t, i) => (
-                                  <li key={i}>
-                                    {typeof t === "object" && t !== null
-                                      ? "name" in (t as object)
-                                        ? String((t as { name?: string }).name ?? "Tool")
-                                        : "Tool"
-                                      : String(t)}
-                                  </li>
-                                ))}
-                              </ul>
+                            <div className="mt-2 space-y-2">
+                              {msg.usedTools.slice(0, 5).map((t, i) => {
+                                const obj =
+                                  typeof t === "object" && t !== null ? (t as Record<string, unknown>) : null;
+                                const name =
+                                  obj && ("name" in obj ? obj.name : "tool" in obj ? obj.tool : null) != null
+                                    ? String(obj.name ?? obj.tool)
+                                    : "Tool";
+                                let isFailed = false;
+                                let failDetail: string | null = null;
+                                let output: unknown = obj?.toolOutput ?? null;
+                                if (obj && typeof obj.toolOutput === "string") {
+                                  try {
+                                    const parsed = JSON.parse(obj.toolOutput) as Record<string, unknown>;
+                                    if (parsed && parsed.ok === false) {
+                                      isFailed = true;
+                                      failDetail =
+                                        typeof parsed.status === "number"
+                                          ? `${parsed.status} ${String(parsed.statusText ?? parsed.message ?? "")}`.trim()
+                                          : String(parsed.message ?? parsed.body ?? "").slice(0, 80) || null;
+                                    }
+                                    output = parsed;
+                                  } catch {
+                                    output = obj.toolOutput;
+                                  }
+                                }
+                                const toolState = isFailed ? ("output-error" as const) : ("output-available" as const);
+                                return (
+                                  <Tool key={i} className="rounded-md border border-border/60">
+                                    <ToolHeader
+                                      type="dynamic-tool"
+                                      state={toolState}
+                                      toolName={name}
+                                      title={name}
+                                    />
+                                    <ToolContent>
+                                      {obj?.toolInput != null && (
+                                        <ToolInput input={obj.toolInput as Record<string, unknown>} />
+                                      )}
+                                      <ToolOutput
+                                        output={output}
+                                        errorText={isFailed ? failDetail ?? "Tool returned an error" : undefined}
+                                      />
+                                    </ToolContent>
+                                  </Tool>
+                                );
+                              })}
                             </div>
                           )}
                           {msg.role === "assistant" && !msg.content && isLoading ? (
-                            <span className="flex items-center gap-2 text-muted-foreground text-sm">
-                              <Spinner className="size-4" />
-                              <span>Thinking…</span>
-                            </span>
+                            <Shimmer as="span" className="text-muted-foreground text-sm" duration={1.5}>
+                              Thinking…
+                            </Shimmer>
                           ) : null}
                           {msg.role === "assistant" && msg.previewUrl ? (
                             <div className="mt-3 rounded-lg border border-border/60 overflow-hidden">
@@ -1207,9 +1530,146 @@ export function DojoFlowiseChatbot({
                                 </Button>
                               </div>
                             )}
+                          <div className="mt-2 flex flex-wrap items-center gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 rounded-full"
+                                  onClick={() =>
+                                    void navigator.clipboard.writeText(msg.content).then(() =>
+                                      toast({ title: "Copied", description: "Message copied." })
+                                    )
+                                  }
+                                  aria-label="Copy message"
+                                >
+                                  <CopyIcon className="size-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">Copy message</TooltipContent>
+                            </Tooltip>
+                            {msg.role === "assistant" && (
+                              <>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className={cn(
+                                        "size-7 rounded-full",
+                                        feedbackRatings[msg.id] === "positive" && "bg-primary/10 text-primary"
+                                      )}
+                                      onClick={() => submitChatFeedback(msg.id, "positive")}
+                                      aria-label="Good response"
+                                    >
+                                      <ThumbsUpIcon className="size-3" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Good response</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className={cn(
+                                        "size-7 rounded-full",
+                                        feedbackRatings[msg.id] === "negative" && "bg-destructive/10 text-destructive"
+                                      )}
+                                      onClick={() => submitChatFeedback(msg.id, "negative")}
+                                      aria-label="Poor response"
+                                    >
+                                      <ThumbsDownIcon className="size-3" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Poor response</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className={cn(
+                                        "size-7 rounded-full",
+                                        ttsPlayingMessageId === msg.id &&
+                                          (ttsState === "playing" || ttsState === "paused") &&
+                                          "bg-primary/10 text-primary"
+                                      )}
+                                      disabled={
+                                        !msg.content?.trim() ||
+                                        (ttsState === "loading" && ttsPlayingMessageId !== msg.id)
+                                      }
+                                      onClick={() => handleTtsToggle(msg.id, msg.content ?? "")}
+                                      aria-label={
+                                        ttsState === "playing" && ttsPlayingMessageId === msg.id
+                                          ? "Pause read aloud"
+                                          : ttsState === "paused" && ttsPlayingMessageId === msg.id
+                                            ? "Resume read aloud"
+                                            : "Read aloud"
+                                      }
+                                    >
+                                      {ttsState === "loading" && ttsPlayingMessageId === msg.id ? (
+                                        <Spinner className="size-3" />
+                                      ) : ttsState === "playing" && ttsPlayingMessageId === msg.id ? (
+                                        <PauseIcon className="size-3" />
+                                      ) : ttsState === "paused" && ttsPlayingMessageId === msg.id ? (
+                                        <PlayIcon className="size-3" />
+                                      ) : (
+                                        <PlayIcon className="size-3" />
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    {ttsState === "loading" && ttsPlayingMessageId === msg.id
+                                      ? "Generating…"
+                                      : ttsState === "playing" && ttsPlayingMessageId === msg.id
+                                        ? "Pause read aloud"
+                                        : ttsState === "paused" && ttsPlayingMessageId === msg.id
+                                          ? "Resume read aloud"
+                                          : msg.content?.trim()
+                                            ? "Read aloud"
+                                            : "No content to read"}
+                                  </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-7 rounded-full"
+                                      disabled={
+                                        !msg.content?.trim() || ttsState === "loading"
+                                      }
+                                      onClick={() => handleRegenerateTts(msg.id, msg.content ?? "")}
+                                      aria-label="Regenerate audio"
+                                    >
+                                      <RefreshCw className="size-3" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Regenerate audio</TooltipContent>
+                                </Tooltip>
+                              </>
+                            )}
+                          </div>
                         </MessageContent>
                       </Message>
                     ))}
+                  {provider === "flowise" &&
+                    isLoading &&
+                    messages.length > 0 &&
+                    messages[messages.length - 1]?.role === "user" && (
+                      <div className="flex items-center gap-2 py-2 text-muted-foreground">
+                        <Shimmer as="span" className="text-sm" duration={1.5}>
+                          Thinking…
+                        </Shimmer>
+                      </div>
+                    )}
                   {messages.length > 0 && <div ref={conversationEndRef} />}
                   </>
                 )
@@ -1236,26 +1696,11 @@ export function DojoFlowiseChatbot({
                 </ConversationEmptyState>
               ) : (
                 <>
-                  {openaiMessages.map((message, msgIndex) => (
+                  {openaiMessages.map((message) => {
+                    const openaiMessageContent = messagePartsToContent(message.parts ?? []);
+                    return (
                     <Message key={message.id} from={message.role}>
                       <MessageContent>
-                        {message.role === "assistant" && (
-                          <MessageActions className="mb-1">
-                            <MessageAction
-                              tooltip="Copy"
-                              label="Copy"
-                              onClick={() => {
-                                const textParts = (message.parts ?? []).filter(
-                                  (p): p is { type: "text"; text: string } => p.type === "text"
-                                ).map((p) => p.text);
-                                if (textParts.length)
-                                  void navigator.clipboard.writeText(textParts.join(""));
-                              }}
-                            >
-                              <CopyIcon className="size-3.5" />
-                            </MessageAction>
-                          </MessageActions>
-                        )}
                         {(message.parts ?? []).map((part, i) => {
                           if (part.type === "reasoning") {
                             const reasoningPart = part as { type: "reasoning"; text: string; state?: string };
@@ -1318,14 +1763,144 @@ export function DojoFlowiseChatbot({
                               <span>Thinking…</span>
                             </span>
                           )}
+                        <div className="mt-2 flex flex-wrap items-center gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 rounded-full"
+                                onClick={() =>
+                                  void navigator.clipboard.writeText(openaiMessageContent).then(() =>
+                                    toast({ title: "Copied", description: "Message copied." })
+                                  )
+                                }
+                                aria-label="Copy message"
+                              >
+                                <CopyIcon className="size-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Copy message</TooltipContent>
+                          </Tooltip>
+                          {message.role === "assistant" && (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(
+                                      "size-7 rounded-full",
+                                      feedbackRatings[message.id] === "positive" && "bg-primary/10 text-primary"
+                                    )}
+                                    onClick={() => submitChatFeedback(message.id, "positive")}
+                                    aria-label="Good response"
+                                  >
+                                    <ThumbsUpIcon className="size-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Good response</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(
+                                      "size-7 rounded-full",
+                                      feedbackRatings[message.id] === "negative" && "bg-destructive/10 text-destructive"
+                                    )}
+                                    onClick={() => submitChatFeedback(message.id, "negative")}
+                                    aria-label="Poor response"
+                                  >
+                                    <ThumbsDownIcon className="size-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Poor response</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(
+                                      "size-7 rounded-full",
+                                      ttsPlayingMessageId === message.id &&
+                                        (ttsState === "playing" || ttsState === "paused") &&
+                                        "bg-primary/10 text-primary"
+                                    )}
+                                    disabled={
+                                      !openaiMessageContent?.trim() ||
+                                      (ttsState === "loading" && ttsPlayingMessageId !== message.id)
+                                    }
+                                    onClick={() => handleTtsToggle(message.id, openaiMessageContent)}
+                                    aria-label={
+                                      ttsState === "playing" && ttsPlayingMessageId === message.id
+                                        ? "Pause read aloud"
+                                        : ttsState === "paused" && ttsPlayingMessageId === message.id
+                                          ? "Resume read aloud"
+                                          : "Read aloud"
+                                    }
+                                  >
+                                    {ttsState === "loading" && ttsPlayingMessageId === message.id ? (
+                                      <Spinner className="size-3" />
+                                    ) : ttsState === "playing" && ttsPlayingMessageId === message.id ? (
+                                      <PauseIcon className="size-3" />
+                                    ) : ttsState === "paused" && ttsPlayingMessageId === message.id ? (
+                                      <PlayIcon className="size-3" />
+                                    ) : (
+                                      <PlayIcon className="size-3" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  {ttsState === "loading" && ttsPlayingMessageId === message.id
+                                    ? "Generating…"
+                                    : ttsState === "playing" && ttsPlayingMessageId === message.id
+                                      ? "Pause read aloud"
+                                      : ttsState === "paused" && ttsPlayingMessageId === message.id
+                                        ? "Resume read aloud"
+                                        : openaiMessageContent?.trim()
+                                          ? "Read aloud"
+                                          : "No content to read"}
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 rounded-full"
+                                    disabled={
+                                      !openaiMessageContent?.trim() || ttsState === "loading"
+                                    }
+                                    onClick={() =>
+                                      handleRegenerateTts(message.id, openaiMessageContent)
+                                    }
+                                    aria-label="Regenerate audio"
+                                  >
+                                    <RefreshCw className="size-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Regenerate audio</TooltipContent>
+                              </Tooltip>
+                            </>
+                          )}
+                        </div>
                       </MessageContent>
                     </Message>
-                  ))}
+                  );
+                  })}
                   {isStreaming &&
                     openaiMessages.length > 0 &&
                     openaiMessages[openaiMessages.length - 1].role === "user" && (
                       <div className="flex items-center gap-2 py-2 text-muted-foreground">
-                        <Shimmer className="text-sm" duration={1.5}>
+                        <Shimmer as="span" className="text-sm" duration={1.5}>
                           Thinking…
                         </Shimmer>
                       </div>
@@ -1335,6 +1910,16 @@ export function DojoFlowiseChatbot({
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
+
+          <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-border/50 px-4 py-2">
+            {downloadMessages.length > 0 && (
+              <ConversationDownload
+                messages={downloadMessages}
+                filename="mnky-chat-conversation.md"
+                className="size-8 rounded-full"
+              />
+            )}
+          </div>
 
           {displayError && !isUnauth ? (
             <div className="shrink-0 px-4 py-2 text-destructive text-sm">{displayError}</div>
