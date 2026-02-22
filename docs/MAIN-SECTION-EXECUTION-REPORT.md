@@ -72,6 +72,18 @@ All Main pages are server components except `error.tsx` (client). They use root 
 | `docs/DESIGN-SYSTEM.md` | Main section: architecture diagram, Main (main-site.css), fonts table, references. |
 | `docs/MAIN-SECTION-EXECUTION-REPORT.md` | This report. |
 
+### 1.8 ElevenLabs UI and Main voice/listen
+
+| Item | Purpose |
+|------|---------|
+| **ElevenLabs UI components** | Installed via shadcn registry (`https://ui.elevenlabs.io/r/<name>.json`): audio-player, bar-visualizer, conversation-bar, live-waveform, matrix, message, mic-selector, response, scrub-bar, speech-input, transcript-viewer, voice-button, voice-picker, waveform; orb, shimmering-text, conversation were already present. |
+| **Main wrappers** | `components/main/elevenlabs/`: MainOrb, MainShimmeringText, MainAudioPlayer, MainBarVisualizer, MainMatrix, MainMessage, MainResponse, MainConversation, MainConversationBar, MainLiveWaveform, MainMicSelector, MainScrubBar, MainSpeechInput, MainTranscriptViewer, MainVoiceButton, MainVoicePicker, MainWaveform. Exported from `components/main/index.ts`. |
+| **Supabase** | Table `main_elevenlabs_config` (agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample). RLS: anon/authenticated SELECT; admin UPDATE/INSERT. |
+| **API** | `GET /api/main/elevenlabs-config` (public fields only); `PATCH` (admin only) for LABZ. |
+| **Main page** | Hero: MainShimmeringText for tagline. Voice block (when show_voice_section): MainVoiceBlock (Orb, MicSelector, ConversationBar when agent_id set). Listen block (when show_audio_sample): MainListenBlock (AudioPlayerProvider + play/scrub/time). |
+| **LABZ** | `/chat/main-elevenlabs`: form for Main agent ID, default voice ID, brand audio sample URL, feature flags; link from Chat → Eleven Labs page. |
+| **Docs** | `docs/DESIGN-SYSTEM.md`: ElevenLabs UI and main-* wrappers subsection; this report: §1.8. |
+
 ---
 
 ## 2. Research Summary and Decisions

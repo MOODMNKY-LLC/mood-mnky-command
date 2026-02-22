@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Mic, Save, TestTube } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Mic, Save, Sparkles, TestTube } from "lucide-react";
 import type { ElevenLabsConfigGet } from "@/app/api/chat/eleven-labs-config/route";
 
 const CONNECTION_TYPES = [
@@ -114,6 +115,13 @@ export default function ElevenLabsConfigPage() {
           <p className="text-sm text-muted-foreground">
             Configure the MOOD MNKY voice agent for Verse and LABZ.
           </p>
+          <Link
+            href="/chat/main-elevenlabs"
+            className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Sparkles className="h-4 w-4" />
+            Main landing ElevenLabs
+          </Link>
         </div>
       </div>
 
