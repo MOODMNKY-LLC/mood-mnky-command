@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,9 @@ export default function ElevenLabsConfigPage() {
   const [agentId, setAgentId] = useState("");
   const [apiKeyOverride, setApiKeyOverride] = useState("");
   const [connectionType, setConnectionType] = useState("webrtc");
+  const [defaultVoiceId, setDefaultVoiceId] = useState("");
+  const [showTranscriptViewer, setShowTranscriptViewer] = useState(false);
+  const [showWaveformInVoiceBlock, setShowWaveformInVoiceBlock] = useState(false);
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
@@ -66,6 +70,9 @@ export default function ElevenLabsConfigPage() {
           agentId: agentId.trim() || undefined,
           apiKeyOverride: apiKeyOverride.trim() || null,
           connectionType,
+          defaultVoiceId: defaultVoiceId.trim() || null,
+          showTranscriptViewer,
+          showWaveformInVoiceBlock,
         }),
       });
       if (!res.ok) {
@@ -116,7 +123,7 @@ export default function ElevenLabsConfigPage() {
             Configure the MOOD MNKY voice agent for Verse and LABZ.
           </p>
           <Link
-            href="/chat/main-elevenlabs"
+            href="/chat/eleven-labs/main"
             className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <Sparkles className="h-4 w-4" />
@@ -178,18 +185,62 @@ export default function ElevenLabsConfigPage() {
             <div className="space-y-2">
               <Label>Connection type</Label>
               <Select value={connectionType} onValueChange={setConnectionType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CONNECTION_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONNECTION_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                WebRTC is lower latency; use WebSocket if WebRTC is blocked or unstable.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="defaultVoiceId">Default voice ID (optional)</Label>
+              <Input
+                id="defaultVoiceId"
+                placeholder="e.g. 21m00Tcm4TlvDq8ikWAM"
+                value={defaultVoiceId}
+                onChange={(e) => setDefaultVoiceId(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional default voice for the Verse/LABZ voice picker.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label htmlFor="showTranscriptViewer">Show transcript viewer in voice block</Label>
+                <p className="text-xs text-muted-foreground">
+                  When transcript data is available, show it in the voice UI.
+                </p>
+              </div>
+              <Switch
+                id="showTranscriptViewer"
+                checked={showTranscriptViewer}
+                onCheckedChange={setShowTranscriptViewer}
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label htmlFor="showWaveformInVoiceBlock">Show waveform in voice block</Label>
+                <p className="text-xs text-muted-foreground">
+                  Show waveform visualization next to the Orb in the voice block.
+                </p>
+              </div>
+              <Switch
+                id="showWaveformInVoiceBlock"
+                checked={showWaveformInVoiceBlock}
+                onCheckedChange={setShowWaveformInVoiceBlock}
+              />
+            </div>
 
           {error && (
             <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">

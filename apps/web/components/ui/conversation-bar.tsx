@@ -64,6 +64,12 @@ export interface ConversationBarProps {
    * Callback when user sends a message
    */
   onSendMessage?: (message: string) => void
+
+  /**
+   * Label shown in the control bar when disconnected (e.g. "Voice", "Start call").
+   * Default: "Customer Support"
+   */
+  idleLabel?: string
 }
 
 export const ConversationBar = React.forwardRef<
@@ -73,6 +79,8 @@ export const ConversationBar = React.forwardRef<
   (
     {
       agentId,
+      connectionType = "webrtc",
+      idleLabel = "Customer Support",
       className,
       waveformClassName,
       onConnect,
@@ -138,9 +146,14 @@ export const ConversationBar = React.forwardRef<
           onStatusChange: (status) => setAgentState(status.status),
         })
       } catch (error) {
-        console.error("Error starting conversation:", error)
         setAgentState("disconnected")
-        onError?.(error as Error)
+        const message = error instanceof Error ? error.message : String(error)
+        const isCancelled =
+          /session cancelled|cancelled during connection/i.test(message)
+        if (!isCancelled) {
+          console.error("Error starting conversation:", error)
+          onError?.(error as Error)
+        }
       }
     }, [conversation, getMicStream, agentId, connectionType, onError])
 
@@ -254,7 +267,7 @@ export const ConversationBar = React.forwardRef<
                         {agentState === "disconnected" && (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-foreground/50 text-[10px] font-medium">
-                              Customer Support
+                              {idleLabel}
                             </span>
                           </div>
                         )}

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { User } from "lucide-react"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
+import { Shimmer } from "@/components/ai-elements/shimmer"
 import { MAIN_ABOUT_FOUNDER, MAIN_ABOUT_BRAND } from "@/lib/main-about-data"
 import { cn } from "@/lib/utils"
 
@@ -112,7 +113,7 @@ export function MainAboutSplitSection({ className }: MainAboutSplitSectionProps)
                   The brain child
                 </p>
                 <h3 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
-                  MOOD MNKY
+                  <Shimmer as="span" duration={2.5}>MOOD MNKY</Shimmer>
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground">

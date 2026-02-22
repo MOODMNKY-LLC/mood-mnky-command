@@ -190,7 +190,61 @@ export function AppSidebar() {
                 </SidebarGroupLabel>
                 <CollapsibleContent>
                   <SidebarGroupContent>
-                    <NavItemList pathname={pathname} items={createAndChatItems} />
+                    <SidebarMenu>
+                      {createAndChatItems.map((item) =>
+                        "children" in item && item.children?.length ? (
+                          <Collapsible
+                            key={item.title}
+                            asChild
+                            defaultOpen={isGroupActive(pathname, item as NavItemWithChildren)}
+                            className="group/sub"
+                          >
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                tooltip={item.title}
+                                isActive={isGroupActive(pathname, item as NavItemWithChildren)}
+                                asChild
+                              >
+                                <Link href={item.href}>
+                                  <item.icon className="h-4 w-4" />
+                                  <span>{item.title}</span>
+                                </Link>
+                              </SidebarMenuButton>
+                              <CollapsibleTrigger asChild>
+                                <SidebarMenuAction className="data-[state=open]:rotate-90">
+                                  <ChevronRight className="h-4 w-4" />
+                                  <span className="sr-only">Toggle {item.title}</span>
+                                </SidebarMenuAction>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <SidebarMenuSub>
+                                  {item.children!.map((child) => (
+                                    <SidebarMenuSubItem key={child.href}>
+                                      <SidebarMenuSubButton asChild isActive={isActive(pathname, child.href)}>
+                                        <Link href={child.href}><span>{child.title}</span></Link>
+                                      </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                  ))}
+                                </SidebarMenuSub>
+                              </CollapsibleContent>
+                            </SidebarMenuItem>
+                          </Collapsible>
+                        ) : (
+                          <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive(pathname, item.href, item.href === "/")}
+                              tooltip={item.title}
+                            >
+                              <Link href={item.href}>
+                                <item.icon className="h-4 w-4" />
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      )}
+                    </SidebarMenu>
                   </SidebarGroupContent>
                 </CollapsibleContent>
               </SidebarGroup>

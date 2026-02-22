@@ -8,6 +8,9 @@ export type ElevenLabsConfigGet = {
   agentId: string | null;
   hasApiKeyOverride?: boolean;
   connectionType?: string;
+  defaultVoiceId?: string | null;
+  showTranscriptViewer?: boolean;
+  showWaveformInVoiceBlock?: boolean;
 };
 
 /**
@@ -17,7 +20,7 @@ export async function GET() {
   const admin = createAdminClient();
   const { data: row, error } = await admin
     .from("eleven_labs_config")
-    .select("agent_id, api_key_override, connection_type")
+    .select("agent_id, api_key_override, connection_type, default_voice_id, show_transcript_viewer, show_waveform_in_voice_block")
     .eq("id", CONFIG_ID)
     .maybeSingle();
 
@@ -37,7 +40,12 @@ export async function GET() {
   const agentId =
     row?.agent_id ?? process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? null;
 
-  const response: ElevenLabsConfigGet = { agentId };
+  const response: ElevenLabsConfigGet = {
+    agentId,
+    defaultVoiceId: row?.default_voice_id ?? null,
+    showTranscriptViewer: row?.show_transcript_viewer ?? false,
+    showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
+  };
 
   const supabase = await createClient();
   const {
@@ -88,6 +96,9 @@ export async function PATCH(request: NextRequest) {
     agentId?: string;
     apiKeyOverride?: string | null;
     connectionType?: string;
+    defaultVoiceId?: string | null;
+    showTranscriptViewer?: boolean;
+    showWaveformInVoiceBlock?: boolean;
   };
   try {
     body = await request.json();
@@ -102,6 +113,9 @@ export async function PATCH(request: NextRequest) {
     agent_id?: string;
     api_key_override?: string | null;
     connection_type?: string;
+    default_voice_id?: string | null;
+    show_transcript_viewer?: boolean;
+    show_waveform_in_voice_block?: boolean;
     updated_at?: string;
   } = { updated_at: new Date().toISOString() };
 
@@ -111,6 +125,12 @@ export async function PATCH(request: NextRequest) {
     updates.api_key_override = body.apiKeyOverride || null;
   if (body.connectionType !== undefined)
     updates.connection_type = body.connectionType || "webrtc";
+  if (Object.prototype.hasOwnProperty.call(body, "defaultVoiceId"))
+    updates.default_voice_id = body.defaultVoiceId?.trim() || null;
+  if (body.showTranscriptViewer !== undefined)
+    updates.show_transcript_viewer = body.showTranscriptViewer;
+  if (body.showWaveformInVoiceBlock !== undefined)
+    updates.show_waveform_in_voice_block = body.showWaveformInVoiceBlock;
 
   const { data, error } = await admin
     .from("eleven_labs_config")
@@ -118,19 +138,23 @@ export async function PATCH(request: NextRequest) {
       { id: CONFIG_ID, ...updates },
       { onConflict: "id" }
     )
-    .select("agent_id, connection_type")
+    .select("agent_id, connection_type, default_voice_id, show_transcript_viewer, show_waveform_in_voice_block")
     .single();
 
   if (error) {
     console.error("ElevenLabs config PATCH error:", error);
-    return NextResponse.json(
-      { error: "Failed to save config" },
-      { status: 500 }
-    );
+    const message =
+      process.env.NODE_ENV === "development"
+        ? (error.message || "Failed to save config")
+        : "Failed to save config";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   return NextResponse.json({
     agentId: data?.agent_id ?? null,
     connectionType: data?.connection_type ?? "webrtc",
+    defaultVoiceId: data?.default_voice_id ?? null,
+    showTranscriptViewer: data?.show_transcript_viewer ?? false,
+    showWaveformInVoiceBlock: data?.show_waveform_in_voice_block ?? false,
   });
 }

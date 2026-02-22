@@ -7,6 +7,7 @@ import {
   MainConversationBar,
   MainLiveWaveform,
 } from "@/components/main/elevenlabs"
+import { Shimmer } from "@/components/ai-elements/shimmer"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 import type { MainElevenLabsConfig } from "@/lib/main-landing-data"
@@ -60,7 +61,11 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
           <MainMicSelector />
         </div>
         <MainGlassCard className="main-float main-glass-panel-card flex w-full max-w-md flex-col gap-4">
-          <h3 className="text-lg font-semibold text-foreground">Talk to MOOD MNKY</h3>
+          <h3 className="text-lg font-semibold text-foreground">
+            <Shimmer as="span" duration={2.5} className="text-foreground">
+              Talk to MOOD MNKY
+            </Shimmer>
+          </h3>
           {hasAgent ? (
             <MainConversationBar
               agentId={config.agentId!}

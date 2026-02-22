@@ -70,7 +70,7 @@ const GLOBE_BASE_LIGHT: Omit<COBEOptions, "baseColor" | "markerColor" | "glowCol
 const GLOBE_BASE_DARK: Omit<COBEOptions, "baseColor" | "markerColor" | "glowColor"> = {
   ...GLOBE_BASE_LIGHT,
   dark: 1,
-  mapBrightness: 5,
+  mapBrightness: 9,
   mapBaseBrightness: 0,
 };
 
@@ -161,7 +161,7 @@ export function VerseHeroDynamic() {
       {/* Right: Dotted map background + Globe + mascot — min-height matches globe so top is not clipped */}
       <div className="relative flex min-h-[448px] md:min-h-[496px] lg:min-h-[548px]">
         {/* Layer 0: Dotted map - subtle background suggesting global reach */}
-        <div className="absolute inset-0 z-0 flex items-end justify-center overflow-hidden opacity-[0.12] md:opacity-[0.15]">
+        <div className="absolute inset-0 z-0 flex items-end justify-center overflow-hidden opacity-[0.12] md:opacity-[0.15] dark:opacity-24 dark:md:opacity-[0.30]">
           <div className="relative h-full w-full min-h-[280px] min-w-[320px]">
             <DottedMap
               width={200}

@@ -15,7 +15,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { wave } from "@/components/ui/matrix"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
+import { MainMatrix } from "@/components/main/elevenlabs/main-matrix"
 import { cn } from "@/lib/utils"
 
 const SHOP_URL =
@@ -94,15 +96,26 @@ export function MainNav() {
       >
         <Link
           href="/main"
-          className="flex shrink-0 items-center gap-2 text-lg font-semibold text-foreground transition-colors hover:text-primary"
+          className="relative flex shrink-0 items-center gap-2 overflow-hidden rounded-md py-1 pr-1 text-lg font-semibold text-foreground transition-colors hover:text-primary"
+          aria-label="MOOD MNKY – Home"
         >
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center opacity-30" aria-hidden>
+            <MainMatrix
+              rows={7}
+              cols={7}
+              frames={wave}
+              size={3}
+              gap={1}
+              className="h-9 w-12 opacity-70"
+            />
+          </span>
           <VerseLogoHairIcon
             withRing
             size="sm"
-            className="text-foreground"
+            className="relative z-10 text-foreground"
             ringClassName="border-foreground/80"
           />
-          MOOD MNKY
+          <span className="relative z-10">MOOD MNKY</span>
         </Link>
 
         {/* Center: search bar – hidden on small screens, shown md+ */}

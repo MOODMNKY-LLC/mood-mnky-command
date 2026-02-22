@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { MainTalkToAgentProvider } from "@/components/main/main-talk-to-agent-context"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import "./main-site.css"
 import "./main-glass.css"
 
@@ -41,7 +42,9 @@ export default function MainLayout({
 }) {
   return (
     <div className="main-site min-h-screen bg-background text-foreground">
-      <MainTalkToAgentProvider>{children}</MainTalkToAgentProvider>
+      <TooltipProvider>
+        <MainTalkToAgentProvider>{children}</MainTalkToAgentProvider>
+      </TooltipProvider>
     </div>
   )
 }

@@ -78,12 +78,20 @@ export const productBuilderItems: NavItem[] = [
   { title: "Product Builder", href: "/products", icon: Package },
 ]
 
-/** Create & Chat with CODE MNKY first (AI Tools group). */
-export const createAndChatItems: NavItem[] = [
+/** Create & Chat with CODE MNKY first (AI Tools group). Eleven Labs is a parent with Verse/Chat and Main landing children. */
+export const createAndChatItems: (NavItem | NavItemWithChildren)[] = [
   { title: "CODE MNKY", href: "/code-mnky", icon: Bot },
   { title: "AI Chat", href: "/chat", icon: MessageSquare },
   { title: "Agents", href: "/chat/agents", icon: Bot },
-  { title: "Eleven Labs", href: "/chat/eleven-labs", icon: Mic },
+  {
+    title: "Eleven Labs",
+    href: "/chat/eleven-labs",
+    icon: Mic,
+    children: [
+      { title: "Verse / Chat", href: "/chat/eleven-labs" },
+      { title: "Main landing", href: "/chat/eleven-labs/main" },
+    ],
+  },
   { title: "Image Studio", href: "/studio", icon: Sparkles },
   { title: "Audio Studio", href: "/studio/audio", icon: Mic },
   { title: "Video Studio", href: "/studio/video", icon: Video },
@@ -91,7 +99,7 @@ export const createAndChatItems: NavItem[] = [
 ]
 
 /** AI Tools = Create & Chat (includes CODE MNKY). Alias for clarity. */
-export const aiToolsItems: NavItem[] = createAndChatItems
+export const aiToolsItems: (NavItem | NavItemWithChildren)[] = createAndChatItems
 
 export const storeItems: NavItemWithChildren[] = [
   { title: "Store Overview", href: "/store", icon: Store },
@@ -137,10 +145,10 @@ export const integrationsItems: NavItem[] = [
 ]
 
 /** @deprecated Use createAndChatItems; kept for backwards compatibility. */
-export const mnkyChatItems: NavItem[] = createAndChatItems.slice(0, 3)
+export const mnkyChatItems: NavItem[] = createAndChatItems.slice(0, 3) as NavItem[]
 
 /** @deprecated Use createAndChatItems; kept for backwards compatibility. */
-export const studioItems: NavItem[] = createAndChatItems.slice(3, 7)
+export const studioItems: (NavItem | NavItemWithChildren)[] = createAndChatItems.slice(3, 7)
 
 export const verseItems: NavItem[] = [
   { title: "MNKY VERSE", href: "/verse", icon: Globe },

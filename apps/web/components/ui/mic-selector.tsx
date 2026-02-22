@@ -12,6 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { LiveWaveform } from "@/components/ui/live-waveform"
 
 export interface AudioDevice {
@@ -27,6 +32,8 @@ export interface MicSelectorProps {
   onMutedChange?: (muted: boolean) => void
   disabled?: boolean
   className?: string
+  /** "default" = full trigger with label; "icon" = icon-only button (opens same dropdown) */
+  triggerVariant?: "default" | "icon"
 }
 
 export function MicSelector({
@@ -36,6 +43,7 @@ export function MicSelector({
   onMutedChange,
   disabled,
   className,
+  triggerVariant = "default",
 }: MicSelectorProps) {
   const { devices, loading, error, hasPermission, loadDevices } =
     useAudioDevices()
@@ -92,29 +100,68 @@ export function MicSelector({
 
   const isPreviewActive = isDropdownOpen && !isMuted
 
+  const triggerLabel =
+    triggerVariant === "icon"
+      ? currentDevice.label
+        ? `Microphone: ${currentDevice.label}`
+        : "Microphone"
+      : null
+
+  const iconTriggerButton = (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn("h-9 w-9 shrink-0", className)}
+      disabled={loading || disabled}
+      aria-label={triggerLabel ?? "Microphone"}
+    >
+      {isMuted ? (
+        <MicOff className="h-4 w-4" />
+      ) : (
+        <Mic className="h-4 w-4" />
+      )}
+    </Button>
+  )
+
+  const defaultTriggerButton = (
+    <Button
+      variant="ghost"
+      size="sm"
+      className={cn(
+        "hover:bg-accent flex w-48 cursor-pointer items-center gap-1.5",
+        className
+      )}
+      disabled={loading || disabled}
+    >
+      {isMuted ? (
+        <MicOff className="h-4 w-4 flex-shrink-0" />
+      ) : (
+        <Mic className="h-4 w-4 flex-shrink-0" />
+      )}
+      <span className="flex-1 truncate text-left">
+        {currentDevice.label}
+      </span>
+      <ChevronsUpDown className="h-3 w-3 flex-shrink-0" />
+    </Button>
+  )
+
+  const dropdownTrigger =
+    triggerVariant === "icon" ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>{iconTriggerButton}</DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          {triggerLabel ?? "Microphone"}
+        </TooltipContent>
+      </Tooltip>
+    ) : (
+      <DropdownMenuTrigger asChild>{defaultTriggerButton}</DropdownMenuTrigger>
+    )
+
   return (
     <DropdownMenu onOpenChange={handleDropdownOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "hover:bg-accent flex w-48 cursor-pointer items-center gap-1.5",
-            className
-          )}
-          disabled={loading || disabled}
-        >
-          {isMuted ? (
-            <MicOff className="h-4 w-4 flex-shrink-0" />
-          ) : (
-            <Mic className="h-4 w-4 flex-shrink-0" />
-          )}
-          <span className="flex-1 truncate text-left">
-            {currentDevice.label}
-          </span>
-          <ChevronsUpDown className="h-3 w-3 flex-shrink-0" />
-        </Button>
-      </DropdownMenuTrigger>
+      {dropdownTrigger}
       <DropdownMenuContent align="center" side="top" className="w-72">
         {loading ? (
           <DropdownMenuItem disabled>Loading devices...</DropdownMenuItem>

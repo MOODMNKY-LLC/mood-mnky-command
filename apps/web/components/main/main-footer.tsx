@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { OpenInChat } from "@/components/ai-elements/open-in-chat"
+import { Shimmer } from "@/components/ai-elements/shimmer"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 
 const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
@@ -23,7 +24,9 @@ export function MainFooter() {
             className="text-foreground"
             ringClassName="border-foreground/80"
           />
-          <span>MOOD MNKY</span>
+          <Shimmer as="span" duration={3} spread={1.5}>
+            MOOD MNKY
+          </Shimmer>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <Link

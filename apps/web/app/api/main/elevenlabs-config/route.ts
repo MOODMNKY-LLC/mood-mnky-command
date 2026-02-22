@@ -31,6 +31,10 @@ export async function GET() {
     .eq("id", CONFIG_ID)
     .maybeSingle()
 
+  if (process.env.NODE_ENV === "development") {
+    console.debug("[main/elevenlabs-config] GET:", row ? { hasAgentId: !!row.agent_id } : { row: null })
+  }
+
   if (error) {
     console.error("Main ElevenLabs config GET error:", error)
     if (error.code === "42P01") {
@@ -129,7 +133,11 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Main ElevenLabs config PATCH error:", error)
-    return NextResponse.json({ error: "Failed to save config" }, { status: 500 })
+    const message =
+      process.env.NODE_ENV === "development"
+        ? (error.message || "Failed to save config")
+        : "Failed to save config"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 
   const connectionType = (data?.connection_type === "websocket" ? "websocket" : "webrtc") as "webrtc" | "websocket"

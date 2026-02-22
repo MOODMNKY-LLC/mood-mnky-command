@@ -26,7 +26,7 @@ function getGlobeConfigForTheme(theme: "light" | "dark"): COBEOptions {
     return {
       ...base,
       dark: 1,
-      mapBrightness: 5,
+      mapBrightness: 9,
       mapBaseBrightness: 0,
       baseColor: [148 / 255, 163 / 255, 184 / 255],
       markerColor: [148 / 255, 163 / 255, 184 / 255],

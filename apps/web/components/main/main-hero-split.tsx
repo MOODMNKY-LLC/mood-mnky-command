@@ -11,7 +11,9 @@ import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern"
 import { DottedMap } from "@/components/ui/dotted-map"
+import { wave } from "@/components/ui/matrix"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { MainMatrix } from "@/components/main/elevenlabs/main-matrix"
 import { cn } from "@/lib/utils"
 import type { COBEOptions } from "cobe"
 
@@ -77,7 +79,7 @@ const MAIN_GLOBE_BASE_DARK: Omit<
 > = {
   ...MAIN_GLOBE_BASE_LIGHT,
   dark: 1,
-  mapBrightness: 5,
+  mapBrightness: 9,
   mapBaseBrightness: 0,
 }
 
@@ -97,7 +99,11 @@ export function MainHeroSplit() {
   const { resolvedTheme } = useTheme()
   const isMobile = useIsMobile()
   const [showGlobe, setShowGlobe] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   useEffect(() => {
     if (typeof window === "undefined") return
     const wideEnough = window.innerWidth >= MOBILE_BREAKPOINT
@@ -150,6 +156,16 @@ export function MainHeroSplit() {
               once
             />
           </p>
+          <div className="mt-6 flex justify-start opacity-40" aria-hidden>
+            <MainMatrix
+              rows={4}
+              cols={14}
+              frames={wave}
+              size={4}
+              gap={2}
+              className="h-6"
+            />
+          </div>
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild size="lg" className="main-btn-float">
               <Link href="/verse">Shop the VERSE</Link>
@@ -175,7 +191,7 @@ export function MainHeroSplit() {
         {/* Right: Dotted Map + Globe + mascot (layered, no card) */}
         <div className="relative z-10 flex min-h-[448px] md:min-h-[496px] lg:min-h-[548px]">
           {/* Layer 0: Dotted map */}
-          <div className="absolute inset-0 z-0 flex items-end justify-center overflow-hidden opacity-[0.12] md:opacity-[0.15]">
+          <div className="absolute inset-0 z-0 flex items-end justify-center overflow-hidden opacity-[0.12] md:opacity-[0.15] dark:opacity-24 dark:md:opacity-[0.30]">
             <div className="relative h-full w-full min-h-[280px] min-w-[320px]">
               <DottedMap
                 width={200}
@@ -206,7 +222,7 @@ export function MainHeroSplit() {
           <div
             className="absolute bottom-0 left-0 z-20 flex items-end pl-1 md:pl-2"
             style={
-              theme === "dark"
+              mounted && theme === "dark"
                 ? { filter: "drop-shadow(0 0 64px rgba(0,0,0,0.5))" }
                 : { filter: "drop-shadow(0 0 64px rgba(255,255,255,0.35))" }
             }
