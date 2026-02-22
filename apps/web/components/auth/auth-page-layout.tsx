@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 
@@ -25,6 +26,14 @@ export function AuthPageLayout({
 
   return (
     <div className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-[var(--verse-bg)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      {/* Back to home - mono app home is /main */}
+      <Link
+        href="/main"
+        className="absolute left-4 top-4 z-30 text-sm text-[var(--verse-text-muted)] transition-colors hover:text-[var(--verse-text)]"
+        title="MOOD MNKY home"
+      >
+        Home
+      </Link>
       {/* Background: Animated Grid Pattern - modern minimal SVG grid with fading squares */}
       <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden>
         <AnimatedGridPattern

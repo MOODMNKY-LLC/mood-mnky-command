@@ -14,7 +14,7 @@ XP awards for manga/magazine and gamification are driven by `config_xp_rules` in
 
 ## Seed migration
 
-The migration `20260222100000_seed_config_xp_rules.sql` inserts or upserts default values. Tiers in `purchase` must be ordered by `subtotal_min` descending for correct lookup (highest tier first).
+The migration `20260222100001_seed_config_xp_rules.sql` inserts or upserts default values. Tiers in `purchase` must be ordered by `subtotal_min` descending for correct lookup (highest tier first).
 
 ## Quest triggers
 

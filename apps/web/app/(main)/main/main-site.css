@@ -1,8 +1,29 @@
 /* Main site – public marketing portal (www.moodmnky.com → /main) */
-/* Uses root design tokens from globals.css; optional scoped overrides here */
+/* Light = white-dominant; dark = inverse grayscale. Theme driven by nav Animated Theme Toggler (next-themes). */
+/* Exclusively grayscale: override root primary/accent/ring so all buttons and links are gray */
 .main-site {
-  /* Page width for readability; matches verse-page-width intent */
-  --main-page-width: 1200px;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --primary: 0 0% 25%;
+  --primary-foreground: 0 0% 98%;
+  --accent: 0 0% 25%;
+  --accent-foreground: 0 0% 98%;
+  --ring: 0 0% 35%;
+}
+.dark .main-site {
+  --background: 0 0% 6%;
+  --foreground: 0 0% 98%;
+  --primary: 0 0% 65%;
+  --primary-foreground: 0 0% 9%;
+  --accent: 0 0% 65%;
+  --accent-foreground: 0 0% 9%;
+  --ring: 0 0% 55%;
+}
+
+/* Full grayscale palette: Main uses only gray-scale tokens for a monochrome, tech-forward look */
+.main-site {
+  /* Page width: full-page layout (ElevenLabs-style); wide content area */
+  --main-page-width: 1600px;
   --main-spacing-sections: 32px;
   /* Hero typography and layout */
   --main-hero-title-size: clamp(2.25rem, 5vw, 3rem);
@@ -11,6 +32,22 @@
   /* Section spacing – refined for tech-forward editorial */
   --main-section-gap: 7rem;
   --main-section-gap-sm: 5rem;
+
+  /* Full grayscale scale (HSL 0 0% lightness) – use for backgrounds, borders, text hierarchy */
+  --main-gray-50: 0 0% 98%;
+  --main-gray-100: 0 0% 96.1%;
+  --main-gray-200: 0 0% 89.8%;
+  --main-gray-300: 0 0% 83.1%;
+  --main-gray-400: 0 0% 63.9%;
+  --main-gray-500: 0 0% 45.1%;
+  --main-gray-600: 0 0% 37.1%;
+  --main-gray-700: 0 0% 25.5%;
+  --main-gray-800: 0 0% 14.9%;
+  --main-gray-900: 0 0% 9%;
+  --main-gray-950: 0 0% 3.9%;
+
+  /* Typography: Roc Grotesk when loaded, else Space Grotesk / system sans */
+  font-family: var(--font-main, "Roc Grotesk", var(--font-space-grotesk), system-ui, sans-serif);
 }
 @media (min-width: 768px) {
   .main-site {
@@ -27,8 +64,20 @@
   padding-right: 1rem;
 }
 
+/* Full-bleed section: ignores container max-width for full viewport width */
+.main-site .main-container-full-bleed {
+  max-width: none;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 @media (min-width: 768px) {
   .main-site .main-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .main-site .main-container-full-bleed {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
@@ -39,7 +88,83 @@
   background: linear-gradient(
     180deg,
     hsl(var(--background)) 0%,
-    hsl(var(--muted) / 0.3) 50%,
+    hsl(var(--main-gray-100) / 0.5) 50%,
     hsl(var(--background)) 100%
   );
+}
+
+/* Main button variants – grayscale, glass and float effects for tech-forward CTAs */
+.main-site .main-btn-glass {
+  background: var(--main-glass-bg-card);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--main-glass-border);
+  color: hsl(var(--foreground));
+  box-shadow: var(--main-glass-shadow);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.main-site .main-btn-glass:hover {
+  background: var(--main-glass-bg);
+  box-shadow: var(--main-float-shadow);
+  transform: translateY(var(--main-float-offset));
+}
+.main-site .main-btn-glass:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.main-site .main-btn-float {
+  transition:
+    transform var(--main-float-duration) ease,
+    box-shadow var(--main-float-duration) ease;
+}
+.main-site .main-btn-float:hover {
+  transform: translateY(var(--main-float-offset));
+  box-shadow: var(--main-float-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-site .main-btn-glass:hover,
+  .main-site .main-btn-float:hover {
+    transform: none;
+  }
+}
+
+/* Circular pulse behind hero mascot – expanding rings, grayscale */
+@keyframes main-pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.main-site .main-hero-pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid hsl(var(--main-gray-400) / 0.5);
+  animation: main-pulse-ring 2.5s ease-out infinite;
+  pointer-events: none;
+}
+
+.main-site .main-hero-pulse-ring:nth-child(2) {
+  animation-delay: 0.8s;
+}
+.main-site .main-hero-pulse-ring:nth-child(3) {
+  animation-delay: 1.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-site .main-hero-pulse-ring {
+    animation: none;
+    opacity: 0.15;
+  }
 }

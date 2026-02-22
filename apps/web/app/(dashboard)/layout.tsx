@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Link from "next/link"
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -66,6 +67,16 @@ export default function DashboardLayout({
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1 min-h-[44px] min-w-[44px]" />
               <Separator orientation="vertical" className="mr-2 h-4" />
+              <Link
+                href="/main"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                title="MOOD MNKY home"
+              >
+                Home
+              </Link>
+              <span className="text-sm font-medium text-muted-foreground">
+                /
+              </span>
               <span className="text-sm font-medium text-muted-foreground">
                 MOOD MNKY LABZ
               </span>

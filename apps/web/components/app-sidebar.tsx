@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LogOut, ChevronRight } from "lucide-react"
+import { LogOut, ChevronRight, Home } from "lucide-react"
 import {
   storeItems,
   createAndChatItems,
@@ -364,6 +364,14 @@ export function AppSidebar() {
       {/* ---- Footer ---- */}
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="MOOD MNKY home">
+              <Link href="/main">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} tooltip="Sign out">
               <LogOut className="h-4 w-4" />

@@ -169,7 +169,7 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
   }
 }
 
-const FEATURED_FRAGRANCES_LIMIT = 8
+const FEATURED_FRAGRANCES_LIMIT = 24
 
 /**
  * Fetches a limited set of fragrance oils for Main "Featured" section.

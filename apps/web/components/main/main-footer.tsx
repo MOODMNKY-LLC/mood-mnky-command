@@ -2,15 +2,14 @@
 
 import Link from "next/link"
 import { OpenInChat } from "@/components/ai-elements/open-in-chat"
-import { MainMascotImage } from "@/components/main/main-mascot-image"
-import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
+import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 
 const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
 
 export function MainFooter() {
   return (
     <footer
-      className="main-container main-glass-footer mt-20 py-8"
+      className="main-container main-glass-footer mx-4 mt-20 rounded-t-2xl py-8"
       role="contentinfo"
     >
       <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
@@ -18,15 +17,12 @@ export function MainFooter() {
           href="/main"
           className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded">
-            <MainMascotImage
-              src={MAIN_MASCOT_ASSETS.footer}
-              alt=""
-              fill
-              className="object-cover object-center"
-              hideOnError
-            />
-          </span>
+          <VerseLogoHairIcon
+            withRing
+            size="sm"
+            className="text-foreground"
+            ringClassName="border-foreground/80"
+          />
           <span>MOOD MNKY</span>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">

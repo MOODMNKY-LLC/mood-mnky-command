@@ -116,6 +116,7 @@ export const dojoNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
+      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
       { title: "Back to VERSE", url: "/verse", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home, isActive: true },
       { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
@@ -139,6 +140,7 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
+      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
       { title: "Profile", url: "/dojo/profile", icon: User },
     ],
@@ -160,6 +162,7 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
+      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
       { title: "Back to VERSE", url: "/verse", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
@@ -216,6 +219,7 @@ export const dojoCommunityLinks: {
   external: boolean;
   icon: LucideIcon;
 }[] = [
+  { label: "MOOD MNKY (Home)", href: "/main", external: false, icon: Home },
   { label: "Community hub", href: "/dojo/community", external: false, icon: Users },
   { label: "MNKY VERSE Blog", href: "/verse/blog", external: true, icon: Newspaper },
   { label: "Quests & XP", href: "/verse/quests", external: true, icon: Trophy },

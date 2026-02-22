@@ -1,6 +1,8 @@
 # Main Section – Navigation and Cross-Links
 
-This document lists where the Main site (www.moodmnky.com / `/main`) is linked from the app and the Shopify theme so that visitors can move between the main marketing site, MNKY VERSE, and LABZ.
+**Main** (www.moodmnky.com / `/main`) is the **mono app home page**: the brand’s public landing and primary entry point. It is linked from sidebars, headers, auth, and the Verse dock so users can reach the brand home from every section.
+
+This document lists where Main is linked from the app and the Shopify theme.
 
 ## In-app navigation
 
@@ -8,16 +10,35 @@ This document lists where the Main site (www.moodmnky.com / `/main`) is linked f
 
 | Location | File | Change |
 |----------|------|--------|
-| Header (left) | [apps/web/components/verse/verse-header.tsx](apps/web/components/verse/verse-header.tsx) | "MOOD MNKY" link to `/main` added next to "MNKY VERSE" logo. |
-| Footer | [apps/web/components/verse/verse-footer.tsx](apps/web/components/verse/verse-footer.tsx) | "MOOD MNKY" link to `/main` added next to "MNKY VERSE" in the footer. |
+| Header (left) | [apps/web/components/verse/verse-header.tsx](apps/web/components/verse/verse-header.tsx) | "MOOD MNKY" link to `/main` next to "MNKY VERSE" logo. |
+| Footer | [apps/web/components/verse/verse-footer.tsx](apps/web/components/verse/verse-footer.tsx) | "MOOD MNKY" link to `/main` next to "MNKY VERSE" in the footer. |
+| Verse dock (non-admin) | [apps/web/components/verse/verse-admin-dock.tsx](apps/web/components/verse/verse-admin-dock.tsx) | "Home (MOOD MNKY)" icon links to `/main`; "VERSE" icon links to `/verse`. |
+| Verse dock (admin) | [apps/web/components/verse/verse-admin-dock.tsx](apps/web/components/verse/verse-admin-dock.tsx) | "Home (MOOD MNKY)" icon links to `/main`; LABZ icon links to `/`. |
 
 ### Main site (internal)
 
-The Main layout and pages link to `/verse`, `/auth/login`, `/main/about`, etc. CTAs point to Join MNKY VERSE (`/verse`), Fragrance Wheel (`/verse/fragrance-wheel`), Blending Guide (`/verse/blending-guide`), and Sign in (`/auth/login`). No code changes needed for internal Main links.
+The Main layout and pages link to `/verse`, `/auth/login`, `/main/about`, etc. CTAs point to Join MNKY VERSE (`/verse`), Fragrance Wheel (`/verse/fragrance-wheel`), Blending Guide (`/verse/blending-guide`), and Sign in (`/auth/login`).
 
 ### LABZ (dashboard)
 
-The dashboard sidebar and header do not currently include a "MOOD MNKY" or "Main site" link. To add one, add a nav item in [apps/web/components/app-sidebar.tsx](apps/web/components/app-sidebar.tsx) or the dashboard header linking to `NEXT_PUBLIC_MAIN_APP_URL` or `/main`.
+| Location | File | Change |
+|----------|------|--------|
+| Context switcher | [apps/web/lib/labz-sidebar-context.ts](apps/web/lib/labz-sidebar-context.ts) | "Home (MOOD MNKY)" in `labzEcosystemLinks` → `/main`. |
+| Dashboard header | [apps/web/app/(dashboard)/layout.tsx](apps/web/app/(dashboard)/layout.tsx) | "Home" link to `/main` before "MOOD MNKY LABZ". |
+| Sidebar footer | [apps/web/components/app-sidebar.tsx](apps/web/components/app-sidebar.tsx) | "Home" link to `/main` above Sign out. |
+
+### Dojo
+
+| Location | File | Change |
+|----------|------|--------|
+| Sidebar nav groups | [apps/web/lib/dojo-sidebar-config.tsx](apps/web/lib/dojo-sidebar-config.tsx) | "MOOD MNKY (Home)" → `/main` in `dojoNavGroups` (all contexts). |
+| Team switcher community links | [apps/web/lib/dojo-sidebar-config.tsx](apps/web/lib/dojo-sidebar-config.tsx) | "MOOD MNKY (Home)" → `/main` in `dojoCommunityLinks`. |
+
+### Auth
+
+| Location | File | Change |
+|----------|------|--------|
+| Auth layout | [apps/web/components/auth/auth-page-layout.tsx](apps/web/components/auth/auth-page-layout.tsx) | "Home" link (top-left) to `/main` on all auth pages. |
 
 ## Shopify theme
 

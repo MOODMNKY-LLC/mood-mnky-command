@@ -30,6 +30,7 @@ export const labzContexts: LabzContextConfig[] = [
 
 /** Ecosystem links shown in context switcher dropdown (cross-context). */
 export const labzEcosystemLinks: { label: string; href: string; external: boolean }[] = [
+  { label: "Home (MOOD MNKY)", href: "/main", external: false },
   { label: "Documentation", href: "/docs", external: false },
   { label: "MNKY VERSE", href: "/verse", external: false },
 ];

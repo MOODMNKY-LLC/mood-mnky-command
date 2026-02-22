@@ -1,43 +1,92 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
-import { useMemo, useEffect, useState } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { MainNav, MainFooter, MnkyFragranceCard, MainGlassCard } from "@/components/main"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { FragranceOil } from "@/lib/types"
 import type { Formula } from "@/lib/types"
 import { FORMULA_CATEGORY_LABELS } from "@/lib/types"
-import { FlaskConical } from "lucide-react"
+import { FlaskConical, Search } from "lucide-react"
 
-function matchQuery(text: string, q: string): boolean {
-  if (!q.trim()) return true
-  const lower = text.toLowerCase()
-  const terms = q.toLowerCase().trim().split(/\s+/)
-  return terms.every((t) => lower.includes(t))
+const DEBOUNCE_MS = 350
+type FilterType = "all" | "fragrances" | "formulas"
+
+function highlightQuery(text: string, query: string): React.ReactNode {
+  if (!text || !query.trim()) return text
+  const terms = query.trim().split(/\s+/).filter(Boolean)
+  if (terms.length === 0) return text
+  const parts: React.ReactNode[] = []
+  let remaining = text
+  const combined = new RegExp(
+    terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"),
+    "gi"
+  )
+  let match = combined.exec(remaining)
+  while (match) {
+    if (match.index > 0) parts.push(remaining.slice(0, match.index))
+    parts.push(
+      <mark key={parts.length} className="rounded bg-primary/20 font-medium text-foreground">
+        {match[0]}
+      </mark>
+    )
+    remaining = remaining.slice(match.index + match[0].length)
+    combined.lastIndex = 0
+    match = combined.exec(remaining)
+  }
+  if (remaining) parts.push(remaining)
+  return parts.length > 0 ? <>{parts}</> : text
 }
 
 export default function MainSearchPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const q = searchParams.get("q") ?? ""
 
+  const [inputValue, setInputValue] = useState(q)
+  const [filterType, setFilterType] = useState<FilterType>("all")
   const [oils, setOils] = useState<FragranceOil[]>([])
   const [formulas, setFormulas] = useState<Formula[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setInputValue(q)
+  }, [q])
+
+  useEffect(() => {
+    const trimmed = inputValue.trim()
+    if (trimmed === q) return
+    const t = setTimeout(() => {
+      if (trimmed) {
+        router.push(`/main/search?q=${encodeURIComponent(trimmed)}`)
+      } else {
+        router.push("/main/search")
+      }
+    }, DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [inputValue, router, q])
+
+  useEffect(() => {
+    if (!q.trim()) {
+      setOils([])
+      setFormulas([])
+      setLoading(false)
+      setError(null)
+      return
+    }
     let cancelled = false
     setLoading(true)
     setError(null)
-    Promise.all([
-      fetch("/api/fragrance-oils").then((r) => r.json()),
-      fetch("/api/formulas").then((r) => r.json()),
-    ])
-      .then(([oilRes, formulaRes]) => {
+    fetch(`/api/main/search?q=${encodeURIComponent(q)}`)
+      .then((r) => r.json())
+      .then((data) => {
         if (cancelled) return
-        if (oilRes.fragranceOils) setOils(oilRes.fragranceOils)
-        if (formulaRes.formulas) setFormulas(formulaRes.formulas)
+        setOils(data.fragranceOils ?? [])
+        setFormulas(data.formulas ?? [])
       })
       .catch((e) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load")
@@ -48,32 +97,10 @@ export default function MainSearchPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [q])
 
-  const filteredOils = useMemo(() => {
-    if (!q.trim()) return oils
-    return oils.filter(
-      (oil) =>
-        matchQuery(oil.name, q) ||
-        matchQuery(oil.description, q) ||
-        matchQuery(oil.family, q) ||
-        oil.subfamilies.some((f) => matchQuery(f, q)) ||
-        oil.topNotes.some((n) => matchQuery(n, q)) ||
-        oil.middleNotes.some((n) => matchQuery(n, q)) ||
-        oil.baseNotes.some((n) => matchQuery(n, q))
-    )
-  }, [oils, q])
-
-  const filteredFormulas = useMemo(() => {
-    if (!q.trim()) return formulas
-    return formulas.filter(
-      (f) =>
-        matchQuery(f.name, q) ||
-        matchQuery(f.description, q) ||
-        (f.tags && f.tags.some((t) => matchQuery(t, q)))
-    )
-  }, [formulas, q])
-
+  const filteredOils = filterType === "formulas" ? [] : oils
+  const filteredFormulas = filterType === "fragrances" ? [] : formulas
   const hasResults = filteredOils.length > 0 || filteredFormulas.length > 0
   const hasQuery = q.length > 0
 
@@ -81,11 +108,31 @@ export default function MainSearchPage() {
     <>
       <MainNav />
       <main className="main-container py-12 md:py-16">
-        <div className="mb-10">
+        <div className="mb-10 space-y-4">
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             Search
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <div className="main-glass-panel main-float flex max-w-xl items-center gap-2 rounded-xl border border-border px-3 py-2 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            <Input
+              type="search"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Search fragrances, formulas, and more…"
+              className="h-9 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+              aria-label="Search fragrances and formulas"
+            />
+          </div>
+          {hasQuery && (
+            <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
+              <TabsList className="bg-muted/50">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="fragrances">Fragrances</TabsTrigger>
+                <TabsTrigger value="formulas">Formulas</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <p className="text-muted-foreground">
             {hasQuery
               ? `Results for “${q}”`
               : "Search fragrances and formulas below."}
@@ -151,10 +198,10 @@ export default function MainSearchPage() {
                           </div>
                           <div>
                             <h3 className="font-semibold text-foreground">
-                              {formula.name}
+                              {highlightQuery(formula.name, q)}
                             </h3>
                             <p className="text-xs text-muted-foreground line-clamp-1">
-                              {formula.description}
+                              {highlightQuery(formula.description ?? "", q)}
                             </p>
                           </div>
                         </div>

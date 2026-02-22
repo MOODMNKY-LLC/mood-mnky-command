@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { MainNav, MainGlassCard, MainFooter } from "@/components/main"
+import { MainNav, MainGlassCard, MainFooter, MainFounderCard } from "@/components/main"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 
@@ -51,6 +51,10 @@ export default function MainAboutPage() {
             </Button>
           </div>
         </MainGlassCard>
+
+        <section className="mt-12 max-w-2xl">
+          <MainFounderCard />
+        </section>
       </main>
 
       <MainFooter />

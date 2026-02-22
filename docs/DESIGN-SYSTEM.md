@@ -185,11 +185,15 @@ The Dojo home profile block uses the **Elements AI SDK Agent** component (`compo
 
 ## Main (main-site.css, main-glass.css)
 
-The Main section (`app/(main)/main/`) is the public marketing site served at www.moodmnky.com. It uses **root design tokens** from `globals.css` (no Verse or LABZ overrides) plus Main-specific glassmorphism tokens. The wrapper class `.main-site` scopes layout utilities. The Main landing follows a **monochrome, high-contrast editorial** layout: split hero with 16:9 promo area, feature cards, social proof, customization, FAQ, optional Explore block and chat. **No background pattern overload** on Main—hero and sections use `bg-background` or subtle gradients only; no AnimatedGridPattern or busy backgrounds.
+The Main section (`app/(main)/main/`) is the public marketing site served at www.moodmnky.com. It uses **root design tokens** from `globals.css` (no Verse or LABZ overrides) plus Main-specific glassmorphism tokens. The wrapper class `.main-site` scopes layout utilities. The Main landing follows a **monochrome, high-contrast editorial** layout: split hero with Dotted Map + Globe + mascot (no card), feature cards, social proof, customization, FAQ, optional Explore block and chat. **No background pattern overload** on Main—hero and sections use `bg-background` or subtle gradients only; no AnimatedGridPattern or busy backgrounds.
+
+### Theme (light/dark)
+
+Main supports **light** and **dark** mode driven by the **Animated Theme Toggler** in the main nav (desktop and mobile sheet). The toggler uses **next-themes** (`setTheme`), so the rest of the app stays in sync. **Light** = white-dominant (`--background: 0 0% 100%`, dark text); **dark** = inverse grayscale (dark background `0 0% 6%`, light foreground). Glass tokens in `main-glass.css` and the hero gradient in `main-site.css` use theme-aware tokens so they invert correctly in dark mode.
 
 ### Section architecture (landing page order)
 
-1. **Split hero** — Left: headline, subline, CTA pair (Shop the VERSE → `/verse`, Customize your scent → `/verse/blending-guide`). Right: **16:9 aspect-ratio** container (`aspect-video`) for promo image (e.g. `/verse/mood-mnky-3d.png`). Responsive: stack copy then media on small screens.
+1. **Split hero** — Left: headline, subline, CTA pair (Shop the VERSE → `/verse`, Customize your scent → `/verse/blending-guide`). Right: **layered visual** (aligned with verse hero): **Dotted Map** (layer 0, low opacity, theme-aware), **Globe** (layer 1, grayscale COBE config by theme; hidden on iOS/narrow), **mascot** (layer 2, bottom-left, no card, optional drop-shadow by theme). Responsive: stack copy then right block on small screens.
 2. **Feature cards** — 3–6 cards with icon (Lucide), title, and short copy (Extreme Personalization, Sensory Journeys, Handcrafted, The Dojo, Blending Lab, AI Companions). Uses `MainGlassCard` and `--main-section-gap`.
 3. **Social proof** — Single row of stats or “Trusted by” copy; grayscale, minimal.
 4. **Customization** — One section for scent and container personalization (copy + optional list); Tailwind tokens only.
@@ -198,9 +202,13 @@ The Main section (`app/(main)/main/`) is the public marketing site served at www
 7. **Meet MOOD MNKY** (optional) — Compact chatbot block.
 8. **Footer** — `MainFooter` with glass treatment; no pattern overload.
 
+### Layout (full-page and bento)
+
+Main uses a **full-page layout** (ElevenLabs-style) with a wide content area: `--main-page-width: 1600px`. The landing page uses a **bento-style grid** (CSS Grid with 1–3 columns) so sections can span full width or sit side-by-side (e.g. Explore as 2 columns). Hero is full-width; content below uses `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3` with `col-span-full` for most sections. For full-bleed sections that ignore max-width, use `.main-container-full-bleed`.
+
 ### Tokens and layout
 
-- **--main-page-width**: `1200px` (content max-width).
+- **--main-page-width**: `1600px` (wide content area for full-page feel).
 - **--main-spacing-sections**: `32px`.
 - **--main-hero-title-size**: Responsive clamp for hero H1 (e.g. `clamp(2.25rem, 5vw, 3.5rem)`).
 - **--main-hero-subtitle-size**: Hero subtitle (e.g. `1.125rem` / `1.25rem` on md+).
@@ -208,8 +216,13 @@ The Main section (`app/(main)/main/`) is the public marketing site served at www
 - **--main-section-gap**: Vertical spacing between major sections (e.g. `6rem`).
 - **--main-section-gap-sm**: Smaller section gap (e.g. `4rem`).
 - **.main-container**: Centered container with responsive padding (max-width from `--main-page-width`).
+- **.main-container-full-bleed**: Full viewport width; use for hero or full-bleed sections.
 
-Main does not define its own color tokens; it uses root `--background`, `--foreground`, `--primary`, `--muted-foreground`, `--border`, etc. So the marketing site has a clean, grayscale look consistent with LABZ and works with `next-themes` (light/dark) from the root layout.
+Main uses root tokens plus a **full grayscale scale** in `main-site.css`: `--main-gray-50` through `--main-gray-950` (HSL 0 0% lightness) for consistent monochrome hierarchy. Use these for backgrounds, borders, and text when you want explicit gray steps within Main.
+
+**Button variants (Main-only, use with shadcn Button):**
+- `.main-btn-glass` — glass panel style with hover lift and shadow (use with `variant="outline"` for best effect).
+- `.main-btn-float` — hover lift and shadow only (works with default, outline, or ghost).
 
 ### Glass tokens (main-glass.css)
 
@@ -237,10 +250,10 @@ Monochromatic grayscale glassmorphism, GQ-inspired tech-forward aesthetic:
 
 | Component | Purpose |
 |-----------|---------|
-| `MainNav` | Glass header with links to Main/About/Pricing/VERSE/Sign in |
+| `MainNav` | Glass header with Animated Theme Toggler, “Talk to MOOD MNKY” (opens voice dialog), and links to Main/About/Fragrances/Formulas/Collections/Community/Shop/Sign in |
 | `MainGlassCard` | Reusable glass panel card |
 | `MainHero` | Legacy hero with glass overlay, scroll-linked motion, agent imagery, CTAs |
-| `MainHeroSplit` | Split hero: left copy + CTA pair, right 16:9 promo media; editorial landing |
+| `MainHeroSplit` | Split hero: left copy + CTAs; right Dotted Map + Globe + mascot (no card), theme-aware; editorial landing |
 | `MainFeatureCards` | Grid of 3–6 feature cards (icon + title + copy); uses MainGlassCard |
 | `MainSocialProof` | Single-row social proof (stats / “Trusted by”); grayscale, minimal |
 | `MainCustomization` | Scent and container personalization section; Tailwind tokens only |
@@ -255,7 +268,7 @@ Monochromatic grayscale glassmorphism, GQ-inspired tech-forward aesthetic:
 
 ### ElevenLabs UI and main-* wrappers
 
-Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components/main/elevenlabs/`: MainOrb, MainShimmeringText, MainAudioPlayer, MainBarVisualizer, MainMatrix, MainMessage, MainResponse, MainConversationBar, MainLiveWaveform, MainMicSelector, MainScrubBar, MainSpeechInput, MainTranscriptViewer, MainVoiceButton, MainVoicePicker, MainWaveform. Config: Supabase `main_elevenlabs_config`; server-only `GET /api/main/elevenlabs-config`; LABZ at `/chat/main-elevenlabs`. No API keys on client.
+Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components/main/elevenlabs/`: MainOrb, MainShimmeringText, MainAudioPlayer, MainBarVisualizer, MainMatrix, MainMessage, MainResponse, MainConversationBar, MainLiveWaveform, MainMicSelector, MainScrubBar, MainSpeechInput, MainTranscriptViewer, MainVoiceButton, MainVoicePicker, MainWaveform. **ElevenLabs agents JavaScript libraries**: `@elevenlabs/client` (Conversational AI / Scribe in `hooks/use-scribe.ts`) and `@elevenlabs/react` (useConversation in Conversation Bar, Verse voice chat) are installed and configured to use agent ID from server/config only; API key stays server-side (see `.env.example`). Config: Supabase `main_elevenlabs_config`; server-only `GET /api/main/elevenlabs-config`; LABZ at `/chat/main-elevenlabs`. No API keys on client.
 
 ### Motion and AI Elements on Main
 
@@ -268,8 +281,9 @@ Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components
 - `app/(main)/main/main-site.css` — scoped layout tokens and `.main-container`
 - `app/(main)/main/main-glass.css` — glass tokens and `.main-glass-*` classes
 - `app/(main)/main/layout.tsx` — metadata (title, description, Open Graph, canonical), `.main-site` wrapper
-- `app/(main)/main/page.tsx` — Landing: MainHeroSplit, MainFeatureCards, MainSocialProof, MainCustomization, MainFaq, Explore block, MainChatbot, MainFooter
-- `components/main/` — MainNav, MainGlassCard, MainHero, MainHeroSplit, MainFeatureCards, MainSocialProof, MainCustomization, MainFaq, MainAgentCard, MainChatbot, MainFooter, MainContactForm, MainWaitlistForm
+- `app/(main)/main/page.tsx` — Landing: bento-style grid; MainHeroSplit, MainFeatureCards, MainSocialProof, MainCustomization, MainFaq, Explore, MainChatbot, MainVoiceBlock, MainListenBlock, MainWaitlistForm, MainFooter
+- `app/(main)/main/components/page.tsx` — Component library: ElevenLabs, shadcn, Magic UI (and other) categories with live demos
+- `components/main/` — MainNav, MainDock, MainTalkToAgentDialog, MainTalkToAgentProvider, MainGlassCard, MainHero, MainHeroSplit, MainFeatureCards, MainSocialProof, MainCustomization, MainFaq, MainAgentCard, MainChatbot, MainFooter, MainContactForm, MainWaitlistForm
 
 ---
 

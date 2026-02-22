@@ -207,9 +207,11 @@ export async function getSmartCollections(params: { limit?: number } = {}): Prom
   return data.smart_collections.map((c) => ({ ...c, collection_type: "smart" as const }))
 }
 
+/** Returns only active (published) collections. */
 export async function getAllCollections(): Promise<ShopifyCollection[]> {
   const [custom, smart] = await Promise.all([getCustomCollections(), getSmartCollections()])
-  return [...custom, ...smart]
+  const all = [...custom, ...smart]
+  return all.filter((c) => c.published_at != null)
 }
 
 export async function getCollectionProducts(collectionId: number): Promise<ShopifyProduct[]> {

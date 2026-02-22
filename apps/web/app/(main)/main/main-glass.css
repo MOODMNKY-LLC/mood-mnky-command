@@ -70,8 +70,9 @@
   background: var(--main-glass-bg-nav);
   backdrop-filter: blur(var(--main-glass-blur));
   -webkit-backdrop-filter: blur(var(--main-glass-blur));
-  border-bottom: 1px solid var(--main-glass-border-nav);
-  box-shadow: var(--main-glass-shadow);
+  border: 1px solid var(--main-glass-border-nav);
+  border-radius: var(--main-glass-radius);
+  box-shadow: var(--main-glass-shadow), 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -80,13 +81,14 @@
   }
 }
 
-/* Footer glass bar – same as nav but with top border */
+/* Footer glass bar – rounded top, floating */
 .main-site .main-glass-footer {
   background: var(--main-glass-bg-nav);
   backdrop-filter: blur(var(--main-glass-blur));
   -webkit-backdrop-filter: blur(var(--main-glass-blur));
-  border-top: 1px solid var(--main-glass-border-nav);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--main-glass-border-nav);
+  border-radius: var(--main-glass-radius) var(--main-glass-radius) 0 0;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06), var(--main-glass-shadow);
 }
 
 @supports not (backdrop-filter: blur(1px)) {

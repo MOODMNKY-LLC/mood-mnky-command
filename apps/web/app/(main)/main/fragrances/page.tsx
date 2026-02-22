@@ -1,8 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Search } from "lucide-react"
-import { MainNav, MainFooter, MnkyFragranceCard, MainGlassCard } from "@/components/main"
+import {
+  MainNav,
+  MainFooter,
+  MnkyFragranceCard,
+  MainGlassCard,
+  MainFragranceCarousel,
+} from "@/components/main"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 import { Input } from "@/components/ui/input"
@@ -10,31 +16,53 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { FragranceOil } from "@/lib/types"
 import { FRAGRANCE_FAMILIES } from "@/lib/types"
 
+const SEARCH_DEBOUNCE_MS = 280
+
 export default function MainFragrancesPage() {
   const [oils, setOils] = useState<FragranceOil[]>([])
+  const [featuredFragrances, setFeaturedFragrances] = useState<FragranceOil[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [familyFilter, setFamilyFilter] = useState<string>("all")
 
-  useEffect(() => {
-    fetch("/api/fragrance-oils")
-      .then((r) => r.json())
-      .then((data) => setOils(data.fragranceOils ?? []))
-      .finally(() => setLoading(false))
+  const fetchOils = useCallback(async (query: string) => {
+    const params = new URLSearchParams()
+    if (query.trim()) params.set("q", query.trim())
+    const res = await fetch(`/api/fragrance-oils?${params.toString()}`)
+    const data = await res.json()
+    setOils(data.fragranceOils ?? [])
   }, [])
 
+  // Initial load: all oils + featured
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      fetch("/api/fragrance-oils").then((r) => r.json()),
+      fetch("/api/main/featured-fragrances").then((r) => r.json()),
+    ]).then(([oilRes, featuredRes]) => {
+      if (cancelled) return
+      setOils(oilRes.fragranceOils ?? [])
+      setFeaturedFragrances(featuredRes.featuredFragrances ?? [])
+      setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Debounced search when user types
+  useEffect(() => {
+    if (loading) return
+    const t = setTimeout(() => {
+      fetchOils(search)
+    }, SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(t)
+  }, [search, fetchOils, loading])
+
   const filtered = oils.filter((oil) => {
-    const matchSearch =
-      !search.trim() ||
-      oil.name.toLowerCase().includes(search.toLowerCase()) ||
-      oil.description.toLowerCase().includes(search.toLowerCase()) ||
-      oil.family.toLowerCase().includes(search.toLowerCase()) ||
-      oil.subfamilies.some((f) =>
-        f.toLowerCase().includes(search.toLowerCase())
-      )
     const matchFamily =
       familyFilter === "all" || oil.family === familyFilter
-    return matchSearch && matchFamily
+    return matchFamily
   })
 
   return (
@@ -61,6 +89,13 @@ export default function MainFragrancesPage() {
             </p>
           </div>
         </div>
+
+        {featuredFragrances.length > 0 && (
+          <section className="mb-10">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">Featured</h2>
+            <MainFragranceCarousel oils={featuredFragrances} />
+          </section>
+        )}
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

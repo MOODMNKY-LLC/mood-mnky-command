@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Search, Menu } from "lucide-react"
+import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,15 +14,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
 import { cn } from "@/lib/utils"
+
+const SHOP_URL =
+  typeof process.env.NEXT_PUBLIC_STORE_DOMAIN === "string" &&
+  process.env.NEXT_PUBLIC_STORE_DOMAIN.length > 0
+    ? `https://${process.env.NEXT_PUBLIC_STORE_DOMAIN.replace(/^https?:\/\//, "")}`
+    : "/verse"
 
 const NAV_LINKS = [
   { href: "/main/about", label: "About" },
-  { href: "/main/pricing", label: "Pricing" },
   { href: "/main/fragrances", label: "Fragrances" },
   { href: "/main/formulas", label: "Formulas" },
   { href: "/main/collections", label: "Collections" },
-  { href: "/verse", label: "MNKY VERSE" },
+  { href: "/main/components", label: "Components" },
+  { href: "/main/community", label: "Community" },
+  { href: SHOP_URL, label: "Shop" },
   { href: "/auth/login", label: "Sign in" },
 ] as const
 
@@ -71,10 +81,11 @@ const linkClass =
 
 export function MainNav() {
   const [open, setOpen] = useState(false)
+  const talk = useMainTalkToAgent()
 
   return (
     <header
-      className="main-container main-glass-nav sticky top-0 z-50 py-3 md:py-4"
+      className="main-container main-glass-nav sticky top-0 z-50 mx-4 mt-4 rounded-2xl py-3 md:py-4"
       role="banner"
     >
       <nav
@@ -83,8 +94,14 @@ export function MainNav() {
       >
         <Link
           href="/main"
-          className="shrink-0 text-lg font-semibold text-foreground transition-colors hover:text-primary"
+          className="flex shrink-0 items-center gap-2 text-lg font-semibold text-foreground transition-colors hover:text-primary"
         >
+          <VerseLogoHairIcon
+            withRing
+            size="sm"
+            className="text-foreground"
+            ringClassName="border-foreground/80"
+          />
           MOOD MNKY
         </Link>
 
@@ -93,8 +110,12 @@ export function MainNav() {
           <MainSearchForm />
         </div>
 
-        {/* Right: nav links – hidden on small screens */}
+        {/* Right: theme toggler + nav links – hidden on small screens */}
         <div className="hidden items-center gap-5 lg:flex xl:gap-6">
+          <AnimatedThemeToggler
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Toggle theme"
+          />
           {NAV_LINKS.map(({ href, label }) => (
             <Link key={href} href={href} className={linkClass}>
               {label}
@@ -121,6 +142,31 @@ export function MainNav() {
             <SheetHeader>
               <SheetTitle className="text-left">Menu</SheetTitle>
             </SheetHeader>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm text-muted-foreground">Theme</span>
+              <AnimatedThemeToggler
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Toggle theme"
+              />
+            </div>
+            {talk && (
+              <Button
+                variant="outline"
+                className="w-full justify-center"
+                onClick={() => {
+                  talk.openDialog()
+                  setOpen(false)
+                }}
+              >
+                <VerseLogoHairIcon
+                  withRing
+                  size="sm"
+                  className="mr-2 text-foreground"
+                  ringClassName="border-foreground/80"
+                />
+                Talk to MOOD MNKY
+              </Button>
+            )}
             <MainSearchForm
               className="w-full max-w-none"
               onSubmitted={() => setOpen(false)}

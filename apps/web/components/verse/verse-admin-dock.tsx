@@ -9,6 +9,7 @@ import {
   Swords,
   ShoppingBag,
   ShoppingCart,
+  Store,
 } from "lucide-react";
 import { Persona } from "@/components/ai-elements/persona";
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon";
@@ -83,6 +84,15 @@ export function VerseAdminDock({
               )}
               <DockIcon>
                 <Link
+                  href="/main"
+                  className="flex size-full items-center justify-center text-verse-text"
+                  title="Home (MOOD MNKY)"
+                >
+                  <Home className="h-5 w-5" />
+                </Link>
+              </DockIcon>
+              <DockIcon>
+                <Link
                   href="/"
                   className="flex size-full items-center justify-center text-verse-text"
                   title="MOOD MNKY LABZ"
@@ -120,11 +130,20 @@ export function VerseAdminDock({
               )}
               <DockIcon>
                 <Link
-                  href="/verse"
+                  href="/main"
                   className="flex size-full items-center justify-center text-verse-text"
-                  title="Home"
+                  title="Home (MOOD MNKY)"
                 >
                   <Home className="h-5 w-5" />
+                </Link>
+              </DockIcon>
+              <DockIcon>
+                <Link
+                  href="/verse"
+                  className="flex size-full items-center justify-center text-verse-text"
+                  title="VERSE"
+                >
+                  <Store className="h-5 w-5" />
                 </Link>
               </DockIcon>
               <DockIcon>

@@ -26,6 +26,11 @@ export interface ConversationBarProps {
   agentId: string
 
   /**
+   * Connection type: "webrtc" (default) or "websocket"
+   */
+  connectionType?: "webrtc" | "websocket"
+
+  /**
    * Custom className for the container
    */
   className?: string
@@ -129,7 +134,7 @@ export const ConversationBar = React.forwardRef<
 
         await conversation.startSession({
           agentId,
-          connectionType: "webrtc",
+          connectionType,
           onStatusChange: (status) => setAgentState(status.status),
         })
       } catch (error) {
@@ -137,7 +142,7 @@ export const ConversationBar = React.forwardRef<
         setAgentState("disconnected")
         onError?.(error as Error)
       }
-    }, [conversation, getMicStream, agentId, onError])
+    }, [conversation, getMicStream, agentId, connectionType, onError])
 
     const handleEndSession = React.useCallback(() => {
       conversation.endSession()
@@ -278,19 +283,21 @@ export const ConversationBar = React.forwardRef<
                   >
                     <Keyboard
                       className={
-                        "h-5 w-5 transform-gpu transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] " +
+                        "h-5 w-5 transform-gpu transition-all duration-200 " +
                         (keyboardOpen
                           ? "scale-75 opacity-0"
                           : "scale-100 opacity-100")
                       }
+                      style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
                     />
                     <ChevronDown
                       className={
-                        "absolute inset-0 m-auto h-5 w-5 transform-gpu transition-all delay-50 duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] " +
+                        "absolute inset-0 m-auto h-5 w-5 transform-gpu transition-all delay-50 duration-200 " +
                         (keyboardOpen
                           ? "scale-100 opacity-100"
                           : "scale-75 opacity-0")
                       }
+                      style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
                     />
                   </Button>
                   <Separator orientation="vertical" className="mx-1 -my-2.5" />

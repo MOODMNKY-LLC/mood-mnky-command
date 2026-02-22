@@ -210,3 +210,8 @@
 .dark .dojo-dashboard .dojo-glass-panel {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 }
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}

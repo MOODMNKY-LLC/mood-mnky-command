@@ -6,15 +6,26 @@ export { MainHeroSplit } from "./main-hero-split"
 export { MainFeatureCards } from "./main-feature-cards"
 export { MainSocialProof } from "./main-social-proof"
 export { MainCustomization } from "./main-customization"
+export { MainCustomizationAgentsSplit } from "./main-customization-agents-split"
 export { MainFaq } from "./main-faq"
 export { MainAgentCard } from "./main-agent-card"
 export { MnkyFragranceCard } from "./mnky-fragrance-card"
+export { MainFragranceCarousel } from "./main-fragrance-carousel"
 export { MainChatbot } from "./main-chatbot"
 export { MainFooter } from "./main-footer"
 export { MainContactForm } from "./main-contact-form"
 export { MainWaitlistForm } from "./main-waitlist-form"
 export { MainVoiceBlock } from "./main-voice-block"
 export { MainListenBlock } from "./main-listen-block"
+export { MainTryMoodMnkySection } from "./main-try-mood-mnky-section"
+export { MainMeetTheAgentsSection } from "./main-meet-the-agents-section"
+export { MainFounderCard } from "./main-founder-card"
+export { MainDock } from "./main-dock"
+export { MainTalkToAgentDialog } from "./main-talk-to-agent-dialog"
+export {
+  MainTalkToAgentProvider,
+  useMainTalkToAgent,
+} from "./main-talk-to-agent-context"
 
 export {
   MainOrb,

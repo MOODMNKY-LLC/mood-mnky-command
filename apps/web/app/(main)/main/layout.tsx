@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import { MainTalkToAgentProvider } from "@/components/main/main-talk-to-agent-context"
 import "./main-site.css"
+import "./main-glass.css"
 
 const baseUrl =
   typeof process.env.NEXT_PUBLIC_MAIN_APP_URL === "string" &&
@@ -37,5 +39,9 @@ export default function MainLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <div className="main-site min-h-screen bg-background text-foreground">{children}</div>
+  return (
+    <div className="main-site min-h-screen bg-background text-foreground">
+      <MainTalkToAgentProvider>{children}</MainTalkToAgentProvider>
+    </div>
+  )
 }

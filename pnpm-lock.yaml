@@ -35,6 +35,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.995.0
         version: 3.995.0
+      '@elevenlabs/client':
+        specifier: ^0.14.0
+        version: 0.14.0(@types/dom-mediacapture-record@1.0.22)
       '@elevenlabs/react':
         specifier: ^0.14.0
         version: 0.14.0(@types/dom-mediacapture-record@1.0.22)(react@19.2.3)
@@ -336,6 +339,9 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
     devDependencies:
+      '@elevenlabs/elevenlabs-js':
+        specifier: ^2.36.0
+        version: 2.36.0
       '@tailwindcss/postcss':
         specifier: ^4.1.13
         version: 4.1.18
@@ -1211,6 +1217,10 @@ packages:
 
   '@elevenlabs/client@0.14.0':
     resolution: {integrity: sha512-Iy+iHSDhYm4vxWiIjrmIsjwiesEkgB5MPRizluigL7GTb9tZwlcx2J53/WNYewplQvRhLiMmwqGoDn6qxy7JzQ==}
+
+  '@elevenlabs/elevenlabs-js@2.36.0':
+    resolution: {integrity: sha512-dnhJHmozQj2xBxgEbPa3clK1G3jY8xUmij8nzNHW9GBDYg2750OwgaSCnZmlFtm53MorEspmlcSu2+fzSeldkQ==}
+    engines: {node: '>=18.0.0'}
 
   '@elevenlabs/react@0.14.0':
     resolution: {integrity: sha512-iGI6yyPgZF1/FBtQtvyCW5lhQvlIEQ5LrKQxwzT3qBcS4Ja0f+jVftKQGhilRtJLOKeli5t7Dv9g9dDGO2gAwg==}
@@ -5301,6 +5311,9 @@ packages:
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
+
+  command-exists@1.2.9:
+    resolution: {integrity: sha512-LTQ/SGc+s0Xc0Fu5WaKnR0YiygZkm9eKFvyS+fRsU7/ZWFF8ykFM6Pc9aCVf1+xasOOZpO3BAVgVrKvsqKHV7w==}
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
@@ -11159,6 +11172,16 @@ snapshots:
     transitivePeerDependencies:
       - '@types/dom-mediacapture-record'
 
+  '@elevenlabs/elevenlabs-js@2.36.0':
+    dependencies:
+      command-exists: 1.2.9
+      node-fetch: 2.7.0
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
   '@elevenlabs/react@0.14.0(@types/dom-mediacapture-record@1.0.22)(react@19.2.3)':
     dependencies:
       '@elevenlabs/client': 0.14.0(@types/dom-mediacapture-record@1.0.22)
@@ -15878,6 +15901,8 @@ snapshots:
       delayed-stream: 1.0.0
 
   comma-separated-tokens@2.0.3: {}
+
+  command-exists@1.2.9: {}
 
   commander@4.1.1: {}
 

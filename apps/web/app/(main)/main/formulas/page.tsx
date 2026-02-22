@@ -124,7 +124,7 @@ export default function MainFormulasPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="flex flex-col gap-3 lg:col-span-1">
+            <div className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto lg:col-span-1">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
               ) : filteredFormulas.length === 0 ? (

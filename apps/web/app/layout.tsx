@@ -1,7 +1,7 @@
 import React from "react"
 import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
-import { Inter, Source_Code_Pro } from "next/font/google"
+import { Inter, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
 import { PwaRegister } from "@/components/pwa-register"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -15,6 +15,11 @@ const inter = Inter({
 const sourceCodePro = Source_Code_Pro({
   subsets: ["latin"],
   variable: "--font-source-code-pro",
+  display: "swap",
+})
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
   display: "swap",
 })
 
@@ -72,7 +77,7 @@ export default async function RootLayout({
   const isNgrok = host.includes("ngrok")
 
   return (
-    <html lang="en" className={`${inter.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider defaultTheme="light" attribute="class" enableSystem>
           <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
