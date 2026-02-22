@@ -1,5 +1,6 @@
 export { MainNav } from "./main-nav"
 export { MainGlassCard } from "./main-glass-card"
+export { MainMascotImage } from "./main-mascot-image"
 export { MainHero } from "./main-hero"
 export { MainHeroSplit } from "./main-hero-split"
 export { MainFeatureCards } from "./main-feature-cards"

@@ -10,6 +10,9 @@ export type MainElevenLabsConfigGet = {
   audioSampleUrl: string | null
   showVoiceSection: boolean
   showAudioSample: boolean
+  connectionType: "webrtc" | "websocket"
+  showTranscriptViewer: boolean
+  showWaveformInVoiceBlock: boolean
 }
 
 /**
@@ -21,7 +24,7 @@ export async function GET() {
 
   const { data: row, error } = await supabase
     .from("main_elevenlabs_config")
-    .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample")
+    .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample, connection_type, show_transcript_viewer, show_waveform_in_voice_block")
     .eq("id", CONFIG_ID)
     .maybeSingle()
 
@@ -34,6 +37,9 @@ export async function GET() {
         audioSampleUrl: process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
         showVoiceSection: true,
         showAudioSample: true,
+        connectionType: "webrtc",
+        showTranscriptViewer: false,
+        showWaveformInVoiceBlock: false,
       } satisfies MainElevenLabsConfigGet)
     }
     return NextResponse.json(
@@ -42,12 +48,16 @@ export async function GET() {
     )
   }
 
+  const connectionType = (row?.connection_type === "websocket" ? "websocket" : "webrtc") as "webrtc" | "websocket"
   const response: MainElevenLabsConfigGet = {
     agentId: row?.agent_id ?? null,
     defaultVoiceId: row?.default_voice_id ?? null,
     audioSampleUrl: row?.audio_sample_url ?? process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
     showVoiceSection: row?.show_voice_section ?? true,
     showAudioSample: row?.show_audio_sample ?? true,
+    connectionType,
+    showTranscriptViewer: row?.show_transcript_viewer ?? false,
+    showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
   }
 
   return NextResponse.json(response)
@@ -84,6 +94,9 @@ export async function PATCH(request: NextRequest) {
     audioSampleUrl?: string | null
     showVoiceSection?: boolean
     showAudioSample?: boolean
+    connectionType?: "webrtc" | "websocket"
+    showTranscriptViewer?: boolean
+    showWaveformInVoiceBlock?: boolean
   }
   try {
     body = await request.json()
@@ -99,11 +112,12 @@ export async function PATCH(request: NextRequest) {
   if (Object.prototype.hasOwnProperty.call(body, "audioSampleUrl")) updates.audio_sample_url = body.audioSampleUrl?.trim() || null
   if (body.showVoiceSection !== undefined) updates.show_voice_section = body.showVoiceSection
   if (body.showAudioSample !== undefined) updates.show_audio_sample = body.showAudioSample
+  if (body.connectionType !== undefined) updates.connection_type = body.connectionType
 
   const { data, error } = await admin
     .from("main_elevenlabs_config")
     .upsert({ id: CONFIG_ID, ...updates }, { onConflict: "id" })
-    .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample")
+    .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample, connection_type, show_transcript_viewer, show_waveform_in_voice_block")
     .single()
 
   if (error) {
@@ -111,11 +125,15 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Failed to save config" }, { status: 500 })
   }
 
+  const connectionType = (data?.connection_type === "websocket" ? "websocket" : "webrtc") as "webrtc" | "websocket"
   return NextResponse.json({
     agentId: data?.agent_id ?? null,
     defaultVoiceId: data?.default_voice_id ?? null,
     audioSampleUrl: data?.audio_sample_url ?? null,
     showVoiceSection: data?.show_voice_section ?? true,
     showAudioSample: data?.show_audio_sample ?? true,
+    connectionType,
+    showTranscriptViewer: data?.show_transcript_viewer ?? false,
+    showWaveformInVoiceBlock: data?.show_waveform_in_voice_block ?? false,
   })
 }

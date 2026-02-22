@@ -1,15 +1,16 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { MainShimmeringText } from "@/components/main/elevenlabs/main-shimmering-text"
+import { MainMascotImage } from "@/components/main/main-mascot-image"
+import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 
 export function MainHeroSplit() {
   return (
     <BlurFade delay={0.05} inView inViewMargin="-20px">
-      <section className="grid min-h-[70vh] grid-cols-1 items-center gap-12 py-16 md:grid-cols-2 md:gap-16 md:py-24">
+      <section className="main-hero-gradient grid min-h-[70vh] grid-cols-1 items-center gap-12 py-16 md:grid-cols-2 md:gap-16 md:py-24">
         <div className="flex flex-col justify-center">
           <h1
             className="font-bold tracking-tight text-foreground"
@@ -36,8 +37,9 @@ export function MainHeroSplit() {
           </div>
         </div>
         <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted/30 md:min-h-[320px]">
-          <Image
-            src="/verse/mood-mnky-3d.png"
+          <MainMascotImage
+            src={MAIN_MASCOT_ASSETS.hero}
+            fallbackSrc={MAIN_MASCOT_FALLBACK_HERO}
             alt="MOOD MNKY – Bespoke fragrance"
             fill
             className="object-cover object-center"

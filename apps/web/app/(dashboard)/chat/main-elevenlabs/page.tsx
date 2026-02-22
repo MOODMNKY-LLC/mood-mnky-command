@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Loader2, Save, Sparkles } from "lucide-react"
 import type { MainElevenLabsConfigGet } from "@/app/api/main/elevenlabs-config/route"
 
@@ -21,6 +28,9 @@ export default function MainElevenLabsConfigPage() {
   const [audioSampleUrl, setAudioSampleUrl] = useState("")
   const [showVoiceSection, setShowVoiceSection] = useState(true)
   const [showAudioSample, setShowAudioSample] = useState(true)
+  const [connectionType, setConnectionType] = useState<"webrtc" | "websocket">("webrtc")
+  const [showTranscriptViewer, setShowTranscriptViewer] = useState(false)
+  const [showWaveformInVoiceBlock, setShowWaveformInVoiceBlock] = useState(false)
 
   const fetchConfig = useCallback(async () => {
     setLoading(true)
@@ -35,6 +45,9 @@ export default function MainElevenLabsConfigPage() {
       setAudioSampleUrl(data.audioSampleUrl ?? "")
       setShowVoiceSection(data.showVoiceSection ?? true)
       setShowAudioSample(data.showAudioSample ?? true)
+      setConnectionType(data.connectionType ?? "webrtc")
+      setShowTranscriptViewer(data.showTranscriptViewer ?? false)
+      setShowWaveformInVoiceBlock(data.showWaveformInVoiceBlock ?? false)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load config")
     } finally {
@@ -124,6 +137,25 @@ export default function MainElevenLabsConfigPage() {
             </div>
 
             <div className="space-y-2">
+              <Label>Connection type</Label>
+              <Select
+                value={connectionType}
+                onValueChange={(v) => setConnectionType(v as "webrtc" | "websocket")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="webrtc">WebRTC (recommended)</SelectItem>
+                  <SelectItem value="websocket">WebSocket</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                WebRTC is lower latency; use WebSocket if WebRTC is blocked or unstable.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="main-defaultVoiceId">Default voice ID (optional)</Label>
               <Input
                 id="main-defaultVoiceId"
@@ -174,6 +206,34 @@ export default function MainElevenLabsConfigPage() {
                 id="main-showAudioSample"
                 checked={showAudioSample}
                 onCheckedChange={setShowAudioSample}
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label htmlFor="main-showTranscriptViewer">Show transcript viewer in voice block</Label>
+                <p className="text-xs text-muted-foreground">
+                  When transcript data is available, show it in the voice block.
+                </p>
+              </div>
+              <Switch
+                id="main-showTranscriptViewer"
+                checked={showTranscriptViewer}
+                onCheckedChange={setShowTranscriptViewer}
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label htmlFor="main-showWaveformInVoiceBlock">Show waveform in voice block</Label>
+                <p className="text-xs text-muted-foreground">
+                  Show waveform visualization next to the Orb in the voice block.
+                </p>
+              </div>
+              <Switch
+                id="main-showWaveformInVoiceBlock"
+                checked={showWaveformInVoiceBlock}
+                onCheckedChange={setShowWaveformInVoiceBlock}
               />
             </div>
 

@@ -50,6 +50,9 @@ export type MainElevenLabsConfig = {
   audioSampleUrl: string | null
   showVoiceSection: boolean
   showAudioSample: boolean
+  connectionType: "webrtc" | "websocket"
+  showTranscriptViewer: boolean
+  showWaveformInVoiceBlock: boolean
 }
 
 /**
@@ -130,14 +133,17 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
     const supabase = await createClient()
     const { data: row, error } = await supabase
       .from("main_elevenlabs_config")
-      .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample")
+      .select("agent_id, default_voice_id, audio_sample_url, show_voice_section, show_audio_sample, connection_type, show_transcript_viewer, show_waveform_in_voice_block")
       .eq("id", MAIN_ELEVENLABS_CONFIG_ID)
       .maybeSingle()
 
-    if (error && error.code !== "42P01") {
-      console.error("getMainElevenLabsConfig error:", error)
+    // 42P01 = table missing, 42703 = column missing (e.g. migration not run); use defaults without logging
+    const silentCodes = ["42P01", "42703"]
+    if (error && !silentCodes.includes(error.code)) {
+      console.error("getMainElevenLabsConfig error:", error.code, error.message, error)
     }
 
+    const connectionType = row?.connection_type === "websocket" ? "websocket" : "webrtc"
     return {
       agentId: row?.agent_id ?? null,
       defaultVoiceId: row?.default_voice_id ?? null,
@@ -145,6 +151,9 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
         row?.audio_sample_url ?? process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
       showVoiceSection: row?.show_voice_section ?? true,
       showAudioSample: row?.show_audio_sample ?? true,
+      connectionType,
+      showTranscriptViewer: row?.show_transcript_viewer ?? false,
+      showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
     }
   } catch {
     return {
@@ -153,6 +162,9 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
       audioSampleUrl: process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
       showVoiceSection: true,
       showAudioSample: true,
+      connectionType: "webrtc",
+      showTranscriptViewer: false,
+      showWaveformInVoiceBlock: false,
     }
   }
 }

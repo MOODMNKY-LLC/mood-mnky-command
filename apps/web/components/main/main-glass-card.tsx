@@ -12,7 +12,7 @@ export function MainGlassCard({
 }: MainGlassCardProps) {
   return (
     <div
-      className={cn("main-glass-panel p-6", className)}
+      className={cn("main-glass-panel p-6 rounded-xl", className)}
       {...props}
     >
       {children}

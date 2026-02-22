@@ -27,7 +27,7 @@ export function MainListenBlock({ audioSampleUrl, showAudioSample }: MainListenB
 
   return (
     <AudioPlayerProvider>
-      <MainGlassCard className="flex flex-col gap-4">
+      <MainGlassCard className="main-float main-glass-panel-card flex flex-col gap-4">
         <h3 className="text-lg font-semibold text-foreground">Listen to a sample</h3>
         <MainAudioPlayer>
           <div className="flex flex-col gap-3">

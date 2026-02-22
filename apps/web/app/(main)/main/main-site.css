@@ -4,6 +4,19 @@
   /* Page width for readability; matches verse-page-width intent */
   --main-page-width: 1200px;
   --main-spacing-sections: 32px;
+  /* Hero typography and layout */
+  --main-hero-title-size: clamp(2.25rem, 5vw, 3rem);
+  --main-hero-subtitle-size: 1.125rem;
+  --main-hero-min-height: 60vh;
+  /* Section spacing – refined for tech-forward editorial */
+  --main-section-gap: 7rem;
+  --main-section-gap-sm: 5rem;
+}
+@media (min-width: 768px) {
+  .main-site {
+    --main-hero-title-size: clamp(2.5rem, 5vw, 3.5rem);
+    --main-hero-subtitle-size: 1.25rem;
+  }
 }
 
 .main-site .main-container {
@@ -19,4 +32,14 @@
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
+}
+
+/* Optional muted gradient for hero – stays monochrome, high-contrast */
+.main-site .main-hero-gradient {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--muted) / 0.3) 50%,
+    hsl(var(--background)) 100%
+  );
 }

@@ -1,0 +1,166 @@
+/* Main site – glassmorphism design system */
+/* Monochromatic grayscale, frosted glass, GQ-inspired tech-forward aesthetic */
+
+.main-site {
+  /* Glass tokens – grayscale, theme-aware */
+  --main-glass-blur: 20px;
+  --main-glass-blur-soft: 26px;
+  --main-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --main-glass-radius: 1rem;
+  /* Card hover lift */
+  --main-card-hover-lift: 2px;
+  --main-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  /* Soft floating */
+  --main-float-offset: -4px;
+  --main-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --main-float-duration: 0.3s;
+}
+
+/* Light mode */
+.main-site {
+  --main-glass-bg: rgba(255, 255, 255, 0.12);
+  --main-glass-bg-soft: rgba(255, 255, 255, 0.08);
+  --main-glass-bg-card: rgba(255, 255, 255, 0.15);
+  --main-glass-border: rgba(0, 0, 0, 0.06);
+  --main-glass-bg-solid: rgba(255, 255, 255, 0.92);
+}
+
+/* Dark mode – ThemeProvider adds .dark to html */
+.dark .main-site {
+  --main-glass-bg: rgba(0, 0, 0, 0.08);
+  --main-glass-bg-soft: rgba(0, 0, 0, 0.05);
+  --main-glass-bg-card: rgba(0, 0, 0, 0.12);
+  --main-glass-border: rgba(255, 255, 255, 0.12);
+  --main-glass-bg-solid: rgba(0, 0, 0, 0.88);
+}
+
+/* Glass panel – frosted effect */
+.main-site .main-glass-panel {
+  background: var(--main-glass-bg);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--main-glass-border);
+  box-shadow: var(--main-glass-shadow);
+  border-radius: var(--main-glass-radius);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Fallback when backdrop-filter is not supported */
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-panel {
+    background: var(--main-glass-bg-solid);
+  }
+}
+
+/* Stronger glass for nav/footer bars – slightly more opaque for readability */
+.main-site {
+  --main-glass-bg-nav: rgba(255, 255, 255, 0.85);
+  --main-glass-border-nav: rgba(0, 0, 0, 0.08);
+}
+
+.dark .main-site {
+  --main-glass-bg-nav: rgba(0, 0, 0, 0.75);
+  --main-glass-border-nav: rgba(255, 255, 255, 0.1);
+}
+
+.main-site .main-glass-nav {
+  background: var(--main-glass-bg-nav);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border-bottom: 1px solid var(--main-glass-border-nav);
+  box-shadow: var(--main-glass-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-nav {
+    background: var(--main-glass-bg-solid);
+  }
+}
+
+/* Footer glass bar – same as nav but with top border */
+.main-site .main-glass-footer {
+  background: var(--main-glass-bg-nav);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border-top: 1px solid var(--main-glass-border-nav);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-footer {
+    background: var(--main-glass-bg-solid);
+  }
+}
+
+/* Softer frosted panel variant – section backgrounds */
+.main-site .main-glass-panel-soft {
+  background: var(--main-glass-bg-soft);
+  backdrop-filter: blur(var(--main-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur-soft));
+  border: 1px solid var(--main-glass-border);
+  box-shadow: var(--main-glass-shadow);
+  border-radius: var(--main-glass-radius);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-panel-soft {
+    background: var(--main-glass-bg-solid);
+  }
+}
+
+/* Card variant – slightly more opaque for content cards */
+.main-site .main-glass-panel-card {
+  background: var(--main-glass-bg-card);
+  backdrop-filter: blur(var(--main-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur-soft));
+  border: 1px solid var(--main-glass-border);
+  box-shadow: var(--main-glass-shadow);
+  border-radius: var(--main-glass-radius);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-panel-card {
+    background: var(--main-glass-bg-solid);
+  }
+}
+
+/* Full-width section with subtle gradient overlay and backdrop blur */
+.main-site .main-glass-section {
+  background: linear-gradient(
+    180deg,
+    var(--main-glass-bg-soft) 0%,
+    transparent 100%
+  );
+  backdrop-filter: blur(var(--main-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur-soft));
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-section {
+    background: var(--background);
+  }
+}
+
+/* Soft floating – subtle lift and shadow on hover */
+.main-site .main-float {
+  transition:
+    transform var(--main-float-duration) ease,
+    box-shadow var(--main-float-duration) ease;
+}
+
+.main-site .main-float:hover {
+  transform: translateY(var(--main-float-offset));
+  box-shadow: var(--main-float-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-site .main-float {
+    transition: none;
+  }
+  .main-site .main-float:hover {
+    transform: none;
+  }
+}

@@ -52,7 +52,7 @@ export function MainFeatureCards({
             inView
             inViewMargin="-20px"
           >
-            <MainGlassCard className="flex flex-col gap-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+            <MainGlassCard className="main-float main-glass-panel-card flex flex-col gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background/80 text-foreground">
                 <Icon className="h-5 w-5" />
               </div>

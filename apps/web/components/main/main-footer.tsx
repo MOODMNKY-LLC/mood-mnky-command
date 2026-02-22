@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { OpenInChat } from "@/components/ai-elements/open-in-chat"
+import { MainMascotImage } from "@/components/main/main-mascot-image"
+import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 
 const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
 
@@ -14,9 +16,18 @@ export function MainFooter() {
       <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
         <Link
           href="/main"
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          MOOD MNKY
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded">
+            <MainMascotImage
+              src={MAIN_MASCOT_ASSETS.footer}
+              alt=""
+              fill
+              className="object-cover object-center"
+              hideOnError
+            />
+          </span>
+          <span>MOOD MNKY</span>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <Link
