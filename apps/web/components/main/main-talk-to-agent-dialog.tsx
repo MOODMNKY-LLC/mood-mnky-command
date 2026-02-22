@@ -8,13 +8,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  MainOrb,
   MainMicSelector,
   MainConversationBar,
   MainLiveWaveform,
 } from "@/components/main/elevenlabs"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
-import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
+import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
 
 type MainElevenLabsConfigGet = {
@@ -37,7 +36,7 @@ export function MainTalkToAgentDialog() {
     if (!open) return
     let cancelled = false
     setLoading(true)
-    fetch("/api/main/elevenlabs-config")
+    fetch("/api/main/elevenlabs-config", { cache: "no-store" })
       .then((res) => res.json())
       .then((data: MainElevenLabsConfigGet) => {
         if (!cancelled) setConfig(data)
@@ -80,8 +79,15 @@ export function MainTalkToAgentDialog() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
               <div className="flex flex-col items-center gap-3">
-                <div className="relative h-28 w-28 shrink-0 sm:h-32 sm:w-32">
-                  <MainOrb agentState={null} />
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border border-border sm:h-32 sm:w-32">
+                  <MainMascotImage
+                    src={MAIN_MASCOT_FALLBACK_HERO}
+                    fallbackSrc={MAIN_MASCOT_ASSETS.hero}
+                    alt="MOOD MNKY – Voice"
+                    fill
+                    className="object-contain object-center"
+                    hideOnError
+                  />
                 </div>
                 {config?.showWaveformInVoiceBlock && (
                   <div className="w-full max-w-[180px]">
@@ -92,15 +98,6 @@ export function MainTalkToAgentDialog() {
                     />
                   </div>
                 )}
-                <div className="relative h-14 w-14 overflow-hidden rounded-lg border border-border sm:h-16 sm:w-16">
-                  <MainMascotImage
-                    src={MAIN_MASCOT_ASSETS.voice}
-                    alt="MOOD MNKY – Voice"
-                    fill
-                    className="object-cover object-center"
-                    hideOnError
-                  />
-                </div>
                 <MainMicSelector />
               </div>
               <div className="min-w-0 flex-1">

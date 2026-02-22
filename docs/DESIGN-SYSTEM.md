@@ -287,6 +287,33 @@ Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components
 
 ---
 
+## MNKY BOX (Verse)
+
+The MNKY BOX is a **Framed Editorial Modular Commerce** view for seasonal drops, driven by the same manga data (one issue = one drop; chapters = product cards). It uses scoped tokens so it does not override root or Verse tokens.
+
+### Scope and tokens
+
+- **Wrapper:** `.mnky-box` (and `.mnky-box-section` in Shopify Liquid). Tokens are defined in `app/(storefront)/verse/mnky-box.css` and referenced in Tailwind under the `mnkyBox` theme key.
+- **Tokens:** `--mnky-box-bg`, `--mnky-box-border-frame`, `--mnky-box-text`, `--mnky-box-text-muted`, `--mnky-box-accent-primary`, `--mnky-box-accent-secondary`, `--mnky-box-surface-card`, `--mnky-box-shadow-float`, `--mnky-box-container-max`, `--mnky-box-frame-width`, `--mnky-box-grid-gap`. Seasonal accent can be overridden per issue (e.g. via `mnky_issues.accent_primary`).
+- **Tailwind:** Use `bg-mnkyBox-bg`, `text-mnkyBox-text`, `border-mnkyBox-border-frame`, `shadow-mnky-float`, `max-w-mnky-container`, etc. See `tailwind.config.ts` extend.
+
+### Components and routes
+
+- **Components:** `components/mnky-box/` — BoxFrame, BoxHero, BoxGrid, BoxCard, BoxCTA. Use shadcn Card for BoxCard structure.
+- **Verse route:** `/verse/drops/[slug]` — loads issue + chapters from Supabase and renders the box layout. Link from issue detail: “View as MNKY BOX”.
+- **API:** `GET /api/mag/issues/[slug]/box` returns issue, collection, and products (chapters with optional card_image_url from first panel).
+
+### Files
+
+- `app/(storefront)/verse/mnky-box.css` — scoped MNKY BOX CSS variables
+- `app/(storefront)/verse/drops/[slug]/page.tsx` — drop page (server data)
+- `components/mnky-box/*.tsx` — BoxFrame, BoxHero, BoxGrid, BoxCard, BoxCTA
+- `Shopify/theme/sections/mnky-box.liquid` — theme section (settings + product blocks)
+
+See `docs/MNKY-BOX-EDITORIAL-REFINED.md` for data model, XP, and Shopify usage.
+
+---
+
 ## Flowise-MNKY Components
 
 The `components/flowise-mnky/` library provides Flowise-specific UI: chatflow control panel, override config editor, document store upload, chat UI, FlowisePreview (live preview via Elements WebPreview when tools return URLs), and FlowisePlan (execution plans via Elements Plan when agents return structured steps). Uses root tokens, shadcn, and Elements AI SDK (Agent, Message, Conversation, PromptInput, Tool, Reasoning, WebPreview, Plan). See `docs/FLOWISE-MNKY-COMPONENTS.md`.
@@ -323,5 +350,6 @@ If LABZ-specific overrides are needed later:
 - Main: `app/(main)/main/main-site.css`, `app/(main)/main/main-glass.css`, `app/(main)/main/layout.tsx`, `components/main/`, `docs/MAIN-SECTION-DOMAINS.md`
 - Verse tokens: `app/(storefront)/verse/verse-storefront.css`
 - Glass effects: `app/(storefront)/verse/verse-glass.css`
+- MNKY BOX: `app/(storefront)/verse/mnky-box.css`, `components/mnky-box/`, `docs/MNKY-BOX-EDITORIAL-REFINED.md`
 - Tailwind config: `tailwind.config.ts`
 

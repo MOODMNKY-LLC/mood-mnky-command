@@ -41,6 +41,9 @@ importers:
       '@elevenlabs/react':
         specifier: ^0.14.0
         version: 0.14.0(@types/dom-mediacapture-record@1.0.22)(react@19.2.3)
+      '@google/model-viewer':
+        specifier: ^4.1.0
+        version: 4.1.0(three@0.182.0)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.68.0(react@19.2.3))
@@ -143,6 +146,9 @@ importers:
       '@react-three/fiber':
         specifier: ^9.5.0
         version: 9.5.0(@types/react@19.2.7)(immer@9.0.21)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0)
+      '@react-three/offscreen':
+        specifier: ^0.0.8
+        version: 0.0.8(@react-three/fiber@9.5.0(@types/react@19.2.7)(immer@9.0.21)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0)
       '@rive-app/react-webgl2':
         specifier: ^4.27.0
         version: 4.27.0(react@19.2.3)
@@ -3744,6 +3750,14 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  '@react-three/offscreen@0.0.8':
+    resolution: {integrity: sha512-YXPWYKSCqsqXBcOqLPhY9vA3PThJCOfzGFj2RfNqkEAOeClNsJ+PN9rxREu2QC3yWuKgFS5oD2pK9yuhErvI9w==}
+    peerDependencies:
+      '@react-three/fiber': '>=8.0.0'
+      react: '>=18.0'
+      react-dom: '>=18.0'
+      three: '>=0.133'
 
   '@rive-app/react-webgl2@4.27.0':
     resolution: {integrity: sha512-OxIRJiTPJtvPDeUWXfXIx2WZ/6OqaTFWTaS9OE0oekHz80yT9kl41MEUZw7GlgY4l4Pzke7bkn8xEeVnDgPFIg==}
@@ -14084,6 +14098,14 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
       - immer
+
+  '@react-three/offscreen@0.0.8(@react-three/fiber@9.5.0(@types/react@19.2.7)(immer@9.0.21)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0)':
+    dependencies:
+      '@react-three/fiber': 9.5.0(@types/react@19.2.7)(immer@9.0.21)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(three@0.182.0)
+      mitt: 3.0.1
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      three: 0.182.0
 
   '@rive-app/react-webgl2@4.27.0(react@19.2.3)':
     dependencies:

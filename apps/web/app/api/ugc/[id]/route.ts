@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isProfileEligibleForXp } from "@/lib/xp-eligibility"
 import { z } from "zod"
 
 const moderateSchema = z.object({
@@ -80,13 +81,16 @@ export async function PATCH(
   }
 
   if (parsed.data.status === "approved") {
-    await admin.rpc("award_xp", {
-      p_profile_id: submission.profile_id,
-      p_source: "ugc_approved",
-      p_source_ref: id,
-      p_xp_delta: 250,
-      p_reason: "UGC submission approved",
-    })
+    const eligible = await isProfileEligibleForXp(submission.profile_id)
+    if (eligible) {
+      await admin.rpc("award_xp", {
+        p_profile_id: submission.profile_id,
+        p_source: "ugc_approved",
+        p_source_ref: id,
+        p_xp_delta: 250,
+        p_reason: "UGC submission approved",
+      })
+    }
   }
 
   return NextResponse.json({ ok: true, status: parsed.data.status })

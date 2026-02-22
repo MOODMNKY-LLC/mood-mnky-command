@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
 
 export const dynamic = "force-dynamic"
 
@@ -12,6 +14,7 @@ export default async function VerseIssueSlugPage({
 }) {
   const { slug } = await params
   const supabase = await createClient()
+  const subscription = await getVerseSubscriptionStatus()
   const { data: issue, error } = await supabase
     .from("mnky_issues")
     .select(`
@@ -32,6 +35,11 @@ export default async function VerseIssueSlugPage({
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-8 px-4 py-8 md:px-6">
+      <VerseFreeTierBanner
+        subscriptionTier={subscription.subscriptionTier}
+        isAuthenticated={subscription.isAuthenticated}
+        context="this issue and chapters"
+      />
       <Link href="/verse/issues" className="text-primary text-sm underline">
         ← All issues
       </Link>
@@ -64,6 +72,12 @@ export default async function VerseIssueSlugPage({
               className="text-sm font-medium text-primary underline hover:no-underline"
             >
               Take Quiz
+            </Link>
+            <Link
+              href={`/verse/drops/${slug}`}
+              className="text-sm font-medium text-primary underline hover:no-underline"
+            >
+              View as MNKY BOX
             </Link>
           </div>
           <ul className="space-y-2">

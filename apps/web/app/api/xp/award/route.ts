@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireInternalApiKey } from "@/lib/api/internal-auth"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isProfileEligibleForXp } from "@/lib/xp-eligibility"
 import { z } from "zod"
 
 const awardSchema = z.object({
@@ -32,6 +33,14 @@ export async function POST(request: Request) {
   }
 
   const { profileId, source, sourceRef, xpDelta, reason } = parsed.data
+
+  const eligible = await isProfileEligibleForXp(profileId)
+  if (!eligible) {
+    return NextResponse.json(
+      { ok: true, awarded: 0, reason: "subscription_required" },
+      { status: 200 }
+    )
+  }
 
   const supabase = createAdminClient()
   const { error } = await supabase.rpc("award_xp", {

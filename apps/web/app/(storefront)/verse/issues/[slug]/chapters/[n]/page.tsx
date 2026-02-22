@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
 import { ChapterReaderClient } from "@/components/verse/chapter-reader-client"
+import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
 import { resolveGidToVerseUrl } from "@/lib/shopify/resolve-gid"
 
 export const dynamic = "force-dynamic"
@@ -16,6 +18,7 @@ export default async function VerseChapterPage({
   if (Number.isNaN(chapterOrder) || chapterOrder < 1) notFound()
 
   const supabase = await createClient()
+  const subscription = await getVerseSubscriptionStatus()
   const { data: issue } = await supabase
     .from("mnky_issues")
     .select("id")
@@ -75,6 +78,11 @@ export default async function VerseChapterPage({
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-8 md:px-6">
+      <VerseFreeTierBanner
+        subscriptionTier={subscription.subscriptionTier}
+        isAuthenticated={subscription.isAuthenticated}
+        context="chapters and XP"
+      />
       <div className="mb-6 flex items-center justify-between">
         <Link href={`/verse/issues/${slug}`} className="text-primary text-sm underline">
           ← {slug}

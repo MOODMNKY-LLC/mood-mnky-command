@@ -20,6 +20,7 @@ export { MainListenBlock } from "./main-listen-block"
 export { MainTryMoodMnkySection } from "./main-try-mood-mnky-section"
 export { MainMeetTheAgentsSection } from "./main-meet-the-agents-section"
 export { MainFounderCard } from "./main-founder-card"
+export { MainAboutSplitSection } from "./main-about-split-section"
 export { MainDock } from "./main-dock"
 export { MainTalkToAgentDialog } from "./main-talk-to-agent-dialog"
 export {

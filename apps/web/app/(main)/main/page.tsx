@@ -6,7 +6,7 @@ import {
   MainHeroSplit,
   MainFeatureCards,
   MainSocialProof,
-  MainFaq,
+  MainCustomization,
   MainGlassCard,
   MainFragranceCarousel,
   MainWaitlistForm,
@@ -49,8 +49,11 @@ export default async function MainLandingPage() {
           <section className="col-span-full">
             <MainSocialProof items={landingData.socialProof} />
           </section>
+          <section className="col-span-full">
+            <MainCustomization />
+          </section>
 
-          {/* Your scent, your vessel (left) | Meet the Agents in frosted panel (right) */}
+          {/* FAQ (left) | Meet the Agents in frosted panel (right) */}
           <MainCustomizationAgentsSplit
             agents={agents}
             config={{
@@ -58,11 +61,8 @@ export default async function MainLandingPage() {
               showAudioSample: elevenLabsConfig.showAudioSample,
               audioSampleUrl: elevenLabsConfig.audioSampleUrl,
             }}
+            faqItems={landingData.faq}
           />
-
-          <section className="col-span-full">
-            <MainFaq items={landingData.faq} />
-          </section>
 
         {/* Featured fragrances – MNKY Science (single-line carousel, auto-scroll, pause on hover) */}
         {featuredFragrances.length > 0 && (

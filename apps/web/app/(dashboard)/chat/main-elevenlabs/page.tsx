@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/select"
 import { Loader2, Save, Sparkles } from "lucide-react"
 import type { MainElevenLabsConfigGet } from "@/app/api/main/elevenlabs-config/route"
+import type { MainAudioLibraryTrack } from "@/app/api/main/audio-library/route"
+
+const EMPTY_LIBRARY_ID = "__none__"
 
 export default function MainElevenLabsConfigPage() {
   const [config, setConfig] = useState<MainElevenLabsConfigGet | null>(null)
@@ -22,6 +25,10 @@ export default function MainElevenLabsConfigPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  const [libraryTracks, setLibraryTracks] = useState<MainAudioLibraryTrack[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+  const [selectedLibraryTrackId, setSelectedLibraryTrackId] = useState<string>(EMPTY_LIBRARY_ID)
 
   const [agentId, setAgentId] = useState("")
   const [defaultVoiceId, setDefaultVoiceId] = useState("")
@@ -31,6 +38,18 @@ export default function MainElevenLabsConfigPage() {
   const [connectionType, setConnectionType] = useState<"webrtc" | "websocket">("webrtc")
   const [showTranscriptViewer, setShowTranscriptViewer] = useState(false)
   const [showWaveformInVoiceBlock, setShowWaveformInVoiceBlock] = useState(false)
+
+  const fetchLibrary = useCallback(async () => {
+    setLibraryLoading(true)
+    try {
+      const res = await fetch("/api/main/audio-library")
+      if (!res.ok) return
+      const data: { tracks: MainAudioLibraryTrack[] } = await res.json()
+      setLibraryTracks((data.tracks ?? []).filter((t) => t.public_url?.trim()))
+    } finally {
+      setLibraryLoading(false)
+    }
+  }, [])
 
   const fetchConfig = useCallback(async () => {
     setLoading(true)
@@ -57,7 +76,17 @@ export default function MainElevenLabsConfigPage() {
 
   useEffect(() => {
     fetchConfig()
-  }, [fetchConfig])
+    fetchLibrary()
+  }, [fetchConfig, fetchLibrary])
+
+  const hasSyncedLibraryRef = useRef(false)
+  useEffect(() => {
+    if (libraryLoading || !config || hasSyncedLibraryRef.current) return
+    hasSyncedLibraryRef.current = true
+    const url = config.audioSampleUrl?.trim()
+    const match = libraryTracks.find((t) => t.public_url === url)
+    setSelectedLibraryTrackId(match ? match.id : EMPTY_LIBRARY_ID)
+  }, [config, libraryTracks, libraryLoading])
 
   const handleSave = async () => {
     setSaving(true)
@@ -73,6 +102,9 @@ export default function MainElevenLabsConfigPage() {
           audioSampleUrl: audioSampleUrl.trim() || null,
           showVoiceSection,
           showAudioSample,
+          connectionType,
+          showTranscriptViewer,
+          showWaveformInVoiceBlock,
         }),
       })
       if (!res.ok) {
@@ -169,15 +201,53 @@ export default function MainElevenLabsConfigPage() {
             </div>
 
             <div className="space-y-2">
+              <Label>Default audio track</Label>
+              {libraryLoading ? (
+                <p className="text-sm text-muted-foreground">Loading library…</p>
+              ) : libraryTracks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Upload tracks to the Verse playlist to use them here.
+                </p>
+              ) : (
+                <Select
+                  value={selectedLibraryTrackId}
+                  onValueChange={(id) => {
+                    setSelectedLibraryTrackId(id)
+                    if (id !== EMPTY_LIBRARY_ID) {
+                      const track = libraryTracks.find((t) => t.id === id)
+                      if (track?.public_url) setAudioSampleUrl(track.public_url)
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="None / use URL below" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={EMPTY_LIBRARY_ID}>None / use URL below</SelectItem>
+                    {libraryTracks.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.audio_title?.trim() || t.file_name}
+                        {t.audio_artist?.trim() ? ` — ${t.audio_artist}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="main-audioSampleUrl">Brand audio sample URL</Label>
               <Input
                 id="main-audioSampleUrl"
                 placeholder="https://..."
                 value={audioSampleUrl}
-                onChange={(e) => setAudioSampleUrl(e.target.value)}
+                onChange={(e) => {
+                  setAudioSampleUrl(e.target.value)
+                  setSelectedLibraryTrackId(EMPTY_LIBRARY_ID)
+                }}
               />
               <p className="text-xs text-muted-foreground">
-                URL for the &quot;Listen&quot; section on Main. Fallback: NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL.
+                URL for the &quot;Listen&quot; section on Main. Choose a library track above or paste a URL. Fallback: NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL.
               </p>
             </div>
 

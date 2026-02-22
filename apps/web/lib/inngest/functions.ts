@@ -1,6 +1,7 @@
 import { match } from "ts-pattern"
 import { inngest } from "./client"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isProfileEligibleForXp } from "@/lib/xp-eligibility"
 
 type QuestRequirement =
   | { type: "read_issue"; issueId: string }
@@ -132,6 +133,9 @@ export const shopifyOrderPaid = inngest.createFunction(
 
     if (xp <= 0) return { xp: 0 }
 
+    const eligible = await isProfileEligibleForXp(profileId)
+    if (!eligible) return { xp: 0, reason: "subscription_required", profileId }
+
     await supabase.rpc("award_xp", {
       p_profile_id: profileId,
       p_source: "purchase",
@@ -219,13 +223,16 @@ export const questEvaluate = inngest.createFunction(
         { onConflict: "profile_id,quest_id" }
       )
       if (xpReward > 0) {
-        await supabase.rpc("award_xp", {
-          p_profile_id: profileId,
-          p_source: "quest",
-          p_source_ref: q.id,
-          p_xp_delta: xpReward,
-          p_reason: "Quest completed",
-        })
+        const eligible = await isProfileEligibleForXp(profileId)
+        if (eligible) {
+          await supabase.rpc("award_xp", {
+            p_profile_id: profileId,
+            p_source: "quest",
+            p_source_ref: q.id,
+            p_xp_delta: xpReward,
+            p_reason: "Quest completed",
+          })
+        }
       }
       completed++
     }
@@ -263,6 +270,9 @@ export const magDownloadRecorded = inngest.createFunction(
       .maybeSingle()
 
     const xp = (config?.value as { xp?: number } | null)?.xp ?? 25
+
+    const eligible = await isProfileEligibleForXp(profileId)
+    if (!eligible) return { xp: 0, reason: "subscription_required", profileId, issueId, downloadType }
 
     await supabase.rpc("award_xp", {
       p_profile_id: profileId,
@@ -305,6 +315,9 @@ export const magQuizPassed = inngest.createFunction(
 
     const xp = (config?.value as { xp?: number } | null)?.xp ?? 75
 
+    const eligible = await isProfileEligibleForXp(profileId)
+    if (!eligible) return { xp: 0, reason: "subscription_required", profileId, issueId }
+
     await supabase.rpc("award_xp", {
       p_profile_id: profileId,
       p_source: "mag_quiz",
@@ -346,6 +359,9 @@ export const magReadCompleted = inngest.createFunction(
 
     const xp = (config?.value as { xp?: number } | null)?.xp ?? 50
 
+    const eligible = await isProfileEligibleForXp(profileId)
+    if (!eligible) return { xp: 0, reason: "subscription_required", profileId, issueId }
+
     await supabase.rpc("award_xp", {
       p_profile_id: profileId,
       p_source: "mag_read",
@@ -379,6 +395,9 @@ export const ugcOnApproved = inngest.createFunction(
       .maybeSingle()
 
     const xp = xpDelta ?? (config?.value as { xp?: number } | null)?.xp ?? 250
+
+    const eligible = await isProfileEligibleForXp(profileId)
+    if (!eligible) return { ok: true, reason: "subscription_required" }
 
     await supabase.rpc("award_xp", {
       p_profile_id: profileId,

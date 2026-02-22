@@ -1,0 +1,27 @@
+/**
+ * MNKY BOX — Framed Editorial Modular Commerce (Verse)
+ * Scoped tokens for seasonal drop / box view. Variables are set by layout or inline.
+ * See DESIGN-SYSTEM.md "MNKY BOX (Verse)" and docs/MNKY-BOX-EDITORIAL-REFINED.md.
+ */
+.mnky-box {
+  --mnky-box-bg: #0a0a0a;
+  --mnky-box-bg-secondary: #111111;
+  --mnky-box-surface-card: #161616;
+  --mnky-box-surface-elevated: #1c1c1c;
+  --mnky-box-border-frame: #f2f2f2;
+  --mnky-box-border-subtle: #2a2a2a;
+  --mnky-box-text: #ffffff;
+  --mnky-box-text-secondary: #cfcfcf;
+  --mnky-box-text-muted: #8a8a8a;
+  --mnky-box-accent-primary: #b7f0ff;
+  --mnky-box-accent-secondary: #f6d1a7;
+  --mnky-box-shadow-float: 0 30px 60px rgba(0, 0, 0, 0.35);
+  --mnky-box-frame-width: 12px;
+  --mnky-box-container-max: 1280px;
+  --mnky-box-grid-gap: 32px;
+}
+
+.mnky-box {
+  background-color: var(--mnky-box-bg);
+  color: var(--mnky-box-text);
+}

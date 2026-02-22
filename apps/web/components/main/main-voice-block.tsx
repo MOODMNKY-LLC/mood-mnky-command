@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react"
 import { MainGlassCard } from "@/components/main/main-glass-card"
 import {
-  MainOrb,
   MainMicSelector,
   MainConversationBar,
   MainLiveWaveform,
@@ -40,8 +39,14 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
     <section className="main-glass-section space-y-6 rounded-xl p-6">
       <div className="flex flex-col items-center gap-6 md:flex-row md:items-start md:justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative h-32 w-32 md:h-40 md:w-40">
-            <MainOrb agentState={null} />
+          <div className="relative h-32 w-32 overflow-hidden rounded-xl border border-border md:h-40 md:w-40">
+            <MainMascotImage
+              src={MAIN_MASCOT_ASSETS.voice}
+              alt="MOOD MNKY – Voice"
+              fill
+              className="object-cover object-center"
+              hideOnError
+            />
           </div>
           {config.showWaveformInVoiceBlock && (
             <div className="w-full max-w-[200px]">
@@ -52,15 +57,6 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
               />
             </div>
           )}
-          <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-border md:h-20 md:w-20">
-            <MainMascotImage
-              src={MAIN_MASCOT_ASSETS.voice}
-              alt="MOOD MNKY – Voice"
-              fill
-              className="object-cover object-center"
-              hideOnError
-            />
-          </div>
           <MainMicSelector />
         </div>
         <MainGlassCard className="main-float main-glass-panel-card flex w-full max-w-md flex-col gap-4">

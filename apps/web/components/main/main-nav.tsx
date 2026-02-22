@@ -29,7 +29,7 @@ const NAV_LINKS = [
   { href: "/main/fragrances", label: "Fragrances" },
   { href: "/main/formulas", label: "Formulas" },
   { href: "/main/collections", label: "Collections" },
-  { href: "/main/components", label: "Components" },
+  { href: "/main/design", label: "Design" },
   { href: "/main/community", label: "Community" },
   { href: SHOP_URL, label: "Shop" },
   { href: "/auth/login", label: "Sign in" },

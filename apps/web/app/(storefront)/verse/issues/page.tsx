@@ -1,12 +1,15 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
+import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
 
 export const dynamic = "force-dynamic"
 
 export default async function VerseIssuesPage() {
   const supabase = await createClient()
+  const subscription = await getVerseSubscriptionStatus()
   const { data: issues } = await supabase
     .from("mnky_issues")
     .select(`
@@ -18,6 +21,11 @@ export default async function VerseIssuesPage() {
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-8 px-4 py-8 md:px-6">
+      <VerseFreeTierBanner
+        subscriptionTier={subscription.subscriptionTier}
+        isAuthenticated={subscription.isAuthenticated}
+        context="all issues and chapters"
+      />
       <h1 className="text-2xl font-semibold md:text-3xl">Manga issues</h1>
       {(!issues || issues.length === 0) && (
         <p className="text-muted-foreground">No published issues yet.</p>

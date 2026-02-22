@@ -2,16 +2,22 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Check, MessageSquare, Headphones } from "lucide-react"
+import { MessageSquare, Headphones } from "lucide-react"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { Button } from "@/components/ui/button"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import type { MainLandingAgentItem } from "@/lib/main-landing-data"
+import type { MainLandingAgentItem, MainLandingFaqItem } from "@/lib/main-landing-data"
 import type { MainTryMoodMnkyConfig } from "@/components/main/main-try-mood-mnky-section"
 import { MainAgentCard } from "@/components/main/main-agent-card"
 import { MainChatbot } from "@/components/main/main-chatbot"
@@ -21,6 +27,14 @@ import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
 import { cn } from "@/lib/utils"
 
+const FAQ_FALLBACK: MainLandingFaqItem[] = [
+  { id: "1", question: "What is MOOD MNKY?", answer: "MOOD MNKY is a luxury fragrance brand focused on extreme personalization. We offer bespoke scents, the Blending Lab for creating your own blend, and AI companions that guide you through discovery and customization.", sort_order: 0 },
+  { id: "2", question: "What is the Blending Lab?", answer: "The Blending Lab is our interactive space where you choose fragrance notes and ratios to create a custom scent. You can experiment with accords and receive a handcrafted bottle that's uniquely yours.", sort_order: 1 },
+  { id: "3", question: "How do I customize my scent?", answer: "Visit the Blending Lab (or blending guide) to explore our note library, adjust ratios, and save your profile. You can also work with MOOD MNKY—our AI companion—for recommendations before you blend.", sort_order: 2 },
+  { id: "4", question: "Do you ship internationally?", answer: "We currently ship to select regions. Check the footer or contact page for the latest shipping options and delivery times. Custom blends may have slightly longer lead times.", sort_order: 3 },
+  { id: "5", question: "What is the VERSE?", answer: "The VERSE is our storefront and community space: shop ready-to-wear scents, explore the Blending Lab, and connect with MOOD MNKY and other AI companions for a full sensory journey.", sort_order: 4 },
+]
+
 function roleFromDisplayName(displayName: string): string {
   const first = displayName.split(" ")[0]
   return first ?? displayName
@@ -29,16 +43,18 @@ function roleFromDisplayName(displayName: string): string {
 export interface MainCustomizationAgentsSplitProps {
   agents: MainLandingAgentItem[]
   config: MainTryMoodMnkyConfig
+  faqItems?: MainLandingFaqItem[] | null
   className?: string
 }
 
 /**
- * Split section: left = "Your scent, your vessel"; right = "Meet the Agents" in a frosted glass panel.
+ * Split section: left = Frequently asked questions; right = "Meet the Agents" in a frosted glass panel.
  * Consolidated connect UI: primary Talk CTA + VoicePicker + compact Chat/Listen links.
  */
 export function MainCustomizationAgentsSplit({
   agents,
   config,
+  faqItems,
   className,
 }: MainCustomizationAgentsSplitProps) {
   const talk = useMainTalkToAgent()
@@ -47,6 +63,7 @@ export function MainCustomizationAgentsSplit({
 
   const hasVoice = config.showVoiceSection && talk
   const hasListen = config.showAudioSample && config.audioSampleUrl
+  const faq = (faqItems != null && faqItems.length > 0 ? faqItems : FAQ_FALLBACK)
 
   return (
     <BlurFade delay={0.12} inView inViewMargin="-20px" className={cn("col-span-full", className)}>
@@ -54,28 +71,23 @@ export function MainCustomizationAgentsSplit({
         className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12"
         style={{ marginTop: "var(--main-section-gap)" }}
       >
-        {/* Left: Your scent, your vessel */}
+        {/* Left: Frequently asked questions */}
         <div className="flex flex-col justify-center">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Your scent, your vessel
+          <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            Frequently asked questions
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            We believe fragrance should reflect who you are. In the Blending Lab
-            you choose notes and ratios; we also offer container personalization—so
-            your bottle is as unique as your blend.
-          </p>
-          <ul className="mt-6 space-y-3 text-muted-foreground">
-            {[
-              "Custom scent profiles built from our note library",
-              "Bottle and cap options to match your style",
-              "Labels and packaging that feel personal, not generic",
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <Check className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
-                <span>{item}</span>
-              </li>
+          <Accordion type="single" collapsible className="border-b border-border">
+            {faq.map(({ id, question, answer }) => (
+              <AccordionItem key={id} value={id} className="border-border">
+                <AccordionTrigger className="text-left text-foreground hover:no-underline hover:text-muted-foreground">
+                  {question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {answer}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </ul>
+          </Accordion>
         </div>
 
         {/* Right: Meet the Agents – frosted glass panel (same look as dock) */}

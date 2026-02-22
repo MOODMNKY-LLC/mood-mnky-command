@@ -8,6 +8,8 @@ import {
 } from "@/components/dojo/dojo-quests-card";
 import { DojoQuickActionsCard } from "@/components/dojo/dojo-quick-actions-card";
 import { DojoHomeSections } from "@/components/dojo/dojo-home-sections";
+import { DojoFreeTierOnboarding } from "@/components/dojo/dojo-free-tier-onboarding";
+import { DojoFreeTierVerification } from "@/components/dojo/dojo-free-tier-verification";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 
 function getQuestAction(rule: unknown, issueSlugById: Record<string, string>): { href: string; label: string } | null {
@@ -169,10 +171,13 @@ export default async function DojoPage() {
     email?: string | null;
     handle?: string | null;
     shopify_customer_id?: string | null;
+    subscription_tier?: "free" | "member" | null;
     preferences?: Record<string, unknown> | null;
     shopify_metafields_synced_at?: string | null;
   } | null;
   const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const subscriptionTier = profile?.subscription_tier ?? null;
+  const promptDismissedAt = typeof prefs.free_tier_prompt_dismissed_at === "string" ? prefs.free_tier_prompt_dismissed_at : null;
   const shopifyLinked = !!profile?.shopify_customer_id;
   const wishlistCount = Array.isArray(prefs?.wishlist) ? (prefs.wishlist as unknown[]).length : 0;
   const scentPersonality = String(prefs?.scent_personality ?? "");
@@ -271,7 +276,14 @@ export default async function DojoPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <DojoWelcomeHero displayName={displayName} isReturning={!!user} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <DojoWelcomeHero displayName={displayName} isReturning={!!user} />
+        <DojoFreeTierVerification subscriptionTier={subscriptionTier} />
+      </div>
+      <DojoFreeTierOnboarding
+        subscriptionTier={subscriptionTier}
+        promptDismissedAt={promptDismissedAt}
+      />
       <div className="grid auto-rows-min gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <DojoCharacterCard
           displayName={displayName}

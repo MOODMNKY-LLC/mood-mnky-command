@@ -4,6 +4,7 @@ import { VerseThemeProvider } from "@/components/verse/verse-theme-provider";
 import { VersePwaInstall } from "@/components/verse/verse-pwa-install";
 import "./verse-glass.css";
 import "./verse-storefront.css";
+import "./mnky-box.css";
 
 const montserrat = Montserrat({
   weight: ["500", "900"],

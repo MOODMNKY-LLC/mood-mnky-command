@@ -4,6 +4,9 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 const CONFIG_ID = "default"
 
+/** Ensure clients always get fresh config (no cached "agent not set" after LABZ save). */
+export const dynamic = "force-dynamic"
+
 export type MainElevenLabsConfigGet = {
   agentId: string | null
   defaultVoiceId: string | null
@@ -60,7 +63,9 @@ export async function GET() {
     showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
   }
 
-  return NextResponse.json(response)
+  const res = NextResponse.json(response)
+  res.headers.set("Cache-Control", "no-store, max-age=0")
+  return res
 }
 
 /**
@@ -113,6 +118,8 @@ export async function PATCH(request: NextRequest) {
   if (body.showVoiceSection !== undefined) updates.show_voice_section = body.showVoiceSection
   if (body.showAudioSample !== undefined) updates.show_audio_sample = body.showAudioSample
   if (body.connectionType !== undefined) updates.connection_type = body.connectionType
+  if (body.showTranscriptViewer !== undefined) updates.show_transcript_viewer = body.showTranscriptViewer
+  if (body.showWaveformInVoiceBlock !== undefined) updates.show_waveform_in_voice_block = body.showWaveformInVoiceBlock
 
   const { data, error } = await admin
     .from("main_elevenlabs_config")

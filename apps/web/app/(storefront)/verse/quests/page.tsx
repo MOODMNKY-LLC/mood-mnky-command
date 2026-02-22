@@ -1,12 +1,15 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
+import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
 
 export const dynamic = "force-dynamic"
 
 export default async function VerseQuestsPage() {
   const supabase = await createClient()
+  const subscription = await getVerseSubscriptionStatus()
   const { data: quests } = await supabase
     .from("quests")
     .select("id, title, description, xp_reward, cooldown_days")
@@ -15,6 +18,11 @@ export default async function VerseQuestsPage() {
 
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-8 px-4 py-8 md:px-6">
+      <VerseFreeTierBanner
+        subscriptionTier={subscription.subscriptionTier}
+        isAuthenticated={subscription.isAuthenticated}
+        context="quests and XP"
+      />
       <h1 className="text-2xl font-semibold md:text-3xl">Quests</h1>
       <p className="text-muted-foreground">
         Complete quests to earn XP and unlock rewards.{" "}

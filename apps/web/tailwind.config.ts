@@ -113,7 +113,26 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			mnkyBox: {
+  				bg: 'var(--mnky-box-bg)',
+  				'bg-secondary': 'var(--mnky-box-bg-secondary)',
+  				'surface-card': 'var(--mnky-box-surface-card)',
+  				'surface-elevated': 'var(--mnky-box-surface-elevated)',
+  				'border-frame': 'var(--mnky-box-border-frame)',
+  				'border-subtle': 'var(--mnky-box-border-subtle)',
+  				text: 'var(--mnky-box-text)',
+  				'text-secondary': 'var(--mnky-box-text-secondary)',
+  				'text-muted': 'var(--mnky-box-text-muted)',
+  				'accent-primary': 'var(--mnky-box-accent-primary)',
+  				'accent-secondary': 'var(--mnky-box-accent-secondary)'
   			}
+  		},
+  		boxShadow: {
+  			'mnky-float': 'var(--mnky-box-shadow-float)'
+  		},
+  		maxWidth: {
+  			'mnky-container': 'var(--mnky-box-container-max)'
   		},
   		fontSize: {
   			xs: [

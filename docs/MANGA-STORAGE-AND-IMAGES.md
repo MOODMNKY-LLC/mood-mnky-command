@@ -60,7 +60,7 @@ So: **rendering is Supabase-backed; Notion is not used at render time**, only as
 ## 3. Where can you upload images to display in manga?
 
 **Dedicated Storage bucket: `manga-assets`**  
-Manga cover and panel images are stored in Supabase Storage in the **manga-assets** bucket (see `apps/web/lib/supabase/storage.ts` and migration `supabase/migrations/20260221150000_manga_assets_bucket.sql`). Path convention: **Covers:** `covers/{issue_id}.{ext}`; **Panels:** `panels/{panel_id}.{ext}`. The bucket is public read; uploads are performed server-side with admin client (API routes require manga admin auth).
+Manga cover and panel images are stored in Supabase Storage in the **manga-assets** bucket (see `apps/web/lib/supabase/storage.ts` and migration `supabase/migrations/20260221150000_manga_assets_bucket.sql`). Path convention: **Covers:** `covers/{issue_id}.{ext}`; **Panels:** `panels/{panel_id}.{ext}`. For MNKY BOX hero art you can use the same bucket (e.g. `box-hero/{issue_id}.{ext}`) and set `mnky_issues.hero_asset_url` to that URL, or reuse `cover_asset_url`. The bucket is public read; uploads are performed server-side with admin client (API routes require manga admin auth).
 
 **LABZ Verse Backoffice upload (recommended)**  
 On the issue detail page (`/verse-backoffice/manga/[slug]`): use the **Cover** card to upload/change cover (writes to `manga-assets/covers/`, updates `mnky_issues.cover_asset_url`, and pushes Cover URL to Notion when `notion_id` exists); in **Chapters & panels**, each panel has an "Upload" button (writes to `manga-assets/panels/`, updates `mnky_panels.asset_url`, pushes Asset URL to Notion when `notion_id` exists). See [NOTION-MANGA-2WAY-SYNC.md](./NOTION-MANGA-2WAY-SYNC.md) for 2-way sync.
