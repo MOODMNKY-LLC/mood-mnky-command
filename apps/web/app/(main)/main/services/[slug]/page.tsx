@@ -2,10 +2,17 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { MainNav, MainFooter } from "@/components/main"
 import { MainGlassCard } from "@/components/main/main-glass-card"
+import { MainServiceDetailHeader } from "@/components/main/main-service-detail-header"
+import { MainServiceSteamBlockLink } from "@/components/main/main-service-steam-block"
 import { MAIN_SERVICES } from "@/lib/main-services-data"
 import { getServiceStatus } from "@/lib/services"
+import { createClient } from "@/lib/supabase/server"
+import type { SteamProfileCache } from "@/lib/steam"
 
-type PageProps = { params: Promise<{ slug: string }> }
+type PageProps = {
+  params: Promise<{ slug: string }>
+  searchParams?: Promise<{ steam?: string; message?: string }>
+}
 
 export async function generateStaticParams() {
   return MAIN_SERVICES.map((s) => ({ slug: s.id }))
@@ -21,10 +28,33 @@ export async function generateMetadata({ params }: PageProps) {
   }
 }
 
-export default async function MainServiceDetailPage({ params }: PageProps) {
+export default async function MainServiceDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params
   const service = MAIN_SERVICES.find((s) => s.id === slug)
   if (!service) notFound()
+
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+  const steamMessage = resolvedSearchParams?.steam ?? null
+
+  let steamData: {
+    steamLinked: boolean
+    steamProfileCache: SteamProfileCache | null
+  } | null = null
+  if (slug === "mnky-games") {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("steamid64, steam_profile_cache")
+        .eq("id", user.id)
+        .single()
+      steamData = {
+        steamLinked: !!profile?.steamid64,
+        steamProfileCache: (profile?.steam_profile_cache as SteamProfileCache | null) ?? null,
+      }
+    }
+  }
 
   let statusPayload: { configured: boolean; status?: string; metrics?: Record<string, number | string>; error?: string } = { configured: false }
   try {
@@ -46,29 +76,7 @@ export default async function MainServiceDetailPage({ params }: PageProps) {
           </Link>
         </div>
         <div className="flex flex-col gap-8">
-          <header>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              {service.name}
-            </h1>
-            <p className="mt-2 text-lg font-medium text-muted-foreground">
-              {service.tagline}
-            </p>
-            <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-              {service.description}
-            </p>
-            {service.features.length > 0 && (
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Features">
-                {service.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="rounded-md border border-border bg-background/60 px-2.5 py-1 text-xs text-foreground"
-                  >
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </header>
+          <MainServiceDetailHeader service={service} />
 
           {statusPayload.configured && (
             <section aria-label="Service status" className="max-w-xl">
@@ -119,6 +127,14 @@ export default async function MainServiceDetailPage({ params }: PageProps) {
                 </div>
               </MainGlassCard>
             </section>
+          )}
+
+          {slug === "mnky-games" && steamData !== null && (
+            <MainServiceSteamBlockLink
+              steamLinked={steamData.steamLinked}
+              steamProfileCache={steamData.steamProfileCache}
+              steamMessage={steamMessage === "error" ? "error" : steamMessage === "linked" || steamMessage === "unlinked" ? steamMessage : undefined}
+            />
           )}
         </div>
       </main>

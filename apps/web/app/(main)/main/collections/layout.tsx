@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Collections – MOOD MNKY",
-  description: "Browse Shopify collections. Shop in MNKY VERSE.",
+  description: "Shop the store, explore fragrances, or browse formulas.",
 }
 
 export default function MainCollectionsLayout({

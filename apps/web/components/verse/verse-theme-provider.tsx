@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
-
-const VERSE_THEME_KEY = "verse-theme";
+import { createContext, useContext } from "react";
+import { useTheme } from "next-themes";
 
 type VerseTheme = "light" | "dark";
 
@@ -20,42 +13,25 @@ type VerseThemeContextValue = {
 
 const VerseThemeContext = createContext<VerseThemeContextValue | null>(null);
 
+/**
+ * Bridges next-themes to Verse: useVerseTheme() returns the same theme as the rest of the app
+ * so data-verse-theme and verse CSS stay in sync with the app-wide theme (and AnimatedThemeToggler).
+ */
 export function VerseThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<VerseTheme>("light");
-  const [mounted, setMounted] = useState(false);
+  const { theme: resolvedTheme, setTheme: setNextTheme } = useTheme();
+  const theme: VerseTheme =
+    resolvedTheme === "dark" ? "dark" : "light";
 
-  useEffect(() => {
-    setMounted(true);
-    const stored =
-      (typeof window !== "undefined" &&
-        (localStorage.getItem(VERSE_THEME_KEY) as VerseTheme | null)) ||
-      null;
-    if (stored === "light" || stored === "dark") {
-      setThemeState(stored);
-    } else {
-      setThemeState("light");
-    }
-  }, []);
+  const setTheme = (next: VerseTheme) => {
+    setNextTheme(next);
+  };
 
-  const setTheme = useCallback((next: VerseTheme) => {
-    setThemeState(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(VERSE_THEME_KEY, next);
-    }
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setThemeState((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      if (typeof window !== "undefined") {
-        localStorage.setItem(VERSE_THEME_KEY, next);
-      }
-      return next;
-    });
-  }, []);
+  const toggleTheme = () => {
+    setNextTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const value: VerseThemeContextValue = {
-    theme: mounted ? theme : "light",
+    theme,
     setTheme,
     toggleTheme,
   };

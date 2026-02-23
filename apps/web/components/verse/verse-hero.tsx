@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { VerseButton } from "@/components/verse/ui/button";
 import { Globe } from "@/components/ui/globe";
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text";
 import { useVerseTheme } from "./verse-theme-provider";
 import type { COBEOptions } from "cobe";
 
@@ -52,8 +53,8 @@ export function VerseHero() {
       {/* Left: Intro copy + CTAs (50%) */}
       <div className="flex flex-col justify-center gap-6 md:gap-8">
         <div className="space-y-4">
-          <h1 className="font-verse-heading text-2xl font-semibold tracking-tight text-verse-text md:text-3xl lg:text-4xl">
-            Welcome to MNKY VERSE
+          <h1 className="font-verse-heading text-2xl font-semibold tracking-tight text-verse-text md:text-3xl lg:text-4xl flex flex-wrap items-center gap-1">
+            Welcome to <BrandMatrixText variant="MNKY" size={4} gap={1} className="inline-block h-7 md:h-8" /> VERSE
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-verse-text-muted md:text-lg">
             {INTRO_COPY}

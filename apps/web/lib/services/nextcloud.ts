@@ -1,11 +1,20 @@
 import type { ServiceStatusResult } from "./types"
 
-const BASE_URL = process.env.NEXTCLOUD_URL?.replace(/\/$/, "")
-const CLIENT_ID = process.env.NEXTCLOUD_OAUTH_CLIENT_ID
-const CLIENT_SECRET = process.env.NEXTCLOUD_OAUTH_CLIENT_SECRET
+export interface NextcloudConfig {
+  baseUrl: string
+  clientId: string
+  clientSecret: string
+}
+
+function getEnvConfig(): NextcloudConfig | null {
+  const baseUrl = process.env.NEXTCLOUD_URL?.replace(/\/$/, "")
+  const clientId = process.env.NEXTCLOUD_OAUTH_CLIENT_ID
+  const clientSecret = process.env.NEXTCLOUD_OAUTH_CLIENT_SECRET
+  return baseUrl && clientId && clientSecret ? { baseUrl, clientId, clientSecret } : null
+}
 
 export function isNextcloudConfigured(): boolean {
-  return Boolean(BASE_URL && CLIENT_ID && CLIENT_SECRET)
+  return getEnvConfig() != null
 }
 
 /**
@@ -13,16 +22,20 @@ export function isNextcloudConfigured(): boolean {
  * Phase 1: report configured and try a simple capabilities endpoint with Basic auth (app password) or token.
  * Many setups use App API (EX-APP-ID + secret) instead of OAuth2. We only support OAuth2 client credentials here.
  */
-export async function getNextcloudStatus(): Promise<ServiceStatusResult> {
-  if (!BASE_URL || !CLIENT_ID || !CLIENT_SECRET) {
+export async function getNextcloudStatus(
+  config?: NextcloudConfig | null,
+): Promise<ServiceStatusResult> {
+  const c = config ?? getEnvConfig()
+  if (!c?.baseUrl || !c.clientId || !c.clientSecret) {
     return { error: "NEXTCLOUD_URL or OAuth2 credentials not set" }
   }
   try {
-    const tokenUrl = `${BASE_URL}/apps/oauth2/api/v1/token`
+    const base = c.baseUrl.replace(/\/$/, "")
+    const tokenUrl = `${base}/apps/oauth2/api/v1/token`
     const body = new URLSearchParams({
       grant_type: "client_credentials",
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
+      client_id: c.clientId,
+      client_secret: c.clientSecret,
     })
     const tokenRes = await fetch(tokenUrl, {
       method: "POST",
@@ -43,7 +56,7 @@ export async function getNextcloudStatus(): Promise<ServiceStatusResult> {
     if (!token) {
       return { status: "unavailable", error: "No access_token in response" }
     }
-    const capRes = await fetch(`${BASE_URL}/ocs/v2.php/cloud/capabilities?format=json`, {
+    const capRes = await fetch(`${base}/ocs/v2.php/cloud/capabilities?format=json`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "OCS-APIRequest": "true",

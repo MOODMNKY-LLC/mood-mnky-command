@@ -1,0 +1,35 @@
+/* MNKY CLOUD (Nextcloud) – MOOD MNKY theme overrides
+   Aligned with docs/DESIGN-SYSTEM.md grayscale primary and main-site tokens. */
+
+:root {
+  --mnky-primary: hsl(215, 19%, 35%);
+  --mnky-primary-foreground: hsl(210, 20%, 98%);
+  --mnky-bg: #f8fafc;
+  --mnky-text: #0f172a;
+  --mnky-text-muted: #475569;
+  --mnky-border: rgba(15, 23, 42, 0.08);
+}
+
+/* Header / nav */
+#header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid var(--mnky-border);
+}
+
+/* Primary actions */
+.primary,
+.button-vue--primary,
+button.primary {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+  border-color: var(--mnky-primary) !important;
+}
+
+/* Links */
+a {
+  color: var(--mnky-primary);
+}
+
+a:hover {
+  color: hsl(215, 19%, 25%);
+}

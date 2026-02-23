@@ -3,7 +3,19 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getThumbnailUrlFromPublicUrl } from "@/lib/supabase/storage"
 import { dbRowToFragranceOil } from "@/lib/fragrance-oils-db"
+import { MAIN_SERVICES, type MainServiceItem } from "@/lib/main-services-data"
 import type { FragranceOil, Formula } from "@/lib/types"
+
+function matchServices(q: string): MainServiceItem[] {
+  const lower = q.toLowerCase()
+  return MAIN_SERVICES.filter((s) => {
+    const inName = s.name.toLowerCase().includes(lower)
+    const inTagline = s.tagline.toLowerCase().includes(lower)
+    const inDesc = s.description.toLowerCase().includes(lower)
+    const inFeatures = s.features.some((f) => f.toLowerCase().includes(lower))
+    return inName || inTagline || inDesc || inFeatures
+  })
+}
 
 type FormulaRow = {
   id: string
@@ -80,7 +92,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get("q")?.trim()
   if (!q || q.length === 0) {
-    return NextResponse.json({ fragranceOils: [], formulas: [] })
+    return NextResponse.json({ fragranceOils: [], formulas: [], services: [] })
   }
 
   const term = `%${q}%`
@@ -128,7 +140,9 @@ export async function GET(request: Request) {
       formulaRowToFormula(row as FormulaRow)
     )
 
-    return NextResponse.json({ fragranceOils, formulas })
+    const services = matchServices(q)
+
+    return NextResponse.json({ fragranceOils, formulas, services })
   } catch (e) {
     console.error("Main search error:", e)
     return NextResponse.json(

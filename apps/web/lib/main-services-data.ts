@@ -8,6 +8,10 @@ export interface MainServiceItem {
   tagline: string
   description: string
   features: string[]
+  /** Optional URL or path for the service-bundle hero image. Placeholder shown when unset. */
+  bundleImageUrl?: string
+  /** Optional Simple Icons slugs for the tech row (e.g. ["nextcloud"]). When unset, derived from features. */
+  iconSlugs?: string[]
 }
 
 export const MAIN_SERVICES: MainServiceItem[] = [

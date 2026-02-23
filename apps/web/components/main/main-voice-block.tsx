@@ -7,7 +7,7 @@ import {
   MainConversationBar,
   MainLiveWaveform,
 } from "@/components/main/elevenlabs"
-import { Shimmer } from "@/components/ai-elements/shimmer"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 import type { MainElevenLabsConfig } from "@/lib/main-landing-data"
@@ -61,10 +61,8 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
           <MainMicSelector />
         </div>
         <MainGlassCard className="main-float main-glass-panel-card flex w-full max-w-md flex-col gap-4">
-          <h3 className="text-lg font-semibold text-foreground">
-            <Shimmer as="span" duration={2.5} className="text-foreground">
-              Talk to MOOD MNKY
-            </Shimmer>
+          <h3 className="text-lg font-semibold text-foreground flex flex-wrap items-center gap-1">
+            Talk to <BrandMatrixText variant="MOOD MNKY" size={4} gap={1} className="inline-block h-6" />
           </h3>
           {hasAgent ? (
             <MainConversationBar
@@ -93,7 +91,14 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
                         key={i}
                         className={line.source === "user" ? "text-foreground" : "text-muted-foreground"}
                       >
-                        <span className="font-medium">{line.source === "user" ? "You: " : "MOOD MNKY: "}</span>
+                        <span className="font-medium">
+                          {line.source === "user" ? "You: " : (
+                            <>
+                              <BrandMatrixText variant="MOOD MNKY" size={2} gap={0.5} className="mr-0.5 inline-block h-3.5 align-middle" />
+                              :{" "}
+                            </>
+                          )}
+                        </span>
                         {line.message}
                       </li>
                     ))}

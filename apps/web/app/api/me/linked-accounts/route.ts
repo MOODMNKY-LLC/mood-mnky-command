@@ -6,6 +6,7 @@ export type LinkedAccountsResponse = {
   shopify: { linked: boolean; linkUrl: string; manageUrl: string };
   discord: { linked: boolean; linkUrl: string };
   github: { linked: boolean; linkUrl: string };
+  steam: { linked: boolean; linkUrl: string };
 };
 
 function hasProvider(identitiesRes: { data?: unknown }, provider: string): boolean {
@@ -51,6 +52,7 @@ export async function GET() {
     !!shopifyToken || !!profileRes.data?.shopify_customer_id;
   const discordLinked = !!discordRes.data;
   const githubLinked = hasProvider(identitiesRes, "github");
+  const steamLinked = !!profileRes.data?.steamid64;
 
   const storeDomain =
     process.env.NEXT_PUBLIC_STORE_DOMAIN || process.env.PUBLIC_STORE_DOMAIN;
@@ -71,6 +73,10 @@ export async function GET() {
     github: {
       linked: githubLinked,
       linkUrl: `${baseUrl}/verse/auth/github/link`,
+    },
+    steam: {
+      linked: steamLinked,
+      linkUrl: `${baseUrl}/api/auth/steam/link`,
     },
   };
 

@@ -1,11 +1,20 @@
 import type { ServiceStatusResult } from "./types"
 
-const BASE_URL = process.env.PALWORLD_SERVER_URL?.replace(/\/$/, "")
-const API_USER = process.env.PALWORLD_API_USER || "admin"
-const API_PASSWORD = process.env.PALWORLD_API_PASSWORD
+export interface PalworldConfig {
+  baseUrl: string
+  apiUser: string
+  apiPassword: string
+}
+
+function getEnvConfig(): PalworldConfig | null {
+  const baseUrl = process.env.PALWORLD_SERVER_URL?.replace(/\/$/, "")
+  const apiUser = process.env.PALWORLD_API_USER || "admin"
+  const apiPassword = process.env.PALWORLD_API_PASSWORD
+  return baseUrl && apiPassword ? { baseUrl, apiUser, apiPassword } : null
+}
 
 export function isPalworldConfigured(): boolean {
-  return Boolean(BASE_URL && API_PASSWORD)
+  return getEnvConfig() != null
 }
 
 /**
@@ -13,22 +22,26 @@ export function isPalworldConfigured(): boolean {
  * Uses HTTP Basic Auth; AdminPassword from server config as API_PASSWORD.
  * GET /info → version, servername, description; GET /players → player list for count.
  */
-export async function getPalworldStatus(): Promise<ServiceStatusResult> {
-  if (!BASE_URL || !API_PASSWORD) {
+export async function getPalworldStatus(
+  config?: PalworldConfig | null,
+): Promise<ServiceStatusResult> {
+  const c = config ?? getEnvConfig()
+  if (!c?.baseUrl || !c.apiPassword) {
     return { error: "PALWORLD_SERVER_URL or PALWORLD_API_PASSWORD not set" }
   }
   try {
-    const basicAuth = Buffer.from(`${API_USER}:${API_PASSWORD}`).toString("base64")
+    const base = c.baseUrl.replace(/\/$/, "")
+    const basicAuth = Buffer.from(`${c.apiUser}:${c.apiPassword}`).toString("base64")
     const headers: Record<string, string> = {
       Authorization: `Basic ${basicAuth}`,
       Accept: "application/json",
     }
     const [infoRes, playersRes] = await Promise.all([
-      fetch(`${BASE_URL}/info`, {
+      fetch(`${base}/info`, {
         headers,
         signal: AbortSignal.timeout(8000),
       }),
-      fetch(`${BASE_URL}/players`, {
+      fetch(`${base}/players`, {
         headers,
         signal: AbortSignal.timeout(8000),
       }),

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { VerseButton } from "@/components/verse/ui/button";
 import { DottedMap } from "@/components/ui/dotted-map";
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text";
 import { useVerseTheme } from "./verse-theme-provider";
 import { useVerseUser } from "./verse-user-context";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -113,13 +114,15 @@ export function VerseHeroDynamic() {
       {/* Left: Intro copy + CTAs - bottom-aligned; when logged in show welcome back + custom copy */}
       <div className="flex min-h-0 flex-col justify-end gap-4 md:gap-6">
         <div className="space-y-4">
-          <h1 className="font-verse-heading text-2xl font-semibold tracking-tight text-verse-text md:text-3xl lg:text-4xl">
+          <h1 className="font-verse-heading text-2xl font-semibold tracking-tight text-verse-text md:text-3xl lg:text-4xl flex flex-wrap items-center gap-1">
             {isLoggedIn ? (
               <>
                 Welcome back, <span className="font-semibold">{name}</span>
               </>
             ) : (
-              "Welcome to MNKY VERSE"
+              <>
+                Welcome to <BrandMatrixText variant="MNKY" size={4} gap={1} className="inline-block h-7 md:h-8" /> VERSE
+              </>
             )}
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-verse-text-muted md:text-lg">

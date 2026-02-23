@@ -40,7 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DojoChatCommandPalette, DojoProjectCommandPalette } from "@/components/dojo/dojo-chat-command";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { DojoTeamSwitcher } from "@/components/dojo/dojo-team-switcher";
 import { DojoSidebarFooter } from "@/components/dojo/dojo-sidebar-footer";
 import {
@@ -108,7 +108,7 @@ export function DojoChatSidebar({
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 border-b border-sidebar-border px-2 py-3">
         <DojoTeamSwitcher />
-        <ThemeToggle
+        <AnimatedThemeToggler
           className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
           aria-label="Toggle theme"
         />

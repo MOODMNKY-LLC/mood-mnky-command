@@ -6,14 +6,13 @@ import { useEffect, useMemo, useState } from "react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { BlurFade } from "@/components/ui/blur-fade"
-import { MainShimmeringText } from "@/components/main/elevenlabs/main-shimmering-text"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern"
 import { DottedMap } from "@/components/ui/dotted-map"
-import { wave } from "@/components/ui/matrix"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { MainMatrix } from "@/components/main/elevenlabs/main-matrix"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
+import { TalkToMoodMnkyMatrixButton } from "@/components/main/elevenlabs/talk-to-mood-mnky-matrix-button"
 import { cn } from "@/lib/utils"
 import type { COBEOptions } from "cobe"
 
@@ -145,46 +144,27 @@ export function MainHeroSplit() {
             <br />
             Your story, your scent.
           </h1>
-          <p
+          <div
+            role="paragraph"
             className="mt-4 max-w-lg text-muted-foreground"
             style={{ fontSize: "var(--main-hero-subtitle-size)" }}
           >
             Extreme personalization, sensory journeys, and handcrafted blends.{" "}
-            <MainShimmeringText
-              text="Always scentsing the MOOD."
-              duration={2.5}
-              once
-            />
-          </p>
-          <div className="mt-6 flex justify-start opacity-40" aria-hidden>
-            <MainMatrix
-              rows={4}
-              cols={14}
-              frames={wave}
-              size={4}
-              gap={2}
-              className="h-6"
-            />
+            Always scentsing the{" "}
+            <BrandMatrixText variant="MOOD" size={3} gap={0.5} className="mx-0.5 inline-block h-5 align-baseline md:h-6" />
+            .
           </div>
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild size="lg" className="main-btn-float">
-              <Link href="/verse">Shop the VERSE</Link>
+              <Link href="/verse">Shop the store</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="main-btn-glass">
               <Link href="/verse/blending-guide">Customize your scent</Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              className="main-btn-float text-muted-foreground"
-              onClick={() =>
-                document
-                  .getElementById("voice-block")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              Talk to MOOD MNKY
-            </Button>
+            <TalkToMoodMnkyMatrixButton
+              className="h-12 px-4 text-lg"
+              scrollTargetId="voice-block"
+            />
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { MainAuthContext } from "@/components/main/main-auth-context"
 import { MainTalkToAgentProvider } from "@/components/main/main-talk-to-agent-context"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import "./main-site.css"
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode
@@ -43,7 +44,9 @@ export default function MainLayout({
   return (
     <div className="main-site min-h-screen bg-background text-foreground">
       <TooltipProvider>
-        <MainTalkToAgentProvider>{children}</MainTalkToAgentProvider>
+        <MainTalkToAgentProvider>
+          <MainAuthContext>{children}</MainAuthContext>
+        </MainTalkToAgentProvider>
       </TooltipProvider>
     </div>
   )

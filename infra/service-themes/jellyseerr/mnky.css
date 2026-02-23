@@ -1,0 +1,19 @@
+/* MNKY MEDIA – Jellyseerr request app – MOOD MNKY theme overrides
+   Grayscale primary per docs/DESIGN-SYSTEM.md. */
+
+:root {
+  --mnky-primary: hsl(215, 19%, 35%);
+  --mnky-primary-foreground: hsl(210, 20%, 98%);
+}
+
+.btn-primary,
+[class*="primary"] {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+  border-color: var(--mnky-primary) !important;
+}
+
+.navbar {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}

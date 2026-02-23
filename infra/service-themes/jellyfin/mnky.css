@@ -1,0 +1,29 @@
+/* MNKY MEDIA (Jellyfin) – MOOD MNKY theme overrides
+   Aligned with docs/DESIGN-SYSTEM.md grayscale primary. */
+
+:root {
+  --mnky-primary: hsl(215, 19%, 35%);
+  --mnky-primary-foreground: hsl(210, 20%, 98%);
+  --mnky-bg: #0f0f0f;
+  --mnky-text: #e2e8f0;
+  --mnky-text-muted: #94a3b8;
+}
+
+/* Accent / primary buttons */
+.btnPlay,
+.emby-button.emby-button-primary,
+[data-id="playButton"] {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+  border-color: var(--mnky-primary) !important;
+}
+
+/* Nav and headers */
+.sidebarContent,
+.paperList {
+  background-color: var(--mnky-bg);
+}
+
+.mainBackdrop {
+  background: linear-gradient(180deg, transparent 0%, var(--mnky-bg) 100%);
+}

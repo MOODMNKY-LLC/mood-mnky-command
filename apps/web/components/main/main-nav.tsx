@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Search, Menu } from "lucide-react"
+import { Search, Menu, ChevronDown } from "lucide-react"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -14,27 +14,29 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
-import { wave } from "@/components/ui/matrix"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
-import { MainMatrix } from "@/components/main/elevenlabs/main-matrix"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
+import { MainNavAuth } from "@/components/main/main-nav-auth"
 import { cn } from "@/lib/utils"
 
-const SHOP_URL =
-  typeof process.env.NEXT_PUBLIC_STORE_DOMAIN === "string" &&
-  process.env.NEXT_PUBLIC_STORE_DOMAIN.length > 0
-    ? `https://${process.env.NEXT_PUBLIC_STORE_DOMAIN.replace(/^https?:\/\//, "")}`
-    : "/verse"
+const COLLECTIONS_LINKS = [
+  { href: "/main/collections/shop", label: "Shop" },
+  { href: "/main/collections/fragrances", label: "Fragrances" },
+  { href: "/main/collections/formulas", label: "Formulas" },
+] as const
 
 const NAV_LINKS = [
   { href: "/main/about", label: "About" },
-  { href: "/main/fragrances", label: "Fragrances" },
-  { href: "/main/formulas", label: "Formulas" },
-  { href: "/main/collections", label: "Collections" },
   { href: "/main/design", label: "Design" },
+  { href: "/main/services", label: "Services" },
   { href: "/main/community", label: "Community" },
-  { href: SHOP_URL, label: "Shop" },
-  { href: "/auth/login", label: "Sign in" },
 ] as const
 
 function MainSearchForm({
@@ -69,9 +71,9 @@ function MainSearchForm({
           name="q"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search fragrances, formulas, and more…"
+          placeholder="Search fragrances, formulas, services, and more…"
           className="h-9 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-          aria-label="Search fragrances, formulas, and more"
+          aria-label="Search fragrances, formulas, and services"
         />
       </div>
     </form>
@@ -99,23 +101,18 @@ export function MainNav() {
           className="relative flex shrink-0 items-center gap-2 overflow-hidden rounded-md py-1 pr-1 text-lg font-semibold text-foreground transition-colors hover:text-primary"
           aria-label="MOOD MNKY – Home"
         >
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center opacity-30" aria-hidden>
-            <MainMatrix
-              rows={7}
-              cols={7}
-              frames={wave}
-              size={3}
-              gap={1}
-              className="h-9 w-12 opacity-70"
-            />
-          </span>
           <VerseLogoHairIcon
             withRing
             size="sm"
             className="relative z-10 text-foreground"
             ringClassName="border-foreground/80"
           />
-          <span className="relative z-10">MOOD MNKY</span>
+          <BrandMatrixText
+            variant="MOOD MNKY"
+            size={3}
+            gap={1}
+            className="h-6 w-auto"
+          />
         </Link>
 
         {/* Center: search bar – hidden on small screens, shown md+ */}
@@ -123,17 +120,40 @@ export function MainNav() {
           <MainSearchForm />
         </div>
 
-        {/* Right: theme toggler + nav links – hidden on small screens */}
+        {/* Right: theme toggler + nav links + collections dropdown – hidden on small screens */}
         <div className="hidden items-center gap-5 lg:flex xl:gap-6">
           <AnimatedThemeToggler
             className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Toggle theme"
           />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(linkClass, "flex items-center gap-0.5 outline-none")}
+              aria-haspopup="menu"
+              aria-label="Collections menu"
+            >
+              Collections
+              <ChevronDown className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="main-glass-panel-card min-w-[10rem] border-border rounded-xl p-1"
+            >
+              {COLLECTIONS_LINKS.map(({ href, label }) => (
+                <DropdownMenuItem key={href} asChild>
+                  <Link href={href} className="cursor-pointer">
+                    {label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {NAV_LINKS.map(({ href, label }) => (
             <Link key={href} href={href} className={linkClass}>
               {label}
             </Link>
           ))}
+          <MainNavAuth />
         </div>
 
         {/* Mobile: menu button */}
@@ -166,6 +186,7 @@ export function MainNav() {
               <Button
                 variant="outline"
                 className="w-full justify-center"
+                aria-label="Talk to MOOD MNKY"
                 onClick={() => {
                   talk.openDialog()
                   setOpen(false)
@@ -177,7 +198,7 @@ export function MainNav() {
                   className="mr-2 text-foreground"
                   ringClassName="border-foreground/80"
                 />
-                Talk to MOOD MNKY
+                Talk to <BrandMatrixText variant="MOOD MNKY" size={2} gap={1} className="ml-1 inline-block h-4 align-middle" />
               </Button>
             )}
             <MainSearchForm
@@ -185,6 +206,32 @@ export function MainNav() {
               onSubmitted={() => setOpen(false)}
             />
             <div className="flex flex-col gap-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(linkClass, "flex items-center gap-1 outline-none text-left")}
+                  aria-haspopup="menu"
+                  aria-label="Collections menu"
+                >
+                  Collections
+                  <ChevronDown className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="main-glass-panel-card border-border rounded-xl p-1"
+                >
+                  {COLLECTIONS_LINKS.map(({ href, label }) => (
+                    <DropdownMenuItem key={href} asChild>
+                      <Link
+                        href={href}
+                        className="cursor-pointer"
+                        onClick={() => setOpen(false)}
+                      >
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               {NAV_LINKS.map(({ href, label }) => (
                 <Link
                   key={href}
@@ -195,6 +242,7 @@ export function MainNav() {
                   {label}
                 </Link>
               ))}
+              <MainNavAuth className="self-start" />
             </div>
           </SheetContent>
         </Sheet>

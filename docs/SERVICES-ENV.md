@@ -14,6 +14,7 @@ Credentials are **server-only**; never use `NEXT_PUBLIC_` for API keys or secret
 | **MNKY AUTO** (n8n) | `N8N_API_URL`, `N8N_API_KEY` | Already in `.env.example`. Base URL and API key; header `X-N8N-API-KEY`. Used for workflow list/count and active workflows. |
 | **MNKY AGENTS** (Flowise) | `FLOWISE_BASE_URL`, `FLOWISE_API_KEY` | Already in `.env.example`. Used for chatflow list/count and health. |
 | **MNKY GAMES** (featured: Palworld) | `PALWORLD_SERVER_URL`, `PALWORLD_API_PASSWORD`, optional `PALWORLD_API_USER` | Palworld dedicated server REST API (RESTAPIEnabled=True, RESTAPIPort default 8212). HTTP Basic Auth; password = server’s AdminPassword. Used for GET /info (version, servername) and GET /players (player count). Live status on MNKY GAMES card reflects the featured game. Not designed for direct Internet exposure—use behind VPN or proxy. |
+| **Steam** (MNKY GAMES — Link Steam) | `STEAM_WEB_API_KEY`; optional `STEAM_REALM`, `STEAM_RETURN_URL` | From [Steam Web API Key](https://steamcommunity.com/dev/apikey). Server-only; used for GetPlayerSummaries after linking. When `STEAM_REALM` and `STEAM_RETURN_URL` are set (e.g. `https://mnky-verse.moodmnky.com` and `https://mnky-verse.moodmnky.com/api/auth/steam/callback`), the OpenID flow is pinned to that domain; otherwise request origin is used. Sync to Vercel for the env where the app runs. |
 | **MOOD MNKY Experience** | (none) | Uses existing Shopify/verse integrations; no separate service API. |
 
 ## Behavior when unset

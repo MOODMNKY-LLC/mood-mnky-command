@@ -43,8 +43,12 @@ export function BlurFade({
 }: BlurFadeProps) {
   const ref = useRef(null)
   const inViewResult = useInView(ref, { once: true, margin: inViewMargin })
-  const isInView = !inView || inViewResult
+  const [hasMounted, setHasMounted] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+  const isInView = !inView || (hasMounted && inViewResult)
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
     setPrefersReducedMotion(mq.matches)

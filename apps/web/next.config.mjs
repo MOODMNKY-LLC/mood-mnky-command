@@ -1,9 +1,11 @@
 import { spawnSync } from "node:child_process"
+import { randomUUID } from "node:crypto"
 import withSerwistInit from "@serwist/next"
 
 /** @type {import('next').NextConfig} */
 // Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
 const nextConfig = {
+  serverExternalPackages: ["openid"],
   async headers() {
     return [
       {
@@ -81,8 +83,8 @@ const nextConfig = {
 }
 
 const revision =
-  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ??
-  crypto.randomUUID()
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ||
+  randomUUID()
 
 const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [

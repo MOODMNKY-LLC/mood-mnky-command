@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import { FlaskConical, Droplets, Package, Palette, Loader2 } from "lucide-react"
@@ -17,6 +17,14 @@ import { dashboardConfig } from "@/lib/dashboard-config"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
+type DashboardConfigApi = {
+  sectionOrder: string[]
+  showLabzHubCard: boolean
+  defaultStatsRefreshInterval: number
+  showLabzPagesCountInStats: boolean
+  showConnectAlert: boolean
+}
+
 function StatSkeleton() {
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-6">
@@ -29,10 +37,27 @@ function StatSkeleton() {
 
 export default function DashboardPage() {
   const [connectAlertDismissed, setConnectAlertDismissed] = useState(false)
+  const { data: configApi } = useSWR<DashboardConfigApi>(
+    "/api/labz/dashboard-config",
+    fetcher,
+    { revalidateOnFocus: false },
+  )
+  const config = useMemo(
+    () =>
+      configApi ?? {
+        sectionOrder: dashboardConfig.sectionOrder,
+        showLabzHubCard: dashboardConfig.showLabzHubCard,
+        defaultStatsRefreshInterval: dashboardConfig.defaultStatsRefreshInterval,
+        showLabzPagesCountInStats: dashboardConfig.showLabzPagesCountInStats,
+        showConnectAlert: dashboardConfig.showConnectAlert,
+      },
+    [configApi],
+  )
+
   const { data: stats, isLoading } = useSWR("/api/dashboard/stats", fetcher, {
     revalidateOnFocus: false,
     errorRetryCount: 2,
-    dedupingInterval: dashboardConfig.defaultStatsRefreshInterval,
+    dedupingInterval: config.defaultStatsRefreshInterval,
   })
 
   const bothDisconnected =
@@ -41,11 +66,9 @@ export default function DashboardPage() {
     !stats.notionConnected &&
     !stats.shopifyConnected
   const showConnectAlert =
-    dashboardConfig.showConnectAlert && bothDisconnected && !connectAlertDismissed
+    config.showConnectAlert && bothDisconnected && !connectAlertDismissed
 
-  const secondRowSections = dashboardConfig.sectionOrder.filter(
-    (id) => id !== "stats"
-  )
+  const secondRowSections = config.sectionOrder.filter((id) => id !== "stats")
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -129,13 +152,14 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4">
         {secondRowSections.map((id) => {
-          if (id === "labzHub" && !dashboardConfig.showLabzHubCard) return null
+          if (id === "labzHub" && !config.showLabzHubCard) return null
           if (id === "labzHub")
             return (
               <LabzHubCard
                 key="labzHub"
                 labzPagesCount={stats?.labzPagesCount}
                 glossaryCount={stats?.glossaryCount}
+                showLabzPagesCountInStats={config.showLabzPagesCountInStats}
               />
             )
           if (id === "activityFeed")

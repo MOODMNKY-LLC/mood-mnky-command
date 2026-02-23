@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { FlaskConical, Sun, Moon, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
+import { FlaskConical, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { VerseHeaderShopifyLink } from "./verse-header-shopify-link";
 import { ShopAuthDialog } from "./shop-auth-dialog";
 import { AppInfoDialog } from "@/components/app-info-dialog";
 import { createClient } from "@/lib/supabase/client";
-import { useVerseTheme } from "./verse-theme-provider";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { VerseButton } from "@/components/verse/ui/button";
 import {
   DropdownMenu,
@@ -28,7 +28,6 @@ export function VerseHeader({
   user?: VerseUser;
   shopifyLinked?: boolean;
 }) {
-  const { theme, toggleTheme } = useVerseTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [shopAuthOpen, setShopAuthOpen] = useState(false);
@@ -190,19 +189,10 @@ export function VerseHeader({
           {user && (
             <VerseHeaderShopifyLink userId={user.id} />
           )}
-          <VerseButton
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-11 w-11 min-h-[44px] min-w-[44px]"
-            title={theme === "light" ? "Switch to dark" : "Switch to light"}
-          >
-            {theme === "light" ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-          </VerseButton>
+          <AnimatedThemeToggler
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-verse-text hover:bg-verse-bg-hover hover:text-verse-text"
+            aria-label="Toggle theme"
+          />
           <AppInfoDialog variant="verse" />
         </div>
       </div>

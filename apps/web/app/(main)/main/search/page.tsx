@@ -10,10 +10,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { FragranceOil } from "@/lib/types"
 import type { Formula } from "@/lib/types"
 import { FORMULA_CATEGORY_LABELS } from "@/lib/types"
-import { FlaskConical, Search } from "lucide-react"
+import type { MainServiceItem } from "@/lib/main-services-data"
+import { FlaskConical, Search, Server } from "lucide-react"
 
 const DEBOUNCE_MS = 350
-type FilterType = "all" | "fragrances" | "formulas"
+type FilterType = "all" | "fragrances" | "formulas" | "services"
 
 function highlightQuery(text: string, query: string): React.ReactNode {
   if (!text || !query.trim()) return text
@@ -50,6 +51,7 @@ export default function MainSearchPage() {
   const [filterType, setFilterType] = useState<FilterType>("all")
   const [oils, setOils] = useState<FragranceOil[]>([])
   const [formulas, setFormulas] = useState<Formula[]>([])
+  const [services, setServices] = useState<MainServiceItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -74,6 +76,7 @@ export default function MainSearchPage() {
     if (!q.trim()) {
       setOils([])
       setFormulas([])
+      setServices([])
       setLoading(false)
       setError(null)
       return
@@ -87,6 +90,7 @@ export default function MainSearchPage() {
         if (cancelled) return
         setOils(data.fragranceOils ?? [])
         setFormulas(data.formulas ?? [])
+        setServices(data.services ?? [])
       })
       .catch((e) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load")
@@ -118,9 +122,9 @@ export default function MainSearchPage() {
               type="search"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Search fragrances, formulas, and more…"
+              placeholder="Search fragrances, formulas, services, and more…"
               className="h-9 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-              aria-label="Search fragrances and formulas"
+              aria-label="Search fragrances, formulas, and services"
             />
           </div>
           {hasQuery && (
@@ -129,13 +133,14 @@ export default function MainSearchPage() {
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="fragrances">Fragrances</TabsTrigger>
                 <TabsTrigger value="formulas">Formulas</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
               </TabsList>
             </Tabs>
           )}
           <p className="text-muted-foreground">
             {hasQuery
               ? `Results for “${q}”`
-              : "Search fragrances and formulas below."}
+              : "Search fragrances, formulas, and services below."}
           </p>
         </div>
 
@@ -155,14 +160,15 @@ export default function MainSearchPage() {
           </div>
         ) : !hasQuery ? (
           <p className="text-muted-foreground">
-            Enter a search term in the header to find fragrances and formulas.
+            Enter a search term in the header to find fragrances, formulas, and services.
           </p>
         ) : !hasResults ? (
           <MainGlassCard className="main-glass-panel-card">
             <p className="text-muted-foreground">
-              No fragrances or formulas matched “{q}”. Try a different term or
-              browse <Link href="/main/fragrances" className="text-primary underline">Fragrances</Link> or{" "}
-              <Link href="/main/formulas" className="text-primary underline">Formulas</Link>.
+              No fragrances, formulas, or services matched “{q}”. Try a different term or
+              browse <Link href="/main/collections/fragrances" className="text-primary underline">Fragrances</Link>,{" "}
+              <Link href="/main/collections/formulas" className="text-primary underline">Formulas</Link>, or{" "}
+              <Link href="/main/services" className="text-primary underline">Services</Link>.
             </p>
           </MainGlassCard>
         ) : (
@@ -188,7 +194,7 @@ export default function MainSearchPage() {
                   {filteredFormulas.map((formula) => (
                     <Link
                       key={formula.id}
-                      href="/main/formulas"
+                      href="/main/collections/formulas"
                       className="block"
                     >
                       <MainGlassCard className="main-float main-glass-panel-card flex flex-col gap-2 p-5">
@@ -212,6 +218,41 @@ export default function MainSearchPage() {
                           {" · "}
                           {formula.phases.length} phases
                         </span>
+                      </MainGlassCard>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+            {filteredServices.length > 0 && (
+              <section>
+                <h2 className="mb-4 text-lg font-semibold text-foreground">
+                  Services ({filteredServices.length})
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredServices.map((service) => (
+                    <Link
+                      key={service.id}
+                      href={`/main/services/${service.id}`}
+                      className="block"
+                    >
+                      <MainGlassCard className="main-float main-glass-panel-card flex flex-col gap-2 p-5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <Server className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground">
+                              {highlightQuery(service.name, q)}
+                            </h3>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {highlightQuery(service.tagline, q)}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {highlightQuery(service.description, q)}
+                        </p>
                       </MainGlassCard>
                     </Link>
                   ))}

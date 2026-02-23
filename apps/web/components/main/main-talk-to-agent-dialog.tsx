@@ -16,6 +16,7 @@ import {
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 
 type MainElevenLabsConfigGet = {
   agentId: string | null
@@ -179,7 +180,12 @@ export function MainTalkToAgentDialog() {
                           }
                         >
                           <span className="font-medium">
-                            {line.source === "user" ? "You: " : "MOOD MNKY: "}
+                            {line.source === "user" ? "You: " : (
+                              <>
+                                <BrandMatrixText variant="MOOD MNKY" size={2} gap={0.5} className="mr-0.5 inline-block h-3.5 align-middle" />
+                                :{" "}
+                              </>
+                            )}
                           </span>
                           {line.message}
                         </li>

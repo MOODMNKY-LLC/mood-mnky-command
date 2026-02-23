@@ -12,6 +12,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -102,19 +109,41 @@ export function MainCustomizationAgentsSplit({
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4">
-              {agents.map((agent) => (
-                <MainAgentCard
-                  key={agent.slug}
-                  slug={agent.slug}
-                  displayName={agent.displayName}
-                  role={roleFromDisplayName(agent.displayName)}
-                  description={agent.blurb ?? ""}
-                  imagePath={agent.imagePath}
-                  model={agent.model}
-                  tools={agent.tools}
-                />
-              ))}
+            <div className="relative w-full">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                  containScroll: "trimSnaps",
+                  dragFree: false,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-4 flex flex-nowrap">
+                  {agents.map((agent) => (
+                    <CarouselItem
+                      key={agent.slug}
+                      className="basis-[200px] pl-4 sm:basis-[200px]"
+                    >
+                      <MainAgentCard
+                        slug={agent.slug}
+                        displayName={agent.displayName}
+                        role={roleFromDisplayName(agent.displayName)}
+                        description={agent.blurb ?? ""}
+                        imagePath={agent.imagePath}
+                        model={agent.model}
+                        tools={agent.tools}
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {agents.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-0 top-1/2 -translate-y-1/2 border-border bg-background/80 backdrop-blur-sm hover:bg-background" />
+                    <CarouselNext className="right-0 top-1/2 -translate-y-1/2 border-border bg-background/80 backdrop-blur-sm hover:bg-background" />
+                  </>
+                )}
+              </Carousel>
             </div>
 
             {/* Voice/agent switcher – ElevenLabs UI for visual break and appeal */}

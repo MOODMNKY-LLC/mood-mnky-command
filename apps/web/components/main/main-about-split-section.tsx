@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { User } from "lucide-react"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
-import { Shimmer } from "@/components/ai-elements/shimmer"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MAIN_ABOUT_FOUNDER, MAIN_ABOUT_BRAND } from "@/lib/main-about-data"
 import { cn } from "@/lib/utils"
 
@@ -113,7 +113,7 @@ export function MainAboutSplitSection({ className }: MainAboutSplitSectionProps)
                   The brain child
                 </p>
                 <h3 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
-                  <Shimmer as="span" duration={2.5}>MOOD MNKY</Shimmer>
+                  <BrandMatrixText variant="MOOD MNKY" size={4} gap={1} className="inline-block h-7 md:h-8" />
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground">

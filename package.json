@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "clean": "node scripts/clean-cache.mjs",
+    "publish:infra": "dotenv -e .env.local -e .env -- pnpm --filter web exec tsx scripts/publish-infra-artifacts.ts",
     "clean:deep": "pnpm run clean && pnpm store prune",
     "build": "dotenv -e .env.local -e .env -- turbo run build",
     "dev": "dotenv -e .env.local -e .env -- turbo run dev",

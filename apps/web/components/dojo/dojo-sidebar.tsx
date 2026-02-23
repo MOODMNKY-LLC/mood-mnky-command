@@ -16,7 +16,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { DojoMusicPlayer } from "@/components/dojo/dojo-music-player";
 import { DojoNavMain } from "@/components/dojo/dojo-nav-main";
 import { DojoNavProjects } from "@/components/dojo/dojo-nav-projects";
@@ -48,7 +48,7 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
             <span className="truncate">Dojo</span>
           </div>
         )}
-        <ThemeToggle
+        <AnimatedThemeToggler
           className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
           aria-label="Toggle theme"
         />

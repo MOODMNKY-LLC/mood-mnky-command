@@ -1,8 +1,10 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LogOut, ChevronRight, Home } from "lucide-react"
+import { LogOut, ChevronRight, Home, FileText } from "lucide-react"
+import useSWR from "swr"
 import {
   storeItems,
   createAndChatItems,
@@ -10,6 +12,7 @@ import {
   verseItemsWithBackoffice,
   platformDataAdminItems,
   platformAutomationItems,
+  platformSettingsItems,
   productDataItems,
   productBuilderItems,
   labGroupBadge,
@@ -31,8 +34,10 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuAction,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -44,7 +49,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import type { NavItem, NavItemWithChildren } from "@/lib/sidebar-config"
 
 // ---------------------------------------------------------------------------
@@ -95,10 +100,22 @@ function NavItemList({
   )
 }
 
+const statsFetcher = (url: string) => fetch(url).then((r) => r.json())
+
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { contextId } = useLabzContext()
+  const [navFilter, setNavFilter] = useState("")
+  const { data: stats } = useSWR<{ totalFormulas?: number; totalProducts?: number }>(
+    contextId === "lab" ? "/api/dashboard/stats" : null,
+    statsFetcher,
+    { revalidateOnFocus: false },
+  )
+
+  const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/members")
+  const platformAutoOpen = pathname.startsWith("/platform/funnels") || pathname.startsWith("/platform/flowise") || pathname.startsWith("/platform/storefront") || pathname.startsWith("/platform/services") || pathname.startsWith("/platform/artifacts")
+  const platformSettingsOpen = pathname.startsWith("/platform/settings") || pathname.startsWith("/platform/integrations")
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -117,13 +134,23 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 border-b border-sidebar-border px-2 py-3">
         <LabzContextSwitcher />
-        <ThemeToggle
+        <AnimatedThemeToggler
           className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
           aria-label="Toggle theme"
         />
       </SidebarHeader>
 
       <SidebarContent>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupContent>
+            <SidebarInput
+              placeholder="Filter nav..."
+              value={navFilter}
+              onChange={(e) => setNavFilter(e.target.value)}
+              className="h-8"
+            />
+          </SidebarGroupContent>
+        </SidebarGroup>
         {showLab && (
           <>
             <SidebarGroup>
@@ -136,14 +163,49 @@ export function AppSidebar() {
                 )}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <NavItemList pathname={pathname} items={productDataItems} exactRoot="/" />
+                <SidebarMenu>
+                  {productDataItems.map((item) => {
+                    const show = !navFilter || item.title.toLowerCase().includes(navFilter.toLowerCase())
+                    if (!show) return null
+                    const isDashboard = item.href === "/"
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(pathname, item.href, true)}
+                          tooltip={item.title}
+                          className={pathname === "/" && item.href === "/" ? "bg-sidebar-accent/80" : undefined}
+                        >
+                          <Link href={item.href}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                            {isDashboard && stats?.totalFormulas != null && (
+                              <SidebarMenuBadge>{stats.totalFormulas}</SidebarMenuBadge>
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarSeparator />
             <SidebarGroup>
               <SidebarGroupLabel>Product Builder</SidebarGroupLabel>
               <SidebarGroupContent>
-                <NavItemList pathname={pathname} items={productBuilderItems} />
+                <SidebarMenu>
+                  {productBuilderItems.filter((item) => !navFilter || item.title.toLowerCase().includes(navFilter.toLowerCase())).map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive(pathname, item.href)} tooltip={item.title}>
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarSeparator />
@@ -151,7 +213,7 @@ export function AppSidebar() {
               <SidebarGroupLabel>Integrations</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {integrationsItems.map((item) => (
+                  {integrationsItems.filter((item) => !navFilter || item.title.toLowerCase().includes(navFilter.toLowerCase())).map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton asChild isActive={isActive(pathname, item.href)} tooltip={item.title}>
                         <Link href={item.href}>
@@ -304,7 +366,7 @@ export function AppSidebar() {
 
         {showStore && (
           <>
-            <Collapsible defaultOpen={false} className="group/store">
+            <Collapsible defaultOpen={pathname.startsWith("/store")} className="group/store">
               <SidebarGroup>
                 <SidebarGroupLabel asChild>
                   <CollapsibleTrigger className="flex w-full items-center">
@@ -375,7 +437,7 @@ export function AppSidebar() {
 
         {showPlatform && (
           <>
-            <Collapsible defaultOpen={false} className="group/platform-data">
+            <Collapsible defaultOpen={platformDataOpen} className="group/platform-data">
               <SidebarGroup>
                 <SidebarGroupLabel asChild>
                   <CollapsibleTrigger className="flex w-full items-center">
@@ -395,7 +457,7 @@ export function AppSidebar() {
               </SidebarGroup>
             </Collapsible>
             <SidebarSeparator />
-            <Collapsible defaultOpen={false} className="group/platform-auto">
+            <Collapsible defaultOpen={platformAutoOpen} className="group/platform-auto">
               <SidebarGroup>
                 <SidebarGroupLabel asChild>
                   <CollapsibleTrigger className="flex w-full items-center">
@@ -411,6 +473,22 @@ export function AppSidebar() {
               </SidebarGroup>
             </Collapsible>
             <SidebarSeparator />
+            <Collapsible defaultOpen={platformSettingsOpen} className="group/platform-settings">
+              <SidebarGroup>
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger className="flex w-full items-center">
+                    Settings & Integrations
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/platform-settings:rotate-90" />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <NavItemList pathname={pathname} items={platformSettingsItems} />
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+            <SidebarSeparator />
           </>
         )}
       </SidebarContent>
@@ -418,6 +496,14 @@ export function AppSidebar() {
       {/* ---- Footer ---- */}
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Documentation">
+              <Link href="/docs">
+                <FileText className="h-4 w-4" />
+                <span>Docs</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="MOOD MNKY home">
               <Link href="/main">

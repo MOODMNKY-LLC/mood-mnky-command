@@ -7,6 +7,8 @@ import {
   MainShimmeringText,
   MainBarVisualizer,
   MainMatrix,
+  BrandMatrixText,
+  TalkToMoodMnkyMatrixButton,
   MainMessage,
   MainResponse,
   MainLiveWaveform,
@@ -214,6 +216,16 @@ export function ComponentLibraryContent() {
             <div className="h-20 w-32 overflow-hidden rounded">
               <MainMatrix className="size-full" />
             </div>
+          </DemoCard>
+          <DemoCard title="Brand matrix text" description="MOOD, MNKY, MOOD MNKY as matrix glyphs">
+            <div className="flex flex-col gap-3">
+              <BrandMatrixText variant="MOOD" size={4} gap={1} className="h-6" />
+              <BrandMatrixText variant="MNKY" size={4} gap={1} className="h-6" />
+              <BrandMatrixText variant="MOOD MNKY" size={3} gap={1} className="h-5" />
+            </div>
+          </DemoCard>
+          <DemoCard title="Talk to MOOD MNKY (scrolling CTA)" description="Hero CTA: matrix-as-button with scrolling phrase; respects prefers-reduced-motion">
+            <TalkToMoodMnkyMatrixButton className="h-12 px-4 text-lg" />
           </DemoCard>
           <DemoCard title="Message" description="Chat message bubble">
             <MainMessage

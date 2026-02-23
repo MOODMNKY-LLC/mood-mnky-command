@@ -13,9 +13,15 @@ interface LabzHubCardProps {
   labzPagesCount?: number
   /** Optional glossary (fragrance_notes) count for display in hub. */
   glossaryCount?: number
+  /** When true, show labz pages and glossary counts. Defaults to dashboardConfig when not passed. */
+  showLabzPagesCountInStats?: boolean
 }
 
-export function LabzHubCard({ labzPagesCount, glossaryCount }: LabzHubCardProps) {
+export function LabzHubCard({
+  labzPagesCount,
+  glossaryCount,
+  showLabzPagesCountInStats = dashboardConfig.showLabzPagesCountInStats,
+}: LabzHubCardProps) {
   const [isSyncing, setIsSyncing] = useState(false)
 
   const handleSyncAllAppWide = async () => {
@@ -69,7 +75,7 @@ export function LabzHubCard({ labzPagesCount, glossaryCount }: LabzHubCardProps)
         <p className="text-sm text-muted-foreground">
           Sync Notion and Shopify, then manage store MNKY LABZ pages.
         </p>
-        {dashboardConfig.showLabzPagesCountInStats && (typeof labzPagesCount === "number" || typeof glossaryCount === "number") && (
+        {showLabzPagesCountInStats && (typeof labzPagesCount === "number" || typeof glossaryCount === "number") && (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             {typeof labzPagesCount === "number" && (
               <span>MNKY LABZ pages on store: <span className="font-medium text-foreground">{labzPagesCount}</span></span>

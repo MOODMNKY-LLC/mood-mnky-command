@@ -1,23 +1,35 @@
 import type { ServiceStatusResult } from "./types"
 
-const BASE_URL = process.env.TRUENAS_BASE_URL?.replace(/\/$/, "")
-const API_KEY = process.env.TRUENAS_API_KEY
+export interface TrueNasConfig {
+  baseUrl: string
+  apiKey: string
+}
+
+function getEnvConfig(): TrueNasConfig | null {
+  const baseUrl = process.env.TRUENAS_BASE_URL?.replace(/\/$/, "")
+  const apiKey = process.env.TRUENAS_API_KEY
+  return baseUrl && apiKey ? { baseUrl, apiKey } : null
+}
 
 export function isTrueNasConfigured(): boolean {
-  return Boolean(BASE_URL && API_KEY)
+  return getEnvConfig() != null
 }
 
 /**
  * TrueNAS SCALE: newer versions use JSON-RPC over WebSocket; REST was deprecated.
  * We try REST /api/v2.0/system/info for older SCALE.
  */
-export async function getTrueNasStatus(): Promise<ServiceStatusResult> {
-  if (!BASE_URL || !API_KEY) {
+export async function getTrueNasStatus(
+  config?: TrueNasConfig | null,
+): Promise<ServiceStatusResult> {
+  const c = config ?? getEnvConfig()
+  if (!c?.baseUrl || !c.apiKey) {
     return { error: "TRUENAS_BASE_URL or TRUENAS_API_KEY not set" }
   }
   try {
-    const res = await fetch(`${BASE_URL}/api/v2.0/system/info`, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
+    const base = c.baseUrl.replace(/\/$/, "")
+    const res = await fetch(`${base}/api/v2.0/system/info`, {
+      headers: { Authorization: `Bearer ${c.apiKey}` },
       signal: AbortSignal.timeout(8000),
     })
     if (!res.ok) {

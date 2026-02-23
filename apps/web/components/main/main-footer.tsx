@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { OpenInChat } from "@/components/ai-elements/open-in-chat"
-import { Shimmer } from "@/components/ai-elements/shimmer"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
+import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 
 const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
 
@@ -24,9 +24,7 @@ export function MainFooter() {
             className="text-foreground"
             ringClassName="border-foreground/80"
           />
-          <Shimmer as="span" duration={3} spread={1.5}>
-            MOOD MNKY
-          </Shimmer>
+          <BrandMatrixText variant="MOOD MNKY" size={3} gap={1} className="h-5" />
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
           <Link
@@ -35,8 +33,9 @@ export function MainFooter() {
           >
             About
           </Link>
-          <Link href="/verse" className="transition-colors hover:text-foreground">
-            MNKY VERSE
+          <Link href="/verse" className="transition-colors hover:text-foreground flex items-center gap-1">
+            <BrandMatrixText variant="MNKY" size={2} gap={1} className="h-4" />
+            <span> VERSE</span>
           </Link>
           <Link
             href="/verse/blog"
@@ -55,10 +54,14 @@ export function MainFooter() {
           <OpenInChat query={DEFAULT_FOOTER_QUERY} />
         </div>
       </div>
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} MOOD MNKY. Fragrance, Community,
-        Innovation.
-      </p>
+      <div
+        role="paragraph"
+        className="mt-4 flex flex-wrap items-center justify-center gap-1 text-center text-xs text-muted-foreground"
+      >
+        &copy; {new Date().getFullYear()}{" "}
+        <BrandMatrixText variant="MOOD MNKY" size={2} gap={0.5} className="inline-block h-3.5" />
+        . Fragrance, Community, Innovation.
+      </div>
     </footer>
   )
 }

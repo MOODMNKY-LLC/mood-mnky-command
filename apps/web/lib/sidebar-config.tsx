@@ -39,6 +39,10 @@ import {
   Trophy,
   Activity,
   HardDrive,
+  BarChart3,
+  Settings,
+  Link2,
+  Box,
 } from "lucide-react"
 
 export interface NavItem {
@@ -182,11 +186,19 @@ export const platformDataAdminItems: NavItem[] = [
   { title: "Members", href: "/members", icon: Users },
 ]
 
-/** Platform: Automation & Workflows (funnels, Flowise, storefront assistant). */
+/** Platform: Automation & Workflows (funnels, Flowise, storefront assistant, deployed services, infra). */
 export const platformAutomationItems: NavItem[] = [
   { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
   { title: "Flowise", href: "/platform/flowise", icon: Workflow },
   { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
+  { title: "Service Analytics", href: "/platform/services", icon: BarChart3 },
+  { title: "Infra Artifacts", href: "/platform/artifacts", icon: Box },
+]
+
+/** Platform: Settings and Integrations hub. */
+export const platformSettingsItems: NavItem[] = [
+  { title: "Settings", href: "/platform/settings", icon: Settings },
+  { title: "Integrations", href: "/platform/integrations", icon: Link2 },
 ]
 
 /** Platform (Supabase, funnels, tables, etc.). Combined for backward compatibility. */
