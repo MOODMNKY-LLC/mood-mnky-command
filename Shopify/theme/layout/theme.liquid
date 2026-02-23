@@ -222,12 +222,14 @@
         --glass-bg-alpha: {{ settings.glass_opacity }};
         --glass-blur: {{ settings.glass_blur }}px;
         --glass-border-alpha: 0.18;
-        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        --glass-radius: 1rem;
         {% else %}
         --glass-bg-alpha: 0.98;
         --glass-blur: 0px;
         --glass-border-alpha: 0.08;
         --glass-shadow: none;
+        --glass-radius: 0;
         {% endif %}
       }
 

@@ -195,7 +195,7 @@
     "color_schemes": {
       "background-1": {
         "settings": {
-          "background": "#0a0a0a",
+          "background": "#0f0f0f",
           "background_gradient": "",
           "text": "#fafafa",
           "button": "#404040",
@@ -217,7 +217,7 @@
       },
       "inverse": {
         "settings": {
-          "background": "#fafafa",
+          "background": "#ffffff",
           "background_gradient": "",
           "text": "#171717",
           "button": "#404040",

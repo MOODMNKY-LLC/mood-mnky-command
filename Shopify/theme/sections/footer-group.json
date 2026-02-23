@@ -18,7 +18,7 @@
           "type": "text",
           "settings": {
             "heading": "MOOD MNKY",
-            "subtext": "<p>Bespoke fragrance in the MNKY VERSE. <a href=\"https://www.moodmnky.com\">MOOD MNKY</a> – Always scentsing the MOOD.</p>"
+            "subtext": "<p>Bespoke fragrance in the MNKY VERSE. Always scentsing the MOOD.</p>"
           }
         },
         "footer-0": {
@@ -32,7 +32,7 @@
           "type": "text",
           "settings": {
             "heading": "Community",
-            "subtext": "<p>Join our <a href=\"#\">Discord</a>, read the <a href=\"/blogs/hello-welcome-to-mood-mnky\">store blog</a>, explore the <a href=\"https://mnky-verse.moodmnky.com/verse/blog\">MNKY VERSE blog</a>, or visit <a href=\"https://www.moodmnky.com\">www.moodmnky.com</a>.</p>"
+            "subtext": "<p>Join our <a href=\"#\">Discord</a>, read the <a href=\"/blogs/hello-welcome-to-mood-mnky\">store blog</a>, or explore the <a href=\"https://mnky-command.moodmnky.com/verse/blog\">MNKY VERSE blog</a>.</p>"
           }
         }
       },
