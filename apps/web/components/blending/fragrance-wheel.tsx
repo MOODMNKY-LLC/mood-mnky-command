@@ -30,10 +30,14 @@ export function FragranceWheel({
     null
   )
   const activeFamily = hoveredFamily || selectedFamily || null
-  const kindred = activeFamily ? FAMILY_KINDRED[activeFamily] : []
-  const complementary = activeFamily
-    ? FAMILY_COMPLEMENTARY[activeFamily]
-    : null
+  const kindred =
+    activeFamily && activeFamily in FAMILY_KINDRED
+      ? FAMILY_KINDRED[activeFamily as FragranceFamily]
+      : []
+  const complementary =
+    activeFamily && activeFamily in FAMILY_COMPLEMENTARY
+      ? FAMILY_COMPLEMENTARY[activeFamily as FragranceFamily]
+      : null
 
   const families = [...FRAGRANCE_FAMILIES]
   const total = families.length

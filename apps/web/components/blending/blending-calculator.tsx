@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import type { FragranceOil, ProductType, FragranceFamily } from "@/lib/types"
 import { FragranceSelectorDialog } from "@/components/blending/fragrance-selector-dialog"
-import { PRODUCT_TYPE_LABELS, FAMILY_COLORS } from "@/lib/types"
+import { PRODUCT_TYPE_LABELS, FAMILY_COLORS, getFamilyColor } from "@/lib/types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -188,18 +188,18 @@ export function BlendingCalculator() {
           <CardTitle className="text-sm text-foreground flex items-center gap-2">
             <Droplets className="h-4 w-4 text-primary" />
             Fragrance Blend
-            {blendFamilies.length > 0 && (
-              <span className="flex gap-1 ml-2">
-                {blendFamilies.map((f) => (
-                  <span
-                    key={f}
-                    className="inline-block h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: FAMILY_COLORS[f] }}
-                    title={f}
-                  />
-                ))}
-              </span>
-            )}
+                {blendFamilies.length > 0 && (
+                  <span className="flex gap-1 ml-2">
+                    {blendFamilies.map((f) => (
+                      <span
+                        key={f}
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: getFamilyColor(f) }}
+                        title={f}
+                      />
+                    ))}
+                  </span>
+                )}
           </CardTitle>
           <Button
             variant="outline"
@@ -253,7 +253,7 @@ export function BlendingCalculator() {
                           <span
                             className="inline-block h-2 w-2 rounded-full shrink-0"
                             style={{
-                              backgroundColor: FAMILY_COLORS[oil.family],
+                              backgroundColor: getFamilyColor(oil.family),
                             }}
                           />
                           <span className="truncate">{oil.name}</span>
@@ -296,20 +296,20 @@ export function BlendingCalculator() {
                         variant="outline"
                         className="text-[10px]"
                         style={{
-                          borderColor: `${FAMILY_COLORS[oil.family]}40`,
-                          color: FAMILY_COLORS[oil.family],
+                          borderColor: `${getFamilyColor(oil.family)}40`,
+                          color: getFamilyColor(oil.family),
                         }}
                       >
                         {oil.family}
                       </Badge>
-                      {oil.subfamilies.slice(0, 2).map((sub) => (
+                      {(oil.subfamilies ?? []).slice(0, 2).map((sub) => (
                         <Badge
                           key={sub}
                           variant="outline"
                           className="text-[10px]"
                           style={{
-                            borderColor: `${FAMILY_COLORS[sub]}30`,
-                            color: FAMILY_COLORS[sub],
+                            borderColor: `${getFamilyColor(sub)}30`,
+                            color: getFamilyColor(sub),
                           }}
                         >
                           {sub}

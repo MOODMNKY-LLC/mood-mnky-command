@@ -66,6 +66,12 @@ export const FAMILY_COMPLEMENTARY: Record<FragranceFamily, FragranceFamily> =
     ])
   ) as Record<FragranceFamily, FragranceFamily>
 
+/** Safe family color for styles; use when family may not be in wheel (e.g. API data). */
+export function getFamilyColor(family: string | null | undefined): string {
+  if (!family) return "#888888"
+  return FAMILY_COLORS[family as FragranceFamily] ?? "#888888"
+}
+
 // ---- Wick Types ----
 export type WickType = "cotton" | "wood"
 

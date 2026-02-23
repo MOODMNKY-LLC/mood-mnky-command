@@ -27,6 +27,7 @@ import {
   FAMILY_KINDRED,
   FAMILY_COMPLEMENTARY,
   FAMILY_SEASONS,
+  getFamilyColor,
 } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -66,7 +67,7 @@ export function FragranceSelectorDialog({
       list = list.filter(
         (o) =>
           o.family === selectedFamily ||
-          (o.subfamilies && o.subfamilies.includes(selectedFamily))
+          (o.subfamilies ?? []).includes(selectedFamily)
       )
     }
     const q = search.trim().toLowerCase()
@@ -75,11 +76,11 @@ export function FragranceSelectorDialog({
     return list.filter(
       (o) =>
         re.test(o.name) ||
-        re.test(o.family) ||
-        o.topNotes.some((n) => re.test(n)) ||
-        o.middleNotes.some((n) => re.test(n)) ||
-        o.baseNotes.some((n) => re.test(n)) ||
-        (o.subfamilies && o.subfamilies.some((f) => re.test(f))) ||
+        re.test(o.family ?? "") ||
+        (o.topNotes ?? []).some((n) => re.test(n)) ||
+        (o.middleNotes ?? []).some((n) => re.test(n)) ||
+        (o.baseNotes ?? []).some((n) => re.test(n)) ||
+        (o.subfamilies ?? []).some((f) => re.test(f)) ||
         re.test(o.description || "")
     )
   }, [oils, usedOilIds, slotOilId, selectedFamily, search])
@@ -178,7 +179,7 @@ export function FragranceSelectorDialog({
                 )}
                 style={
                   selectedFamily !== family
-                    ? { borderColor: FAMILY_COLORS[family] }
+                    ? { borderColor: getFamilyColor(family) }
                     : undefined
                 }
               >
@@ -277,7 +278,7 @@ export function FragranceSelectorDialog({
                           <span
                             className="inline-block h-12 w-12 shrink-0 rounded-md border border-border"
                             style={{
-                              backgroundColor: `${FAMILY_COLORS[oil.family]}30`,
+                              backgroundColor: `${getFamilyColor(oil.family)}30`,
                             }}
                           />
                         )}
@@ -289,7 +290,7 @@ export function FragranceSelectorDialog({
                             <span
                               className="inline-block size-2 rounded-full shrink-0"
                               style={{
-                                backgroundColor: FAMILY_COLORS[oil.family],
+                                backgroundColor: getFamilyColor(oil.family),
                               }}
                             />
                             {oil.family}
@@ -321,10 +322,12 @@ export function FragranceSelectorDialog({
 }
 
 function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
-  const kindred = FAMILY_KINDRED[oil.family] ?? []
-  const complementary = FAMILY_COMPLEMENTARY[oil.family]
-  const season = FAMILY_SEASONS[oil.family] ?? "All Season"
+  const kindred = (oil.family && FAMILY_KINDRED[oil.family as FragranceFamily]) ?? []
+  const complementary = oil.family ? FAMILY_COMPLEMENTARY[oil.family as FragranceFamily] : null
+  const season = (oil.family && FAMILY_SEASONS[oil.family as FragranceFamily]) ?? "All Season"
   const imageUrl = oil.thumbnailUrl ?? oil.imageUrl
+  const topNotes = oil.topNotes ?? []
+  const middleNotes = oil.middleNotes ?? []
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
@@ -351,20 +354,20 @@ function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
               variant="outline"
               className="text-[10px]"
               style={{
-                borderColor: `${FAMILY_COLORS[oil.family]}60`,
-                color: FAMILY_COLORS[oil.family],
+                borderColor: `${getFamilyColor(oil.family)}60`,
+                color: getFamilyColor(oil.family),
               }}
             >
               {oil.family}
             </Badge>
             <Badge variant="outline" className="text-[10px] text-muted-foreground">
-              {oil.type}
+              {oil.type ?? "Fragrance Oil"}
             </Badge>
           </div>
-          {oil.rating > 0 && (
+          {(oil.rating ?? 0) > 0 && (
             <p className="text-xs text-muted-foreground mt-0.5">
               Rating: {oil.rating}
-              {oil.reviewCount > 0 && ` (${oil.reviewCount} reviews)`}
+              {(oil.reviewCount ?? 0) > 0 && ` (${oil.reviewCount} reviews)`}
             </p>
           )}
         </div>
@@ -375,12 +378,12 @@ function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
         </p>
       )}
       <div className="mt-3 flex flex-wrap gap-1">
-        {oil.topNotes.slice(0, 2).map((n) => (
+        {topNotes.slice(0, 2).map((n) => (
           <Badge key={n} variant="outline" className="text-[10px] border-chart-1/40 text-chart-1">
             {n}
           </Badge>
         ))}
-        {oil.middleNotes.slice(0, 1).map((n) => (
+        {middleNotes.slice(0, 1).map((n) => (
           <Badge key={n} variant="outline" className="text-[10px] border-chart-2/40 text-chart-2">
             {n}
           </Badge>
@@ -397,8 +400,8 @@ function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
             variant="outline"
             className="text-[10px]"
             style={{
-              borderColor: `${FAMILY_COLORS[f]}50`,
-              color: FAMILY_COLORS[f],
+              borderColor: `${getFamilyColor(f)}50`,
+              color: getFamilyColor(f),
             }}
           >
             {f}
@@ -412,8 +415,8 @@ function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
               variant="outline"
               className="text-[10px]"
               style={{
-                borderColor: `${FAMILY_COLORS[complementary]}50`,
-                color: FAMILY_COLORS[complementary],
+                borderColor: `${getFamilyColor(complementary)}50`,
+                color: getFamilyColor(complementary),
               }}
             >
               {complementary}
@@ -421,9 +424,9 @@ function FragranceDetailCard({ oil }: { oil: FragranceOil }) {
           </>
         )}
       </div>
-      {oil.price1oz > 0 && (
+      {(oil.price1oz ?? 0) > 0 && (
         <p className="mt-2 text-sm font-mono text-foreground">
-          ${oil.price1oz.toFixed(2)}/oz
+          ${(oil.price1oz ?? 0).toFixed(2)}/oz
         </p>
       )}
     </div>
