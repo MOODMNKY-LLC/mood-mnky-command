@@ -84,6 +84,26 @@ function MediaImage({
   )
 }
 
+/** URL to use for asset thumbnail/preview: image → thumbnail or public_url; audio/video → cover_art_url when present. */
+function getDisplayImageUrl(asset: MediaAsset): string | null {
+  if (asset.mime_type?.startsWith("image/")) {
+    return asset.thumbnail_url ?? asset.public_url ?? null
+  }
+  if (
+    (asset.mime_type?.startsWith("audio/") || asset.mime_type?.startsWith("video/")) &&
+    asset.cover_art_url
+  ) {
+    return asset.cover_art_url
+  }
+  return null
+}
+
+/** Fallback URL for display image (e.g. when transform fails): image uses public_url; audio/video has no fallback for cover. */
+function getDisplayImageFallbackUrl(asset: MediaAsset): string | null {
+  if (asset.mime_type?.startsWith("image/")) return asset.public_url ?? null
+  return null
+}
+
 export default function MediaLibraryPage() {
   const [activeBucket, setActiveBucket] = useState<BucketId | "all">("all")
   const [activeCategory, setActiveCategory] = useState<string>("all")
@@ -387,10 +407,10 @@ export default function MediaLibraryPage() {
                       : "border-border"
                   }`}
                 >
-                  {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
+                  {getDisplayImageUrl(asset) ? (
                     <MediaImage
-                      src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
-                      fallbackUrl={asset.public_url}
+                      src={getDisplayImageUrl(asset)!}
+                      fallbackUrl={getDisplayImageFallbackUrl(asset)}
                       alt={asset.alt_text || asset.file_name}
                       className="h-full w-full object-cover"
                     />
@@ -419,10 +439,10 @@ export default function MediaLibraryPage() {
                     selectedAsset?.id === asset.id ? "border-primary bg-accent" : "border-border"
                   }`}
                 >
-                  {asset.mime_type?.startsWith("image/") && (asset.thumbnail_url ?? asset.public_url) ? (
+                  {getDisplayImageUrl(asset) ? (
                     <MediaImage
-                      src={asset.thumbnail_url ?? asset.public_url ?? "/placeholder.svg"}
-                      fallbackUrl={asset.public_url}
+                      src={getDisplayImageUrl(asset)!}
+                      fallbackUrl={getDisplayImageFallbackUrl(asset)}
                       alt={asset.alt_text || asset.file_name}
                       className="h-10 w-10 shrink-0 rounded object-cover"
                     />
@@ -549,10 +569,22 @@ export default function MediaLibraryPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_200px]">
                 {/* Preview */}
                 <div className="flex items-center justify-center rounded-lg bg-secondary/50 p-4">
-                  {selectedAsset.mime_type?.startsWith("image/") && (selectedAsset.medium_url ?? selectedAsset.public_url) ? (
+                  {(selectedAsset.mime_type?.startsWith("image/") &&
+                    (selectedAsset.medium_url ?? selectedAsset.public_url)) ||
+                  ((selectedAsset.mime_type?.startsWith("audio/") ||
+                    selectedAsset.mime_type?.startsWith("video/")) &&
+                    selectedAsset.cover_art_url) ? (
                     <MediaImage
-                      src={selectedAsset.medium_url ?? selectedAsset.public_url ?? "/placeholder.svg"}
-                      fallbackUrl={selectedAsset.public_url}
+                      src={
+                        selectedAsset.mime_type?.startsWith("image/")
+                          ? selectedAsset.medium_url ?? selectedAsset.public_url ?? "/placeholder.svg"
+                          : selectedAsset.cover_art_url!
+                      }
+                      fallbackUrl={
+                        selectedAsset.mime_type?.startsWith("image/")
+                          ? selectedAsset.public_url
+                          : null
+                      }
                       alt={selectedAsset.alt_text || selectedAsset.file_name}
                       className="max-h-[400px] rounded object-contain"
                     />

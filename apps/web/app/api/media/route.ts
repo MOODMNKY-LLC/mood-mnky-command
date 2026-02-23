@@ -4,6 +4,7 @@ import {
   getMediaAssets,
   getThumbnailUrl,
   getMediumUrl,
+  getPublicUrl,
   type BucketId,
   type MediaAsset,
 } from "@/lib/supabase/storage"
@@ -31,6 +32,25 @@ function enrichAssetWithTransforms(
       )
     } catch {
       // Fallback to public_url if transforms unavailable
+    }
+  }
+  // Resolve cover art URL for audio/video when path exists but URL is missing (e.g. production legacy rows)
+  const isAudioOrVideo =
+    asset.mime_type?.startsWith("audio/") || asset.mime_type?.startsWith("video/")
+  if (
+    isAudioOrVideo &&
+    asset.cover_art_path &&
+    !asset.cover_art_url &&
+    asset.bucket_id
+  ) {
+    try {
+      enriched.cover_art_url = getPublicUrl(
+        supabase,
+        asset.bucket_id as BucketId,
+        asset.cover_art_path
+      )
+    } catch {
+      // ignore
     }
   }
   return enriched
