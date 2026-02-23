@@ -40,16 +40,25 @@ See [infra/README.md](../infra/README.md).
 
 ## Publish script
 
-From repo root (loads `.env.local` and `.env`):
+**Migrations only create the bucket and policies** — they do not upload any files. The `themes/` and `docker/` “folders” in Storage appear only after you run the publish script. Uploads go to **whichever Supabase project** is configured in the env used by the script.
 
-```bash
-pnpm run publish:infra [versionTag]
-```
+From repo root:
 
-Or from `apps/web`:
+- **Local Supabase** (default; loads `.env.local` then `.env`):
+  ```bash
+  pnpm run publish:infra [versionTag]
+  ```
+- **Production Supabase** (loads `.env.production` then `.env`):
+  ```bash
+  pnpm run publish:infra:production [versionTag]
+  ```
+
+Or from `apps/web` with explicit env files:
 
 ```bash
 dotenv -e ../../.env.local -e ../../.env -- tsx scripts/publish-infra-artifacts.ts [versionTag]
+# Production:
+dotenv -e ../../.env.production -e ../../.env -- tsx scripts/publish-infra-artifacts.ts [versionTag]
 ```
 
 `versionTag` defaults to a generated tag (e.g. `v1` or timestamp-based). The script:
@@ -58,7 +67,7 @@ dotenv -e ../../.env.local -e ../../.env -- tsx scripts/publish-infra-artifacts.
 2. Uploads files to the `infra-artifacts` bucket under the versioned paths above
 3. Inserts one row per file into `infra_artifact_versions`
 
-**Required env:** `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY`. Same as other Supabase usage in the app.
+**Required env (per target):** `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY` for the project you want to publish to. Use `.env.local` for local, `.env.production` for production. For `publish:infra:production`, ensure `SUPABASE_SERVICE_ROLE_KEY` is set in either `.env.production` (e.g. after `vercel env pull .env.production --environment=production`) or in a gitignored **`.env.production.local`** at the repo root (the script loads it automatically when the key is missing). Get the value from Supabase Dashboard → Project Settings → API → service_role (secret). If both are empty/missing, the script will throw "Missing Supabase config".
 
 ## Resolving “current” artifact URL
 

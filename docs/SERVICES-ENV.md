@@ -17,6 +17,12 @@ Credentials are **server-only**; never use `NEXT_PUBLIC_` for API keys or secret
 | **Steam** (MNKY GAMES — Link Steam) | `STEAM_WEB_API_KEY`; optional `STEAM_REALM`, `STEAM_RETURN_URL` | From [Steam Web API Key](https://steamcommunity.com/dev/apikey). Server-only; used for GetPlayerSummaries after linking. When `STEAM_REALM` and `STEAM_RETURN_URL` are set (e.g. `https://mnky-verse.moodmnky.com` and `https://mnky-verse.moodmnky.com/api/auth/steam/callback`), the OpenID flow is pinned to that domain; otherwise request origin is used. Sync to Vercel for the env where the app runs. In LABZ, Steam appears on **Platform → Integrations** (configured/not configured) and has a dedicated **Platform → Steam** page (config status, linked-account count, MNKY GAMES status). |
 | **MOOD MNKY Experience** | (none) | Uses existing Shopify/verse integrations; no separate service API. |
 
+## Palworld (MNKY GAMES) — URL, Docker, and security
+
+- **URL format:** `PALWORLD_SERVER_URL` must be the base of the Palworld REST API with no trailing slash, e.g. `http://YOUR_PUBLIC_IP:8212` or `http://your-hostname:8212`. When the app runs outside your LAN (e.g. on Vercel), use your **public IP** (or a DDNS hostname) and the **port you forwarded** for the REST API (default **8212/TCP**). The app calls `${baseUrl}/info` and `${baseUrl}/players` for status and player count.
+- **Docker:** Expose the REST API with port mapping `8212:8212/tcp`. Set `RESTAPIEnabled=True` (or your image’s equivalent, e.g. `REST_API_ENABLED=true`). Ensure the game server’s AdminPassword is set and use the same value for `PALWORLD_API_PASSWORD`; optionally set `PALWORLD_API_USER=admin`.
+- **Security:** The Palworld REST API is not designed to be exposed directly to the internet; doing so can allow unauthorized server manipulation. Prefer LAN-only access (e.g. `http://LAN_IP:8212`) when LABZ runs on your own machine or over VPN. If you must expose port 8212, use a strong AdminPassword and consider a firewall allowlist (e.g. only your app’s outbound IPs) or put the server behind a VPN.
+
 ## Behavior when unset
 
 - **Public `/main/services/[slug]`:** Status/live block is hidden or shows “Status unavailable.” Static content (name, tagline, description, features) always comes from `lib/main-services-data.ts`.

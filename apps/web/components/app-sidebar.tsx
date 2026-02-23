@@ -114,7 +114,7 @@ export function AppSidebar() {
   )
 
   const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/members")
-  const platformAutoOpen = pathname.startsWith("/platform/funnels") || pathname.startsWith("/platform/flowise") || pathname.startsWith("/platform/storefront") || pathname.startsWith("/platform/services") || pathname.startsWith("/platform/artifacts")
+  const platformAutoOpen = pathname.startsWith("/platform/funnels") || pathname.startsWith("/platform/flowise") || pathname.startsWith("/platform/storefront") || pathname.startsWith("/platform/services") || pathname.startsWith("/platform/artifacts") || pathname.startsWith("/platform/mnky-mind")
   const platformSettingsOpen = pathname.startsWith("/platform/settings") || pathname.startsWith("/platform/integrations")
 
   const handleSignOut = async () => {

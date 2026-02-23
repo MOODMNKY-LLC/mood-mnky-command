@@ -27,10 +27,21 @@ export async function getPalworldStatus(
 ): Promise<ServiceStatusResult> {
   const c = config ?? getEnvConfig()
   if (!c?.baseUrl || !c.apiPassword) {
-    return { error: "PALWORLD_SERVER_URL or PALWORLD_API_PASSWORD not set" }
+    return {
+      status: "operational",
+      metrics: {
+        note: "Steam configured. Set PALWORLD_SERVER_URL and PALWORLD_API_PASSWORD for game server status.",
+      },
+    }
   }
   try {
     const base = c.baseUrl.replace(/\/$/, "")
+    if (!base.startsWith("http://") && !base.startsWith("https://")) {
+      return {
+        status: "unavailable",
+        error: "PALWORLD_SERVER_URL must start with http:// or https:// (e.g. http://host:8212)",
+      }
+    }
     const basicAuth = Buffer.from(`${c.apiUser}:${c.apiPassword}`).toString("base64")
     const headers: Record<string, string> = {
       Authorization: `Basic ${basicAuth}`,

@@ -197,6 +197,7 @@ export const platformAutomationItems: NavItem[] = [
   { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
   { title: "Service Analytics", href: "/platform/services", icon: BarChart3 },
   { title: "Infra Artifacts", href: "/platform/artifacts", icon: Box },
+  { title: "MNKY MIND", href: "/platform/mnky-mind", icon: BookOpen },
 ]
 
 /** Platform: Settings and Integrations hub. */

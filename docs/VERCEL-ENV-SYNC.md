@@ -59,6 +59,7 @@ pnpm vercel:env-check
 
 ### Optional
 - [ ] `NOTION_API_KEY`
+- [ ] `NOTION_MNKY_MIND_DATABASE_ID` (MNKY MIND sync; default in code: MNKY_MIND Databases page ID)
 - [ ] `JOTFORM_API_KEY`
 - [ ] `OPENAI_API_KEY`
 - [ ] `MEDIA_API_KEY`

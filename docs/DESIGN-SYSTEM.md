@@ -285,6 +285,26 @@ Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components
 - `app/(main)/main/components/page.tsx` — Component library: ElevenLabs, shadcn, Magic UI (and other) categories with live demos
 - `components/main/` — MainNav, MainDock, MainTalkToAgentDialog, MainTalkToAgentProvider, MainGlassCard, MainHero, MainHeroSplit, MainFeatureCards, MainSocialProof, MainCustomization, MainFaq, MainAgentCard, MainChatbot, MainFooter, MainContactForm, MainWaitlistForm
 
+### Jellyfin theme (mnky.css)
+
+The Jellyfin Custom CSS theme served from Supabase ([infra/service-themes/jellyfin/mnky.css](../infra/service-themes/jellyfin/mnky.css)) is aligned with the Main design system: grayscale palette (`--mnky-gray-*`), glass tokens (`--mnky-glass-*`), and the same blur, radius, and shadow values as Main. It applies to the Jellyfin web client via Dashboard → General → Custom CSS (`@import` theme URL). For selector list, token mapping, and verification steps, see [JELLYFIN-THEME-BASELINE.md](JELLYFIN-THEME-BASELINE.md) and [JELLYFIN-THEME-CONFIGURATIONS.md](JELLYFIN-THEME-CONFIGURATIONS.md).
+
+---
+
+## Shopify theme (storefront)
+
+The Shopify storefront theme (MNKY VERSE Theme) is aligned with the **Main** design system: grayscale-only color schemes and glassmorphism matching Main tokens.
+
+### Token mapping
+
+- **Color schemes:** Shopify uses `config/settings_data.json` → `current.color_schemes` (e.g. `background-1`, `inverse`). The layout outputs `--color-background`, `--color-foreground`, `--color-button`, `--color-button-text`, etc. (RGB triplets) per scheme. These correspond to Main’s background/foreground and primary: **background-1** (dark) ≈ Main dark (`#0f0f0f` background, `#fafafa` text, `#404040` button); **inverse** (light) ≈ Main light (`#ffffff` background, `#171717` text).
+- **Glass:** Implemented in `Shopify/theme/assets/component-glass.css` and layout-injected vars in `layout/theme.liquid` when “Glass style” is enabled: `--glass-blur` (default 20px), `--glass-bg-alpha` (default 0.15), `--glass-border-alpha`, `--glass-shadow` (`0 8px 32px rgba(0,0,0,0.08)`), `--glass-radius` (1rem). Same values as `main-glass.css` so header, announcement bar, banners, cards, and drawers match Main.
+- **Light/dark:** Body has `data-theme="dark"` or `"light"` (from localStorage). Sections use `color-{{ section.settings.color_scheme }}` so each block gets the correct `--color-*` set; there is no single body-level scheme class.
+
+### Baseline and re-pull
+
+Theme Editor changes (and re-pulling from live) can overwrite `settings_data.json`. Default Main-aligned scheme and glass values are documented in [Shopify/docs/SHOPIFY-THEME-BASELINE.md](Shopify/docs/SHOPIFY-THEME-BASELINE.md) (Design system alignment). Use that doc for structure, token flow, and file/component map.
+
 ---
 
 ## MNKY BOX (Verse)
@@ -351,5 +371,6 @@ If LABZ-specific overrides are needed later:
 - Verse tokens: `app/(storefront)/verse/verse-storefront.css`
 - Glass effects: `app/(storefront)/verse/verse-glass.css`
 - MNKY BOX: `app/(storefront)/verse/mnky-box.css`, `components/mnky-box/`, `docs/MNKY-BOX-EDITORIAL-REFINED.md`
+- Shopify theme: `Shopify/theme/layout/theme.liquid`, `Shopify/theme/assets/component-glass.css`, `Shopify/theme/config/settings_data.json`, [Shopify/docs/SHOPIFY-THEME-BASELINE.md](Shopify/docs/SHOPIFY-THEME-BASELINE.md)
 - Tailwind config: `tailwind.config.ts`
 

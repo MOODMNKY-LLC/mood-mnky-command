@@ -1,9 +1,16 @@
 /* MNKY MEDIA (Jellyfin) – MOOD MNKY theme
    Aligned with Main section: docs/DESIGN-SYSTEM.md, main-site.css, main-glass.css
-   Grayscale, glassmorphism, tech-forward. */
+   Grayscale, glassmorphism, GQ-inspired tech-forward.
+   Selector reference: temp/jellyfin-web-from-server/ (main.jellyfin.*.css, session-login*.css, themes/).
+   Ultrachromic 1:1 scope: docs/JELLYFIN-ULTRACHROMIC-SCOPE.md; canonical reference: infra/service-themes/jellyfin/ultrachromic-reference/ */
+
+/* Optional: load Main-aligned font (uncomment to use; see theme configurations) */
+/* @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap'); */
 
 /* ========== Tokens (Main → Jellyfin :root) ========== */
 :root {
+  /* Typography – system sans or Space Grotesk when @import enabled; see theme configs */
+  --mnky-font: system-ui, -apple-system, sans-serif;
   /* Grayscale (HSL 0 0% lightness) – matches Main --main-gray-* */
   --mnky-gray-50: 0 0% 98%;
   --mnky-gray-100: 0 0% 96.1%;
@@ -25,22 +32,29 @@
   --mnky-primary: hsl(var(--mnky-gray-300));
   --mnky-primary-foreground: hsl(var(--mnky-gray-900));
 
-  /* Glass (from main-glass.css dark mode) */
+  /* Glass (from main-glass.css dark mode; stronger border/shadow and rounding for modern tech-forward GQ) */
   --mnky-glass-blur: 20px;
   --mnky-glass-blur-soft: 26px;
   --mnky-glass-radius: 1rem;
-  --mnky-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --mnky-glass-radius-lg: 1.25rem;
+  --mnky-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
   --mnky-glass-bg: rgba(0, 0, 0, 0.08);
   --mnky-glass-bg-soft: rgba(0, 0, 0, 0.05);
   --mnky-glass-bg-card: rgba(0, 0, 0, 0.12);
-  --mnky-glass-border: rgba(255, 255, 255, 0.12);
+  --mnky-glass-bg-card-strong: rgba(0, 0, 0, 0.18);
+  --mnky-glass-border: rgba(255, 255, 255, 0.18);
   --mnky-glass-bg-nav: rgba(0, 0, 0, 0.75);
-  --mnky-glass-border-nav: rgba(255, 255, 255, 0.1);
+  --mnky-glass-border-nav: rgba(255, 255, 255, 0.12);
+  --mnky-glass-bg-sidebar: rgba(0, 0, 0, 0.5);
+  --mnky-glass-border-sidebar: rgba(255, 255, 255, 0.18);
+  --mnky-glass-radius-sidebar: 1.25rem;
   --mnky-glass-bg-solid: rgba(0, 0, 0, 0.88);
   --mnky-float-offset: -4px;
-  --mnky-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --mnky-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.14);
   --mnky-float-duration: 0.3s;
-  --mnky-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --mnky-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
+  /* Ultrachromic parity: --rounding used by some modules; we alias to Main radius */
+  --rounding: var(--mnky-glass-radius);
 }
 
 @media (prefers-color-scheme: light) {
@@ -54,10 +68,25 @@
     --mnky-glass-bg: rgba(255, 255, 255, 0.12);
     --mnky-glass-bg-soft: rgba(255, 255, 255, 0.08);
     --mnky-glass-bg-card: rgba(255, 255, 255, 0.15);
+    --mnky-glass-bg-card-strong: rgba(255, 255, 255, 0.22);
     --mnky-glass-border: rgba(0, 0, 0, 0.06);
     --mnky-glass-bg-nav: rgba(255, 255, 255, 0.85);
     --mnky-glass-border-nav: rgba(0, 0, 0, 0.08);
+    --mnky-glass-bg-sidebar: rgba(255, 255, 255, 0.5);
+    --mnky-glass-border-sidebar: rgba(0, 0, 0, 0.1);
     --mnky-glass-bg-solid: rgba(255, 255, 255, 0.92);
+  }
+}
+
+/* ========== Entrance animation (subtle; respect prefers-reduced-motion) ========== */
+@keyframes mnky-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -73,6 +102,11 @@
   background: linear-gradient(180deg, transparent 0%, var(--mnky-bg) 100%);
 }
 
+/* Backdrop image filter (Ultrachromic-style; Main-aligned blur and tone) */
+.backdropImage {
+  filter: blur(18px) saturate(120%) contrast(120%) brightness(40%);
+}
+
 /* ========== Primitives: dashboard shell (glass panel) ========== */
 .dashboard-app-shell {
   background: var(--mnky-glass-bg);
@@ -80,8 +114,15 @@
   -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
   border: 1px solid var(--mnky-glass-border);
   box-shadow: var(--mnky-glass-shadow);
-  border-radius: var(--mnky-glass-radius);
+  border-radius: var(--mnky-glass-radius-lg);
   color: var(--mnky-text);
+  font-family: var(--mnky-font);
+  animation: mnky-fade-in 0.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-app-shell {
+    animation: none;
+  }
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -115,7 +156,7 @@
   backdrop-filter: blur(var(--mnky-glass-blur-soft));
   -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
   border: 1px solid var(--mnky-glass-border);
-  border-radius: var(--mnky-glass-radius);
+  border-radius: var(--mnky-glass-radius-lg);
   box-shadow: var(--mnky-glass-shadow);
   color: var(--mnky-text);
   transition: transform var(--mnky-float-duration) ease, box-shadow var(--mnky-float-duration) ease;
@@ -135,11 +176,112 @@
   }
 }
 
-/* ========== Primitives: sidebar / lists ========== */
+/* ========== Primitives: sidebar (semi-transparent glass, ~50% opacity, rounded, higher contrast) ========== */
+/* Legacy/community selectors (older app shell) */
 .sidebarContent,
-.paperList {
-  background: var(--mnky-bg-soft);
+.paperList,
+.mainDrawer,
+.mainDrawer .drawerContent,
+#drawer .drawerContent,
+/* MUI drawer (jellyfin-web ResponsiveDrawer uses @mui/material/Drawer; paper is the visible panel) */
+.MuiDrawer-root .MuiPaper-root,
+.MuiDrawer-paper,
+[class*="MuiDrawer"] [class*="MuiPaper"] {
+  background: var(--mnky-glass-bg-sidebar) !important;
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border: 1px solid var(--mnky-glass-border-sidebar) !important;
+  border-radius: var(--mnky-glass-radius-sidebar) !important;
+  box-shadow: var(--mnky-glass-shadow);
   color: var(--mnky-text);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .sidebarContent,
+  .paperList,
+  .mainDrawer,
+  .mainDrawer .drawerContent,
+  #drawer .drawerContent,
+  .MuiDrawer-root .MuiPaper-root,
+  .MuiDrawer-paper,
+  [class*="MuiDrawer"] [class*="MuiPaper"] {
+    background: rgba(0, 0, 0, 0.65) !important;
+  }
+}
+@media (prefers-color-scheme: light) {
+  @supports not (backdrop-filter: blur(1px)) {
+    .sidebarContent,
+    .paperList,
+    .mainDrawer,
+    .mainDrawer .drawerContent,
+    #drawer .drawerContent,
+    .MuiDrawer-root .MuiPaper-root,
+    .MuiDrawer-paper,
+    [class*="MuiDrawer"] [class*="MuiPaper"] {
+      background: rgba(255, 255, 255, 0.7) !important;
+    }
+  }
+}
+
+/* ========== Now Playing bar (glass, GQ-aligned) ========== */
+.nowPlayingBar {
+  background: var(--mnky-glass-bg-nav) !important;
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border: 1px solid var(--mnky-glass-border-nav) !important;
+  border-radius: var(--mnky-glass-radius) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12), var(--mnky-glass-shadow) !important;
+  color: var(--mnky-text) !important;
+}
+.nowPlayingBarTop {
+  background: transparent !important;
+  border-color: var(--mnky-glass-border-nav) !important;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .nowPlayingBar {
+    background: var(--mnky-glass-bg-solid) !important;
+  }
+}
+
+/* ========== Detail / title page ========== */
+.detailPage,
+.detailPageContentContainer {
+  background: var(--mnky-bg) !important;
+  color: var(--mnky-text);
+}
+.detailPage .cardContent,
+.detailImageContainer {
+  background: var(--mnky-glass-bg-card) !important;
+  backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+}
+
+/* ========== Section titles (grayscale) ========== */
+.sectionTitleContainer,
+.sectionTitleContainer a,
+.sectionTitle {
+  color: var(--mnky-text) !important;
+  font-family: var(--mnky-font);
+}
+
+/* ========== Progress and indicators (grayscale) ========== */
+.playedIndicator {
+  background: var(--mnky-primary) !important;
+}
+.countIndicator {
+  background: var(--mnky-glass-bg-card) !important;
+  border: 1px solid var(--mnky-glass-border);
+  color: var(--mnky-text);
+}
+.progressBar,
+.sliderContainer .slider {
+  background: var(--mnky-bg-soft) !important;
+}
+.progressBar .progressBarInner,
+.sliderContainer .sliderTrack {
+  background: var(--mnky-primary) !important;
 }
 
 /* ========== Buttons (primary / accent) ========== */
@@ -158,17 +300,66 @@
   border-color: var(--mnky-glass-border);
 }
 
-/* ========== Login page ========== */
+/* ========== Login page (centered glass card) ========== */
 #loginPage {
-  background-color: var(--mnky-bg) !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--mnky-bg) !important;
   color: var(--mnky-text);
+  position: relative;
 }
 
+#loginPage::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--mnky-bg);
+  z-index: -1;
+}
+
+/* Single centered glass card: form + user list (Ultrachromic-style narrow width).
+   Inner container class names vary by jellyfin-web version; add selectors from Inspect if card does not apply.
+   Server reference: main.jellyfin.*.css uses .formDialog, .formDialogContent. */
 #loginPage .readOnlyContent,
-#loginPage .formDialogContent {
+#loginPage .formDialogContent,
+#loginPage .formDialog,
+#loginPage form,
+#loginPage .visualLoginForm,
+#loginPage .padded-left.padded-right.padded-bottom-page {
+  max-width: 24em;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
   background: var(--mnky-glass-bg-card);
   backdrop-filter: blur(var(--mnky-glass-blur-soft));
   -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+  box-shadow: var(--mnky-glass-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  #loginPage .readOnlyContent,
+  #loginPage .formDialogContent,
+  #loginPage .formDialog,
+  #loginPage form,
+  #loginPage .visualLoginForm,
+  #loginPage .padded-left.padded-right.padded-bottom-page {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+#loginPage h1 {
+  color: var(--mnky-text);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+#loginPage #divUsers .card {
+  background: var(--mnky-glass-bg);
   border: 1px solid var(--mnky-glass-border);
   border-radius: var(--mnky-glass-radius);
 }
@@ -197,7 +388,47 @@
   color: var(--mnky-text-muted);
 }
 
-/* ========== Optional: logo override (set to your CDN URL if desired) ========== */
-/* .imgLogoIcon {
-  content: url('https://your-cdn/path/to/logo.svg') !important;
-} */
+/* ========== Logo override (robust: same-origin asset + parent pseudo-element); theme config: logo ========== */
+/* URL: Supabase infra-artifacts (same-origin with theme to avoid CORS). content: url() on img is unreliable. */
+:root {
+  --mnky-logo-url: url('https://coevjitstmuhdhbyizpk.supabase.co/storage/v1/object/public/infra-artifacts/assets/logo-hair.svg');
+}
+
+/* Option C: try content with same-origin URL (may work in some clients) */
+.imgLogoIcon {
+  content: url('https://coevjitstmuhdhbyizpk.supabase.co/storage/v1/object/public/infra-artifacts/assets/logo-hair.svg') !important;
+}
+
+/* Option A (robust): hide img, show logo via parent pseudo-element. Jellyfin-web may use .headerLogo or .headerLeft. */
+.headerLogo,
+.headerLeft {
+  position: relative;
+  display: inline-block;
+}
+
+.headerLogo .imgLogoIcon,
+.headerLeft .imgLogoIcon {
+  visibility: hidden;
+  width: 180px;
+  height: 40px;
+  display: block;
+  content: none !important;
+}
+
+.headerLogo::after,
+.headerLeft::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 180px;
+  height: 40px;
+  background: var(--mnky-logo-url) no-repeat center / contain;
+  pointer-events: none;
+}
+
+/* If logo is direct child of .headerTop (no .headerLogo/.headerLeft), style headerTop's first child that contains the img */
+.headerTop .imgLogoIcon {
+  min-width: 180px;
+  min-height: 40px;
+}

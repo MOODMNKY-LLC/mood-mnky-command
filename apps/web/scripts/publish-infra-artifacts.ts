@@ -6,8 +6,11 @@
  * Or from apps/web: tsx scripts/publish-infra-artifacts.ts [versionTag]
  *
  * versionTag defaults to v1 or timestamp (e.g. 20260223120000). Load .env from repo root.
+ * For production publish, if SUPABASE_SERVICE_ROLE_KEY is missing (e.g. not in Vercel pull),
+ * the script will try loading .env.production.local from the repo root (gitignored).
  */
 
+import { config as loadEnv } from "dotenv"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { BUCKETS } from "@/lib/supabase/storage"
 import * as fs from "fs"
@@ -112,12 +115,31 @@ function collectN8nWorkflows(infraRoot: string, versionTag: string): { localPath
   return out
 }
 
+/** Static assets for themes (e.g. logo). Stored at stable paths (no version tag) so CSS can reference them. */
+function collectThemeAssets(infraRoot: string): { localPath: string; storagePath: string }[] {
+  const repoRoot = path.dirname(infraRoot)
+  const logoPath = path.join(repoRoot, "apps", "web", "public", "auth", "logo-hair.svg")
+  const out: { localPath: string; storagePath: string }[] = []
+  if (fs.existsSync(logoPath)) {
+    out.push({ localPath: logoPath, storagePath: "assets/logo-hair.svg" })
+  }
+  return out
+}
+
 async function main() {
-  const versionTag = process.argv[2] ?? `v${Date.now().toString(36)}`
+  const versionTag =
+    process.argv.slice(2).find((a) => a !== "--") ?? `v${Date.now().toString(36)}`
   const infraRoot = getInfraRoot()
   if (!fs.existsSync(infraRoot)) {
     console.error("infra root not found at", infraRoot)
     process.exit(1)
+  }
+  // Optional: load production service role key from repo-root .env.production.local (gitignored).
+  // Use override: true so we overwrite empty SUPABASE_SERVICE_ROLE_KEY from .env.production.
+  const repoRoot = path.dirname(infraRoot)
+  const productionLocal = path.join(repoRoot, ".env.production.local")
+  if (fs.existsSync(productionLocal)) {
+    loadEnv({ path: productionLocal, override: true })
   }
   console.log("Infra root:", infraRoot)
   console.log("Version tag:", versionTag)
@@ -125,7 +147,14 @@ async function main() {
   const supabase = createAdminClient()
   const rows: ArtifactRow[] = []
 
-  // 1) Service themes (versioned + stable "latest" path for Jellyfin @import)
+  // 1) Theme static assets (stable paths for CSS, e.g. logo)
+  const themeAssets = collectThemeAssets(infraRoot)
+  for (const { localPath, storagePath } of themeAssets) {
+    const contentType = storagePath.endsWith(".svg") ? "image/svg+xml" : "application/octet-stream"
+    await uploadFile(supabase, localPath, storagePath, contentType)
+  }
+
+  // 2) Service themes (versioned + stable "latest" path for Jellyfin @import)
   const themes = collectThemeArtifacts(infraRoot, versionTag)
   for (const { localPath, storagePath, serviceId } of themes) {
     await uploadFile(supabase, localPath, storagePath, "text/css")
@@ -139,7 +168,7 @@ async function main() {
     })
   }
 
-  // 2) Docker
+  // 3) Docker
   const dockers = collectDockerArtifacts(infraRoot, versionTag)
   for (const { localPath, storagePath, serviceId } of dockers) {
     await uploadFile(supabase, localPath, storagePath, "text/plain")
@@ -151,7 +180,7 @@ async function main() {
     })
   }
 
-  // 3) n8n workflows
+  // 4) n8n workflows
   const workflows = collectN8nWorkflows(infraRoot, versionTag)
   for (const { localPath, storagePath } of workflows) {
     await uploadFile(supabase, localPath, storagePath, "application/json")

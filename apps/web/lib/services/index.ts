@@ -48,7 +48,13 @@ function getEnvConfigForService(slug: DeployedServiceId): unknown {
       const baseUrl = process.env.PALWORLD_SERVER_URL?.replace(/\/$/, "")
       const apiUser = process.env.PALWORLD_API_USER || "admin"
       const apiPassword = process.env.PALWORLD_API_PASSWORD
-      return baseUrl && apiPassword ? { baseUrl, apiUser, apiPassword } : null
+      const steamSet = Boolean(process.env.STEAM_WEB_API_KEY)
+      const palworldSet = baseUrl && apiPassword
+      return palworldSet
+        ? { baseUrl, apiUser, apiPassword }
+        : steamSet
+          ? { baseUrl: "", apiUser, apiPassword: "" }
+          : null
     }
     case "mood-mnky-experience":
       return null
