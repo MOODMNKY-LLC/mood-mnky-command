@@ -11,6 +11,8 @@ Theme CSS, Dockerfiles, and n8n workflows for MOOD MNKY services are stored in S
 Path layout inside `infra-artifacts`:
 
 - `themes/{versionTag}/{serviceId}/mnky.css` – e.g. `themes/v1/mnky-cloud/mnky.css`
+- `themes/latest/{serviceId}/mnky.css` – stable “latest” copy (written on each publish for Jellyfin @import); e.g. `themes/latest/mnky-media/mnky.css`
+- `themes/jellyfin-web-{version}/mnky-media/mnky.css` – optional versioned path from theme-publish Edge Function (e.g. `10.11.6`)
 - `docker/{versionTag}/{serviceId}/Dockerfile` – e.g. `docker/v1/mnky-cloud/Dockerfile`
 - `n8n/workflows/{versionTag}/{name}.json` – exported n8n workflows
 
@@ -66,6 +68,13 @@ In app or LABZ, to get the public URL for the latest theme for a service:
 2. Take `storage_path` and build the public URL with `supabase.storage.from('infra-artifacts').getPublicUrl(storage_path).data.publicUrl`.
 
 Helper in app: use `BUCKETS.infraArtifacts` and `getPublicUrl()` from `@/lib/supabase/storage`.
+
+## CORS (Jellyfin theme @import)
+
+For Jellyfin Custom CSS `@import` of the theme from this bucket to work from `watch.moodmnky.com` and `mnky-media.moodmnky.com`, add these **allowed origins** for the `infra-artifacts` bucket in Supabase Dashboard → **Storage** → **infra-artifacts** → **Configuration** (or **CORS**):
+
+- `https://watch.moodmnky.com`
+- `https://mnky-media.moodmnky.com`
 
 ## Bucket creation
 

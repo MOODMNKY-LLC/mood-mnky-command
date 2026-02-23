@@ -1,29 +1,203 @@
-/* MNKY MEDIA (Jellyfin) – MOOD MNKY theme overrides
-   Aligned with docs/DESIGN-SYSTEM.md grayscale primary. */
+/* MNKY MEDIA (Jellyfin) – MOOD MNKY theme
+   Aligned with Main section: docs/DESIGN-SYSTEM.md, main-site.css, main-glass.css
+   Grayscale, glassmorphism, tech-forward. */
 
+/* ========== Tokens (Main → Jellyfin :root) ========== */
 :root {
-  --mnky-primary: hsl(215, 19%, 35%);
-  --mnky-primary-foreground: hsl(210, 20%, 98%);
-  --mnky-bg: #0f0f0f;
-  --mnky-text: #e2e8f0;
-  --mnky-text-muted: #94a3b8;
+  /* Grayscale (HSL 0 0% lightness) – matches Main --main-gray-* */
+  --mnky-gray-50: 0 0% 98%;
+  --mnky-gray-100: 0 0% 96.1%;
+  --mnky-gray-200: 0 0% 89.8%;
+  --mnky-gray-300: 0 0% 83.1%;
+  --mnky-gray-400: 0 0% 63.9%;
+  --mnky-gray-500: 0 0% 45.1%;
+  --mnky-gray-600: 0 0% 37.1%;
+  --mnky-gray-700: 0 0% 25.5%;
+  --mnky-gray-800: 0 0% 14.9%;
+  --mnky-gray-900: 0 0% 9%;
+  --mnky-gray-950: 0 0% 3.9%;
+
+  /* Background & text (dark-first; Jellyfin is typically dark) */
+  --mnky-bg: hsl(var(--mnky-gray-950));
+  --mnky-bg-soft: hsl(var(--mnky-gray-900));
+  --mnky-text: hsl(var(--mnky-gray-100));
+  --mnky-text-muted: hsl(var(--mnky-gray-400));
+  --mnky-primary: hsl(var(--mnky-gray-300));
+  --mnky-primary-foreground: hsl(var(--mnky-gray-900));
+
+  /* Glass (from main-glass.css dark mode) */
+  --mnky-glass-blur: 20px;
+  --mnky-glass-blur-soft: 26px;
+  --mnky-glass-radius: 1rem;
+  --mnky-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --mnky-glass-bg: rgba(0, 0, 0, 0.08);
+  --mnky-glass-bg-soft: rgba(0, 0, 0, 0.05);
+  --mnky-glass-bg-card: rgba(0, 0, 0, 0.12);
+  --mnky-glass-border: rgba(255, 255, 255, 0.12);
+  --mnky-glass-bg-nav: rgba(0, 0, 0, 0.75);
+  --mnky-glass-border-nav: rgba(255, 255, 255, 0.1);
+  --mnky-glass-bg-solid: rgba(0, 0, 0, 0.88);
+  --mnky-float-offset: -4px;
+  --mnky-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --mnky-float-duration: 0.3s;
+  --mnky-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
-/* Accent / primary buttons */
-.btnPlay,
-.emby-button.emby-button-primary,
-[data-id="playButton"] {
-  background-color: var(--mnky-primary) !important;
-  color: var(--mnky-primary-foreground) !important;
-  border-color: var(--mnky-primary) !important;
+@media (prefers-color-scheme: light) {
+  :root {
+    --mnky-bg: hsl(var(--mnky-gray-50));
+    --mnky-bg-soft: hsl(var(--mnky-gray-100));
+    --mnky-text: hsl(var(--mnky-gray-900));
+    --mnky-text-muted: hsl(var(--mnky-gray-600));
+    --mnky-primary: hsl(var(--mnky-gray-700));
+    --mnky-primary-foreground: hsl(var(--mnky-gray-50));
+    --mnky-glass-bg: rgba(255, 255, 255, 0.12);
+    --mnky-glass-bg-soft: rgba(255, 255, 255, 0.08);
+    --mnky-glass-bg-card: rgba(255, 255, 255, 0.15);
+    --mnky-glass-border: rgba(0, 0, 0, 0.06);
+    --mnky-glass-bg-nav: rgba(255, 255, 255, 0.85);
+    --mnky-glass-border-nav: rgba(0, 0, 0, 0.08);
+    --mnky-glass-bg-solid: rgba(255, 255, 255, 0.92);
+  }
 }
 
-/* Nav and headers */
-.sidebarContent,
-.paperList {
+/* ========== Primitives: background ========== */
+.backgroundContainer {
   background-color: var(--mnky-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .mainBackdrop {
   background: linear-gradient(180deg, transparent 0%, var(--mnky-bg) 100%);
 }
+
+/* ========== Primitives: dashboard shell (glass panel) ========== */
+.dashboard-app-shell {
+  background: var(--mnky-glass-bg);
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border: 1px solid var(--mnky-glass-border);
+  box-shadow: var(--mnky-glass-shadow);
+  border-radius: var(--mnky-glass-radius);
+  color: var(--mnky-text);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-app-shell {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+/* ========== Primitives: header ========== */
+.dashboard-header,
+.headerTop {
+  background: var(--mnky-glass-bg-nav);
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border-bottom: 1px solid var(--mnky-glass-border-nav);
+  color: var(--mnky-text);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-header,
+  .headerTop {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+/* ========== Primitives: cards / tiles ========== */
+.dashboard-gs-generic-item,
+.paperList .listItem,
+.cardContent {
+  background: var(--mnky-glass-bg-card);
+  backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+  box-shadow: var(--mnky-glass-shadow);
+  color: var(--mnky-text);
+  transition: transform var(--mnky-float-duration) ease, box-shadow var(--mnky-float-duration) ease;
+}
+
+.dashboard-gs-generic-item:hover,
+.paperList .listItem:hover {
+  transform: translateY(var(--mnky-float-offset));
+  box-shadow: var(--mnky-card-hover-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-gs-generic-item,
+  .paperList .listItem,
+  .cardContent {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+/* ========== Primitives: sidebar / lists ========== */
+.sidebarContent,
+.paperList {
+  background: var(--mnky-bg-soft);
+  color: var(--mnky-text);
+}
+
+/* ========== Buttons (primary / accent) ========== */
+.btnPlay,
+.emby-button.emby-button-primary,
+[data-id="playButton"],
+.button-primary {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+  border: 1px solid var(--mnky-primary) !important;
+  border-radius: var(--mnky-glass-radius);
+}
+
+.emby-button:not(.emby-button-primary) {
+  color: var(--mnky-text);
+  border-color: var(--mnky-glass-border);
+}
+
+/* ========== Login page ========== */
+#loginPage {
+  background-color: var(--mnky-bg) !important;
+  color: var(--mnky-text);
+}
+
+#loginPage .readOnlyContent,
+#loginPage .formDialogContent {
+  background: var(--mnky-glass-bg-card);
+  backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+}
+
+/* ========== Inputs / fields ========== */
+.inputLabel,
+.formDialogLabel {
+  color: var(--mnky-text-muted);
+}
+
+.emby-input {
+  background: var(--mnky-glass-bg);
+  border: 1px solid var(--mnky-glass-border);
+  color: var(--mnky-text);
+  border-radius: calc(var(--mnky-glass-radius) / 2);
+}
+
+/* ========== Typography ========== */
+.bodyText,
+.listItemBodyText {
+  color: var(--mnky-text);
+}
+
+.secondary,
+.listItemBodyText.secondary {
+  color: var(--mnky-text-muted);
+}
+
+/* ========== Optional: logo override (set to your CDN URL if desired) ========== */
+/* .imgLogoIcon {
+  content: url('https://your-cdn/path/to/logo.svg') !important;
+} */

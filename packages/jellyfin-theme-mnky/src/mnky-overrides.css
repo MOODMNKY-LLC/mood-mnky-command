@@ -1,0 +1,17 @@
+/* Overrides: typography and optional logo. Keep selectors minimal. */
+
+.bodyText,
+.listItemBodyText {
+  color: var(--mnky-text);
+}
+
+.secondary,
+.listItemBodyText.secondary {
+  color: var(--mnky-text-muted);
+}
+
+/* Uncomment and set URL to replace Jellyfin logo:
+.imgLogoIcon {
+  content: url('https://your-cdn/path/to/logo.svg') !important;
+}
+*/

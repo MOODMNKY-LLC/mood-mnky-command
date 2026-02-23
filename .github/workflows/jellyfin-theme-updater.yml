@@ -1,0 +1,95 @@
+# Optional: build Jellyfin theme from packages/jellyfin-theme-mnky per jellyfin-web release
+# and publish via theme-publish Edge Function. Requires THEME_PUBLISH_URL and THEME_PUBLISH_SECRET.
+# Stable theme URL: .../themes/latest/mnky-media/mnky.css (same as publish:infra).
+
+name: Jellyfin Theme Updater
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  update-theme:
+    runs-on: ubuntu-latest
+    env:
+      UPSTREAM_OWNER: jellyfin
+      UPSTREAM_REPO: jellyfin-web
+      THEME_PUBLISH_URL: ${{ secrets.THEME_PUBLISH_URL }}
+      THEME_PUBLISH_SECRET: ${{ secrets.THEME_PUBLISH_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch latest jellyfin-web release tag
+        id: latest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getLatestRelease({
+              owner: process.env.UPSTREAM_OWNER,
+              repo: process.env.UPSTREAM_REPO,
+            });
+            core.setOutput("tag", data.tag_name.replace(/^v/, ""));
+            core.info(`Latest jellyfin-web tag: ${data.tag_name}`);
+
+      - name: Check if version already published
+        id: should_build
+        run: |
+          TAG="${{ steps.latest.outputs.tag }}"
+          if [ -n "${{ secrets.SUPABASE_PUBLIC_CSS_BASE }}" ]; then
+            URL="${{ secrets.SUPABASE_PUBLIC_CSS_BASE }}/themes/jellyfin-web-${TAG}/mnky-media/mnky.css"
+            echo "Checking: $URL"
+            if curl -sI "$URL" | grep -q "200"; then
+              echo "already=true" >> $GITHUB_OUTPUT
+            else
+              echo "already=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "already=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build theme bundle
+        if: steps.should_build.outputs.already != 'true'
+        run: pnpm -C packages/jellyfin-theme-mnky build
+
+      - name: Publish via Edge Function
+        if: steps.should_build.outputs.already != 'true'
+        env:
+          THEME_PUBLISH_SECRET: ${{ secrets.THEME_PUBLISH_SECRET }}
+        run: |
+          VERSION="${{ steps.latest.outputs.tag }}"
+          CSS_PATH="packages/jellyfin-theme-mnky/dist/mnky-dojo.css"
+          SHA256=$(sha256sum "$CSS_PATH" | awk '{print $1}')
+          CSS_B64=$(base64 -w 0 "$CSS_PATH")
+          OBJECT_PATH="themes/jellyfin-web-${VERSION}/mnky-media/mnky.css"
+          TS=$(date +%s%3N)
+          CANON="${TS}.${VERSION}.${SHA256}.${OBJECT_PATH}"
+          SIG=$(node -e "const c=require('crypto'); console.log(c.createHmac('sha256', process.env.THEME_PUBLISH_SECRET).update('${CANON}').digest('hex'));")
+          curl -sS -X POST "$THEME_PUBLISH_URL" \
+            -H "content-type: application/json" \
+            -H "x-mnky-timestamp: $TS" \
+            -H "x-mnky-signature: $SIG" \
+            -d "$(jq -n --arg version "$VERSION" --arg css_base64 "$CSS_B64" --arg sha256 "$SHA256" \
+              '{version:$version, css_base64:$css_base64, sha256:$sha256, set_latest:true, notes:"Automated build from jellyfin/jellyfin-web latest release"}')" \
+            | jq .
+
+      - name: Done
+        run: echo "Theme updater completed."

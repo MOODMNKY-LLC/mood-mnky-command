@@ -125,10 +125,12 @@ async function main() {
   const supabase = createAdminClient()
   const rows: ArtifactRow[] = []
 
-  // 1) Service themes
+  // 1) Service themes (versioned + stable "latest" path for Jellyfin @import)
   const themes = collectThemeArtifacts(infraRoot, versionTag)
   for (const { localPath, storagePath, serviceId } of themes) {
     await uploadFile(supabase, localPath, storagePath, "text/css")
+    const latestPath = `themes/latest/${serviceId}/mnky.css`
+    await uploadFile(supabase, localPath, latestPath, "text/css")
     rows.push({
       artifact_type: "service_theme",
       service_id: serviceId,

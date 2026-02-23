@@ -1,0 +1,56 @@
+/* Tokens: Main section → Jellyfin :root. See docs/DESIGN-SYSTEM.md, main-site.css, main-glass.css */
+
+:root {
+  --mnky-gray-50: 0 0% 98%;
+  --mnky-gray-100: 0 0% 96.1%;
+  --mnky-gray-200: 0 0% 89.8%;
+  --mnky-gray-300: 0 0% 83.1%;
+  --mnky-gray-400: 0 0% 63.9%;
+  --mnky-gray-500: 0 0% 45.1%;
+  --mnky-gray-600: 0 0% 37.1%;
+  --mnky-gray-700: 0 0% 25.5%;
+  --mnky-gray-800: 0 0% 14.9%;
+  --mnky-gray-900: 0 0% 9%;
+  --mnky-gray-950: 0 0% 3.9%;
+
+  --mnky-bg: hsl(var(--mnky-gray-950));
+  --mnky-bg-soft: hsl(var(--mnky-gray-900));
+  --mnky-text: hsl(var(--mnky-gray-100));
+  --mnky-text-muted: hsl(var(--mnky-gray-400));
+  --mnky-primary: hsl(var(--mnky-gray-300));
+  --mnky-primary-foreground: hsl(var(--mnky-gray-900));
+
+  --mnky-glass-blur: 20px;
+  --mnky-glass-blur-soft: 26px;
+  --mnky-glass-radius: 1rem;
+  --mnky-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --mnky-glass-bg: rgba(0, 0, 0, 0.08);
+  --mnky-glass-bg-soft: rgba(0, 0, 0, 0.05);
+  --mnky-glass-bg-card: rgba(0, 0, 0, 0.12);
+  --mnky-glass-border: rgba(255, 255, 255, 0.12);
+  --mnky-glass-bg-nav: rgba(0, 0, 0, 0.75);
+  --mnky-glass-border-nav: rgba(255, 255, 255, 0.1);
+  --mnky-glass-bg-solid: rgba(0, 0, 0, 0.88);
+  --mnky-float-offset: -4px;
+  --mnky-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --mnky-float-duration: 0.3s;
+  --mnky-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --mnky-bg: hsl(var(--mnky-gray-50));
+    --mnky-bg-soft: hsl(var(--mnky-gray-100));
+    --mnky-text: hsl(var(--mnky-gray-900));
+    --mnky-text-muted: hsl(var(--mnky-gray-600));
+    --mnky-primary: hsl(var(--mnky-gray-700));
+    --mnky-primary-foreground: hsl(var(--mnky-gray-50));
+    --mnky-glass-bg: rgba(255, 255, 255, 0.12);
+    --mnky-glass-bg-soft: rgba(255, 255, 255, 0.08);
+    --mnky-glass-bg-card: rgba(255, 255, 255, 0.15);
+    --mnky-glass-border: rgba(0, 0, 0, 0.06);
+    --mnky-glass-bg-nav: rgba(255, 255, 255, 0.85);
+    --mnky-glass-border-nav: rgba(0, 0, 0, 0.08);
+    --mnky-glass-bg-solid: rgba(255, 255, 255, 0.92);
+  }
+}
