@@ -24,6 +24,7 @@ The sidebar shows one **context** at a time. Switch via the dropdown at the top 
 ## Settings and configuration
 
 - **Platform → Settings** (`/platform/settings`): Read-only credentials status for Notion, Shopify, and all deployed services (MNKY CLOUD, MEDIA, DRIVE, AUTO, AGENTS, GAMES). Link to Infra artifacts and dashboard config (code reference: `lib/dashboard-config.ts`).
+- **Platform → n8n** (`/platform/n8n`): n8n (MNKY AUTO) command panel. Workflow list with activate/deactivate, view, delete; recent executions; link to Infra Artifacts. Configure via N8N_API_URL/N8N_API_KEY or mnky-auto in Settings.
 - **Platform → Integrations** (`/platform/integrations`): Same credentials status at a glance with direct links to Notion Sync, Store, Discord, Flowise, Service Analytics.
 - **Platform → Infra Artifacts** (`/platform/artifacts`): Current theme and Dockerfile URLs per service (from `infra_artifact_versions`). Publish with `pnpm run publish:infra` from repo root.
 

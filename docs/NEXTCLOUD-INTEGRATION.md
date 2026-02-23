@@ -4,7 +4,7 @@ This document describes the MNKY CLOUD (Nextcloud) integration: env vars, OAuth2
 
 ## Purpose
 
-- **Status on Main and LABZ:** The app uses OAuth2 **client_credentials** to call the Nextcloud instance (OCS/WebDAV) for server-side status and storage quota. No user-facing “login with Nextcloud” is required for this.
+- **Status on Main and LABZ:** The app calls the Nextcloud instance for server-side status (capabilities endpoint). It tries **OAuth2 client_credentials** first; if that fails (e.g. 400) or is not configured, it falls back to **App Password** (Basic auth with `NEXTCLOUD_ADMIN_USER` + `NEXTCLOUD_APP_PASSWORD`). No user-facing “login with Nextcloud” is required for this.
 - **OAuth2 redirect URI:** Nextcloud requires a redirection URL when creating the OAuth2 app; our callback route makes that URL valid and redirects users to the MNKY CLOUD service page.
 - **Optional later:** A “Connect Nextcloud” (authorization code) flow could store tokens linked to the Supabase user (e.g. in `profiles` or `linked_accounts`); the same redirect URI and callback can be reused.
 
@@ -13,11 +13,12 @@ This document describes the MNKY CLOUD (Nextcloud) integration: env vars, OAuth2
 | Variable | Required | Where | Purpose |
 |----------|----------|--------|---------|
 | `NEXTCLOUD_URL` | Yes | .env / .env.local, Vercel | Nextcloud instance base URL (e.g. `https://cloud.example.com`). |
-| `NEXTCLOUD_OAUTH_CLIENT_ID` | Yes | .env / .env.local, Vercel | OAuth2 Client Identifier from Nextcloud Admin. |
-| `NEXTCLOUD_OAUTH_CLIENT_SECRET` | Yes | .env / .env.local, Vercel | OAuth2 Client Secret from Nextcloud Admin. |
-| `NEXTCLOUD_ADMIN_USER` | No | .env / .env.local | Admin username (e.g. `admin`) for Basic/auth or admin operations. |
-| `NEXTCLOUD_APP_PASSWORD` | No | .env / .env.local | Nextcloud app password (Settings → Security → Devices & sessions). Not the same as OAuth2 client secret. |
+| `NEXTCLOUD_OAUTH_CLIENT_ID` | No* | .env / .env.local, Vercel | OAuth2 Client Identifier from Nextcloud Admin. *Required only if using OAuth2 for status. |
+| `NEXTCLOUD_OAUTH_CLIENT_SECRET` | No* | .env / .env.local, Vercel | OAuth2 Client Secret from Nextcloud Admin. *Required only if using OAuth2 for status. |
+| `NEXTCLOUD_ADMIN_USER` | No** | .env / .env.local | Admin username (e.g. `admin`) for App Password fallback. **Required for status when OAuth2 is not used or returns 4xx. |
+| `NEXTCLOUD_APP_PASSWORD` | No** | .env / .env.local | Nextcloud app password (Settings → Security → Devices & sessions). Not the same as OAuth2 client secret. **Required for status when OAuth2 is not used or returns 4xx. |
 
+- **Status check behavior:** You can configure MNKY CLOUD in either of two ways: (1) **OAuth2** — set `NEXTCLOUD_OAUTH_CLIENT_ID` and `NEXTCLOUD_OAUTH_CLIENT_SECRET` (and ensure the Nextcloud OAuth2 app allows client_credentials if your server supports it). (2) **App Password fallback** — set `NEXTCLOUD_ADMIN_USER` and `NEXTCLOUD_APP_PASSWORD`; the app will use these for the capabilities check if OAuth2 is missing or returns 400/401/403. For a future "Connect Nextcloud" (auth code) flow, OAuth2 client id/secret and the redirect URI remain required.
 - **Sync to Vercel:** Add vars to `.env` or `.env.local`, then run `node apps/web/scripts/vercel-env-backup-pull-push.mjs` so production has them (script pushes vars that exist in `.env.example` and locally but are missing in Vercel).
 - **Security:** Do not use `NEXT_PUBLIC_` for any of these. The callback route does not expose tokens; app password is stored only in env.
 
@@ -58,8 +59,9 @@ Reference: [Nextcloud OAuth2 documentation](https://docs.nextcloud.com/server/la
 | Topic | Summary |
 |-------|---------|
 | Purpose | MNKY CLOUD status on Main/LABZ, valid OAuth2 redirect for Nextcloud, optional mobile QR and future “Connect Nextcloud”. |
-| Credentials | URL + OAuth2 client id/secret (required); optional admin user and app password. All in env; sync via backup-pull-push script. |
-| OAuth2 in Nextcloud | Name “MNKY Command”, redirect URI `https://mnky-command.moodmnky.com/api/auth/nextcloud/callback`. client_credentials used for status; same URI for future auth code flow. |
+| Credentials | URL required; either OAuth2 client id/secret or App Password (admin user + app password) for status. All in env; sync via backup-pull-push script. |
+| Status check | OAuth2 client_credentials tried first; on 4xx or when OAuth2 not set, App Password (Basic auth) is used if NEXTCLOUD_ADMIN_USER and NEXTCLOUD_APP_PASSWORD are set. |
+| OAuth2 in Nextcloud | Name “MNKY Command”, redirect URI `https://mnky-command.moodmnky.com/api/auth/nextcloud/callback`. client_credentials optional for status; same URI required for future auth code flow. |
 | Callback | Redirects to MNKY CLOUD page; later can do code exchange and store tokens. |
 | Supabase | No native Nextcloud provider; integration via our app as OAuth client; optional link-account flow would store tokens by user id. |
 | QR | Asset in `public/images/nextcloud-mobile-app-qr.png`; shown on MNKY CLOUD page. |

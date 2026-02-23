@@ -67,7 +67,8 @@ export default async function MainCommunityPage() {
                 <p className="text-sm text-muted-foreground">
                   Chat with the community, get early drops, and connect with
                   other fragrance enthusiasts. Join for events, support, and
-                  exclusive updates.
+                  exclusive updates. Start in #welcome-and-rules, then explore
+                  MNKY VERSE and MNKY LABZ channels.
                 </p>
                 <Button asChild className="w-fit">
                   <a

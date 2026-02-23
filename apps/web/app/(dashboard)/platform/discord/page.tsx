@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import {
@@ -55,10 +56,16 @@ export default function DiscordPage() {
     revalidateOnFocus: false,
   })
 
+  const { data: primaryData } = useSWR<{ isPrimary?: boolean }>(
+    guildId ? `/api/discord/primary-guild?guildId=${guildId}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+
   const guilds = guildsData?.guilds ?? []
   const channels = channelsData?.channels ?? []
-
   const guildsError = guildsData?.error
+  const isPrimaryServer = primaryData?.isPrimary === true
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,21 +104,28 @@ export default function DiscordPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <Select
-            value={guildId}
-            onValueChange={setGuildId}
-          >
-            <SelectTrigger className="w-full max-w-sm">
-              <SelectValue placeholder={guildsLoading ? "Loading..." : "Select a server"} />
-            </SelectTrigger>
-            <SelectContent>
-              {guilds.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={guildId}
+              onValueChange={setGuildId}
+            >
+              <SelectTrigger className="w-full max-w-sm">
+                <SelectValue placeholder={guildsLoading ? "Loading..." : "Select a server"} />
+              </SelectTrigger>
+              <SelectContent>
+                {guilds.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isPrimaryServer && (
+              <Badge variant="secondary" className="text-xs">
+                Primary server
+              </Badge>
+            )}
+          </div>
           {guildId && (
             <div className="mt-2 flex flex-wrap gap-2">
               {channels.map((c) => (

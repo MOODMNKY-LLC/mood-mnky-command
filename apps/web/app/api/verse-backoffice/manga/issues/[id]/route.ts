@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { requireInternalApiKey } from "@/lib/api/internal-auth"
 import { pushMangaIssueMetadataToNotion } from "@/lib/notion"
+import { inngest } from "@/lib/inngest/client"
 
 async function requireMangaAdmin(request: NextRequest): Promise<boolean> {
   if (requireInternalApiKey(request)) return true
@@ -108,6 +109,18 @@ export async function PATCH(
     } catch {
       // Log but do not fail the PATCH; Supabase is updated
     }
+  }
+
+  if (body.status === "published" && issue.status === "published") {
+    await inngest.send({
+      name: "manga/issue.published",
+      data: {
+        issueId: issue.id,
+        slug: issue.slug,
+        title: issue.title,
+        arc_summary: issue.arc_summary ?? null,
+      },
+    })
   }
 
   return NextResponse.json(issue)

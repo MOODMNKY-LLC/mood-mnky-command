@@ -2,6 +2,8 @@ import { match } from "ts-pattern"
 import { inngest } from "./client"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { isProfileEligibleForXp } from "@/lib/xp-eligibility"
+import { getDefaultGuildId } from "@/lib/discord/api"
+import { decryptWebhookToken } from "@/lib/discord/webhook-token"
 
 type QuestRequirement =
   | { type: "read_issue"; issueId: string }
@@ -380,7 +382,7 @@ export const magReadCompleted = inngest.createFunction(
 export const ugcOnApproved = inngest.createFunction(
   { id: "ugc-on-approved", name: "UGC approved – award XP" },
   { event: "ugc/on.approved" },
-  async ({ event }) => {
+  async ({ event, step }) => {
     const { submissionId, profileId, xpDelta } = event.data as {
       submissionId: string
       profileId: string
@@ -411,5 +413,87 @@ export const ugcOnApproved = inngest.createFunction(
       data: { profileId },
     })
     return { ok: true }
+  }
+)
+
+/** Discord webhook base URL */
+const DISCORD_WEBHOOK_BASE = "https://discord.com/api/v10"
+
+export const discordDropAnnounce = inngest.createFunction(
+  {
+    id: "discord-drop-announce",
+    name: "Discord drop announcement – post to stored webhook when issue published",
+  },
+  { event: "manga/issue.published" },
+  async ({ event }) => {
+    const payload = event.data as {
+      issueId: string
+      slug: string
+      title: string
+      arc_summary?: string | null
+    }
+    const guildId = getDefaultGuildId()
+    if (!guildId) return { skipped: true, reason: "DISCORD_GUILD_ID_MNKY_VERSE not set" }
+
+    const supabase = createAdminClient()
+    const { data: webhookRow, error: webhookError } = await supabase
+      .from("discord_webhooks")
+      .select("id, webhook_id, token_encrypted")
+      .eq("guild_id", guildId)
+      .order("last_used_at", { ascending: false, nullsFirst: true })
+      .limit(1)
+      .maybeSingle()
+
+    if (webhookError || !webhookRow?.token_encrypted) {
+      return { skipped: true, reason: "No stored webhook for guild" }
+    }
+
+    let token: string
+    try {
+      token = decryptWebhookToken(webhookRow.token_encrypted)
+    } catch {
+      return { skipped: true, reason: "Failed to decrypt webhook token" }
+    }
+
+    const verseBase =
+      process.env.NEXT_PUBLIC_VERSE_APP_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "https://mnky-verse.moodmnky.com"
+    const dropUrl = `${verseBase.replace(/\/$/, "")}/verse/drops/${payload.slug}`
+
+    const embed = {
+      title: payload.title,
+      description:
+        (payload.arc_summary && payload.arc_summary.slice(0, 1500)) || "New drop in the MNKY VERSE.",
+      url: dropUrl,
+      color: 0x5865f2,
+    }
+
+    const res = await fetch(
+      `${DISCORD_WEBHOOK_BASE}/webhooks/${webhookRow.webhook_id}/${token}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] }),
+      }
+    )
+
+    if (res.status === 429) {
+      const data = (await res.json().catch(() => ({}))) as { retry_after?: number }
+      throw new Error(
+        `Discord rate limit; retry after ${data.retry_after ?? 1}s`
+      )
+    }
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Discord webhook ${res.status}: ${text}`)
+    }
+
+    await supabase
+      .from("discord_webhooks")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", webhookRow.id)
+
+    return { ok: true, webhookId: webhookRow.webhook_id }
   }
 )

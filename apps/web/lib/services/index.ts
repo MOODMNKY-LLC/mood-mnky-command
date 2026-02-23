@@ -18,8 +18,10 @@ function getEnvConfigForService(slug: DeployedServiceId): unknown {
       const baseUrl = process.env.NEXTCLOUD_URL?.replace(/\/$/, "")
       const clientId = process.env.NEXTCLOUD_OAUTH_CLIENT_ID
       const clientSecret = process.env.NEXTCLOUD_OAUTH_CLIENT_SECRET
-      return baseUrl && clientId && clientSecret
-        ? { baseUrl, clientId, clientSecret }
+      const appPasswordSet =
+        process.env.NEXTCLOUD_ADMIN_USER && process.env.NEXTCLOUD_APP_PASSWORD
+      return baseUrl && (clientId && clientSecret || appPasswordSet)
+        ? { baseUrl, clientId: clientId ?? "", clientSecret: clientSecret ?? "" }
         : null
     }
     case "mnky-media": {

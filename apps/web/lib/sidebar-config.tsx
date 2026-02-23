@@ -43,6 +43,8 @@ import {
   Settings,
   Link2,
   Box,
+  GitBranch,
+  Gamepad2,
 } from "lucide-react"
 
 export interface NavItem {
@@ -190,6 +192,8 @@ export const platformDataAdminItems: NavItem[] = [
 export const platformAutomationItems: NavItem[] = [
   { title: "Funnels", href: "/platform/funnels", icon: ListFilter },
   { title: "Flowise", href: "/platform/flowise", icon: Workflow },
+  { title: "n8n", href: "/platform/n8n", icon: GitBranch },
+  { title: "Steam", href: "/platform/steam", icon: Gamepad2 },
   { title: "Storefront Assistant", href: "/platform/storefront-assistant", icon: Bot },
   { title: "Service Analytics", href: "/platform/services", icon: BarChart3 },
   { title: "Infra Artifacts", href: "/platform/artifacts", icon: Box },

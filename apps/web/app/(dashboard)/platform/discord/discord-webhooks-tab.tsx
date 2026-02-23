@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import useSWR from "swr"
-import { Webhook, Plus, Trash2, Send, Loader2 } from "lucide-react"
+import { Webhook, Plus, Trash2, Send, Loader2, Link2, Copy } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -44,14 +44,24 @@ export function DiscordWebhooksTab({ channels, guildId }: DiscordWebhooksTabProp
   const [executeLoading, setExecuteLoading] = useState(false)
   const [createResult, setCreateResult] = useState<{ ok?: boolean; error?: string } | null>(null)
   const [executeResult, setExecuteResult] = useState<{ ok?: boolean; error?: string } | null>(null)
+  const [importUrl, setImportUrl] = useState("")
+  const [importLoading, setImportLoading] = useState(false)
+  const [importResult, setImportResult] = useState<{ ok?: boolean; error?: string } | null>(null)
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
 
   const { data: storedData, mutate: mutateStored } = useSWR<{ webhooks?: StoredWebhook[] }>(
     guildId ? `/api/discord/webhooks/stored?guildId=${guildId}` : null,
     fetcher
   )
+  const { data: guildWebhooksData } = useSWR<{ webhooks?: { id: string; channel_id?: string; guild_id?: string; name: string; avatar: string | null }[] }>(
+    guildId ? `/api/discord/webhooks?guildId=${guildId}` : null,
+    fetcher
+  )
   const storedWebhooks = storedData?.webhooks ?? []
+  const guildWebhooks = guildWebhooksData?.webhooks ?? []
 
   const textChannels = channels.filter((c) => c.type !== 15)
+  const channelById = useMemo(() => new Map(channels.map((c) => [c.id, c])), [channels])
 
   const handleCreate = useCallback(async () => {
     if (!createChannelId || !createName.trim()) return
@@ -119,6 +129,51 @@ export function DiscordWebhooksTab({ channels, guildId }: DiscordWebhooksTabProp
     [mutateStored]
   )
 
+  const handleImport = useCallback(async () => {
+    const url = importUrl.trim()
+    if (!url) return
+    setImportLoading(true)
+    setImportResult(null)
+    try {
+      const res = await fetch("/api/discord/webhooks/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setImportResult({ ok: true })
+        setImportUrl("")
+        mutateStored()
+      } else {
+        setImportResult({ error: data.error ?? "Failed to import" })
+      }
+    } catch {
+      setImportResult({ error: "Network error" })
+    } finally {
+      setImportLoading(false)
+    }
+  }, [importUrl, mutateStored])
+
+  const handleCopyUrl = useCallback(async (webhookId: string) => {
+    setCopyFeedback(null)
+    try {
+      const res = await fetch(`/api/discord/webhooks/${webhookId}/url`)
+      const data = await res.json()
+      if (!res.ok) {
+        setCopyFeedback(data.error ?? "Failed to get URL")
+        return
+      }
+      if (typeof data.url === "string") {
+        await navigator.clipboard.writeText(data.url)
+        setCopyFeedback("Copied!")
+        setTimeout(() => setCopyFeedback(null), 2000)
+      }
+    } catch {
+      setCopyFeedback("Failed to copy")
+    }
+  }, [])
+
   if (!guildId) {
     return (
       <Card>
@@ -185,6 +240,42 @@ export function DiscordWebhooksTab({ channels, guildId }: DiscordWebhooksTabProp
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            Import webhook by URL
+          </CardTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            Paste a webhook URL from Discord (channel settings). Token is stored encrypted and the webhook appears in Execute.
+          </p>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid gap-2">
+            <Label>Webhook URL</Label>
+            <Input
+              placeholder="https://discord.com/api/webhooks/123456789/..."
+              value={importUrl}
+              onChange={(e) => setImportUrl(e.target.value)}
+              className="font-mono text-sm"
+            />
+          </div>
+          <Button
+            onClick={handleImport}
+            disabled={!importUrl.trim() || importLoading}
+          >
+            {importLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+            <span className="ml-1.5">Import & store</span>
+          </Button>
+          {importResult?.ok && (
+            <span className="text-sm text-green-600 dark:text-green-400">Webhook imported and stored.</span>
+          )}
+          {importResult?.error && (
+            <span className="text-sm text-destructive">{importResult.error}</span>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
             <Send className="h-4 w-4" />
             Execute webhook (test send)
           </CardTitle>
@@ -239,31 +330,88 @@ export function DiscordWebhooksTab({ channels, guildId }: DiscordWebhooksTabProp
         <CardHeader>
           <CardTitle className="text-base">Stored webhooks</CardTitle>
           <p className="text-sm text-muted-foreground font-normal">
-            Webhooks stored in LABZ for this server. Delete here also removes from Discord.
+            Webhooks stored in LABZ for this server (used in Execute dropdown). Delete here also removes from Discord.
           </p>
         </CardHeader>
         <CardContent>
           {storedWebhooks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No stored webhooks.</p>
+            <p className="text-sm text-muted-foreground">No stored webhooks. Create one above to use Execute.</p>
+          ) : (
+            <>
+              <ul className="space-y-2">
+                {storedWebhooks.map((w) => (
+                  <li
+                    key={w.id}
+                    className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                  >
+                    <span>{w.name}</span>
+                    <span className="text-muted-foreground shrink-0">#{w.webhook_id}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy webhook URL"
+                        onClick={() => handleCopyUrl(w.webhook_id)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(w.webhook_id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {copyFeedback && (
+                <p className="text-sm text-muted-foreground mt-1">{copyFeedback}</p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Existing webhooks on Discord</CardTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            All webhooks on this server (from Discord). Only stored webhooks can be used for Execute. Create a webhook above to add it to stored.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {guildWebhooks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No webhooks on this server, or failed to load.</p>
           ) : (
             <ul className="space-y-2">
-              {storedWebhooks.map((w) => (
-                <li
-                  key={w.id}
-                  className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-                >
-                  <span>{w.name}</span>
-                  <span className="text-muted-foreground">#{w.webhook_id}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(w.webhook_id)}
+              {guildWebhooks.map((w) => {
+                const channelName = w.channel_id ? channelById.get(w.channel_id)?.name ?? w.channel_id : "—"
+                const isStored = storedWebhooks.some((s) => s.webhook_id === w.id)
+                return (
+                  <li
+                    key={w.id}
+                    className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
+                    <span>{w.name}</span>
+                    <span className="text-muted-foreground shrink-0">#{channelName}</span>
+                    {isStored ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy webhook URL"
+                        onClick={() => handleCopyUrl(w.id)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground shrink-0">Not stored (no token)</span>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </CardContent>

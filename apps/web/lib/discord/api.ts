@@ -18,6 +18,11 @@ export function isDiscordConfigured(): boolean {
   return Boolean(getBotToken())
 }
 
+/** Default guild ID for server-side jobs (drops, scheduled messages). Set DISCORD_GUILD_ID_MNKY_VERSE in env. */
+export function getDefaultGuildId(): string | undefined {
+  return process.env.DISCORD_GUILD_ID_MNKY_VERSE
+}
+
 export async function discordFetch(
   path: string,
   options: DiscordFetchOptions = {}

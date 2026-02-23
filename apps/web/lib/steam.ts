@@ -43,6 +43,11 @@ export function parseSteamId64FromClaimedId(claimedId: string | null): string | 
   return /^\d{17}$/.test(id) ? id : null
 }
 
+/** True when STEAM_WEB_API_KEY is set (used for LABZ Integrations and Steam page). */
+export function isSteamConfigured(): boolean {
+  return Boolean(process.env.STEAM_WEB_API_KEY)
+}
+
 /**
  * Fetch player summary from Steam Web API and return a small snapshot for profiles.steam_profile_cache.
  * Call only on link (and optional refresh); do not call on every page load (rate limits).

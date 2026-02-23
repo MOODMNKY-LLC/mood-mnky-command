@@ -55,7 +55,7 @@ export default function VerseCommunityPage() {
           <ul className="mt-3 space-y-2 text-sm text-verse-text-muted">
             <li className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4 shrink-0 text-verse-button" />
-              Discord — chat, events, and exclusive drops
+              Discord — start in #welcome-and-rules; link your account for quests and drops
             </li>
             <li className="flex items-center gap-2">
               <Newspaper className="h-4 w-4 shrink-0 text-verse-button" />

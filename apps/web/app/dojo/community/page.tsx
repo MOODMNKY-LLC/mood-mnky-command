@@ -42,7 +42,8 @@ export default function DojoCommunityPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-3 text-sm">
-                Chat, events, and exclusive drops with the community.
+                Chat, events, and exclusive drops with the community. Start in
+                #welcome-and-rules, then explore MNKY VERSE and MNKY LABZ.
               </p>
               <Button asChild variant="default" size="sm">
                 <a

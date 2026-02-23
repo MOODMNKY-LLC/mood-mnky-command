@@ -5,6 +5,8 @@ import { isServiceConfiguredAsync } from "@/lib/services"
 import { MAIN_SERVICES } from "@/lib/main-services-data"
 import { isConfigured as notionConfigured } from "@/lib/notion"
 import { isConfigured as shopifyConfigured } from "@/lib/shopify"
+import { isDiscordConfigured } from "@/lib/discord/api"
+import { isSteamConfigured } from "@/lib/steam"
 import { isCredentialsEncryptionConfigured } from "@/lib/credentials-encrypt"
 
 async function requireAdmin(): Promise<
@@ -71,6 +73,8 @@ export async function GET() {
       services,
       notion: notionConfigured(),
       shopify: shopifyConfigured(),
+      discord: isDiscordConfigured(),
+      steam: isSteamConfigured(),
       encryptionConfigured: isCredentialsEncryptionConfigured(),
     })
   } catch (err) {
