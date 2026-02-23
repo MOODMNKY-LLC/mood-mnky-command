@@ -16,6 +16,9 @@ export const BUCKETS = {
   mnkyVerseTracks: "mnky-verse-tracks",
   ugcSubmissions: "ugc-submissions",
   mangaAssets: "manga-assets",
+  infraArtifacts: "infra-artifacts",
+  /** Main site service cards: bundle/hero images. Upload path: bundles/{service-id}.png (or .webp). See docs/SERVICE-CARD-ASSETS.md */
+  serviceCards: "service-cards",
 } as const
 
 export type BucketId = (typeof BUCKETS)[keyof typeof BUCKETS]
@@ -196,6 +199,22 @@ export const BUCKET_CONFIG: Record<
     description: "Issue covers and panel images for manga",
     maxSizeMB: 10,
     acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    isPublic: true,
+  },
+  "infra-artifacts": {
+    label: "Infra Artifacts",
+    description: "Service themes (CSS), Docker/Compose files, n8n workflows",
+    maxSizeMB: 5,
+    acceptedTypes: [
+      "text/css",
+      "text/plain",
+      "application/json",
+      "application/x-yaml",
+      "text/yaml",
+      "image/svg+xml",
+      "image/png",
+      "image/jpeg",
+    ],
     isPublic: true,
   },
 }
