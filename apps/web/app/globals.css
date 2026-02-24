@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth Cursor: keep text cursor in inputs when custom cursor is active */
+input,
+textarea,
+select {
+  cursor: text !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -20,6 +27,49 @@
 .progress-indeterminate-indicator {
   width: 30%;
   animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+/* Magic UI Marquee: horizontal scroll with --duration and --gap */
+@keyframes marquee-horizontal {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+.animate-marquee-horizontal {
+  animation: marquee-horizontal var(--duration, 40s) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 40s) linear infinite;
+}
+
+.marquee-paused .animate-marquee-horizontal,
+.marquee-paused .animate-marquee-vertical {
+  animation-play-state: paused;
+}
+
+/* 3D marquee variant: subtle perspective; disabled when user prefers reduced motion */
+.marquee-3d-inner {
+  transform: rotateX(6deg) rotateY(-2deg);
+  transform-style: preserve-3d;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-3d-inner {
+    transform: none;
+  }
 }
 
 /* Verse blog prose preset: on-brand headings, code, blockquotes */

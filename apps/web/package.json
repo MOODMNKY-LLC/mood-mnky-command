@@ -103,6 +103,7 @@
     "flowise-embed": "^3.0.5",
     "flowise-embed-react": "^3.0.5",
     "flowise-sdk": "^1.0.9",
+    "framer-motion": "^12.34.3",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "inngest": "^3.52.1",
