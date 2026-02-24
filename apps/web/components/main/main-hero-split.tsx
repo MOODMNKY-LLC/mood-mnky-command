@@ -4,6 +4,8 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useEffect, useMemo, useState } from "react"
 import { useTheme } from "next-themes"
+import { useThemePalette } from "@/components/theme-palette-provider"
+import { getGlobeConfigForTheme } from "@/components/verse/verse-hero-dynamic"
 import { Button } from "@/components/ui/button"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
@@ -12,7 +14,8 @@ import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern
 import { DottedMap } from "@/components/ui/dotted-map"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
-import { TalkToMoodMnkyMatrixButton } from "@/components/main/elevenlabs/talk-to-mood-mnky-matrix-button"
+import { MainShimmeringText } from "@/components/main/elevenlabs/main-shimmering-text"
+import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { cn } from "@/lib/utils"
 import type { COBEOptions } from "cobe"
 
@@ -96,6 +99,7 @@ function getMainGlobeConfig(theme: "light" | "dark" | undefined): COBEOptions {
 
 export function MainHeroSplit() {
   const { resolvedTheme } = useTheme()
+  const { palette } = useThemePalette()
   const isMobile = useIsMobile()
   const [showGlobe, setShowGlobe] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -112,8 +116,11 @@ export function MainHeroSplit() {
 
   const theme = resolvedTheme === "dark" ? "dark" : "light"
   const globeConfig = useMemo(
-    () => getMainGlobeConfig(resolvedTheme ?? "light"),
-    [resolvedTheme]
+    () =>
+      palette === "dojo"
+        ? getGlobeConfigForTheme(theme)
+        : getMainGlobeConfig(resolvedTheme ?? "light"),
+    [palette, theme, resolvedTheme]
   )
   const mapSamples = isMobile ? 1500 : 4000
 
@@ -140,7 +147,7 @@ export function MainHeroSplit() {
             className="font-bold tracking-tight text-foreground"
             style={{ fontSize: "var(--main-hero-title-size)" }}
           >
-            Bespoke fragrance.
+            Bespoke experiences.
             <br />
             Your story, your scent.
           </h1>
@@ -161,10 +168,30 @@ export function MainHeroSplit() {
             <Button asChild variant="outline" size="lg" className="main-btn-glass">
               <Link href="/verse/blending-guide">Customize your scent</Link>
             </Button>
-            <TalkToMoodMnkyMatrixButton
-              className="h-12 px-4 text-lg"
-              scrollTargetId="voice-block"
-            />
+            <button
+              type="button"
+              className="main-btn-float inline-flex h-12 items-center justify-center gap-2 px-4 text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label="Talk to MOOD MNKY"
+              onClick={() =>
+                document.getElementById("voice-block")?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              <VerseLogoHairIcon
+                withRing
+                size="md"
+                className="shrink-0 text-foreground"
+                ringClassName="border-foreground/80"
+              />
+              <MainShimmeringText
+                text="Talk to MOOD MNKY"
+                duration={2.5}
+                repeat
+                repeatDelay={0.5}
+                startOnView
+                once={false}
+                className="whitespace-nowrap text-lg"
+              />
+            </button>
           </div>
         </div>
 
@@ -211,7 +238,7 @@ export function MainHeroSplit() {
               <MainMascotImage
                 src={MAIN_MASCOT_FALLBACK_HERO}
                 fallbackSrc={MAIN_MASCOT_ASSETS.hero}
-                alt="MOOD MNKY – Bespoke fragrance"
+                alt="MOOD MNKY – Bespoke experiences"
                 fill
                 className="object-contain object-bottom"
                 priority
