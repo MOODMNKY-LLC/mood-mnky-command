@@ -23,7 +23,7 @@ export interface LabzContextConfig {
 export const labzContexts: LabzContextConfig[] = [
   { id: "lab", name: "Lab", icon: FlaskConical, plan: "Product data & builder", href: "/" },
   { id: "store", name: "Store", icon: Store, plan: "Shopify admin", href: "/store" },
-  { id: "verse", name: "Verse", icon: Globe, plan: "Storefront & community", href: "/verse" },
+  { id: "verse", name: "Dojo", icon: Globe, plan: "Storefront & community", href: "/dojo" },
   { id: "platform", name: "Platform", icon: Server, plan: "Data & automation", href: "/platform" },
   { id: "ai-tools", name: "AI Tools", icon: Bot, plan: "Chat & studio", href: "/chat" },
 ];
@@ -32,5 +32,5 @@ export const labzContexts: LabzContextConfig[] = [
 export const labzEcosystemLinks: { label: string; href: string; external: boolean }[] = [
   { label: "Home (MOOD MNKY)", href: "/main", external: false },
   { label: "Documentation", href: "/docs", external: false },
-  { label: "MNKY VERSE", href: "/verse", external: false },
+  { label: "MNKY DOJO", href: "/dojo", external: false },
 ];

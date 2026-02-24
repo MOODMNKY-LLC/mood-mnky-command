@@ -5,6 +5,7 @@ import { MainGlassCard } from "@/components/main/main-glass-card"
 import { MainServiceDetailHeader } from "@/components/main/main-service-detail-header"
 import { MainServiceSteamBlockLink } from "@/components/main/main-service-steam-block"
 import { MAIN_SERVICES } from "@/lib/main-services-data"
+import { getMainServiceImageUrls } from "@/lib/app-asset-slots"
 import { getServiceStatus } from "@/lib/services"
 import { createClient } from "@/lib/supabase/server"
 import type { SteamProfileCache } from "@/lib/steam"
@@ -30,8 +31,13 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function MainServiceDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params
-  const service = MAIN_SERVICES.find((s) => s.id === slug)
-  if (!service) notFound()
+  const base = MAIN_SERVICES.find((s) => s.id === slug)
+  if (!base) notFound()
+  const imageUrls = await getMainServiceImageUrls()
+  const service = {
+    ...base,
+    bundleImageUrl: imageUrls[base.id] ?? base.bundleImageUrl,
+  }
 
   const resolvedSearchParams = searchParams ? await searchParams : {}
   const steamMessage = resolvedSearchParams?.steam ?? null

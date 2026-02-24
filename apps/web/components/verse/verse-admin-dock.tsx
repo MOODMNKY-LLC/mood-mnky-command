@@ -139,16 +139,16 @@ export function VerseAdminDock({
               </DockIcon>
               <DockIcon>
                 <Link
-                  href="/verse"
+                  href="/dojo"
                   className="flex size-full items-center justify-center text-verse-text"
-                  title="VERSE"
+                  title="Dojo"
                 >
                   <Store className="h-5 w-5" />
                 </Link>
               </DockIcon>
               <DockIcon>
                 <Link
-                  href="/verse/explore"
+                  href="/dojo/explore"
                   className="flex size-full items-center justify-center text-verse-text"
                   title="Explore"
                 >
@@ -193,7 +193,7 @@ export function VerseAdminDock({
           {/* Right: Shop, Cart */}
           <DockIcon>
             <Link
-              href="/verse/products"
+              href="/dojo/products"
               className="flex size-full items-center justify-center text-verse-text"
               title="Shop"
             >
@@ -202,7 +202,7 @@ export function VerseAdminDock({
           </DockIcon>
           <DockIcon>
             <Link
-              href="/verse/cart"
+              href="/dojo/cart"
               className="flex size-full items-center justify-center text-verse-text"
               title="Cart"
             >

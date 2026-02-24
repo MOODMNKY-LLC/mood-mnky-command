@@ -217,6 +217,13 @@ export const BUCKET_CONFIG: Record<
     ],
     isPublic: true,
   },
+  "service-cards": {
+    label: "Service Cards",
+    description: "Main site service bundle/hero images (/main/services)",
+    maxSizeMB: 10,
+    acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+    isPublic: true,
+  },
 }
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ export { MainAudioPlayer, AudioPlayerProvider, useAudioPlayer } from "./main-aud
 export { MainBarVisualizer } from "./main-bar-visualizer"
 export { MainMatrix } from "./main-matrix"
 export { BrandMatrixText } from "./brand-matrix-text"
-export type { BrandMatrixVariant, BrandMatrixTextProps } from "./brand-matrix-text"
+export type { BrandMatrixVariant, BrandMatrixTextProps, BrandMatrixAnimation } from "./brand-matrix-text"
 export { TalkToMoodMnkyMatrixButton } from "./talk-to-mood-mnky-matrix-button"
 export type { TalkToMoodMnkyMatrixButtonProps } from "./talk-to-mood-mnky-matrix-button"
 export { MainMessage } from "./main-message"

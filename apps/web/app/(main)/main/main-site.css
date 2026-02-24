@@ -1,26 +1,9 @@
 /* Main site – public marketing portal (www.moodmnky.com → /main) */
-/* Light = white-dominant; dark = inverse grayscale. Theme driven by nav Animated Theme Toggler (next-themes). */
-/* Exclusively grayscale: override root primary/accent/ring so all buttons and links are gray */
-.main-site {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --primary: 0 0% 25%;
-  --primary-foreground: 0 0% 98%;
-  --accent: 0 0% 25%;
-  --accent-foreground: 0 0% 98%;
-  --ring: 0 0% 35%;
-}
-.dark .main-site {
-  --background: 0 0% 6%;
-  --foreground: 0 0% 98%;
-  --primary: 0 0% 65%;
-  --primary-foreground: 0 0% 9%;
-  --accent: 0 0% 65%;
-  --accent-foreground: 0 0% 9%;
-  --ring: 0 0% 55%;
-}
+/* Semantic colors (--background, --foreground, --primary, etc.) come from root app/globals.css
+   per data-theme (main = grayscale, dojo = blues/browns). Do not override here so palette
+   switcher applies site-wide including /main. */
 
-/* Full grayscale palette: Main uses only gray-scale tokens for a monochrome, tech-forward look */
+/* Layout and optional grayscale scale for decorative use when needed */
 .main-site {
   /* Page width: full-page layout (ElevenLabs-style); wide content area */
   --main-page-width: 1600px;

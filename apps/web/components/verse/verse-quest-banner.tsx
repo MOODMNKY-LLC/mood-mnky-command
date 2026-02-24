@@ -30,7 +30,7 @@ export function VerseQuestBanner({ quest }: VerseQuestBannerProps) {
             .
           </p>
           <Link
-            href="/verse/products"
+            href="/dojo/products"
             className="ml-auto shrink-0 text-sm font-medium text-verse-text underline underline-offset-2 hover:text-verse-text-muted"
           >
             Shop now

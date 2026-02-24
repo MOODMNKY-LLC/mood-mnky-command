@@ -255,7 +255,7 @@ export function VerseChatPopup({
               </button>
             </div>
             <Link
-              href="/verse/chat"
+              href="/dojo/chat"
               onClick={() => setOpen(false)}
               className="text-verse-text-muted text-sm hover:text-verse-text"
             >

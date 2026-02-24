@@ -595,7 +595,7 @@ export function VerseProfileClient({
             Linked accounts
           </h2>
           <p className="text-sm text-verse-text-muted">
-            Services linked to your MNKY VERSE account.
+            Services linked to your MNKY DOJO account.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">

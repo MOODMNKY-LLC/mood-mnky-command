@@ -10,7 +10,7 @@ const ACTIONS = [
   {
     name: "Fragrance Wheel",
     description: "Discover scent families and find your favorites.",
-    href: "/verse/fragrance-wheel",
+    href: "/dojo/fragrance-wheel",
     cta: "Explore",
     Icon: CircleDot,
     className: "col-span-3 lg:col-span-1",
@@ -26,7 +26,7 @@ const ACTIONS = [
   {
     name: "Profile",
     description: "Account settings and scent preferences.",
-    href: "/dojo/profile",
+    href: "/dojo/me/profile",
     cta: "Profile",
     Icon: User,
     className: "col-span-3 lg:col-span-1",

@@ -46,14 +46,14 @@ export function VerseFragranceWheel() {
       {/* CTA to explore products */}
       <div className="flex flex-wrap gap-3">
         <VerseButton asChild>
-          <Link href="/verse/products">
+          <Link href="/dojo/products">
             {selectedFamily
               ? `Explore ${selectedFamily} Products`
               : "Shop All Products"}
           </Link>
         </VerseButton>
         <VerseButton variant="outline" asChild>
-          <Link href="/verse/explore">Browse Fragrance Notes</Link>
+          <Link href="/dojo/explore">Browse Fragrance Notes</Link>
         </VerseButton>
       </div>
     </div>

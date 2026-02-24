@@ -1,45 +1,13 @@
-/* MNKY VERSE storefront - grayscale glassmorphic tokens (WCAG AA compliant) */
-/* Light theme: extracted from mnky-verse-bg-light.png + contrast tuning */
-/* Scoped primary override - verse uses grayscale, not global green */
+/* MNKY VERSE storefront - tokens from root (data-theme + .dark) */
+/* --verse-bg, --verse-text, etc. are set in app/globals.css per [data-theme="main"] / [data-theme="dojo"] and .dark */
+
 .verse-storefront {
-  --primary: 215 19% 35%;
-  --primary-foreground: 210 20% 98%;
-  --accent: 215 19% 35%;
-  --accent-foreground: 210 20% 98%;
-  --verse-bg: #f1f5f9;
-  --verse-bg-rgb: 241, 245, 249;
-  --verse-text: #0f172a;
-  --verse-text-rgb: 15, 23, 42;
-  /* Muted: #475569 ensures 4.5:1 contrast on bg (replaces opacity-based grays) */
-  --verse-text-muted: #475569;
-  --verse-border: rgba(15, 23, 42, 0.08);
-  --verse-button: #475569;
-  --verse-button-rgb: 71, 85, 105;
-  --verse-button-text: #f8fafc;
   --verse-page-width: 1600px;
   --verse-spacing-sections: 24px;
 
   background-color: var(--verse-bg);
   color: var(--verse-text);
   font-family: var(--font-roboto), Roboto, sans-serif;
-}
-
-/* Dark theme: extracted from mnky-verse-bg-dark.png (#181619, #bbb5b5, #696468) */
-.verse-storefront[data-verse-theme="dark"] {
-  --primary: 213 24% 65%;
-  --primary-foreground: 222 47% 11%;
-  --accent: 213 24% 65%;
-  --accent-foreground: 222 47% 11%;
-  --verse-bg: #181619;
-  --verse-bg-rgb: 24, 22, 25;
-  --verse-text: #c8c4c4;
-  --verse-text-rgb: 200, 196, 196;
-  /* Muted: #94a3b8 for reliable contrast on dark bg */
-  --verse-text-muted: #94a3b8;
-  --verse-border: rgba(200, 196, 196, 0.12);
-  --verse-button: #94a3b8;
-  --verse-button-rgb: 148, 163, 184;
-  --verse-button-text: #0f172a;
 }
 
 .verse-storefront .font-verse-heading {
@@ -56,22 +24,11 @@
   object-position: center;
 }
 
-/* Dropdown menu in verse */
+/* Dropdown menu in verse - use root verse tokens */
 .verse-dropdown {
   --background: var(--verse-bg);
   --foreground: var(--verse-text);
   border-color: rgba(var(--verse-text-rgb), 0.15);
-}
-
-/* Shop auth dialog (renders in portal) – theme applied via data-verse-theme */
-.verse-dropdown[data-verse-theme="dark"] {
-  --verse-bg: #181619;
-  --verse-bg-rgb: 24, 22, 25;
-  --verse-text: #c8c4c4;
-  --verse-text-muted: #94a3b8;
-  --verse-border: rgba(200, 196, 196, 0.12);
-  --verse-button: #94a3b8;
-  --verse-button-text: #0f172a;
 }
 
 /* Brand band - full-width opposite-color strip at fold, logo centered (see VerseBrandBand) */

@@ -9,6 +9,7 @@ import {
   magDownloadRecorded,
   ugcOnApproved,
   discordDropAnnounce,
+  discordRoleSyncByLevel,
 } from "@/lib/inngest/functions"
 
 export const { GET, POST, PUT } = serve({
@@ -22,5 +23,6 @@ export const { GET, POST, PUT } = serve({
     magDownloadRecorded,
     ugcOnApproved,
     discordDropAnnounce,
+    discordRoleSyncByLevel,
   ],
 })

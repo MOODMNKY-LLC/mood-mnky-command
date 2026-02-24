@@ -37,7 +37,7 @@ export function VerseCartContent() {
           Your cart is empty.
         </div>
         <VerseButton asChild>
-          <Link href="/verse/products">Browse products</Link>
+          <Link href="/dojo/products">Browse products</Link>
         </VerseButton>
       </div>
     );
@@ -102,7 +102,7 @@ function VerseCartLineItem({ line }: { line: { id: string; merchandise?: { produ
           <h3 className="font-medium line-clamp-2 text-verse-text">
             {product ? (
               <Link
-                href={`/verse/products/${product.handle}`}
+                href={`/dojo/products/${product.handle}`}
                 className="hover:underline"
               >
                 {product.title}

@@ -51,7 +51,7 @@ export function VerseProductFilters({
     else params.set("sort", value);
     params.delete("cursor");
     const qs = params.toString();
-    router.push(qs ? `/verse/products?${qs}` : "/verse/products");
+    router.push(qs ? `/dojo/products?${qs}` : "/dojo/products");
   };
 
   return (
@@ -65,7 +65,7 @@ export function VerseProductFilters({
               params.delete("collection");
               params.delete("cursor");
               const qs = params.toString();
-              return qs ? `/verse/products?${qs}` : "/verse/products";
+              return qs ? `/dojo/products?${qs}` : "/dojo/products";
             })()}
             className={cn(
               "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
@@ -81,7 +81,7 @@ export function VerseProductFilters({
             const params = new URLSearchParams(searchParams.toString());
             params.set("collection", col.handle);
             params.delete("cursor");
-            const href = `/verse/products?${params.toString()}`;
+            const href = `/dojo/products?${params.toString()}`;
             return (
               <Link
                 key={col.id}
@@ -103,7 +103,7 @@ export function VerseProductFilters({
       {/* Sort + Search row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form
-          action="/verse/products"
+          action="/dojo/products"
           method="GET"
           className="flex flex-1 gap-2 sm:max-w-xs"
         >

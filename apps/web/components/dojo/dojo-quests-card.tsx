@@ -81,7 +81,7 @@ export function DojoQuestsCard({
 
         {quests.length > 0 && (
           <Link
-            href="/verse/quests"
+            href="/dojo/quests"
             className="mt-3 block text-center text-xs text-primary hover:underline"
           >
             View all quests →

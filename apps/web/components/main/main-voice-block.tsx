@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { MainGlassCard } from "@/components/main/main-glass-card"
 import {
   MainMicSelector,
   MainConversationBar,
   MainLiveWaveform,
 } from "@/components/main/elevenlabs"
-import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 import type { MainElevenLabsConfig } from "@/lib/main-landing-data"
@@ -31,6 +30,11 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
   const onDisconnect = useCallback(() => {
     setTranscriptLines([])
   }, [])
+  const transcriptEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [transcriptLines])
 
   if (!config.showVoiceSection) return null
 
@@ -61,8 +65,8 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
           <MainMicSelector />
         </div>
         <MainGlassCard className="main-float main-glass-panel-card flex w-full max-w-md flex-col gap-4">
-          <h3 className="text-lg font-semibold text-foreground flex flex-wrap items-center gap-1">
-            Talk to <BrandMatrixText variant="MOOD MNKY" size={4} gap={1} className="inline-block h-6" />
+          <h3 className="text-lg font-semibold text-foreground">
+            Talk to MOOD MNKY
           </h3>
           {hasAgent ? (
             <MainConversationBar
@@ -79,7 +83,7 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
           {config.showTranscriptViewer && (
             <div className="mt-2 border-t border-border pt-3">
               <p className="mb-2 text-xs font-medium text-muted-foreground">Transcript</p>
-              <div className="main-glass-panel-soft min-h-[80px] max-h-[200px] overflow-y-auto rounded-lg p-3 text-sm text-muted-foreground">
+              <div className="main-glass-panel-soft h-[180px] overflow-y-auto rounded-lg p-3 text-sm text-muted-foreground">
                 {transcriptLines.length === 0 ? (
                   <p className="text-xs">
                     Transcript will appear here when you&apos;re in a voice conversation.
@@ -92,16 +96,12 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
                         className={line.source === "user" ? "text-foreground" : "text-muted-foreground"}
                       >
                         <span className="font-medium">
-                          {line.source === "user" ? "You: " : (
-                            <>
-                              <BrandMatrixText variant="MOOD MNKY" size={2} gap={0.5} className="mr-0.5 inline-block h-3.5 align-middle" />
-                              :{" "}
-                            </>
-                          )}
+                          {line.source === "user" ? "You: " : "MOOD MNKY: "}
                         </span>
                         {line.message}
                       </li>
                     ))}
+                    <li ref={transcriptEndRef} aria-hidden />
                   </ul>
                 )}
               </div>

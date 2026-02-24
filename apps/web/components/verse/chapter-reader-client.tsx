@@ -90,7 +90,7 @@ export function ChapterReaderClient({
                   {panel.hotspots.map((h) => (
                     <Link
                       key={h.id}
-                      href={h.href ?? "/verse/products"}
+                      href={h.href ?? "/dojo/products"}
                       className="absolute flex size-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary/80 text-primary-foreground text-xs transition-transform hover:scale-110"
                       style={{
                         left: `${h.x * 100}%`,

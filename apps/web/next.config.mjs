@@ -6,10 +6,35 @@ import withSerwistInit from "@serwist/next"
 // Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
 const nextConfig = {
   serverExternalPackages: ["openid"],
+  async redirects() {
+    return [
+      { source: "/verse", destination: "/dojo", permanent: true },
+      { source: "/verse/community", destination: "/dojo/community", permanent: true },
+      { source: "/verse/chat", destination: "/dojo/chat", permanent: true },
+      { source: "/verse/:path*", destination: "/dojo/:path*", permanent: true },
+      // Member hub under /dojo/me (Option B): only redirect member-only routes
+      { source: "/dojo/profile", destination: "/dojo/me/profile", permanent: true },
+      { source: "/dojo/profile/:path*", destination: "/dojo/me/profile/:path*", permanent: true },
+      { source: "/dojo/crafting", destination: "/dojo/me/crafting", permanent: true },
+      { source: "/dojo/crafting/:path*", destination: "/dojo/me/crafting/:path*", permanent: true },
+      { source: "/dojo/preferences", destination: "/dojo/me/preferences", permanent: true },
+      { source: "/dojo/flowise", destination: "/dojo/me/flowise", permanent: true },
+      { source: "/dojo/flowise/:path*", destination: "/dojo/me/flowise/:path*", permanent: true },
+    ]
+  },
   async headers() {
     return [
       {
         source: "/verse/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
+      {
+        source: "/dojo/:path*",
         headers: [
           {
             key: "Content-Security-Policy",
@@ -90,6 +115,7 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [
     { url: "/~offline", revision },
     { url: "/verse", revision },
+    { url: "/dojo", revision },
     { url: "/main", revision },
   ],
   swSrc: "app/sw.ts",

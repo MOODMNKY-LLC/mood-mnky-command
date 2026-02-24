@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { FlaskConical, User, LogOut, Home, BookOpen, Bot, Swords } from "lucide-react";
+import { FlaskConical, User, LogOut, Home, BookOpen, Bot, Swords, Gift } from "lucide-react";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { VerseHeaderShopifyLink } from "./verse-header-shopify-link";
+import { VerseHeaderXp } from "./verse-header-xp";
 import { ShopAuthDialog } from "./shop-auth-dialog";
 import { AppInfoDialog } from "@/components/app-info-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { ThemePaletteSwitcher } from "@/components/theme-palette-switcher";
 import { VerseButton } from "@/components/verse/ui/button";
 import {
   DropdownMenu,
@@ -70,10 +72,10 @@ export function VerseHeader({
             MOOD MNKY
           </Link>
           <Link
-            href="/verse"
+            href="/dojo"
             className="font-verse-heading text-xl font-semibold tracking-tight text-verse-text"
           >
-            MNKY VERSE
+            MNKY DOJO
           </Link>
         </div>
         {/* Center: Nav links (Lab, Home, Explore, Blog, Agents, Shop, Cart) */}
@@ -92,27 +94,27 @@ export function VerseHeader({
             </>
           )}
           <Link
-            href="/verse"
+            href="/dojo"
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
           >
             <Home className="h-4 w-4" />
             Home
           </Link>
           <Link
-            href="/verse/explore"
+            href="/dojo/explore"
             className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             Explore
           </Link>
           <Link
-            href="/verse/blog"
+            href="/dojo/blog"
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
           >
             <BookOpen className="h-4 w-4" />
             Blog
           </Link>
           <Link
-            href="/verse/agents"
+            href="/dojo/agents"
             className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
           >
             <Bot className="h-4 w-4" />
@@ -120,7 +122,7 @@ export function VerseHeader({
           </Link>
           {user && shopifyLinked ? (
             <Link
-              href="/verse/products"
+              href="/dojo/products"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
             >
               Shop
@@ -139,6 +141,14 @@ export function VerseHeader({
             <>
               <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
               <Link
+                href="/dojo/rewards"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
+                title="MNKY Rewards"
+              >
+                <Gift className="h-4 w-4" />
+                <span className="hidden sm:inline">Rewards</span>
+              </Link>
+              <Link
                 href="/dojo"
                 className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
                 title="Your Dojo"
@@ -151,8 +161,9 @@ export function VerseHeader({
           <div className="h-4 w-px border-l border-[var(--verse-border)]" aria-hidden />
           <VerseHeaderCartLink />
         </nav>
-        {/* Right: User account, Link Shopify, Theme, Info */}
+        {/* Right: XP, User account, Link Shopify, Theme, Info */}
         <div className="flex items-center justify-end gap-2">
+          {user && <VerseHeaderXp />}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -165,7 +176,7 @@ export function VerseHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="verse-dropdown">
                 <DropdownMenuItem asChild>
-                  <Link href="/dojo/profile" className="flex items-center gap-2">
+                  <Link href="/dojo/me/profile" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     Profile
                   </Link>
@@ -189,6 +200,9 @@ export function VerseHeader({
           {user && (
             <VerseHeaderShopifyLink userId={user.id} />
           )}
+          <ThemePaletteSwitcher
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[var(--verse-text)] hover:opacity-80"
+          />
           <AnimatedThemeToggler
             className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-verse-text hover:bg-verse-bg-hover hover:text-verse-text"
             aria-label="Toggle theme"
@@ -202,8 +216,8 @@ export function VerseHeader({
         user={user}
         shopifyLinked={shopifyLinked}
         shopifyError={shopifyError}
-        redirectAfterAuth="/verse/products"
-        onContinueAsGuest={() => router.push("/verse/products")}
+        redirectAfterAuth="/dojo/products"
+        onContinueAsGuest={() => router.push("/dojo/products")}
       />
     </header>
   );

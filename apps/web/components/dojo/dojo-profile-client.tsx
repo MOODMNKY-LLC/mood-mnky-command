@@ -639,7 +639,7 @@ export function DojoProfileClient({
                 </span>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/verse/auth/discord/link">Link account</Link>
+                  <Link href="/dojo/auth/discord/link">Link account</Link>
                 </Button>
               )}
             </div>
@@ -654,7 +654,7 @@ export function DojoProfileClient({
                 </span>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/verse/auth/github/link">Link account</Link>
+                  <Link href="/dojo/auth/github/link">Link account</Link>
                 </Button>
               )}
             </div>

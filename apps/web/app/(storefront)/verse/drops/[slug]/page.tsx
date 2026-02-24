@@ -151,7 +151,7 @@ export default async function VerseDropSlugPage({
           </BoxGrid>
 
           <BoxCTA
-            title="Enter the MNKY VERSE"
+            title="Enter the MNKY DOJO"
             href="/verse/join"
             label="Unlock Members Access"
           />

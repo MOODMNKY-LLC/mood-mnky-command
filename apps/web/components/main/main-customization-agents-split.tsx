@@ -197,7 +197,7 @@ export function MainCustomizationAgentsSplit({
                     </button>
                   )}
                   <Link
-                    href="/verse/chat"
+                    href="/dojo/chat"
                     className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:underline"
                   >
                     Open in VERSE

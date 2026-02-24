@@ -1,0 +1,129 @@
+{
+  "mcpServers": {
+    "moodmnky-docs": {
+      "url": "https://docs.moodmnky.com/mcp",
+      "type": "http"
+    },
+    "filesystem": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-v", "C:/DEV-MNKY:/local-directory", "mcp/filesystem", "/local-directory"]
+    },
+    "supabase-local": {
+      "url": "http://127.0.0.1:54321/mcp",
+      "type": "http"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "@magicuidesign/mcp": {
+      "command": "npx",
+      "args": ["-y", "@magicuidesign/mcp@latest"]
+    },
+    "wolfram-alpha": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "WOLFRAM_API_KEY", "mcp/wolfram-alpha"],
+      "env": {
+        "WOLFRAM_API_KEY": "${env:WOLFRAM_API_KEY}"
+      }
+    },
+    "openaiDeveloperDocs": {
+      "url": "https://developers.openai.com/mcp",
+      "type": "http"
+    },
+    "memory": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-v", "/local-directory:/local-directory", "mcp/memory"]
+    },
+    "mnky-verse-discord": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "DISCORD_TOKEN", "mcp/mcp-discord"],
+      "env": {
+        "DISCORD_TOKEN": "${env:DISCORD_BOT_TOKEN_MNKY_VERSE}"
+      }
+    },
+    "n8n-dev-mcp": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm", "--init",
+        "-e", "MCP_MODE=stdio",
+        "-e", "LOG_LEVEL=error",
+        "-e", "DISABLE_CONSOLE_OUTPUT=true",
+        "-e", "N8N_API_URL",
+        "-e", "N8N_API_KEY",
+        "ghcr.io/czlonkowski/n8n-mcp:latest"
+      ],
+      "env": {
+        "N8N_API_URL": "${env:N8N_API_URL}",
+        "N8N_API_KEY": "${env:N8N_API_KEY}"
+      }
+    },
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest"],
+      "env": {
+        "API_KEY": "${env:MAGIC_21ST_API_KEY}"
+      }
+    },
+    "firecrawl": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "FIRECRAWL_API_KEY", "mcp/firecrawl"],
+      "env": {
+        "FIRECRAWL_API_KEY": "${env:FIRECRAWL_API_KEY}"
+      }
+    },
+    "brave-search": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "BRAVE_API_KEY", "mcp/brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${env:BRAVE_API_KEY}"
+      }
+    },
+    "tavily": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "TAVILY_API_KEY", "mcp/tavily"],
+      "env": {
+        "TAVILY_API_KEY": "${env:TAVILY_API_KEY}"
+      }
+    },
+    "fetch": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "mcp/fetch"]
+    },
+    "sequential-thinking": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "mcp/sequentialthinking"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "Notion": {
+      "url": "https://mcp.notion.com/mcp",
+      "type": "http"
+    },
+    "notion-sse": {
+      "type": "sse",
+      "url": "https://mcp.notion.com/sse"
+    },
+    "notion-stdio": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"]
+    },
+    "notion-open-source": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-notion"],
+      "env": {
+        "NOTION_API_KEY": "${env:NOTION_API_KEY}",
+        "NOTION_API_VERSION": "${env:NOTION_API_VERSION}"
+      }
+    },
+    "shopify-dev-mcp": {
+      "command": "npx",
+      "args": ["-y", "@shopify/dev-mcp@latest"]
+    }
+  }
+}

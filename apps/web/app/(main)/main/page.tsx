@@ -93,7 +93,7 @@ export default async function MainLandingPage() {
                 Shop, explore the blending guide, and connect in the community.
               </p>
               <Button asChild className="mt-4">
-                <Link href="/verse">Explore VERSE</Link>
+                <Link href="/dojo">Explore VERSE</Link>
               </Button>
             </MainGlassCard>
             <MainGlassCard className="flex flex-col">
@@ -105,7 +105,7 @@ export default async function MainLandingPage() {
                 library.
               </p>
               <Button asChild variant="outline" className="mt-4">
-                <Link href="/verse/blending-guide">Blending Guide</Link>
+                <Link href="/dojo/blending-guide">Blending Guide</Link>
               </Button>
             </MainGlassCard>
           </section>

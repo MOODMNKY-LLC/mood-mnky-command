@@ -65,7 +65,7 @@ export function FeaturedFragranceCard({ oil, className }: FeaturedFragranceCardP
             {description}
           </p>
           <Button asChild variant="default" size="sm" className="mt-4">
-            <Link href="/verse">Try in Blending Lab</Link>
+            <Link href="/dojo">Try in Blending Lab</Link>
           </Button>
         </div>
       </div>

@@ -163,10 +163,10 @@ export function MainHeroSplit() {
           </div>
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild size="lg" className="main-btn-float">
-              <Link href="/verse">Shop the store</Link>
+              <Link href="/dojo">Shop the store</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="main-btn-glass">
-              <Link href="/verse/blending-guide">Customize your scent</Link>
+              <Link href="/dojo/blending-guide">Customize your scent</Link>
             </Button>
             <button
               type="button"

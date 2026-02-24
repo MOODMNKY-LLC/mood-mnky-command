@@ -32,7 +32,7 @@ export function VerseCollectionsPills({
           {items.map((col) => (
             <Link
               key={col.id}
-              href={`/verse/products?collection=${encodeURIComponent(col.handle)}`}
+              href={`/dojo/products?collection=${encodeURIComponent(col.handle)}`}
             >
               <Card className="overflow-hidden glass-panel transition-opacity hover:opacity-95">
                 <div className="relative aspect-square w-full overflow-hidden bg-verse-text/5">

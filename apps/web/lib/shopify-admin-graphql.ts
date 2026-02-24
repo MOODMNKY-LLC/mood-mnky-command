@@ -872,3 +872,102 @@ export async function ensureCustomerMetafieldDefinitions(): Promise<void> {
     }
   }
 }
+
+// ---- Discount code create (loyalty redemption; requires write_discounts scope) ----
+
+const DISCOUNT_CODE_CREATE_MUTATION = `
+  mutation CreateDiscountCode($input: DiscountCodeBasicInput!) {
+    discountCodeBasicCreate(basicCodeDiscount: $input) {
+      codeDiscountNode {
+        id
+        codeDiscount {
+          ... on DiscountCodeBasic {
+            codes(first: 1) {
+              nodes { code }
+            }
+            startsAt
+            endsAt
+          }
+        }
+      }
+      userErrors { field message code }
+    }
+  }
+`
+
+export interface CreateDiscountCodeInput {
+  title: string
+  code: string
+  startsAt: string
+  endsAt: string
+  appliesOncePerCustomer: boolean
+  discountAmount?: { amount: number; appliesOnEachItem: boolean }
+  discountPercentage?: { value: number }
+}
+
+export interface CreateDiscountCodeResult {
+  code: string
+  id: string
+}
+
+/**
+ * Create a single-use style discount code. Uses DiscountCodeBasicInput.
+ * Requires SHOPIFY_STORE_DOMAIN, SHOPIFY_ADMIN_API_TOKEN, and write_discounts scope.
+ */
+export async function createDiscountCode(
+  input: CreateDiscountCodeInput
+): Promise<CreateDiscountCodeResult | { error: string }> {
+  if (!isShopifyGraphQLConfigured()) {
+    return { error: "Shopify Admin API not configured" }
+  }
+  const value =
+    input.discountAmount != null
+      ? {
+          discountAmount: {
+            amount: String(input.discountAmount.amount),
+            appliesOnEachItem: input.discountAmount.appliesOnEachItem,
+          },
+        }
+      : input.discountPercentage != null
+        ? { discountPercentage: { value: String(input.discountPercentage.value) } }
+        : undefined
+  if (!value) return { error: "Either discountAmount or discountPercentage required" }
+
+  const variables = {
+    input: {
+      title: input.title,
+      code: input.code,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      appliesOncePerCustomer: input.appliesOncePerCustomer,
+      customerSelection: { all: true },
+      customerGets: {
+        value,
+        items: { all: true },
+      },
+    },
+  }
+
+  const data = await shopifyGraphQL<{
+    discountCodeBasicCreate: {
+      codeDiscountNode?: {
+        id: string
+        codeDiscount?: {
+          codes?: { nodes?: Array<{ code: string }> }
+        }
+      }
+      userErrors: Array<{ field: string[]; message: string; code?: string }>
+    }
+  }>(DISCOUNT_CODE_CREATE_MUTATION, variables)
+
+  const result = data.discountCodeBasicCreate
+  if (result.userErrors?.length) {
+    const msg = result.userErrors.map((e) => e.message).join("; ")
+    return { error: msg }
+  }
+  const node = result.codeDiscountNode
+  const code =
+    node?.codeDiscount?.codes?.nodes?.[0]?.code ?? input.code
+  const id = node?.id ?? ""
+  return { code, id }
+}

@@ -120,7 +120,7 @@ const PERSONA_FALLBACK = (
   <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-verse-text/5">
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img
-      src="/verse/mood-mnky-3d.png"
+      src="/dojo/mood-mnky-3d.png"
       alt=""
       className="size-full object-contain"
       width={56}
@@ -150,7 +150,7 @@ export function VerseHeroErrorBoundary({
 
 /**
  * Error boundary around Persona only. When Rive/WebGL2 fails (e.g. on mobile),
- * renders a static mascot fallback so the rest of /verse still loads.
+ * renders a static mascot fallback so the rest of /dojo still loads.
  */
 export class VersePersonaErrorBoundary extends Component<
   VersePersonaErrorBoundaryProps,

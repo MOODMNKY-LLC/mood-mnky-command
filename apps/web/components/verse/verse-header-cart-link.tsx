@@ -9,7 +9,7 @@ function CartLinkWithQuantity() {
   const { totalQuantity } = useCart();
   return (
     <Link
-      href="/verse/cart"
+      href="/dojo/cart"
       className="relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
     >
       <ShoppingCart className="h-5 w-5" />
@@ -26,7 +26,7 @@ function CartLinkWithQuantity() {
 function CartLinkFallback() {
   return (
     <Link
-      href="/verse/cart"
+      href="/dojo/cart"
       className="relative flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
     >
       <ShoppingCart className="h-5 w-5" />

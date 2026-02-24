@@ -1,5 +1,6 @@
 /* Main site – glassmorphism design system */
 /* Monochromatic grayscale, frosted glass, GQ-inspired tech-forward aesthetic */
+/* Root app/globals.css defines --glass-blur, --glass-alpha per data-theme; Main overrides with --main-glass-* for section-specific feel. */
 
 .main-site {
   /* Glass tokens – grayscale, theme-aware */
@@ -16,22 +17,21 @@
   --main-float-duration: 0.3s;
 }
 
-/* Light mode */
+/* Light/dark glass surfaces – use root theme tokens when set (globals.css per data-theme), else fallbacks */
 .main-site {
   --main-glass-bg: rgba(255, 255, 255, 0.12);
   --main-glass-bg-soft: rgba(255, 255, 255, 0.08);
   --main-glass-bg-card: rgba(255, 255, 255, 0.15);
   --main-glass-border: rgba(0, 0, 0, 0.06);
-  --main-glass-bg-solid: rgba(255, 255, 255, 0.92);
+  --main-glass-bg-solid: var(--glass-bg-solid, rgba(255, 255, 255, 0.92));
 }
 
-/* Dark mode – ThemeProvider adds .dark to html */
 .dark .main-site {
   --main-glass-bg: rgba(0, 0, 0, 0.08);
   --main-glass-bg-soft: rgba(0, 0, 0, 0.05);
   --main-glass-bg-card: rgba(0, 0, 0, 0.12);
   --main-glass-border: rgba(255, 255, 255, 0.12);
-  --main-glass-bg-solid: rgba(0, 0, 0, 0.88);
+  --main-glass-bg-solid: var(--glass-bg-solid, rgba(0, 0, 0, 0.88));
 }
 
 /* Glass panel – frosted effect */
@@ -55,45 +55,35 @@
   }
 }
 
-/* Stronger glass for nav/footer bars – slightly more opaque for readability */
-.main-site {
-  --main-glass-bg-nav: rgba(255, 255, 255, 0.85);
-  --main-glass-border-nav: rgba(0, 0, 0, 0.08);
-}
-
-.dark .main-site {
-  --main-glass-bg-nav: rgba(0, 0, 0, 0.75);
-  --main-glass-border-nav: rgba(255, 255, 255, 0.1);
-}
-
+/* Nav/footer bars – use root --glass-bg-nav, --glass-border-nav (set per data-theme in globals.css) */
 .main-site .main-glass-nav {
-  background: var(--main-glass-bg-nav);
+  background: var(--glass-bg-nav);
   backdrop-filter: blur(var(--main-glass-blur));
   -webkit-backdrop-filter: blur(var(--main-glass-blur));
-  border: 1px solid var(--main-glass-border-nav);
+  border: 1px solid var(--glass-border-nav);
   border-radius: var(--main-glass-radius);
   box-shadow: var(--main-glass-shadow), 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   .main-site .main-glass-nav {
-    background: var(--main-glass-bg-solid);
+    background: var(--glass-bg-solid);
   }
 }
 
 /* Footer glass bar – rounded top, floating */
 .main-site .main-glass-footer {
-  background: var(--main-glass-bg-nav);
+  background: var(--glass-bg-nav);
   backdrop-filter: blur(var(--main-glass-blur));
   -webkit-backdrop-filter: blur(var(--main-glass-blur));
-  border: 1px solid var(--main-glass-border-nav);
+  border: 1px solid var(--glass-border-nav);
   border-radius: var(--main-glass-radius) var(--main-glass-radius) 0 0;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06), var(--main-glass-shadow);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   .main-site .main-glass-footer {
-    background: var(--main-glass-bg-solid);
+    background: var(--glass-bg-solid);
   }
 }
 

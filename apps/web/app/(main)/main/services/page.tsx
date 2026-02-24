@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { MainNav, MainFooter, MainServiceCard } from "@/components/main"
 import { MAIN_SERVICES } from "@/lib/main-services-data"
+import { getMainServiceImageUrls } from "@/lib/app-asset-slots"
 
 export const metadata = {
   title: "Services – MOOD MNKY",
@@ -8,7 +9,13 @@ export const metadata = {
     "Microservices from MOOD MNKY: MNKY CLOUD, MNKY MEDIA, AUTO MNKY, MNKY AGENTS, and the MOOD MNKY Experience.",
 }
 
-export default function MainServicesPage() {
+export default async function MainServicesPage() {
+  const imageUrls = await getMainServiceImageUrls()
+  const services = MAIN_SERVICES.map((service) => ({
+    ...service,
+    bundleImageUrl: imageUrls[service.id] ?? service.bundleImageUrl,
+  }))
+
   return (
     <>
       <MainNav />
@@ -31,7 +38,7 @@ export default function MainServicesPage() {
           className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch"
           aria-label="Microservices gallery"
         >
-          {MAIN_SERVICES.map((service) => (
+          {services.map((service) => (
             <Link key={service.id} href={`/main/services/${service.id}`} className="block h-full min-h-[400px]">
               <MainServiceCard service={service} className="h-full" />
             </Link>

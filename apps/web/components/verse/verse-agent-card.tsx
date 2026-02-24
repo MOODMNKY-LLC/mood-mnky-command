@@ -27,9 +27,9 @@ export function VerseAgentCard({
   openaiVoice,
   className,
 }: VerseAgentCardProps) {
-  const profileHref = `/verse/agents/${slug}`;
-  const chatHref = "/verse/chat";
-  const voiceHref = "/verse/chat?mode=voice";
+  const profileHref = `/dojo/agents/${slug}`;
+  const chatHref = "/dojo/chat";
+  const voiceHref = "/dojo/chat?mode=voice";
 
   return (
     <VerseCard
@@ -43,7 +43,7 @@ export function VerseAgentCard({
         <Link href={profileHref} className="block">
           <div className="relative aspect-square w-full overflow-hidden bg-verse-text/[0.03]">
             <Image
-              src={imagePath ?? "/verse/mood-mnky-3d.png"}
+              src={imagePath ?? "/dojo/mood-mnky-3d.png"}
               alt={displayName}
               fill
               className="object-contain object-center p-4 transition-opacity group-hover:opacity-95"

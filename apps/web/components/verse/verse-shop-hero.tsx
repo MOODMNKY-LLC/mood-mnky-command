@@ -19,7 +19,7 @@ export function VerseShopHero() {
           variant="outline"
           className="border-verse-text/20 text-verse-text"
         >
-          <Link href="/verse">Explore MNKY VERSE</Link>
+          <Link href="/dojo">Explore MNKY DOJO</Link>
         </Button>
       </section>
     </BlurFade>

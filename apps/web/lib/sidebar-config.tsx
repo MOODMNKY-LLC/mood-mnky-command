@@ -27,6 +27,7 @@ import {
   Wallet,
   MessageSquare,
   ImagePlus,
+  LayoutGrid,
   Sparkles,
   Video,
   Mic,
@@ -45,6 +46,7 @@ import {
   Box,
   GitBranch,
   Gamepad2,
+  Film,
 } from "lucide-react"
 
 export interface NavItem {
@@ -99,6 +101,7 @@ export const createAndChatItems: (NavItem | NavItemWithChildren)[] = [
     ],
   },
   { title: "Image Studio", href: "/studio", icon: Sparkles },
+  { title: "App Assets", href: "/studio/app-assets", icon: LayoutGrid },
   { title: "Audio Studio", href: "/studio/audio", icon: Mic },
   { title: "Video Studio", href: "/studio/video", icon: Video },
   { title: "Media Library", href: "/media", icon: ImagePlus },
@@ -143,9 +146,10 @@ export const storeItems: NavItemWithChildren[] = [
   { title: "Finance", href: "/store/finance", icon: Wallet },
 ]
 
-/** Integrations: Notion Sync, etc. Extensible for future sources. */
+/** Integrations: Notion Sync, App Assets, etc. Extensible for future sources. */
 export const integrationsItems: NavItem[] = [
   { title: "Notion Sync", href: "/notion", icon: Database },
+  { title: "App Assets", href: "/studio/app-assets", icon: LayoutGrid },
   { title: "Flowise", href: "/platform/flowise", icon: Workflow },
   { title: "Discord", href: "/platform/discord", icon: MessageSquare },
 ]
@@ -157,10 +161,10 @@ export const mnkyChatItems: NavItem[] = createAndChatItems.slice(0, 3) as NavIte
 export const studioItems: (NavItem | NavItemWithChildren)[] = createAndChatItems.slice(3, 7)
 
 export const verseItems: NavItem[] = [
-  { title: "MNKY VERSE", href: "/verse", icon: Globe },
-  { title: "Products", href: "/verse/products", icon: Package },
-  { title: "Collections", href: "/verse/collections", icon: Tags },
-  { title: "Cart", href: "/verse/cart", icon: ShoppingCart },
+  { title: "MNKY DOJO", href: "/dojo", icon: Globe },
+  { title: "Products", href: "/dojo/products", icon: Package },
+  { title: "Collections", href: "/dojo/collections", icon: Tags },
+  { title: "Cart", href: "/dojo/cart", icon: ShoppingCart },
   { title: "Discord", href: "/platform/discord", icon: MessageSquare },
 ]
 
@@ -179,13 +183,14 @@ export const verseItemsWithBackoffice = {
   backoffice: verseBackofficeItems,
 } as const
 
-/** Platform: Data & Admin (tables, SQL, storage, members). */
+/** Platform: Data & Admin (tables, SQL, storage, members, main media). */
 export const platformDataAdminItems: NavItem[] = [
   { title: "Overview", href: "/platform", icon: Server },
   { title: "Table Editor", href: "/platform/tables", icon: Table2 },
   { title: "SQL Editor", href: "/platform/sql", icon: Terminal },
   { title: "Storage", href: "/platform/storage", icon: HardDrive },
   { title: "Members", href: "/members", icon: Users },
+  { title: "Main Media", href: "/platform/main-media", icon: Film },
 ]
 
 /** Platform: Automation & Workflows (funnels, Flowise, storefront assistant, deployed services, infra). */

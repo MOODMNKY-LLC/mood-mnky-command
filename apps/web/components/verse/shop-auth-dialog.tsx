@@ -55,7 +55,7 @@ export function ShopAuthDialog({
   user,
   shopifyLinked = false,
   shopifyError,
-  redirectAfterAuth = "/verse/products",
+  redirectAfterAuth = "/dojo/products",
   initialTab = "signin",
   onContinueAsGuest,
 }: ShopAuthDialogProps) {
@@ -167,7 +167,7 @@ export function ShopAuthDialog({
                 <CardContent className="flex flex-col gap-4 pt-6">
                   <OAuthProviderButton
                     provider="discord"
-                    redirectTo={`/verse/auth/callback?next=${encodeURIComponent(verseRedirectTo)}`}
+                    redirectTo={`/dojo/auth/callback?next=${encodeURIComponent(verseRedirectTo)}`}
                     className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--verse-button)] px-4 text-sm font-medium text-[var(--verse-button-text)] transition-opacity hover:opacity-90"
                   >
                     <SiDiscord className="size-5 shrink-0" aria-hidden />

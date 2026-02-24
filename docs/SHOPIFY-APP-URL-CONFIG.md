@@ -26,7 +26,7 @@ For **Shopify theme integration** (app embeds, App CTA, MNKY Assistant, Verse bl
 | Variable | Purpose | Production value |
 |----------|---------|------------------|
 | `NEXT_PUBLIC_APP_URL` | Base URL of the app (LABZ, API, widget, blog). Used by server and client. | `https://mnky-command.moodmnky.com` |
-| `NEXT_PUBLIC_VERSE_APP_URL` | Verse storefront base (auth callbacks, logout redirect when origin unknown). | `https://mnky-verse.moodmnky.com` |
+| `NEXT_PUBLIC_VERSE_APP_URL` | Dojo storefront app base (auth callbacks, logout redirect when origin unknown). Storefront lives at `/dojo` (Option B). | `https://mnky-verse.moodmnky.com` |
 
 - **Where set:** `.env` / `.env.local` (local), **Vercel** → Project → Settings → Environment Variables (production/preview).
 - **Code:** Any runtime fallback when `NEXT_PUBLIC_APP_URL` is unset should use `https://mnky-command.moodmnky.com`, not `app.moodmnky.com`.

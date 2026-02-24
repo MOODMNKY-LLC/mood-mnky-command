@@ -21,15 +21,17 @@ export async function MainAuthContext({
     let displayName: string | undefined
     let avatarUrl: string | undefined
 
+    let isAdmin = false
     try {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url")
+        .select("display_name, avatar_url, role, is_admin")
         .eq("id", user.id)
         .single()
 
       if (profile) {
         displayName = profile.display_name ?? undefined
+        isAdmin = profile.role === "admin" || profile.is_admin === true
         const rawAvatar = profile.avatar_url ?? undefined
         if (rawAvatar) {
           if (rawAvatar.startsWith("http")) {
@@ -52,6 +54,7 @@ export async function MainAuthContext({
       email: user.email ?? undefined,
       displayName,
       avatarUrl,
+      isAdmin,
     }
   }
 

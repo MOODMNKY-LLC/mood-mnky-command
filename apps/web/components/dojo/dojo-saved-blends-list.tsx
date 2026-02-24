@@ -93,7 +93,7 @@ export function DojoSavedBlendsList({ embedded }: DojoSavedBlendsListProps = {})
           </div>
           {!embedded && (
             <Button asChild>
-              <Link href="/verse/chat">Open MNKY LABZ Chat</Link>
+              <Link href="/dojo/chat">Open MNKY LABZ Chat</Link>
             </Button>
           )}
         </CardContent>

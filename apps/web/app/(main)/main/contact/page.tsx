@@ -25,10 +25,10 @@ export default function MainContactPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-4">
               <Button asChild>
-                <Link href="/verse">Go to MNKY VERSE</Link>
+                <Link href="/dojo">Go to MNKY VERSE</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/verse/community">Community</Link>
+                <Link href="/dojo/community">Community</Link>
               </Button>
             </div>
           </div>

@@ -25,7 +25,7 @@ export function VerseMangaProducts({ products }: VerseMangaProductsProps) {
             asChild
             className="text-verse-text"
           >
-            <Link href="/verse/issues">Read the manga</Link>
+            <Link href="/dojo/issues">Read the manga</Link>
           </Button>
         </div>
         <p className="mb-4 text-sm text-verse-text-muted">

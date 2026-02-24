@@ -1,12 +1,6 @@
-/* MNKY VERSE glassmorphic styling - Supabase-like frosted glass */
+/* MNKY VERSE glassmorphic styling - uses root --glass-blur, verse tokens from root */
 .verse-storefront {
-  --glass-blur: 16px;
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  --glass-bg-alpha: 0.15;
-  --glass-border-alpha: 0.08;
-}
-
-.verse-storefront[data-verse-theme="light"] {
   --glass-bg-alpha: 0.15;
   --glass-border-alpha: 0.08;
 }
@@ -17,10 +11,10 @@
 }
 
 .verse-storefront .glass-panel {
-  background: rgba(var(--verse-bg-rgb, 241, 245, 249), var(--glass-bg-alpha, 0.15));
+  background: rgba(var(--verse-bg-rgb), var(--glass-bg-alpha));
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid rgba(var(--verse-text-rgb, 15, 23, 42), var(--glass-border-alpha, 0.08));
+  border: 1px solid rgba(var(--verse-text-rgb), var(--glass-border-alpha));
   box-shadow: var(--glass-shadow);
 }
 

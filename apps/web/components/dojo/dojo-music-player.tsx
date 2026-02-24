@@ -14,6 +14,7 @@ import {
 } from "@/components/ai-elements/audio-player";
 import { Repeat, Repeat1, Shuffle, SkipBack, SkipForward, FileAudio, ListMusic, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -338,7 +339,8 @@ export function DojoMusicPlayer() {
                     MNKY VERSE playlist.
                   </SheetDescription>
                 </SheetHeader>
-                <div className="flex-1 overflow-y-auto py-4">
+                <div className="relative flex-1 min-h-0 py-4">
+                  <div className="h-full overflow-y-auto">
                   <div className="flex flex-col gap-1">
                     {poolTracks.map((track) => (
                       <button
@@ -384,6 +386,8 @@ export function DojoMusicPlayer() {
                       </button>
                     ))}
                   </div>
+                  </div>
+                  <ProgressiveBlur position="bottom" height="35%" />
                 </div>
                 <div className="flex gap-2 pt-4">
                   <Button
@@ -405,7 +409,8 @@ export function DojoMusicPlayer() {
           )}
         </div>
         <CollapsibleContent>
-          <div className="max-h-[120px] overflow-y-auto rounded border border-border">
+          <div className="relative max-h-[120px]">
+            <div className="max-h-[120px] overflow-y-auto rounded border border-border">
             {tracks.map((track, idx) => {
               const isActive =
                 isShuffle
@@ -440,6 +445,8 @@ export function DojoMusicPlayer() {
                 </button>
               );
             })}
+            </div>
+            <ProgressiveBlur position="bottom" height="40%" />
           </div>
         </CollapsibleContent>
       </Collapsible>

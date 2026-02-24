@@ -80,7 +80,7 @@ export default async function VerseBlogPostPage({
             <BlogAuthorCard
               agent={post.author_agent}
               name={agentProfile?.display_name ?? undefined}
-              tagline="MNKY VERSE"
+              tagline="MNKY DOJO"
               blurb={agentProfile?.blurb}
               imagePath={agentProfile?.image_path}
             />

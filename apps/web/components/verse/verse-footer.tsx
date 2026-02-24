@@ -15,27 +15,27 @@ export function VerseFooter() {
               MOOD MNKY
             </Link>
             <Link
-              href="/verse"
+              href="/dojo"
               className="font-verse-heading flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text-muted"
             >
-              MNKY VERSE
+              MNKY DOJO
             </Link>
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-verse-text-muted">
             <Link
-              href="/verse/products"
+              href="/dojo/products"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
             >
               Shop
             </Link>
             <Link
-              href="/verse/explore"
+              href="/dojo/explore"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
             >
               Explore
             </Link>
             <Link
-              href="/verse/community"
+              href="/dojo/community"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center hover:text-verse-text"
             >
               Community

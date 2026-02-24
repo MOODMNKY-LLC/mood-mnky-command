@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,6 @@ import {
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS, MAIN_MASCOT_FALLBACK_HERO } from "@/lib/main-mascot-assets"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
-import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 
 type MainElevenLabsConfigGet = {
   agentId: string | null
@@ -82,6 +81,11 @@ export function MainTalkToAgentDialog() {
     []
   )
   const onDisconnect = useCallback(() => setTranscriptLines([]), [])
+  const transcriptEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [transcriptLines])
 
   const hasAgent = Boolean(config?.agentId?.trim())
   const showVoice = config?.showVoiceSection !== false
@@ -157,13 +161,13 @@ export function MainTalkToAgentDialog() {
               <MainMicSelector triggerVariant="icon" />
             </div>
 
-            {/* Transcript centered */}
+            {/* Transcript: fixed height, scrolls like a normal chat */}
             {config?.showTranscriptViewer && (
               <div className="w-full space-y-1.5 border-t border-border pt-4">
                 <p className="text-center text-xs font-medium text-muted-foreground">
                   Conversation transcript
                 </p>
-                <div className="main-glass-panel-soft max-h-[140px] min-h-[56px] overflow-y-auto rounded-lg p-3 text-sm">
+                <div className="main-glass-panel-soft h-[160px] overflow-y-auto rounded-lg p-3 text-sm">
                   {transcriptLines.length === 0 ? (
                     <p className="text-center text-muted-foreground text-xs">
                       Start a call to see the transcript here.
@@ -180,16 +184,12 @@ export function MainTalkToAgentDialog() {
                           }
                         >
                           <span className="font-medium">
-                            {line.source === "user" ? "You: " : (
-                              <>
-                                <BrandMatrixText variant="MOOD MNKY" size={2} gap={0.5} className="mr-0.5 inline-block h-3.5 align-middle" />
-                                :{" "}
-                              </>
-                            )}
+                            {line.source === "user" ? "You: " : "MOOD MNKY: "}
                           </span>
                           {line.message}
                         </li>
                       ))}
+                      <li ref={transcriptEndRef} aria-hidden />
                     </ul>
                   )}
                 </div>

@@ -62,7 +62,7 @@ export function DualAuthTabs({
               : undefined
           }
         >
-          MNKY VERSE
+          MNKY DOJO
         </TabsTrigger>
         <TabsTrigger
           value="labz"
@@ -79,7 +79,7 @@ export function DualAuthTabs({
       <TabsContent value="verse">
         <Card className="border border-[var(--verse-border)] bg-[rgba(var(--verse-bg-rgb),0.85)] shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-[var(--verse-text)]">Login to the MNKY VERSE</CardTitle>
+            <CardTitle className="text-lg text-[var(--verse-text)]">Login to the MNKY DOJO</CardTitle>
             <CardDescription className="text-[var(--verse-text-muted)]">
               Your gateway to the universe of scents
             </CardDescription>
@@ -96,7 +96,7 @@ export function DualAuthTabs({
             <LoginForm redirectTo={verseRedirectTo} />
             <div className="text-center">
               <Link
-                href="/verse"
+                href="/dojo"
                 className="text-xs text-[var(--verse-text-muted)] hover:text-[var(--verse-text)] transition-colors"
               >
                 Continue as guest
@@ -128,7 +128,7 @@ export function DualAuthTabs({
             <LoginForm variant="default" />
             <div className="text-center">
               <Link
-                href="/verse"
+                href="/dojo"
                 className="text-xs text-[var(--verse-text-muted)] hover:text-[var(--verse-text)] transition-colors"
               >
                 Visit MNKY VERSE

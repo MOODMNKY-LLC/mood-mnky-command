@@ -50,6 +50,7 @@ import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { ThemePaletteSwitcher } from "@/components/theme-palette-switcher"
 import type { NavItem, NavItemWithChildren } from "@/lib/sidebar-config"
 
 // ---------------------------------------------------------------------------
@@ -113,7 +114,7 @@ export function AppSidebar() {
     { revalidateOnFocus: false },
   )
 
-  const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/members")
+  const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/platform/main-media") || pathname.startsWith("/members")
   const platformAutoOpen = pathname.startsWith("/platform/funnels") || pathname.startsWith("/platform/flowise") || pathname.startsWith("/platform/storefront") || pathname.startsWith("/platform/services") || pathname.startsWith("/platform/artifacts") || pathname.startsWith("/platform/mnky-mind")
   const platformSettingsOpen = pathname.startsWith("/platform/settings") || pathname.startsWith("/platform/integrations")
 
@@ -134,10 +135,15 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 border-b border-sidebar-border px-2 py-3">
         <LabzContextSwitcher />
-        <AnimatedThemeToggler
-          className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
-          aria-label="Toggle theme"
-        />
+        <div className="flex shrink-0 items-center gap-1">
+          <ThemePaletteSwitcher
+            className="flex size-8 items-center justify-center rounded-md hover:bg-sidebar-accent"
+          />
+          <AnimatedThemeToggler
+            className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
+            aria-label="Toggle theme"
+          />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>

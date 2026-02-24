@@ -41,7 +41,7 @@ export function MainHero() {
           className="text-foreground font-bold tracking-tight"
           style={{ fontSize: "var(--main-hero-title-size)" }}
         >
-          Welcome to the MNKY VERSE
+          Welcome to the MNKY DOJO
         </h1>
         <p
           className="mt-4 text-muted-foreground"
@@ -53,10 +53,10 @@ export function MainHero() {
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Button asChild size="lg">
-            <Link href="/verse">Join MNKY VERSE</Link>
+            <Link href="/dojo">Join MNKY DOJO</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link href="/verse/fragrance-wheel">Fragrance Wheel</Link>
+            <Link href="/dojo/fragrance-wheel">Fragrance Wheel</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
             <Link href="/auth/login">Sign in</Link>

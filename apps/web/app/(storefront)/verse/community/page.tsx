@@ -43,7 +43,7 @@ export default function VerseCommunityPage() {
           <Button asChild variant="outline" size="lg">
             <Link href="/verse/blog" className="inline-flex items-center gap-2">
               <Newspaper className="h-5 w-5" />
-              MNKY VERSE Blog
+              MNKY DOJO Blog
             </Link>
           </Button>
         </div>
@@ -59,7 +59,7 @@ export default function VerseCommunityPage() {
             </li>
             <li className="flex items-center gap-2">
               <Newspaper className="h-4 w-4 shrink-0 text-verse-button" />
-              MNKY VERSE Blog — stories, guides, and insights
+              MNKY DOJO Blog — stories, guides, and insights
             </li>
             <li className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 shrink-0 text-verse-button" />

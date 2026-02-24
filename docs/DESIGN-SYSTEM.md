@@ -1,6 +1,6 @@
 # Design System
 
-This document describes the color palette, tokens, and design architecture for MOOD MNKY LABZ and the MNKY VERSE storefront.
+This document describes the color palette, tokens, and design architecture for MOOD MNKY LABZ and the MNKY DOJO storefront.
 
 ## Architecture Overview
 
@@ -52,29 +52,31 @@ flowchart TB
 
 ---
 
+## Palette themes and mode (data-theme + next-themes)
+
+The app has **two palette themes**, each with **light and dark mode**:
+
+1. **Main** — Black/white/grayscale only, glassmorphic (main site, LABZ).
+2. **Dojo** — Exact /verse palette: slate light (#f1f5f9, #0f172a, #475569), Verse dark (#181619, #c8c4c4, #94a3b8). Site-wide Dojo matches Verse storefront colors.
+
+- **Palette** is controlled by `data-theme` on `<html>`: `main` or `dojo`. It is set by `ThemePaletteProvider` and persisted in localStorage under `theme-palette`. Use `ThemePaletteSwitcher` or `useThemePalette()` from `@/components/theme-palette-provider`.
+- **Mode** (light / dark / system) is controlled by **next-themes** via the `class` attribute on `<html>` (e.g. `class="dark"`). Existing togglers (`ThemeToggle`, `AnimatedThemeToggler`, `AuthModeToggle`) continue to use `setTheme("light"|"dark"|"system")`.
+
+All design tokens are defined in `app/globals.css` under `[data-theme="main"]`, `[data-theme="main"].dark`, `[data-theme="dojo"]`, and `[data-theme="dojo"].dark`. The same component system (shadcn, verse, main, dojo) consumes these variables; swapping palette or mode swaps the entire look app-wide.
+
+---
+
 ## Root (globals.css)
 
-The root design system uses **grayscale primary** tokens shared by LABZ and all UI components.
+The root design system defines one **token contract** and two **theme implementations** (Main and Dojo), each with light and dark variants. Tailwind and components reference `hsl(var(--background))`, `var(--verse-bg)`, etc.; values come from the active `data-theme` and `.dark` class on `<html>`.
 
-### Light Mode
+### Theme: Main (grayscale)
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--primary` | `215 19% 35%` | Primary actions, links, accents |
-| `--primary-foreground` | `210 20% 98%` | Text on primary |
-| `--accent` | `215 19% 35%` | Accent highlights |
-| `--ring` | `215 19% 35%` | Focus rings |
-| `--chart-1` | `215 19% 35%` | Primary chart color (grayscale) |
+**Light:** White backgrounds, dark text, cool gray primary (`215 19% 35%`). **Dark:** Near-black backgrounds, light text, lighter gray primary (`213 24% 65%`).
 
-### Dark Mode
+### Theme: Dojo (Verse palette)
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--primary` | `213 24% 65%` | Primary actions, links, accents |
-| `--primary-foreground` | `222 47% 11%` | Text on primary |
-| `--accent` | `213 24% 65%` | Accent highlights |
-| `--ring` | `213 24% 65%` | Focus rings |
-| `--chart-1` | `213 24% 65%` | Primary chart color (grayscale) |
+**Light:** Same as /verse light — slate-100 background (#f1f5f9), slate-900 text (#0f172a), slate-600 primary/muted (#475569). **Dark:** Same as /verse dark — #181619 background, #c8c4c4 text, #94a3b8 muted/primary.
 
 ### Chart Colors
 
@@ -87,32 +89,13 @@ The root design system uses **grayscale primary** tokens shared by LABZ and all 
 
 ---
 
-## Verse (verse-storefront.css)
+## MNKY DOJO storefront (verse-storefront.css)
 
-The MNKY VERSE storefront has its own scoped design language. Tokens are prefixed with `--verse-*` and apply inside `.verse-storefront`.
+The MNKY DOJO storefront uses **root-supplied** `--verse-*` tokens (defined in `app/globals.css` per `[data-theme="main"]` / `[data-theme="dojo"]` and `.dark`). The **Dojo** palette (`data-theme="dojo"`) applies to the MNKY DOJO storefront so one palette equals one product name. The `.verse-storefront` class scopes layout and typography; `--verse-page-width` and `--verse-spacing-sections` are defined in verse-storefront.css. All color tokens (`--verse-bg`, `--verse-text`, `--verse-text-muted`, `--verse-button`, `--verse-button-text`, `--verse-border`, and RGB variants) come from the active palette theme and mode.
 
-### Scoped Primary Override
+### Dropdown
 
-When inside `.verse-storefront`, the root `--primary` and `--accent` are overridden to match the grayscale palette:
-
-- **Light**: `215 19% 35%` | **Dark**: `213 24% 65%`
-
-### Verse-Specific Tokens
-
-| Token | Light | Dark |
-|-------|-------|------|
-| `--verse-bg` | `#f1f5f9` (slate-100) | `#181619` |
-| `--verse-text` | `#0f172a` (slate-900) | `#c8c4c4` |
-| `--verse-text-muted` | `#475569` (slate-600) | `#94a3b8` |
-| `--verse-button` | `#475569` | `#94a3b8` |
-| `--verse-button-text` | `#f8fafc` | `#0f172a` |
-| `--verse-border` | `rgba(15, 23, 42, 0.08)` | `rgba(200, 196, 196, 0.12)` |
-| `--verse-page-width` | `1600px` | — |
-| `--verse-spacing-sections` | `24px` | — |
-
-### Dropdown Override
-
-`.verse-dropdown` overrides `--background` and `--foreground` to use Verse tokens for consistent dropdown styling.
+`.verse-dropdown` sets `--background` and `--foreground` to `var(--verse-bg)` and `var(--verse-text)` so dropdowns match the current theme.
 
 ---
 

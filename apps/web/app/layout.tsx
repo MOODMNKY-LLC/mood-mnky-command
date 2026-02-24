@@ -1,11 +1,14 @@
 import React from "react"
 import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
+import Script from "next/script"
 import { Inter, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
 import { PwaRegister } from "@/components/pwa-register"
 import { PointerWithLogo } from "@/components/pointer-with-logo"
+import { GlobalAudioProvider } from "@/components/main/global-audio-provider"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemePaletteProvider } from "@/components/theme-palette-provider"
 import "./globals.css"
 
 const inter = Inter({
@@ -80,10 +83,21 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
+        <Script
+          id="theme-palette-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem("theme-palette");document.documentElement.dataset.theme=(t==="dojo"?t:"main");})();`,
+          }}
+        />
         <ThemeProvider defaultTheme="light" attribute="class" enableSystem>
-          <PointerWithLogo>
-            <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
-          </PointerWithLogo>
+          <ThemePaletteProvider>
+          <GlobalAudioProvider>
+            <PointerWithLogo>
+              <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
+            </PointerWithLogo>
+          </GlobalAudioProvider>
+          </ThemePaletteProvider>
         </ThemeProvider>
       </body>
     </html>

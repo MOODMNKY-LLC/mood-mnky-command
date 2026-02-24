@@ -377,6 +377,22 @@ export async function pushMangaCollectionToNotion(
   await updatePageProperties(notionPageId, buildNotionCollectionMetadataProperties(name, slug))
 }
 
+// ---- App Asset Slots (MNKY_MIND two-way) ----
+
+/** Build Notion property payload for App Asset Slots "Current URL" (or "Asset URL"). */
+export function buildNotionAppAssetUrlProperty(url: string): Record<string, unknown> {
+  return { "Current URL": { type: "url", url: url || null } }
+}
+
+/** Push app asset slot URL to Notion. Call after uploading/replacing in App Assets back office when slot has notion_page_id. */
+export async function pushAppAssetSlotUrlToNotion(
+  notionPageId: string,
+  assetUrl: string
+): Promise<void> {
+  if (!isConfigured()) return
+  await updatePageProperties(notionPageId, buildNotionAppAssetUrlProperty(assetUrl))
+}
+
 // ---- Property Extractors ----
 
 export function getTitle(prop: NotionProperty | undefined): string {

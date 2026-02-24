@@ -1,11 +1,17 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Matrix } from "@/components/ui/matrix"
 import {
   patternMOOD,
   patternMNKY,
 } from "@/components/ui/matrix-glyphs"
+import {
+  createFlickerFrames,
+  createPulseFrames,
+} from "@/components/ui/matrix-presets"
+import type { Frame } from "@/components/ui/matrix"
 
 /** Theme-adaptive; off is visible per ElevenLabs Matrix docs (muted but visible grid). */
 const MAIN_PALETTE = {
@@ -21,6 +27,8 @@ const MUTED_PALETTE = {
 
 export type BrandMatrixVariant = "MOOD" | "MNKY" | "MOOD MNKY"
 
+export type BrandMatrixAnimation = "static" | "flicker" | "pulse"
+
 export interface BrandMatrixTextProps {
   variant: BrandMatrixVariant
   size?: number
@@ -30,6 +38,8 @@ export interface BrandMatrixTextProps {
   palette?: { on: string; off: string }
   /** When true, no animation (static pattern). Respects prefers-reduced-motion. */
   static?: boolean
+  /** Animation: static (default), flicker (slow brightness), or pulse (breathing). Ignored when prefers-reduced-motion. */
+  animation?: BrandMatrixAnimation
 }
 
 const PATTERNS: Record<Exclude<BrandMatrixVariant, "MOOD MNKY">, { rows: number; cols: number; pattern: number[][] }> = {
@@ -79,6 +89,18 @@ function SingleMatrix({
   )
 }
 
+function usePrefersReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setPrefersReducedMotion(mq.matches)
+    const handler = () => setPrefersReducedMotion(mq.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+  return prefersReducedMotion
+}
+
 export function BrandMatrixText({
   variant,
   size = 4,
@@ -86,15 +108,30 @@ export function BrandMatrixText({
   className,
   palette = MAIN_PALETTE,
   static: staticPattern = true,
+  animation = "static",
 }: BrandMatrixTextProps) {
   const effectivePalette = palette ?? MAIN_PALETTE
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const useAnimation =
+    !staticPattern &&
+    !prefersReducedMotion &&
+    (animation === "flicker" || animation === "pulse")
+
+  const getFrames = (pattern: Frame): Frame[] | undefined => {
+    if (!useAnimation) return undefined
+    if (animation === "flicker") return createFlickerFrames(pattern)
+    if (animation === "pulse") return createPulseFrames(pattern)
+    return undefined
+  }
 
   if (variant === "MOOD MNKY") {
+    const moodFrames = useAnimation ? getFrames(PATTERNS.MOOD.pattern) : undefined
+    const mnkyFrames = useAnimation ? getFrames(PATTERNS.MNKY.pattern) : undefined
     return (
       <span
         role="img"
         aria-label="MOOD MNKY"
-        className={cn("inline-flex items-center gap-0.5 sm:gap-1", className)}
+        className={cn("inline-flex items-center gap-2 sm:gap-3", className)}
       >
         <SingleMatrix
           variant="MOOD"
@@ -102,6 +139,10 @@ export function BrandMatrixText({
           gap={gap}
           palette={effectivePalette}
           ariaHidden
+          frames={moodFrames}
+          fps={8}
+          autoplay={!!moodFrames}
+          loop={!!moodFrames}
         />
         <SingleMatrix
           variant="MNKY"
@@ -109,11 +150,16 @@ export function BrandMatrixText({
           gap={gap}
           palette={MUTED_PALETTE}
           ariaHidden
+          frames={mnkyFrames}
+          fps={8}
+          autoplay={!!mnkyFrames}
+          loop={!!mnkyFrames}
         />
       </span>
     )
   }
 
+  const frames = useAnimation ? getFrames(PATTERNS[variant].pattern) : undefined
   return (
     <SingleMatrix
       variant={variant}
@@ -122,6 +168,10 @@ export function BrandMatrixText({
       className={className}
       palette={effectivePalette}
       ariaLabel={variant}
+      frames={frames}
+      fps={8}
+      autoplay={!!frames}
+      loop={!!frames}
     />
   )
 }

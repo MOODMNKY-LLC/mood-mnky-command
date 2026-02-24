@@ -63,6 +63,21 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const discordId =
+    user?.identities?.find((i) => i.provider === "discord")?.identity_data?.id ??
+    (user?.app_metadata?.provider === "discord"
+      ? (user?.user_metadata as { sub?: string })?.sub
+      : undefined)
+  if (user?.id && discordId) {
+    await supabase
+      .from("profiles")
+      .update({ discord_user_id: String(discordId) })
+      .eq("id", user.id)
+  }
+
   await new Promise((resolve) => setTimeout(resolve, 50))
   return redirectResponse
 }

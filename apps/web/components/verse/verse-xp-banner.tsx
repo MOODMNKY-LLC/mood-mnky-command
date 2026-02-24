@@ -36,7 +36,7 @@ export function VerseXPBanner({
             {copy}{" "}
             {!isAuthenticated && (
               <Link
-                href="/verse/auth/discord"
+                href="/dojo/auth/discord"
                 className="font-medium underline underline-offset-2 hover:text-verse-text-muted"
               >
                 Sign in

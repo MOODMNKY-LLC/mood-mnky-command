@@ -30,7 +30,7 @@ export default async function VerseProductPage({
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] space-y-6 px-4 py-8 md:px-6 md:py-10">
       <div className="flex items-center gap-2 text-sm text-verse-text-muted">
         <Link href="/verse" className="hover:text-verse-text">
-          MNKY VERSE
+          MNKY DOJO
         </Link>
         <span>/</span>
         <Link href="/verse/products" className="hover:text-verse-text">

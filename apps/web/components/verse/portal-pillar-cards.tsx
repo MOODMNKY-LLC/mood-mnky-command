@@ -18,7 +18,7 @@ const PILLAR_CARDS = [
   {
     name: "Agent Chat",
     description: "Meet MOOD MNKY, SAGE MNKY—AI assistants for discovery.",
-    href: "/verse/chat",
+    href: "/dojo/chat",
     cta: "Chat",
     Icon: ({ className }: { className?: string }) => (
       <VerseLogoHairIcon size="lg" withRing className={className} />
@@ -28,7 +28,7 @@ const PILLAR_CARDS = [
   {
     name: "MNKY Shop",
     description: "Bespoke fragrances and self-care from MOOD MNKY.",
-    href: "/verse/shop",
+    href: "/dojo/shop",
     cta: "Shop",
     Icon: ShoppingBag,
     className: "col-span-3 lg:col-span-1",

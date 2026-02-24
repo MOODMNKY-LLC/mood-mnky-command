@@ -24,10 +24,10 @@ export default function MainPricingPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Button asChild>
-              <Link href="/verse">Shop in MNKY VERSE</Link>
+              <Link href="/dojo">Shop in MNKY VERSE</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/verse/blending">Blending Lab</Link>
+              <Link href="/dojo/blending-guide">Blending Lab</Link>
             </Button>
           </div>
         </MainGlassCard>

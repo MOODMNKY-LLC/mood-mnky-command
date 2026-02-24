@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { ThemePaletteSwitcher } from "@/components/theme-palette-switcher"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MainNavAuth } from "@/components/main/main-nav-auth"
@@ -33,9 +34,12 @@ const COLLECTIONS_LINKS = [
 ] as const
 
 const NAV_LINKS = [
+  { href: "/verse", label: "Dojo" },
   { href: "/main/about", label: "About" },
   { href: "/main/design", label: "Design" },
   { href: "/main/services", label: "Services" },
+  { href: "/main/media", label: "Media" },
+  { href: "/main/loyalty", label: "Loyalty" },
   { href: "/main/community", label: "Community" },
 ] as const
 
@@ -103,8 +107,8 @@ export function MainNav() {
         >
           <VerseLogoHairIcon
             withRing
-            size="sm"
-            className="relative z-10 text-foreground"
+            size="md"
+            className="relative z-10 h-6 w-6 text-foreground"
             ringClassName="border-foreground/80"
           />
           <BrandMatrixText
@@ -112,6 +116,8 @@ export function MainNav() {
             size={3}
             gap={1}
             className="h-6 w-auto"
+            animation="flicker"
+            static={false}
           />
         </Link>
 
@@ -122,6 +128,9 @@ export function MainNav() {
 
         {/* Right: theme toggler + nav links + collections dropdown – hidden on small screens */}
         <div className="hidden items-center gap-5 lg:flex xl:gap-6">
+          <ThemePaletteSwitcher
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          />
           <AnimatedThemeToggler
             className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Toggle theme"
@@ -175,6 +184,10 @@ export function MainNav() {
             <SheetHeader>
               <SheetTitle className="text-left">Menu</SheetTitle>
             </SheetHeader>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm text-muted-foreground">Palette</span>
+              <ThemePaletteSwitcher className="text-muted-foreground transition-colors hover:text-foreground" />
+            </div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-muted-foreground">Theme</span>
               <AnimatedThemeToggler

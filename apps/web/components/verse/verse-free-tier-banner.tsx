@@ -11,7 +11,7 @@ export type VerseFreeTierBannerProps = {
 
 /**
  * Shown on manga and editorial pages when user is not signed in or has not claimed free tier.
- * Hooks manga/editorials to the free-tier subscription flow (CTA → /verse/join).
+ * Hooks manga/editorials to the free-tier subscription flow (CTA → /dojo/join).
  */
 export function VerseFreeTierBanner({
   subscriptionTier,
@@ -32,7 +32,7 @@ export function VerseFreeTierBanner({
         <p className="text-sm text-verse-text">
           {copy}{" "}
           <Link
-            href="/verse/join"
+            href="/dojo/join"
             className="font-medium underline underline-offset-2 hover:text-verse-text-muted"
           >
             {isAuthenticated ? "Claim free access" : "Join free"}

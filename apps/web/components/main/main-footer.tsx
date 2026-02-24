@@ -5,7 +5,7 @@ import { OpenInChat } from "@/components/ai-elements/open-in-chat"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 
-const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
+const DEFAULT_FOOTER_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY DOJO."
 
 export function MainFooter() {
   return (
@@ -33,12 +33,12 @@ export function MainFooter() {
           >
             About
           </Link>
-          <Link href="/verse" className="transition-colors hover:text-foreground flex items-center gap-1">
+          <Link href="/dojo" className="transition-colors hover:text-foreground flex items-center gap-1">
             <BrandMatrixText variant="MNKY" size={2} gap={1} className="h-4" />
-            <span> VERSE</span>
+            <span> DOJO</span>
           </Link>
           <Link
-            href="/verse/blog"
+            href="/dojo/blog"
             className="transition-colors hover:text-foreground"
           >
             Blog

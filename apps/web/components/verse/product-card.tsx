@@ -50,7 +50,7 @@ export function VerseProductCard({ product }: { product: ProductCardProduct }) {
 
   return (
     <VerseCard className="group/card overflow-hidden transition-opacity hover:opacity-95">
-      <Link href={`/verse/products/${product.handle}`} className="block">
+      <Link href={`/dojo/products/${product.handle}`} className="block">
         <VerseCardHeader className="p-0">
           <div className="relative aspect-video w-full overflow-hidden bg-verse-text/5">
             {product.featuredImage?.url ? (

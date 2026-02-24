@@ -1,4 +1,5 @@
 import { Montserrat, Oswald, Roboto } from "next/font/google";
+import { ThemePaletteProvider } from "@/components/theme-palette-provider";
 import { VerseAuthContext } from "@/components/verse/verse-auth-context";
 import { VerseThemeProvider } from "@/components/verse/verse-theme-provider";
 import { VersePwaInstall } from "@/components/verse/verse-pwa-install";
@@ -31,12 +32,14 @@ export default function VerseLayout({
 }) {
   return (
     <div className={`${montserrat.variable} ${oswald.variable} ${roboto.variable}`}>
-      <VerseThemeProvider>
-        <VerseAuthContext>
-          {children}
-          <VersePwaInstall />
-        </VerseAuthContext>
-      </VerseThemeProvider>
+      <ThemePaletteProvider>
+        <VerseThemeProvider>
+          <VerseAuthContext>
+            {children}
+            <VersePwaInstall />
+          </VerseAuthContext>
+        </VerseThemeProvider>
+      </ThemePaletteProvider>
     </div>
   );
 }

@@ -33,7 +33,7 @@ export function DojoLowerSection({ rewardClaims = [] }: DojoLowerSectionProps) {
         </CardHeader>
         <CardContent>
           <Link
-            href="/verse/issues"
+            href="/dojo/issues"
             className="text-sm font-medium text-primary hover:underline"
           >
             Start reading →
@@ -52,7 +52,7 @@ export function DojoLowerSection({ rewardClaims = [] }: DojoLowerSectionProps) {
         </CardHeader>
         <CardContent>
           <Link
-            href="/verse/ugc"
+            href="/dojo/ugc"
             className="text-sm font-medium text-primary hover:underline"
           >
             Upload content →

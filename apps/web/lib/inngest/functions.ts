@@ -2,7 +2,7 @@ import { match } from "ts-pattern"
 import { inngest } from "./client"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { isProfileEligibleForXp } from "@/lib/xp-eligibility"
-import { getDefaultGuildId } from "@/lib/discord/api"
+import { getDefaultGuildId, discordJson, parseRateLimitError } from "@/lib/discord/api"
 import { decryptWebhookToken } from "@/lib/discord/webhook-token"
 
 type QuestRequirement =
@@ -495,5 +495,109 @@ export const discordDropAnnounce = inngest.createFunction(
       .eq("id", webhookRow.id)
 
     return { ok: true, webhookId: webhookRow.webhook_id }
+  }
+)
+
+/** Parse DISCORD_LEVEL_ROLES env: "1:roleId1,2:roleId2,..." → Map<level, roleId> */
+function getLevelRoleMap(): Map<number, string> {
+  const raw = process.env.DISCORD_LEVEL_ROLES
+  const map = new Map<number, string>()
+  if (!raw?.trim()) return map
+  for (const part of raw.split(",")) {
+    const [levelStr, roleId] = part.split(":").map((s) => s?.trim())
+    const level = parseInt(levelStr ?? "", 10)
+    if (Number.isFinite(level) && roleId) map.set(level, roleId)
+  }
+  return map
+}
+
+export const discordRoleSyncByLevel = inngest.createFunction(
+  {
+    id: "discord-role-sync-by-level",
+    name: "Discord role sync by XP level",
+    concurrency: { limit: 1 },
+    retries: 2,
+  },
+  { cron: "0 * * * *" },
+  async ({ step }) => {
+    const guildId = getDefaultGuildId()
+    if (!guildId) return { skipped: true, reason: "DISCORD_GUILD_ID_MNKY_VERSE not set" }
+
+    const levelRoles = getLevelRoleMap()
+    if (levelRoles.size === 0)
+      return { skipped: true, reason: "DISCORD_LEVEL_ROLES not set (e.g. 1:roleId1,2:roleId2)" }
+
+    const supabase = createAdminClient()
+    const { data: rows } = await supabase
+      .from("profiles")
+      .select("id, discord_user_id")
+      .not("discord_user_id", "is", null)
+
+    const profileIds = (rows ?? []).map((r) => r.id)
+    if (profileIds.length === 0) return { processed: 0 }
+
+    const { data: states } = await supabase
+      .from("xp_state")
+      .select("profile_id, level")
+      .in("profile_id", profileIds)
+
+    const levelByProfile = new Map(
+      (states ?? []).map((s) => [s.profile_id, s.level as number])
+    )
+
+    const discordIds = (rows ?? []).map((r) => ({
+      profileId: r.id,
+      discordUserId: r.discord_user_id as string,
+    }))
+
+    const roleIds = Array.from(levelRoles.values())
+    let processed = 0
+    const delayMs = 1200
+
+    for (const { profileId, discordUserId } of discordIds) {
+      const level = levelByProfile.get(profileId) ?? 0
+      const targetRoleId = Array.from(levelRoles.entries())
+        .filter(([l]) => l <= level)
+        .sort((a, b) => b[0] - a[0])[0]?.[1]
+
+      try {
+        for (const roleId of roleIds) {
+          const isTarget = roleId === targetRoleId
+          try {
+            if (isTarget) {
+              await discordJson(
+                `/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`,
+                { method: "PUT", auditLogReason: "XP level sync" }
+              )
+            } else {
+              await discordJson(
+                `/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`,
+                { method: "DELETE", auditLogReason: "XP level sync" }
+              )
+            }
+          } catch (e) {
+            const rl = parseRateLimitError(e)
+            if (rl) throw new Error(JSON.stringify({ retryAfter: rl.retryAfter }))
+            if (!isTarget) continue
+            throw e
+          }
+        }
+        processed++
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        if (msg.includes("retryAfter")) {
+          try {
+            const parsed = JSON.parse(msg) as { retryAfter: number }
+            await step.sleep("rate-limit-wait", `${Math.ceil(parsed.retryAfter)}s`)
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      await step.sleep(`delay-${discordUserId}`, "2s")
+    }
+
+    return { processed }
   }
 )

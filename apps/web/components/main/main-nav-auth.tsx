@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LogOut, User, CreditCard, Store, MessageCircle, Loader2 } from "lucide-react"
+import { LogOut, User, CreditCard, Store, MessageCircle, Loader2, Home, FlaskConical } from "lucide-react"
 import { SiGithub } from "react-icons/si"
 import {
   Avatar,
@@ -172,6 +172,20 @@ export function MainNavAuth({ className }: { className?: string }) {
         </div>
         <DropdownMenuSeparator className="mx-0" />
         <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/dojo" className="flex items-center gap-2 cursor-pointer">
+              <Home className="h-4 w-4" />
+              Dojo
+            </Link>
+          </DropdownMenuItem>
+          {user.isAdmin && (
+            <DropdownMenuItem asChild>
+              <Link href="/platform" className="flex items-center gap-2 cursor-pointer">
+                <FlaskConical className="h-4 w-4" />
+                Lab
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild>
             <Link href="/dojo/profile" className="flex items-center gap-2 cursor-pointer">
               <User className="h-4 w-4" />

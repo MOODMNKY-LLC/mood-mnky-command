@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 
 type VerseTheme = "light" | "dark";
@@ -16,11 +16,19 @@ const VerseThemeContext = createContext<VerseThemeContextValue | null>(null);
 /**
  * Bridges next-themes to Verse: useVerseTheme() returns the same theme as the rest of the app
  * so data-verse-theme and verse CSS stay in sync with the app-wide theme (and AnimatedThemeToggler).
+ * Uses a mounted guard so the initial theme is "light" until after hydration, avoiding a server/client
+ * mismatch when next-themes resolves to "dark" from localStorage on the client.
  */
 export function VerseThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme: resolvedTheme, setTheme: setNextTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const theme: VerseTheme =
-    resolvedTheme === "dark" ? "dark" : "light";
+    !mounted ? "light" : resolvedTheme === "dark" ? "dark" : "light";
 
   const setTheme = (next: VerseTheme) => {
     setNextTheme(next);

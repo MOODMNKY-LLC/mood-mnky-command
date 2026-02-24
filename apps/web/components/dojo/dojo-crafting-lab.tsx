@@ -31,17 +31,17 @@ export function DojoCraftingLab() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm">
-            <Link href="/verse/fragrance-wheel">
+            <Link href="/dojo/fragrance-wheel">
               Full fragrance wheel
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link href="/verse/chat">
+            <Link href="/dojo/chat">
               Chat with MNKY LABZ assistant
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link href="/verse/formulas">
+            <Link href="/dojo/formulas">
               Browse formulas
             </Link>
           </Button>

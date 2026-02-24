@@ -76,7 +76,7 @@ const GLOBE_BASE_DARK: Omit<COBEOptions, "baseColor" | "markerColor" | "glowColo
 };
 
 /** Light theme → original light globe. Dark theme → dark base with light dots (locations “lighting up”). */
-function getGlobeConfigForTheme(theme: "light" | "dark"): COBEOptions {
+export function getGlobeConfigForTheme(theme: "light" | "dark"): COBEOptions {
   const colors = theme === "dark" ? VERSE_GLOBE.darkTheme : VERSE_GLOBE.lightTheme;
   const base = theme === "dark" ? GLOBE_BASE_DARK : GLOBE_BASE_LIGHT;
   return {
@@ -133,25 +133,25 @@ export function VerseHeroDynamic() {
           {!isLoggedIn ? (
             <>
               <VerseButton asChild size="lg">
-                <Link href="/auth/login?next=/verse">Sign in</Link>
+                <Link href="/auth/login?next=/dojo">Sign in</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
                 <Link href="/dojo">Visit your Dojo</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
-                <Link href="/verse/products">Shop Products</Link>
+                <Link href="/dojo/products">Shop Products</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
-                <Link href="/verse/collections">Browse Collections</Link>
+                <Link href="/dojo/collections">Browse Collections</Link>
               </VerseButton>
             </>
           ) : (
             <>
               <VerseButton asChild size="lg">
-                <Link href="/verse/products">Shop Products</Link>
+                <Link href="/dojo/products">Shop Products</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
-                <Link href="/verse/collections">Browse Collections</Link>
+                <Link href="/dojo/collections">Browse Collections</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
                 <Link href="/dojo">Visit your Dojo</Link>
@@ -195,7 +195,7 @@ export function VerseHeroDynamic() {
         {/* Mascot - bottom-left of globe, overlapping left flank (foreground) */}
         <div className="absolute bottom-0 left-0 z-20 flex items-end pl-1 md:pl-2">
           <Image
-            src="/verse/mood-mnky-3d.png"
+            src="/dojo/mood-mnky-3d.png"
             alt="MOOD MNKY - Your gateway to the universe"
             width={720}
             height={810}

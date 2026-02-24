@@ -101,7 +101,7 @@ export default async function MainCommunityPage() {
                 behind-the-scenes, and community spotlights.
               </p>
               <Button asChild variant="outline" className="w-fit">
-                <Link href="/verse/blog">Open blog</Link>
+                <Link href="/dojo/blog">Open blog</Link>
               </Button>
             </MainGlassCard>
           </div>

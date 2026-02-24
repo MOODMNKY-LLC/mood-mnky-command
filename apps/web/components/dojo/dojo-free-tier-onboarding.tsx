@@ -74,7 +74,7 @@ export function DojoFreeTierOnboarding({
             </ul>
             <div className="flex flex-wrap gap-2">
               <Button asChild>
-                <Link href="/verse/join">Join free</Link>
+                <Link href="/dojo/join">Join free</Link>
               </Button>
               <Button variant="outline" onClick={handleRemindLater}>
                 Remind me later

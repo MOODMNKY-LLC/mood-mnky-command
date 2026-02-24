@@ -336,7 +336,7 @@ export function DojoHomeSections({
             </Button>
           )}
           <Button variant="link" className="h-auto p-0 text-primary" asChild>
-            <Link href="/verse/issues">
+            <Link href="/dojo/issues">
               {featuredIssue ? "All issues →" : "Start reading →"}
             </Link>
           </Button>
@@ -355,7 +355,7 @@ export function DojoHomeSections({
         </CardHeader>
         <CardContent>
           <Button variant="link" className="h-auto p-0 text-primary" asChild>
-            <Link href="/verse/ugc">
+            <Link href="/dojo/ugc">
               Upload content →
             </Link>
           </Button>

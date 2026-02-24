@@ -255,6 +255,14 @@
             ]
           },
           {
+            "group": "Design Systems & Architecture",
+            "pages": [
+              "technology-stack/design-system",
+              "technology-stack/systems-architecture",
+              "technology-stack/navigation-and-dojo"
+            ]
+          },
+          {
             "group": "Infrastructure",
             "pages": [
               "technology-stack/mono-repo-structure",
@@ -273,7 +281,9 @@
               "developer-resources/theme-customization",
               "developer-resources/mintlify-components",
               "developer-resources/docker-setup",
-              "developer-resources/n8n-workflows"
+              "developer-resources/n8n-workflows",
+              "developer-resources/blender-mcp",
+              "developer-resources/hunyuan3d-setup"
             ]
           },
           {

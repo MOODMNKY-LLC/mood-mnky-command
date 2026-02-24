@@ -1,5 +1,7 @@
 export { MainNav } from "./main-nav"
 export { MainGlassCard } from "./main-glass-card"
+export { MediaMusicMarquee } from "./media-music-marquee"
+export type { MediaMusicMarqueeProps } from "./media-music-marquee"
 export { MainMascotImage } from "./main-mascot-image"
 export { MainHero } from "./main-hero"
 export { MainHeroSplit } from "./main-hero-split"

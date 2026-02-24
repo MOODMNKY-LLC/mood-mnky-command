@@ -17,6 +17,7 @@ import {
 } from "@/components/ai-elements/audio-player"
 import { Repeat1, Shuffle, FileAudio } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ProgressiveBlur } from "@/components/ui/progressive-blur"
 import { cn } from "@/lib/utils"
 
 export type VerseTrack = {
@@ -191,7 +192,8 @@ export function VerseMusicPlayer() {
 
       <div className="flex flex-col gap-1">
         <p className="text-xs font-medium text-muted-foreground">Playlist</p>
-        <div className="max-h-48 overflow-y-auto rounded border border-border">
+        <div className="relative max-h-48">
+          <div className="max-h-48 overflow-y-auto rounded border border-border">
           {tracks.map((track, idx) => {
             const isActive = isShuffle
               ? shuffleOrder[currentIndex] === idx
@@ -226,6 +228,8 @@ export function VerseMusicPlayer() {
               </button>
             )
           })}
+          </div>
+          <ProgressiveBlur position="bottom" height="40%" />
         </div>
       </div>
     </div>

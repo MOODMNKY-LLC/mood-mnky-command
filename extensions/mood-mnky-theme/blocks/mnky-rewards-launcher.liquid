@@ -1,0 +1,203 @@
+{% comment %}
+  MNKY Rewards - App Embed (launcher)
+  Floating button that opens a drawer with balance (when customer logged in) or "View rewards" CTA.
+  Fetches balance via App Proxy: /apps/mnky/api/balance (request goes through store → Shopify forwards to app).
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign enabled = block.settings.enabled
+  assign position = block.settings.position | default: 'bottom-right'
+  assign button_label = block.settings.button_label | default: 'Rewards' | strip
+  assign is_valid = false
+  if app_url != '' and app_url != blank and enabled
+    assign is_valid = true
+  endif
+  assign pos_left = 'auto'
+  assign pos_right = '1.25rem'
+  if position == 'bottom-left'
+    assign pos_left = '1.25rem'
+    assign pos_right = 'auto'
+  endif
+  assign verse_rewards_path = '/verse/rewards'
+  assign rewards_link = app_url | append: verse_rewards_path
+-%}
+{%- if is_valid -%}
+<div
+  class="mood-mnky-rewards-launcher"
+  {{ block.shopify_attributes }}
+  data-balance-path="/apps/mnky/api/balance"
+  data-rewards-link="{{ rewards_link }}"
+  style="
+    --mnky-rewards-z: 9998;
+    --mnky-rewards-primary: {{ block.settings.primary_color | default: '#1a1a1a' }};
+  "
+>
+  <div
+    id="mnky-rewards-toggle"
+    class="mnky-rewards-toggle"
+    role="button"
+    tabindex="0"
+    aria-label="{{ button_label | escape }}"
+    aria-expanded="false"
+    style="
+      position: fixed;
+      bottom: 1.25rem;
+      left: {{ pos_left }};
+      right: {{ pos_right }};
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--mnky-rewards-primary);
+      border: 2px solid var(--mnky-rewards-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: var(--mnky-rewards-z);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    "
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+      <path d="M4 22h16"/>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+    </svg>
+  </div>
+  <div
+    id="mnky-rewards-panel"
+    class="mnky-rewards-panel"
+    role="dialog"
+    aria-label="{{ button_label | escape }}"
+    aria-hidden="true"
+    style="
+      display: none;
+      position: fixed;
+      bottom: 5rem;
+      left: {{ pos_left }};
+      right: {{ pos_right }};
+      width: min(340px, calc(100vw - 2.5rem));
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: var(--mnky-rewards-z);
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 1.25rem;
+    "
+  >
+    <div id="mnky-rewards-content" class="mnky-rewards-content">
+      <p class="mnky-rewards-loading" style="margin:0;color:#666;">Loading…</p>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var wrap = document.querySelector('.mood-mnky-rewards-launcher');
+      var toggle = document.getElementById('mnky-rewards-toggle');
+      var panel = document.getElementById('mnky-rewards-panel');
+      var content = document.getElementById('mnky-rewards-content');
+      if (!wrap || !toggle || !panel || !content) return;
+      var balancePath = wrap.getAttribute('data-balance-path') || '/apps/mnky/api/balance';
+      var rewardsLink = wrap.getAttribute('data-rewards-link') || '#';
+      function open() {
+        panel.style.display = 'block';
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        fetchBalance();
+      }
+      function close() {
+        panel.style.display = 'none';
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+      function togglePanel() {
+        if (panel.style.display === 'block') close(); else open();
+      }
+      function fetchBalance() {
+        content.innerHTML = '<p class="mnky-rewards-loading" style="margin:0;color:#666;">Loading…</p>';
+        var url = window.location.origin + balancePath;
+        fetch(url, { credentials: 'same-origin' })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.authenticated && data.xpTotal !== undefined) {
+              content.innerHTML =
+                '<p style="margin:0 0 0.5rem 0;font-weight:600;">Your MNKY Rewards</p>' +
+                '<p style="margin:0 0 0.75rem 0;font-size:1.25rem;"><strong>' + (data.xpTotal || 0) + '</strong> XP · Level <strong>' + (data.level || 1) + '</strong></p>' +
+                '<a href="' + rewardsLink + '" style="display:inline-block;margin-top:0.5rem;color:var(--mnky-rewards-primary,#1a1a1a);font-weight:500;">Earn more & redeem →</a>';
+            } else {
+              content.innerHTML =
+                '<p style="margin:0 0 0.75rem 0;">View your rewards and earn XP in MNKY VERSE.</p>' +
+                '<a href="' + (data.link || rewardsLink) + '" style="display:inline-block;font-weight:500;color:var(--mnky-rewards-primary,#1a1a1a);">View rewards →</a>';
+            }
+          })
+          .catch(function() {
+            content.innerHTML =
+              '<p style="margin:0 0 0.75rem 0;">Unable to load balance.</p>' +
+              '<a href="' + rewardsLink + '" style="display:inline-block;font-weight:500;color:var(--mnky-rewards-primary,#1a1a1a);">View rewards →</a>';
+          });
+      }
+      toggle.addEventListener('click', togglePanel);
+      toggle.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePanel(); }
+      });
+    })();
+  </script>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "MNKY Rewards",
+  "target": "body",
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Enable MNKY Rewards launcher",
+      "default": true,
+      "info": "Show the rewards floating button on the storefront"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command (e.g. https://mnky-command.moodmnky.com). Used for 'View rewards' link.",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Button position",
+      "options": [
+        { "value": "bottom-right", "label": "Bottom right" },
+        { "value": "bottom-left", "label": "Bottom left" }
+      ],
+      "default": "bottom-right"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label (accessibility)",
+      "default": "Rewards"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Accent color",
+      "default": "#1a1a1a"
+    }
+  ]
+}
+{% endschema %}

@@ -82,13 +82,13 @@ export function VerseBlendingGuide() {
       {/* CTAs */}
       <div className="flex flex-wrap gap-3">
         <VerseButton asChild>
-          <Link href="/verse/fragrance-wheel">Full Fragrance Wheel</Link>
+          <Link href="/dojo/fragrance-wheel">Full Fragrance Wheel</Link>
         </VerseButton>
         <VerseButton variant="outline" asChild>
-          <Link href="/verse/explore">Browse Notes Glossary</Link>
+          <Link href="/dojo/explore">Browse Notes Glossary</Link>
         </VerseButton>
         <VerseButton variant="outline" asChild>
-          <Link href="/verse/products">Shop Products</Link>
+          <Link href="/dojo/products">Shop Products</Link>
         </VerseButton>
       </div>
     </div>

@@ -121,7 +121,7 @@ export default function MainCollectionsShopPage() {
               </MainGlassCard>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button asChild>
-                  <Link href="/verse">Shop MNKY VERSE</Link>
+                  <Link href="/dojo">Shop MNKY VERSE</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link href="/main/collections">Back to collections</Link>
@@ -183,7 +183,7 @@ export default function MainCollectionsShopPage() {
           </div>
           <div className="flex justify-center pt-4">
             <Button asChild variant="outline">
-              <Link href="/verse">Shop all in MNKY VERSE</Link>
+              <Link href="/dojo">Shop all in MNKY VERSE</Link>
             </Button>
           </div>
         </div>

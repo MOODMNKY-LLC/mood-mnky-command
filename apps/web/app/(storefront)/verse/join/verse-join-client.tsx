@@ -36,7 +36,7 @@ export function VerseJoinClient() {
       <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-16 text-center">
         <p className="text-muted-foreground">Something went wrong. Please try again.</p>
         <a href="/verse" className="text-primary mt-4 inline-block underline">
-          Go to MNKY VERSE
+          Go to MNKY DOJO
         </a>
       </div>
     )
@@ -45,7 +45,7 @@ export function VerseJoinClient() {
   return (
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-16 text-center">
       <p className="text-muted-foreground">Setting up your free access...</p>
-      <p className="text-muted-foreground text-sm mt-2">Redirecting to MNKY VERSE.</p>
+      <p className="text-muted-foreground text-sm mt-2">Redirecting to MNKY DOJO.</p>
     </div>
   )
 }

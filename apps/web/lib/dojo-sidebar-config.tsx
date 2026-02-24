@@ -61,14 +61,14 @@ export const dojoContexts: {
     name: "Crafting",
     logo: FlaskConical,
     plan: "Fragrance & blends",
-    href: "/dojo/crafting",
+    href: "/dojo/me/crafting",
   },
   {
     id: "chat",
     name: "Chat",
     logo: Bot,
     plan: "MNKY Chat",
-    href: "/dojo/chat",
+    href: "/dojo/me/chat",
   },
 ];
 
@@ -89,12 +89,12 @@ export interface DojoNavItem {
 /** Dojo section: dashboard-only */
 export const dojoItems: DojoNavItem[] = [
   { title: "Home", href: "/dojo", icon: Home },
-  { title: "Preferences", href: "/dojo/preferences", icon: Settings },
+  { title: "Preferences", href: "/dojo/me/preferences", icon: Settings },
 ];
 
 /** @deprecated Verse links moved to Community section in team switcher; do not use in sidebar nav */
 export const verseLinkItems: DojoNavItem[] = [
-  { title: "Community hub", href: "/dojo/community", icon: Users },
+  { title: "Community hub", href: "/dojo/me/community", icon: Users },
 ];
 
 /** Nav group item shape */
@@ -117,11 +117,11 @@ export const dojoNavGroups: DojoNavGroup[] = [
     label: "Dojo",
     items: [
       { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Back to VERSE", url: "/verse", icon: Globe },
+      { title: "Dojo Home", url: "/dojo", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home, isActive: true },
-      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
-      { title: "Profile", url: "/dojo/profile", icon: User },
-      { title: "Preferences", url: "/dojo/preferences", icon: Settings },
+      { title: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+      { title: "Profile", url: "/dojo/me/profile", icon: User },
+      { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
   },
 ];
@@ -131,10 +131,10 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
   {
     label: "Crafting",
     items: [
-      { title: "Blending Lab", url: "/dojo/crafting", icon: FlaskConical, isActive: true },
-      { title: "Saved Blends", url: "/dojo/crafting/saved", icon: BookMarked },
-      { title: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
-      { title: "Preferences", url: "/dojo/preferences", icon: Settings },
+      { title: "Blending Lab", url: "/dojo/me/crafting", icon: FlaskConical, isActive: true },
+      { title: "Saved Blends", url: "/dojo/me/crafting/saved", icon: BookMarked },
+      { title: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+      { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
   },
   {
@@ -142,7 +142,7 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
     items: [
       { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
-      { title: "Profile", url: "/dojo/profile", icon: User },
+      { title: "Profile", url: "/dojo/me/profile", icon: User },
     ],
   },
 ];
@@ -163,7 +163,7 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
     label: "Dojo",
     items: [
       { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Back to VERSE", url: "/verse", icon: Globe },
+      { title: "Dojo Home", url: "/verse", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
       { title: "Preferences", url: "/dojo/preferences", icon: Settings },
     ],
@@ -184,17 +184,17 @@ export function getDojoNavGroupsForContext(contextId: DojoContextId): DojoNavGro
 
 /** Quick access (dashboard-only) */
 export const dojoQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
-  { name: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
-  { name: "Profile", url: "/dojo/profile", icon: User },
-  { name: "Community hub", url: "/dojo/community", icon: Users },
+  { name: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+  { name: "Profile", url: "/dojo/me/profile", icon: User },
+  { name: "Community hub", url: "/dojo/me/community", icon: Users },
 ];
 
 /** Crafting quick access (dashboard-only) */
 export const dojoCraftingQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
-  { name: "Blending Lab", url: "/dojo/crafting", icon: FlaskConical },
-  { name: "Saved Blends", url: "/dojo/crafting/saved", icon: BookMarked },
-  { name: "MNKY CHAT", url: "/dojo/chat", icon: MessageSquare },
-  { name: "Community hub", url: "/dojo/community", icon: Users },
+  { name: "Blending Lab", url: "/dojo/me/crafting", icon: FlaskConical },
+  { name: "Saved Blends", url: "/dojo/me/crafting/saved", icon: BookMarked },
+  { name: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+  { name: "Community hub", url: "/dojo/me/community", icon: Users },
 ];
 
 /** Chat quick access */
@@ -220,11 +220,11 @@ export const dojoCommunityLinks: {
   icon: LucideIcon;
 }[] = [
   { label: "MOOD MNKY (Home)", href: "/main", external: false, icon: Home },
-  { label: "Community hub", href: "/dojo/community", external: false, icon: Users },
-  { label: "MNKY VERSE Blog", href: "/verse/blog", external: true, icon: Newspaper },
-  { label: "Quests & XP", href: "/verse/quests", external: true, icon: Trophy },
-  { label: "Manga & Issues", href: "/verse/issues", external: true, icon: BookMarked },
-  { label: "Link Discord account", href: "/verse/auth/discord/link", external: false, icon: MessageCircle },
+  { label: "Community hub", href: "/dojo/me/community", external: false, icon: Users },
+  { label: "MNKY DOJO Blog", href: "/dojo/blog", external: false, icon: Newspaper },
+  { label: "Quests & XP", href: "/dojo/quests", external: false, icon: Trophy },
+  { label: "Manga & Issues", href: "/dojo/issues", external: false, icon: BookMarked },
+  { label: "Link Discord account", href: "/dojo/auth/discord/link", external: false, icon: MessageCircle },
 ];
 
 /** Discord invite URL (build-time); when set, "Join Discord" is shown in Community section */

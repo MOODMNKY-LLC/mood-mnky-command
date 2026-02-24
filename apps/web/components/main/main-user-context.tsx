@@ -7,6 +7,7 @@ export type MainUser = {
   email?: string
   displayName?: string
   avatarUrl?: string
+  isAdmin?: boolean
 } | null
 
 const MainUserContext = createContext<MainUser>(null)

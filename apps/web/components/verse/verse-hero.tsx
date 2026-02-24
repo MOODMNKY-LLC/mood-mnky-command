@@ -62,10 +62,10 @@ export function VerseHero() {
         </div>
         <div className="flex flex-wrap gap-3">
           <VerseButton asChild size="lg">
-            <Link href="/verse/products">Shop Products</Link>
+            <Link href="/dojo/products">Shop Products</Link>
           </VerseButton>
           <VerseButton asChild variant="outline" size="lg">
-            <Link href="/verse/collections">Browse Collections</Link>
+            <Link href="/dojo/collections">Browse Collections</Link>
           </VerseButton>
         </div>
       </div>
@@ -79,7 +79,7 @@ export function VerseHero() {
         </div>
         <div className="relative z-10 flex h-full items-center justify-center">
           <Image
-            src="/verse/mood-mnky-3d.png"
+            src="/dojo/mood-mnky-3d.png"
             alt="MOOD MNKY - Your gateway to the universe"
             width={360}
             height={400}

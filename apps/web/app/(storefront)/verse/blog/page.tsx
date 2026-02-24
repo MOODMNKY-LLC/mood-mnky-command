@@ -41,7 +41,7 @@ export default async function VerseBlogPage() {
     <div className="verse-container mx-auto max-w-[var(--verse-page-width)] px-4 py-8 md:px-6">
       <div className="mb-8">
         <h1 className="font-verse-heading text-2xl font-semibold text-verse-text md:text-3xl">
-          MNKY VERSE Blog
+          MNKY DOJO Blog
         </h1>
         <p className="mt-2 text-verse-text-muted">
           Stories, guides, and insights from the universe of scents.

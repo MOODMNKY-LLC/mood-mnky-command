@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MainNav, MainFooter, FeaturedFormulaCard } from "@/components/main"
+import { ProgressiveBlur } from "@/components/ui/progressive-blur"
 import { MainMascotImage } from "@/components/main/main-mascot-image"
 import { MAIN_MASCOT_ASSETS } from "@/lib/main-mascot-assets"
 import { FormulaCard } from "@/components/formulas/formula-card"
@@ -147,31 +148,34 @@ export default function MainCollectionsFormulasPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto lg:col-span-1">
-              {isLoading ? (
-                Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
-              ) : filteredFormulas.length === 0 ? (
-                <div className="main-glass-panel-card flex flex-col items-center justify-center rounded-xl border border-border p-8">
-                  <p className="text-sm text-muted-foreground">
-                    {formulas.length === 0 && !error
-                      ? "No formulas in catalog yet."
-                      : "No formulas match your filters."}
-                  </p>
-                </div>
-              ) : (
-                filteredFormulas.map((formula) => (
-                  <div
-                    key={formula.id}
-                    className="main-float rounded-xl [&_.border-border]:border-border/80"
-                  >
-                    <FormulaCard
-                      formula={formula}
-                      onSelect={setSelectedFormula}
-                      isSelected={selectedFormula?.id === formula.id}
-                    />
+            <div className="relative max-h-[32rem] lg:col-span-1">
+              <div className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto rounded-xl">
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
+                ) : filteredFormulas.length === 0 ? (
+                  <div className="main-glass-panel-card flex flex-col items-center justify-center rounded-xl border border-border p-8">
+                    <p className="text-sm text-muted-foreground">
+                      {formulas.length === 0 && !error
+                        ? "No formulas in catalog yet."
+                        : "No formulas match your filters."}
+                    </p>
                   </div>
-                ))
-              )}
+                ) : (
+                  filteredFormulas.map((formula) => (
+                    <div
+                      key={formula.id}
+                      className="main-float rounded-xl [&_.border-border]:border-border/80"
+                    >
+                      <FormulaCard
+                        formula={formula}
+                        onSelect={setSelectedFormula}
+                        isSelected={selectedFormula?.id === formula.id}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+              <ProgressiveBlur position="bottom" height="35%" />
             </div>
             <div className="lg:col-span-2">
               {selectedFormula ? (

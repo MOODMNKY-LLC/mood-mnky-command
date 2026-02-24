@@ -60,10 +60,10 @@ export function VerseLogoHairIcon({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 181 256"
+      preserveAspectRatio="xMidYMid meet"
       className={cn(
         "shrink-0 text-verse-text",
-        iconSize,
-        !withRing && className
+        withRing ? "h-full w-full" : cn(iconSize, className)
       )}
       fill="currentColor"
       aria-hidden={ariaHidden}
@@ -78,7 +78,7 @@ export function VerseLogoHairIcon({
     return (
       <span
         className={cn(
-          "inline-flex shrink-0 text-verse-text",
+          "inline-flex shrink-0 items-center justify-center text-verse-text",
           ringStyles,
           size === "sm" && "size-7",
           size === "md" && "size-10",

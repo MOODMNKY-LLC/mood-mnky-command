@@ -487,7 +487,7 @@ export function VerseRealtimeVoiceCard({
     voiceState === "listening" || voiceState === "thinking" || voiceState === "speaking";
   const isConnecting = voiceState === "connecting";
   const assistantLabel = agent?.display_name ?? "MNKY";
-  const imageSrc = agent?.image_path ?? "/verse/mood-mnky-3d.png";
+  const imageSrc = agent?.image_path ?? "/dojo/mood-mnky-3d.png";
 
   return (
     <div

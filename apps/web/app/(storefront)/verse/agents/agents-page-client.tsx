@@ -115,7 +115,7 @@ export function AgentsPageClient() {
               Meet Your AI Guides
             </h1>
             <p className="mx-auto max-w-2xl text-base text-verse-text-muted md:text-lg">
-              The MNKY VERSE is brought to life by specialized AI companions
+              The MNKY DOJO is brought to life by specialized AI companions
               that enhance different aspects of your experience.
             </p>
             <div className="pt-2">

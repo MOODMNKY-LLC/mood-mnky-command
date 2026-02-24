@@ -1,0 +1,206 @@
+---
+title: "Tencent Hunyuan 3D Local Setup"
+description: "Download and run Tencent Hunyuan3D for text-to-3D and image-to-3D generation locally, and connect it to Blender MCP"
+icon: "cube"
+---
+
+# Tencent Hunyuan 3D Local Setup
+
+[Tencent Hunyuan3D](https://github.com/Tencent/Hunyuan3D-2) is an open-source 3D asset generation system that produces high-resolution textured 3D models from **text** or **images**. Running it locally gives you a private API that [Blender MCP](/developer-resources/blender-mcp) can use to generate 3D models from Cursor or Claude and import them into Blender.
+
+<Info>
+Hunyuan3D is from Tencent. The official repo is [Tencent-Hunyuan/Hunyuan3D-2](https://github.com/Tencent/Hunyuan3D-2). Blender MCP (ahujasid/blender-mcp) adds Hunyuan3D support by calling a **local API server** you run yourself.
+</Info>
+
+## How It Fits With Your Setup
+
+1. **Hunyuan3D API server** — You run Tencent’s `api_server.py` on your machine (default `http://localhost:8080`). It loads the Hunyuan3D models and handles image-to-3D and text-to-3D requests.
+2. **Blender MCP** — Already configured in Cursor; it talks to Blender’s addon over the socket. When you use Hunyuan3D from Cursor, the MCP server sends generation requests to your local Hunyuan3D API and then can import the resulting mesh into Blender.
+
+So: **Blender (addon) ↔ Blender MCP (Cursor) ↔ Hunyuan3D API (local)**. You must install and run the Hunyuan3D stack separately; Blender MCP only connects to the API.
+
+## System Requirements
+
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **OS** | Windows 10/11 64-bit, macOS, Linux | — |
+| **RAM** | 16 GB | 32 GB |
+| **GPU** | NVIDIA GPU, 6 GB VRAM | 8 GB+ for texture generation; A100 40GB for full quality |
+| **GPU driver** | NVIDIA, version &gt; 550 (March 2024+) | — |
+| **Storage** | 50 GB+ free | — |
+| **Python** | 3.9–3.12 | 3.10 or 3.11 |
+
+<Warning>
+Shape-only generation uses about **6 GB VRAM**; shape + texture uses about **16 GB**. Use **Hunyuan3D-2mini** or **Turbo** variants and `--low_vram_mode` if your GPU has less VRAM.
+</Warning>
+
+## Option A: Full Local Install (Clone + Python)
+
+Use this when you want the latest code and control over the environment.
+
+### 1. Install system prerequisites (Windows)
+
+- **Python 3.10 or 3.11** — From [python.org](https://www.python.org/downloads/); add to PATH.
+- **CUDA Toolkit 12.4+** — From [NVIDIA](https://developer.nvidia.com/cuda-downloads). Verify with `nvcc --version`.
+- **Visual Studio Build Tools** — For compiling C++ extensions. Install with “Desktop development with C++”.
+
+### 2. Clone the repository
+
+```bash
+git clone https://github.com/Tencent/Hunyuan3D-2.git
+cd Hunyuan3D-2
+```
+
+### 3. Create a virtual environment and install PyTorch
+
+Use a venv or conda with Python 3.9–3.12. Example with venv:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate  # macOS/Linux
+```
+
+Install PyTorch with CUDA from the [official site](https://pytorch.org/). For CUDA 12.4 (Windows):
+
+```bash
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
+```
+
+### 4. Install project dependencies
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
+
+### 5. Build texture-generation extensions
+
+Texture generation requires two native modules.
+
+**Custom rasterizer:**
+
+```bash
+cd hy3dgen/texgen/custom_rasterizer
+python setup.py install
+cd ../../..
+```
+
+**Differentiable renderer (mesh painter):**
+
+On Windows, use either:
+
+```bash
+cd hy3dgen/texgen/differentiable_renderer
+# Option 1: if compile script exists
+bash compile_mesh_painter.sh
+# Option 2: otherwise
+python setup.py install
+cd ../../..
+```
+
+If you only need **shape** (no texture), you can skip or defer these steps and run the API without texture support.
+
+### 6. Download models from Hugging Face
+
+Models are downloaded automatically on first use when you use `tencent/Hunyuan3D-2` (or the mini/mv repos) in code. To pre-download with the CLI if available:
+
+```bash
+# If the repo provides a download script, e.g.:
+python -m hunyuan3d.utils.download_models
+```
+
+Otherwise, the first run of `api_server.py` or the Gradio app will pull from Hugging Face. Log in if required:
+
+```bash
+huggingface-cli login
+```
+
+**Model choices:**
+
+| Repo / subfolder | Use case | VRAM |
+|------------------|----------|------|
+| `tencent/Hunyuan3D-2mini` | Smallest; good for low VRAM | Lower |
+| `tencent/Hunyuan3D-2mv` | Multiview image-to-shape | Medium |
+| `tencent/Hunyuan3D-2` | Full quality (DiT + Paint) | ~6 GB shape, ~16 GB with texture |
+
+Turbo/Fast subfolders reduce steps and speed up generation; use them when available (e.g. `hunyuan3d-dit-v2-0-turbo`, `hunyuan3d-dit-v2-mini-turbo`).
+
+### 7. Start the API server
+
+From the `Hunyuan3D-2` directory, with your venv activated:
+
+**Shape only (no texture, lower VRAM):**
+
+```bash
+python api_server.py --host 127.0.0.1 --port 8080
+```
+
+**Shape + texture (full pipeline):**
+
+```bash
+python api_server.py --host 127.0.0.1 --port 8080 --tex_model_path tencent/Hunyuan3D-2 --enable_tex --device cuda
+```
+
+Use `--low_vram_mode` if you have limited GPU memory. Leave this server running while you use Blender MCP with Hunyuan3D.
+
+<Tip>
+Blender MCP expects the Hunyuan3D API at **http://localhost:8080** by default. If you use a different host or port, configure the Blender MCP server environment (or the addon, if it exposes the URL) accordingly.
+</Tip>
+
+## Option B: Windows portable bundle (no clone)
+
+For a quicker Windows setup without cloning and building:
+
+- **[Hunyuan3D-2-WinPortable](https://github.com/YanWenKun/Hunyuan3D-2-WinPortable)** — Community bundle; check releases for a prebuilt package that includes dependencies and optionally the API server.
+- **[Hunyuan3D-2-for-windows](https://github.com/sdbds/Hunyuan3D-2-for-windows)** — Windows-oriented fork with install notes.
+
+After installation, run the included API server (if provided) on port 8080 so Blender MCP can connect.
+
+## Using Hunyuan3D from Blender MCP
+
+1. **Start the Hunyuan3D API server** (see above) and keep it running.
+2. **Start Blender** and enable the Blender MCP addon; click **Connect to Claude** in the BlenderMCP sidebar.
+3. In **Cursor**, ensure the Blender MCP server is enabled (and that it’s configured to use your local Hunyuan3D API URL if you changed it).
+4. In Cursor, you can ask the AI to generate a 3D model via Hunyuan3D (text or image); the MCP will call your local API and can then import the result into Blender.
+
+If the MCP or addon exposes a URL setting for “Hunyuan3D API”, set it to `http://localhost:8080` (or your custom host/port).
+
+## Alternative: Tencent Blender addon only
+
+Tencent also provides a [Blender addon](https://github.com/Tencent/Hunyuan3D-2/blob/main/blender_addon.py) that talks to the same local API. You can use either:
+
+- **Tencent addon** — UI inside Blender to trigger generation, or  
+- **Blender MCP** — Trigger generation from Cursor/Claude and have the MCP handle import into Blender.
+
+Both require the same local `api_server.py` (or compatible API) running.
+
+## Gradio app (no API server)
+
+If you only want to try Hunyuan3D in the browser without Blender MCP:
+
+```bash
+# Standard (Hunyuan3D-2, low VRAM)
+python gradio_app.py --model_path tencent/Hunyuan3D-2 --subfolder hunyuan3d-dit-v2-0 --texgen_model_path tencent/Hunyuan3D-2 --low_vram_mode
+
+# Turbo (faster)
+python gradio_app.py --model_path tencent/Hunyuan3D-2 --subfolder hunyuan3d-dit-v2-0-turbo --texgen_model_path tencent/Hunyuan3D-2 --low_vram_mode --enable_flashvdm
+```
+
+This does not provide an API for Blender MCP; use `api_server.py` for that.
+
+## Troubleshooting
+
+| Issue | Suggestion |
+|-------|------------|
+| **Out of memory (OOM)** | Use `tencent/Hunyuan3D-2mini` or Turbo models, `--low_vram_mode`, or shape-only (no `--enable_tex`). |
+| **Build errors (rasterizer/renderer)** | Ensure Visual Studio Build Tools (Windows) or build-essential (Linux) are installed; check Python and CUDA versions. |
+| **Blender MCP doesn’t generate with Hunyuan** | Confirm the Hunyuan3D API server is running on port 8080 and that Blender MCP (or addon) is configured to use that URL. |
+| **Models not found** | Run `huggingface-cli login` if the repo is gated; allow first-run download or use a pre-download script. |
+
+## References
+
+- **Tencent Hunyuan3D-2:** [GitHub](https://github.com/Tencent/Hunyuan3D-2) | [Hugging Face](https://huggingface.co/tencent/Hunyuan3D-2)
+- **Blender MCP:** [Blender MCP doc](/developer-resources/blender-mcp) | [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp)
+- **Windows bundle:** [Hunyuan3D-2-WinPortable](https://github.com/YanWenKun/Hunyuan3D-2-WinPortable)
+- **Online demo (no install):** [Hunyuan3D Studio](https://3d.hunyuan.tencent.com) | [Hugging Face Space](https://huggingface.co/spaces/tencent/Hunyuan3D-2)
