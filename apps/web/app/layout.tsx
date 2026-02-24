@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { Inter, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
 import { PwaRegister } from "@/components/pwa-register"
+import { PointerWithLogo } from "@/components/pointer-with-logo"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
@@ -80,7 +81,9 @@ export default async function RootLayout({
     <html lang="en" className={`${inter.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider defaultTheme="light" attribute="class" enableSystem>
-          <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
+          <PointerWithLogo>
+            <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
+          </PointerWithLogo>
         </ThemeProvider>
       </body>
     </html>
