@@ -60,10 +60,10 @@ export function VerseHeader({
   };
 
   return (
-    <header className="sticky top-0 z-50 verse-header glass-panel">
-      <div className="mx-auto grid h-16 max-w-[var(--verse-page-width,1600px)] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 md:px-6">
+    <header className="sticky top-0 z-50 verse-header glass-panel pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto grid h-16 max-w-[var(--verse-page-width,1600px)] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 md:gap-4 md:px-6">
         {/* Left: Brand + Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 shrink items-center gap-2 md:gap-3">
           <Link
             href="/main"
             className="text-sm font-medium text-verse-text-muted transition-colors hover:text-verse-text"
@@ -78,8 +78,8 @@ export function VerseHeader({
             MNKY DOJO
           </Link>
         </div>
-        {/* Center: Nav links (Lab, Home, Explore, Blog, Agents, Shop, Cart) */}
-        <nav className="flex min-w-0 shrink items-center justify-center gap-2 md:gap-6">
+        {/* Center: Nav links (Lab, Home, Explore, Blog, Agents, Shop, Cart) - scroll on narrow */}
+        <nav className="flex min-w-0 shrink items-center justify-center gap-1 overflow-x-auto overflow-y-hidden md:gap-6" style={{ WebkitOverflowScrolling: "touch" }}>
           {isAdmin && (
             <>
               <Link

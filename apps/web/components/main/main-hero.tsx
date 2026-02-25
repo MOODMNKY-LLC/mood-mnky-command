@@ -34,6 +34,7 @@ export function MainHero() {
             width={160}
             height={160}
             className="object-contain"
+            sizes="(max-width: 768px) 160px, 160px"
             priority
           />
         </motion.div>

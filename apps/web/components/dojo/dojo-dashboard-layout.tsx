@@ -42,9 +42,9 @@ function DojoLayoutInner({ children }: { children: React.ReactNode }) {
       <DojoChatProvider>
         <DojoChatSidebarWithContext />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <header className="flex h-16 min-h-[44px] shrink-0 items-center gap-2 pt-[env(safe-area-inset-top)] transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
+              <SidebarTrigger className="-ml-1 min-h-[44px] min-w-[44px]" />
               <Separator
                 orientation="vertical"
                 className="mr-2 data-[orientation=vertical]:h-4"
@@ -74,9 +74,9 @@ function DojoLayoutInner({ children }: { children: React.ReactNode }) {
     <>
       <DojoSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="flex h-16 min-h-[44px] shrink-0 items-center gap-2 pt-[env(safe-area-inset-top)] transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger className="-ml-1 min-h-[44px] min-w-[44px]" />
             <Separator
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"

@@ -93,7 +93,7 @@ export function MainNav() {
 
   return (
     <header
-      className="main-container main-glass-nav sticky top-0 z-50 mx-4 mt-4 rounded-2xl py-3 md:py-4"
+      className="main-container main-glass-nav sticky top-0 z-50 mx-4 mt-4 rounded-2xl py-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:py-4"
       role="banner"
     >
       <nav
@@ -171,7 +171,7 @@ export function MainNav() {
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0 lg:hidden"
+              className="min-h-[44px] min-w-[44px] shrink-0 lg:hidden"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -218,10 +218,10 @@ export function MainNav() {
               className="w-full max-w-none"
               onSubmitted={() => setOpen(false)}
             />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
               <DropdownMenu>
                 <DropdownMenuTrigger
-                  className={cn(linkClass, "flex items-center gap-1 outline-none text-left")}
+                  className={cn(linkClass, "flex min-h-[44px] items-center gap-1 rounded-md outline-none text-left")}
                   aria-haspopup="menu"
                   aria-label="Collections menu"
                 >
@@ -249,7 +249,7 @@ export function MainNav() {
                 <Link
                   key={href}
                   href={href}
-                  className={linkClass}
+                  className={cn(linkClass, "flex min-h-[44px] items-center rounded-md")}
                   onClick={() => setOpen(false)}
                 >
                   {label}

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, getSupabaseConfigMissing } from "@/lib/supabase/admin";
-import { DojoFlowiseChatbot } from "@/components/dojo/dojo-flowise-chatbot";
+import { DojoFlowiseChatbotLazy } from "@/components/dojo/dojo-flowise-chatbot-lazy";
 
 export default async function DojoMeChatPage({
   searchParams,
@@ -39,7 +39,7 @@ export default async function DojoMeChatPage({
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col p-4">
-      <DojoFlowiseChatbot chatflowId={chatflowId} className="h-full min-h-[360px] flex-1" />
+      <DojoFlowiseChatbotLazy chatflowId={chatflowId} className="h-full min-h-[360px] flex-1" />
     </div>
   );
 }

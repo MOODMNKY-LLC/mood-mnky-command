@@ -24,7 +24,7 @@ function DashboardLayoutSkeleton() {
     <div className="flex min-h-screen w-full">
       <div className="w-16 shrink-0 border-r border-sidebar-border bg-sidebar" aria-hidden />
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="flex h-14 min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+        <header className="flex h-14 min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-border px-4 pt-[env(safe-area-inset-top)]">
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 shrink-0 rounded-md bg-muted" />
             <div className="mr-2 h-4 w-px shrink-0 bg-border" role="separator" />
@@ -63,7 +63,7 @@ export default function DashboardLayout({
         <SidebarProvider>
           <AppSidebar />
         <SidebarInset>
-          <header className="flex h-14 min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+          <header className="flex h-14 min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-border px-4 pt-[env(safe-area-inset-top)]">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1 min-h-[44px] min-w-[44px]" />
               <Separator orientation="vertical" className="mr-2 h-4" />

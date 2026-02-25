@@ -49,7 +49,7 @@ export function DojoSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
           </div>
         )}
         <AnimatedThemeToggler
-          className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
+          className="flex size-8 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent"
           aria-label="Toggle theme"
         />
       </SidebarHeader>

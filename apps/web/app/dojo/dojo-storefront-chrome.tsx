@@ -3,7 +3,6 @@
 import { Montserrat, Oswald, Roboto } from "next/font/google";
 import { ThemePaletteProvider } from "@/components/theme-palette-provider";
 import { VerseThemeProvider } from "@/components/verse/verse-theme-provider";
-import { VersePwaInstall } from "@/components/verse/verse-pwa-install";
 // Dojo storefront CSS (shared with verse assets until cleanup)
 import "../(storefront)/verse/verse-glass.css";
 import "../(storefront)/verse/verse-storefront.css";
@@ -41,7 +40,6 @@ export function DojoStorefrontChrome({
       <ThemePaletteProvider>
         <VerseThemeProvider>
           {children}
-          <VersePwaInstall />
         </VerseThemeProvider>
       </ThemePaletteProvider>
     </div>

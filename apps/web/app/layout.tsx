@@ -5,6 +5,7 @@ import Script from "next/script"
 import { Inter, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
 import { PwaRegister } from "@/components/pwa-register"
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt"
 import { PointerWithLogo } from "@/components/pointer-with-logo"
 import { GlobalAudioProvider } from "@/components/main/global-audio-provider"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -95,6 +96,7 @@ export default async function RootLayout({
           <GlobalAudioProvider>
             <PointerWithLogo>
               <PwaRegister registerSw={!isNgrok}>{children}</PwaRegister>
+              <PwaInstallPrompt />
             </PointerWithLogo>
           </GlobalAudioProvider>
           </ThemePaletteProvider>

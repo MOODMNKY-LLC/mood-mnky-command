@@ -8,6 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "Formula calculator, fragrance oil catalog, product builder, and MNKY VERSE storefront for MOOD MNKY",
     start_url: "/",
     display: "standalone",
+    display_override: ["window-controls-overlay", "standalone"],
     orientation: "any",
     background_color: "#f1f5f9",
     theme_color: "#f1f5f9",

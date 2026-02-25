@@ -10,6 +10,8 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope
 
+// Precache: entry URLs only (see next.config.mjs). Runtime: defaultCache (static assets
+// cache-first; API/docs suggest network-first for API when needed).
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
