@@ -8,7 +8,10 @@ instrumentation-client.ts
 # Common ignores
 remote_only_versions.txt
 node_modules/
-.cursor/
+# Commit .cursor except mcp.json (project-specific MCP config, often has local paths/keys)
+.cursor/mcp.json
+.cursor/mcp.json.tmp
+.cursor/mcp.json.backup
 .next/
 .turbo/
 .env
