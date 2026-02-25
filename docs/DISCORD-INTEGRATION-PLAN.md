@@ -54,9 +54,15 @@ Guild (server) selection is **per-request** in LABZ: the Platform → Discord pa
 ### Phase C — Deeper app-wide integration (future)
 
 1. **Default guild:** Use `DISCORD_GUILD_ID_MNKY_VERSE` in Inngest and server-side scripts so announcements and role updates target the correct server without LABZ selection. Implemented: `getDefaultGuildId()` is used in the `discordDropAnnounce` Inngest function.
-2. **Roles by level (future):** When `xp_state.level` crosses a threshold, trigger an Inngest job that calls Discord API to add/remove a role (e.g. “Scent Runner” at level 5). Respect Discord rate limits; use Inngest throttle. Not yet implemented; add when role IDs and level thresholds are defined.
+2. **Roles by level (future):** When `xp_state.level` crosses a threshold, trigger an Inngest job that calls Discord API to add/remove a role (e.g. “Scent Runner” at level 5). Respect Discord rate limits; use Inngest throttle. Not yet implemented. Role set and channel gating are in [DISCORD-ROLES-AND-ONBOARDING.md](DISCORD-ROLES-AND-ONBOARDING.md); level→role mapping will use env (e.g. `DISCORD_LEVEL_ROLES`) or a Supabase config table so Inngest stays simple.
 3. **Discord MCP:** Use the project’s Discord MCP for ad-hoc server inspection: `discord_get_server_info({ "guildId": "<your_guild_id>" })` to list channels and member count when writing docs or configuring webhooks. Guild ID can be read from LABZ (select guild, copy ID from network tab or from a stored config) or from `discord_guild_configs` if you store it there.
 4. **Profile linkage:** Ensure `profiles.discord_user_id` (or equivalent in linked-accounts) is set by the Verse Discord OAuth link and is used when ingesting events and when evaluating `requires_discord_link` quests.
+
+### Phase E — Server restructure (first pass)
+
+1. **Restructure doc:** [DISCORD-SERVER-RESTRUCTURE.md](DISCORD-SERVER-RESTRUCTURE.md) — rationale, category/channel map, onboarding summary, integration table, bot roles. MNKY MAIN, MNKY VERSE, and MNKY LABZ are populated with the channels listed there.
+2. **Onboarding:** Official flow (invite → default channels → rules screening → pinned welcome → link Discord in app) is in [DISCORD-ONBOARDING.md](DISCORD-ONBOARDING.md). Pin the welcome message in #welcome-and-rules; enable Community Onboarding and Rules Screening in Server Settings.
+3. **Drop webhooks:** The default channel for drop announcements is **#drops** (MNKY VERSE). In LABZ Platform → Discord, create or select a stored webhook for #drops and use it for `discordDropAnnounce` (Inngest) or manual drop posts. See [DISCORD-SERVER-MAP.md](DISCORD-SERVER-MAP.md) for channel ID.
 
 ### Phase D — Agent Bots (MOOD, SAGE, CODE)
 
@@ -87,6 +93,7 @@ Guild (server) selection is **per-request** in LABZ: the Platform → Discord pa
 ## 6. References
 
 - [DISCORD-SERVER-MAP.md](DISCORD-SERVER-MAP.md) — Server map and MNKY categories
+- [DISCORD-SERVER-RESTRUCTURE.md](DISCORD-SERVER-RESTRUCTURE.md) — First-pass restructure (MAIN, VERSE, LABZ channels, onboarding, #drops)
 - [DISCORD-ONBOARDING.md](DISCORD-ONBOARDING.md) — Welcome message copy and onboarding checklist
 - [DISCORD-BRAND-ALIGNMENT.md](DISCORD-BRAND-ALIGNMENT.md) — Brand and community alignment (voice, roles, server description)
 - [DISCORD-DEEP-RESEARCH-REPORT.md](DISCORD-DEEP-RESEARCH-REPORT.md) — Deep research (onboarding, brand, app integration)

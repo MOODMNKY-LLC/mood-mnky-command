@@ -18,6 +18,7 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 | **mood-mnky** | Brand ambassador; brand voice, copy, product narrative, aesthetic guidance | `/mood-mnky` or ask for brand-facing copy or tone |
 | **sage-mnky** | Wisdom-focused advisor; reflection on architecture, product direction, process, trade-offs | `/sage-mnky` or ask for guidance or a sounding board |
 | **code-mnky** | DevOps and coding companion; implementation, commands, step-by-step technical guidance | `/code-mnky` or ask for implementation or DevOps help |
+| **discord-agent** | Discord specialist; bots, server map, onboarding, slash commands; orchestrates Discord MCP, API docs, Supabase, Notion; keeps Discord docs updated | `/discord-agent` or describe a Discord/bot/onboarding task |
 | **docs** | Documentation and Mintlify specialist; mnky-docs, docs/, technical writing | `/docs` or ask to create or edit documentation |
 
 ---
@@ -39,6 +40,7 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 - `.cursor/agents/mood-mnky.md` — MOOD MNKY brand ambassador
 - `.cursor/agents/sage-mnky.md` — SAGE MNKY advisor
 - `.cursor/agents/code-mnky.md` — CODE MNKY coding companion
+- `.cursor/agents/discord-agent.md` — Discord specialist (bots, server map, onboarding, integration)
 - `.cursor/agents/docs.md` — Documentation and Mintlify specialist
 
 Edit the `description` field in each file’s YAML frontmatter to tune when Agent delegates. Keep prompts concise and focused.

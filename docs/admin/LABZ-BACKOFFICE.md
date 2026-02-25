@@ -16,7 +16,7 @@ The sidebar shows one **context** at a time. Switch via the dropdown at the top 
 | **Lab**   | Product data & builder  | Dashboard, Formulas, Fragrance Oils, Glossary, Blending Lab, Wicks & Wax, Product Builder, Integrations (Notion, Flowise, Discord) |
 | **Store** | Shopify admin          | Store Overview, Catalog (Products, Collections, Inventory), Sales (Orders, Customers, Discounts), Growth (Marketing, Analytics), Content, MNKY LABZ Pages, Finance |
 | **Verse** | Storefront & community | MNKY VERSE, Products, Collections, Cart, Discord; Community: Manga/Issues, Manga Collections, XP & Quests, UGC Moderation, Discord Events |
-| **Platform** | Data & automation  | Data & Admin (Overview, Table Editor, SQL Editor, Storage, Members); Automation & Workflows (Funnels, Flowise, Storefront Assistant, Service Analytics, Infra Artifacts); Settings & Integrations (Settings, Integrations) |
+| **Platform** | Data & automation  | Data & Admin (Overview, Table Editor, SQL Editor, Storage, Members); Automation & Workflows (Funnels, Flowise, Storefront Assistant, Service Analytics, Infra Artifacts); Discord (messages, webhooks, embed, **members, roles**, moderation, audit logs — see canonical roles & onboarding in Discord page and `docs/DISCORD-ROLES-AND-ONBOARDING.md`); Settings & Integrations (Settings, Integrations) |
 | **AI Tools** | Chat & studio      | Create & Chat (CODE MNKY, AI Chat, Agents, Eleven Labs, Image/Audio/Video Studio, Media Library) |
 
 ## Settings and configuration

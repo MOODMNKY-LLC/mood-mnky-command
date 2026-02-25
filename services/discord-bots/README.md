@@ -1,6 +1,15 @@
-# MNKY Discord Agent Bots (MOOD MNKY, SAGE MNKY, CODE MNKY)
+# MNKY Discord Agent Bots (MOOD MNKY, SAGE MNKY, CODE MNKY, MNKY VERSE)
 
-Discord extension of the MNKY agents: three bots backed by Redis and orchestrated via the web app, OpenAI, n8n, and Supabase (including gamification).
+Discord extension of the MNKY agents: four bots backed by Redis and orchestrated via the web app, OpenAI, n8n, and Supabase (including gamification).
+
+## Bots and commands
+
+| Bot | Slash commands |
+|-----|----------------|
+| **MOOD MNKY** | `/mood`, `/scent`, `/blend`, `/verse` |
+| **SAGE MNKY** | `/sage`, `/reflect`, `/learn`, `/dojo` |
+| **CODE MNKY** | `/code`, `/deploy`, `/pr`, `/lab` |
+| **MNKY VERSE** | `/verse`, `/drops`, `/quests`, `/rewards`, `/dojo`, `/ask` — Verse concierge (storefront, drops, quests, rewards, Dojo). |
 
 ## Env variables
 
@@ -11,6 +20,7 @@ Copy `.env.example` to `.env` (or use `env_file` in Compose). Required:
 | `MOOD_MNKY_DISCORD_BOT_TOKEN` | Discord bot token for MOOD MNKY (Notion Credentials) |
 | `SAGE_MNKY_DISCORD_BOT_TOKEN` | Discord bot token for SAGE MNKY (Notion Credentials) |
 | `CODE_MNKY_DISCORD_BOT_TOKEN` | Discord bot token for CODE MNKY (Notion Credentials) |
+| `MNKY_VERSE_DISCORD_BOT_TOKEN` | Discord bot token for MNKY VERSE (Verse concierge) |
 | `MOODMNKY_API_KEY` | Web app internal API key (events, profile, agent-reply) |
 | `VERSE_APP_URL` | Web app base URL (e.g. `https://mnky-command.moodmnky.com`) |
 | `REDIS_URL` | Redis connection (e.g. `redis://redis:6379` in Compose) |
@@ -19,10 +29,11 @@ Optional: `OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `N8N_WEBHOOK_URL_*`. Se
 
 ## Quick start
 
-1. Create three Discord applications in [Discord Developer Portal](https://discord.com/developers/applications); create a Bot for each and copy tokens to Notion Credentials, then into `.env`.
+1. Create four Discord applications in [Discord Developer Portal](https://discord.com/developers/applications); create a Bot for each and copy tokens to Notion Credentials (or secure storage), then into `.env`.
 2. Copy `.env.example` to `.env` and set all required variables.
-3. From this directory: `docker compose up -d`.
-4. Register slash commands per bot (see [Discord API](https://discord.com/developers/docs/interactions/application-commands)).
+3. **Invite each bot to your Discord server.** For each application, go to **OAuth2 → URL Generator**, select scopes **`bot`** and **`applications.commands`**, then open the generated URL and add the bot to your guild. You must do this for all four apps (MOOD MNKY, SAGE MNKY, CODE MNKY, **and MNKY VERSE**). If the MNKY VERSE bot is not in the server, its slash commands (`/verse`, `/drops`, `/quests`, `/rewards`, `/dojo`, `/ask`) will not appear.
+4. From this directory: `docker compose up -d`.
+5. Slash commands are registered automatically when each bot starts (see [Discord API](https://discord.com/developers/docs/interactions/application-commands)).
 
 ## Logging and debugging
 
@@ -50,3 +61,4 @@ To debug 404s: look for `[agent-reply]` lines with `response_not_json` or `respo
 - [docs/DISCORD-BOTS-SETUP.md](../../docs/DISCORD-BOTS-SETUP.md) — Full setup (when added)
 - [docs/DISCORD-BOTS-ENV.md](../../docs/DISCORD-BOTS-ENV.md) — Env vars and troubleshooting (production vs dev, Windows TLS, 404)
 - [docs/DISCORD-INTEGRATION-PLAN.md](../../docs/DISCORD-INTEGRATION-PLAN.md) — Discord integration and events API
+- [docs/DISCORD-MNKY-VERSE-BOT-DESIGN.md](../../docs/DISCORD-MNKY-VERSE-BOT-DESIGN.md) — MNKY VERSE bot role, skillset, and commands

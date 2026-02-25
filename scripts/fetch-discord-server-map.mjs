@@ -107,6 +107,18 @@ if (uncategorized.length > 0) {
 
 lines.push("---");
 lines.push("");
+lines.push("## Category IDs (for API / parent_id)");
+lines.push("");
+lines.push("| Category name | Category ID |");
+lines.push("|--------------|-------------|");
+for (const cat of categories) {
+  lines.push(`| ${cat.name} | \`${cat.id}\` |`);
+}
+lines.push("");
+lines.push("---");
+lines.push("");
+lines.push("## MNKY categories summary");
+lines.push("");
 lines.push("**MNKY categories** (names containing \"MNKY\"):");
 const mnkyCats = categories.filter((c) => /mnky/i.test(c.name));
 if (mnkyCats.length === 0) {

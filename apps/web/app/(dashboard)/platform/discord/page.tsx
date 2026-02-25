@@ -82,7 +82,7 @@ export default function DiscordPage() {
             Discord Server
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            MNKY VERSE bot: full control panel — messages, forums, webhooks, embed builder, members, roles, moderation, audit logs
+            Full control panel: messages, forums, webhooks, embed builder, members, roles, moderation, audit logs. Roles and onboarding follow the canonical set below.
           </p>
         </div>
       </div>
@@ -139,6 +139,29 @@ export default function DiscordPage() {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <Label className="text-sm font-medium">Roles & onboarding</Label>
+          <p className="text-sm text-muted-foreground font-normal">
+            Canonical role set and tiered subscribers. Create these in Server Settings → Roles; use the Roles tab below to create or manage via API. Onboarding prompt &quot;What brings you here?&quot; maps options to roles (Verse, Blender, Shop, Member). See project docs: <code className="text-xs rounded bg-muted px-1 py-0.5">docs/DISCORD-ROLES-AND-ONBOARDING.md</code>.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="secondary" className="text-xs font-normal">Member (default)</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">Verse</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">Blender</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">Shop</Badge>
+            <Badge variant="outline" className="text-xs font-normal">DevOps</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">Subscriber</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">Dojo Member</Badge>
+            <Badge variant="secondary" className="text-xs font-normal">MOOD Insider</Badge>
+            <Badge variant="outline" className="text-xs font-normal">Moderator</Badge>
+            <Badge variant="outline" className="text-xs font-normal">Admin/Builder</Badge>
+          </div>
         </CardContent>
       </Card>
 

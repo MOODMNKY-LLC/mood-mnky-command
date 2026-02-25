@@ -29,17 +29,30 @@ pnpm exec dotenv -e .env.local -- node scripts/get-discord-guild-id.mjs
 | Guild ID | `1069695816001933332` |
 | Approx. members | 52 |
 
+### Role IDs (for API use)
+
+When roles are created (Member, Verse, Blender, Shop, DevOps, Subscriber, Dojo Member, MOOD Insider, Moderator, Admin/Builder), record their Discord role IDs here for onboarding prompts and level→role sync. See [DISCORD-ROLES-AND-ONBOARDING.md](DISCORD-ROLES-AND-ONBOARDING.md). Until then, leave this section empty or populate after running role-creation in Server Settings or via API.
+
+| Role | ID |
+|------|-----|
+| *(to be filled)* | — |
+
 ## Categories and channels
 
 ### Welcome to MOOD🖤MNKY! (category)
 
 | Channel | Type | ID |
 |---------|------|-----|
+| #rules | text | `1078917875605192764` |
 | #welcome-and-rules | text | `1069695816966615183` |
 | #announcements | text | `1069695816966615184` |
 | #resources | text | `1069695816966615185` |
 
 ### Palworld (category)
+
+*No channels in this category.* (Channels moved to **Gaming** in Phase 2.)
+
+### Gaming (category)
 
 | Channel | Type | ID |
 |---------|------|-----|
@@ -128,35 +141,74 @@ pnpm exec dotenv -e .env.local -- node scripts/get-discord-guild-id.mjs
 
 ### POKÉ MNKY🐵 (category)
 
-| Channel | Type | ID |
-|---------|------|-----|
-| #announcements | announcement | `1455487289814945899` |
+*No channels in this category.* (Moved to **MNKY Apps** in Phase 2.)
 
 ### KINK IT (category)
 
+*No channels in this category.* (Moved to **MNKY Apps** in Phase 2.)
+
+### MNKY Apps (category)
+
 | Channel | Type | ID |
 |---------|------|-----|
-| #announcements | text | `1457594125590462548` |
+| #poke-mnky | announcement | `1455487289814945899` |
+| #kink-it | text | `1457594125590462548` |
 
 ### MNKY LABZ (category)
 
-*No channels in this category.*
+| Channel | Type | ID |
+|---------|------|-----|
+| #blending-lab | text | `1476292693792653314` |
+| #formulas | text | `1476292695788880034` |
+| #glossary | text | `1476292697101963335` |
+| #fragrance-oils | text | `1476292702344839305` |
 
 ### MNKY VERSE (category)
 
-*No channels in this category.*
+| Channel | Type | ID |
+|---------|------|-----|
+| #drops | text | `1476292688805363813` |
+| #verse-blog | text | `1476292690004934818` |
+| #quests | text | `1476292691141722247` |
+| #dojo | text | `1476292692727038193` |
 
 ### MNKY MAIN (category)
 
-*No channels in this category.*
+| Channel | Type | ID |
+|---------|------|-----|
+| #community-hub | text | `1476292685626343435` |
+| #announcements-main | text | `1476292687177973780` |
 
 ### Uncategorized
 
 | Channel | Type | ID |
 |---------|------|-----|
 | #moderator-only | text | `1078917875605192765` |
-| #rules | text | `1078917875605192764` |
 | #mood-mnky-media | type-16 | `1121495285097562222` |
+
+---
+
+## Category IDs (for API / parent_id)
+
+| Category name | Category ID |
+|--------------|-------------|
+| Welcome to MOOD🖤MNKY! | `1069695816966615182` |
+| Palworld | `1231960241147744266` |
+| Voice Channels | `1069695816966615190` |
+| Text Channels | `1069695816966615186` |
+| MNKY SHOP | `1081418807974842388` |
+| Design Corner | `1106674679265103912` |
+| MNKY AGENTS | `1236037835619041400` |
+| Building/Testing | `1082118576057626645` |
+| MNKY MEDIA | `1251201572902535309` |
+| MNKY_MIND_DB | `1356402839840362518` |
+| POKÉ MNKY🐵 | `1455487195493171260` |
+| KINK IT | `1457594042333396993` |
+| MNKY LABZ | `1475405415624867850` |
+| MNKY VERSE | `1475405789475766433` |
+| MNKY MAIN | `1475405844295323699` |
+| MNKY Apps | `1476298635468865616` |
+| Gaming | `1476298657547682033` |
 
 ---
 
@@ -166,31 +218,25 @@ Categories whose names contain "MNKY" and their intended use (for onboarding and
 
 | Category | Channels | Suggested focus |
 |----------|----------|------------------|
-| **Welcome to MOOD🖤MNKY!** | #welcome-and-rules, #announcements, #resources | First stop for new members; rules and announcements. |
+| **Welcome to MOOD🖤MNKY!** | #rules, #welcome-and-rules, #announcements, #resources | First stop for new members; rules and announcements. (#rules moved here in Phase 2.) |
 | **MNKY SHOP** | Community forum, general, ideas, live-chat, rewards, orders, system-status | Store and product community; rewards and orders. |
 | **MNKY AGENTS** | VA, Sage, Code MNKY, Coolify, chat, mnky-docs, mood-mind, Eleven Labs | AI/automation and internal tooling. |
 | **MNKY MEDIA** | Jellyfin, Jellyseer, Lidarr | Media stack updates. |
 | **MNKY_MIND_DB** | #updates | Database/backend updates. |
-| **POKÉ MNKY🐵** | #announcements | Game/community announcements. |
-| **MNKY LABZ** | *(empty)* | **Populate:** Blending Lab, formulas, fragrance oils, glossary (MNKY LABZ dashboard). |
-| **MNKY VERSE** | *(empty)* | **Populate:** Verse storefront, blog, drops, quests, Dojo. |
-| **MNKY MAIN** | *(empty)* | **Populate:** Main site, community hub, Discord invite. |
+| **MNKY Apps** | #poke-mnky, #kink-it | In-development products (POKÉ MNKY, KINK IT). Phase 2. |
+| **MNKY LABZ** | #blending-lab, #formulas, #glossary, #fragrance-oils | Blending Lab, formulas, glossary; MNKY LABZ dashboard. |
+| **MNKY VERSE** | #drops, #verse-blog, #quests, #dojo | Drops (webhook target), blog, quests/XP, Dojo. Link from Verse community page. |
+| **MNKY MAIN** | #community-hub, #announcements-main | Main site community hub; cross‑ecosystem announcements. |
 
-Empty MNKY LABZ, MNKY VERSE, and MNKY MAIN categories are placeholders for the brand/community overhaul: add channels (e.g. #drops, #blending-lab, #verse-blog) and link from the app (Verse community page, Dojo, MNKY LABZ).
+**Restructure first pass (done):** MNKY MAIN, MNKY VERSE, and MNKY LABZ were populated per [DISCORD-SERVER-RESTRUCTURE.md](DISCORD-SERVER-RESTRUCTURE.md).
 
-### Populating MNKY LABZ, MNKY VERSE, MNKY MAIN
+**Phase 2 (done):** MNKY Apps category (#poke-mnky, #kink-it), Gaming category (#live-server, #pal-mnky), #rules moved to Welcome, welcome embed posted and pinned. See [DISCORD-PHASE2-WALKTHROUGH.md](DISCORD-PHASE2-WALKTHROUGH.md). Empty categories Palworld, POKÉ MNKY, KINK IT can be deleted manually in Discord if desired.
 
-Use the following as a checklist when adding channels. Create them via MNKY LABZ Platform → Discord (Messages / channel list) or the Discord MCP (`discord_create_text_channel` with the appropriate `guildId` and `parent_id` for the category).
-
-| Category | Suggested channels | Purpose |
-|----------|---------------------|---------|
-| **MNKY LABZ** | #blending-lab, #formulas, #glossary, #fragrance-oils | Blending Lab, formulas, glossary, and fragrance data discussion; ties to MNKY LABZ dashboard. |
-| **MNKY VERSE** | #drops, #verse-blog, #quests, #dojo | Drops and seasonal releases; MNKY VERSE blog; quests and XP; Dojo (member hub). Link from Verse community page. |
-| **MNKY MAIN** | #community-hub, #announcements-main | Main site community hub; cross‑ecosystem announcements. Link from main community page. |
-
-After creating channels, set channel topics (one line) where helpful (e.g. “Seasonal drops and MNKY BOX” for #drops). Refresh the server map with `scripts/fetch-discord-server-map.mjs` and update this doc if needed.
+Refresh the map with `scripts/fetch-discord-server-map.mjs 1069695816001933332`.
 
 ## References
 
+- [DISCORD-SERVER-RESTRUCTURE.md](DISCORD-SERVER-RESTRUCTURE.md) — First-pass restructure (MAIN, VERSE, LABZ), Phase 2 (MNKY Apps, Gaming, welcome embed).
+- [DISCORD-PHASE2-WALKTHROUGH.md](DISCORD-PHASE2-WALKTHROUGH.md) — Phase 2 scripts and manual steps.
 - [DISCORD-INTEGRATION-PLAN.md](DISCORD-INTEGRATION-PLAN.md) — Credentials, endpoints, drop webhooks, quests.
 - [PRD-Gamification-MNKY-VERSE.md](PRD-Gamification-MNKY-VERSE.md) — XP, quests, Discord events.

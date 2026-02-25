@@ -48,5 +48,16 @@ services:
       redis: { condition: service_healthy }
     restart: unless-stopped
 
+  mnky-verse-bot:
+    build:
+      context: .
+      dockerfile: mnky-verse-bot/Dockerfile
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
 volumes:
   redis_data: {}

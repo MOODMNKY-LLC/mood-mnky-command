@@ -6,8 +6,8 @@ This directory holds project-level context and workflows for Cursor’s AI agent
 |-------|---------|------|
 | **Rules** | Static or file-scoped context; guardrails and conventions | [rules/](rules/) |
 | **Agents** | Custom subagents (specialists) | [agents/](agents/) |
-| **Commands** | Slash-invoked workflows (e.g. `/pr`, `/code-review`) | [commands/](commands/) |
-| **Skills** | Dynamic context; domain workflows; optional `/` invocation | [skills/](skills/) |
+| **Commands** | Slash-invoked workflows (e.g. `/pr`, `/code-review`, `/discord-refresh-map`, `/discord-plan`) | [commands/](commands/) |
+| **Skills** | Dynamic context; domain workflows; optional `/` invocation (e.g. design, discord-agent) | [skills/](skills/) |
 
 For details, see:
 

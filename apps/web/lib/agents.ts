@@ -32,7 +32,18 @@ const FALLBACK_BLURB: Record<VerseBlogAgent, string> = {
   mood_mnky: "Your personal guide through the world of custom fragrances and self-care",
   sage_mnky: "Your mentor and guide through personalized learning experiences",
   code_mnky: "The tech behind the verse—creation and systems.",
+  mnky_verse: "The Verse concierge: storefront, drops, quests, rewards, and Dojo.",
 };
+
+function getOpenAiVoice(slug: VerseBlogAgent): string {
+  switch (slug) {
+    case "mood_mnky": return "marin"
+    case "sage_mnky": return "cedar"
+    case "code_mnky": return "sage"
+    case "mnky_verse": return "sage"
+    default: return "sage"
+  }
+}
 
 export function getFallbackAgentProfile(slug: VerseBlogAgent): AgentProfile {
   return {
@@ -42,7 +53,7 @@ export function getFallbackAgentProfile(slug: VerseBlogAgent): AgentProfile {
     blurb: FALLBACK_BLURB[slug],
     image_path: AGENT_IMAGE_PATH[slug],
     openai_model: "gpt-realtime",
-    openai_voice: slug === "mood_mnky" ? "marin" : slug === "sage_mnky" ? "cedar" : "sage",
+    openai_voice: getOpenAiVoice(slug),
     system_instructions: null,
     tools: [],
     eleven_labs_agent_id: null,

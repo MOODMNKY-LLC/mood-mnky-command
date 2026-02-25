@@ -3,19 +3,21 @@
  * Used for author card and fallback cover when Cover URL is empty.
  */
 
-export const VERSE_BLOG_AGENTS = ["mood_mnky", "sage_mnky", "code_mnky"] as const
+export const VERSE_BLOG_AGENTS = ["mood_mnky", "sage_mnky", "code_mnky", "mnky_verse"] as const
 export type VerseBlogAgent = (typeof VERSE_BLOG_AGENTS)[number]
 
 export const AGENT_IMAGE_PATH: Record<VerseBlogAgent, string> = {
   mood_mnky: "/verse/mood-mnky-3d.png",
   sage_mnky: "/verse/sage-mnky-3d.png",
   code_mnky: "/verse/code-mnky-3d.png",
+  mnky_verse: "/verse/mood-mnky-3d.png",
 }
 
 export const AGENT_DISPLAY_NAME: Record<VerseBlogAgent, string> = {
   mood_mnky: "MOOD MNKY",
   sage_mnky: "SAGE MNKY",
   code_mnky: "CODE MNKY",
+  mnky_verse: "MNKY VERSE",
 }
 
 export function isVerseBlogAgent(value: string | null): value is VerseBlogAgent {
