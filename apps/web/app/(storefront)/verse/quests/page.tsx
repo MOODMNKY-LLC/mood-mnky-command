@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
+import { getQuestProgressForProfile } from "@/lib/gamification/quest-progress"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
@@ -17,26 +19,30 @@ export default async function VerseQuestsPage() {
 
   const { data: quests } = await supabase
     .from("quests")
-    .select("id, title, description, xp_reward, cooldown_days")
+    .select("id, title, description, xp_reward, cooldown_days, rule")
     .eq("active", true)
     .order("title")
 
   let completedQuestIds: Set<string> = new Set()
   let completedCount = 0
+  let progressMap: Record<string, { metCount: number; total: number }> = {}
   if (user && quests && quests.length > 0) {
-    const { data: progressRows } = await supabase
-      .from("quest_progress")
-      .select("quest_id, completed_at")
-      .eq("profile_id", user.id)
-      .not("completed_at", "is", null)
-    if (progressRows) {
-      progressRows.forEach((p) => {
-        if (p.completed_at) {
-          completedQuestIds.add(p.quest_id)
-          completedCount++
-        }
-      })
-    }
+    const admin = createAdminClient()
+    const progressList = await getQuestProgressForProfile(
+      admin,
+      user.id,
+      quests.map((q) => ({ id: q.id, rule: q.rule }))
+    )
+    progressList.forEach((p) => {
+      progressMap[p.questId] = {
+        metCount: p.metCount,
+        total: p.totalRequirements,
+      }
+      if (p.completed) {
+        completedQuestIds.add(p.questId)
+        completedCount++
+      }
+    })
   }
 
   const totalQuests = quests?.length ?? 0
@@ -70,6 +76,8 @@ export default async function VerseQuestsPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         {quests?.map((q) => {
           const completed = completedQuestIds.has(q.id)
+          const progress = progressMap[q.id]
+          const showPath = progress && progress.total > 0 && !completed
           return (
             <Card key={q.id}>
               <CardHeader className="pb-2">
@@ -79,6 +87,11 @@ export default async function VerseQuestsPage() {
                     <Badge variant="default" className="gap-1">
                       <CheckCircle2 className="h-3 w-3" />
                       Done
+                    </Badge>
+                  )}
+                  {showPath && (
+                    <Badge variant="outline" className="font-normal">
+                      {progress.metCount} of {progress.total}
                     </Badge>
                   )}
                   {q.xp_reward != null && q.xp_reward > 0 && (

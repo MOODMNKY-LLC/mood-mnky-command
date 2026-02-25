@@ -58,6 +58,14 @@ Guild (server) selection is **per-request** in LABZ: the Platform → Discord pa
 3. **Discord MCP:** Use the project’s Discord MCP for ad-hoc server inspection: `discord_get_server_info({ "guildId": "<your_guild_id>" })` to list channels and member count when writing docs or configuring webhooks. Guild ID can be read from LABZ (select guild, copy ID from network tab or from a stored config) or from `discord_guild_configs` if you store it there.
 4. **Profile linkage:** Ensure `profiles.discord_user_id` (or equivalent in linked-accounts) is set by the Verse Discord OAuth link and is used when ingesting events and when evaluating `requires_discord_link` quests.
 
+### Phase D — Agent Bots (MOOD, SAGE, CODE)
+
+1. **Location:** `services/discord-bots/` — Redis + three bots (mood-mnky-bot, sage-mnky-bot, code-mnky-bot). See [DISCORD-BOTS-SETUP.md](DISCORD-BOTS-SETUP.md).
+2. **Credentials:** Three Discord applications in the Developer Portal; one bot token per agent. Tokens stored in Notion Credentials and copied to env (`MOOD_MNKY_DISCORD_BOT_TOKEN`, `SAGE_MNKY_DISCORD_BOT_TOKEN`, `CODE_MNKY_DISCORD_BOT_TOKEN`). Runtime uses env only (no live Notion fetch).
+3. **Web app APIs:** Bots call `GET /api/discord/profile-by-discord-id` (resolve Discord user → profile), `POST /api/discord/events` (gamification), and `POST /api/discord/agent-reply` (single-turn agent reply). All require `MOODMNKY_API_KEY`.
+4. **Slash commands:** MOOD: `/mood`, `/scent`, `/blend`, `/verse`; SAGE: `/sage`, `/reflect`, `/learn`, `/dojo`; CODE: `/code`, `/deploy`, `/pr`, `/lab`. Commands are registered on bot ready.
+5. **Redis:** Rate limiting per user/guild; optional conversation cache. Compose stack includes `redis` service.
+
 ## 4. Endpoints and MCP quick reference
 
 | What | Endpoint / MCP | Auth |
@@ -65,6 +73,8 @@ Guild (server) selection is **per-request** in LABZ: the Platform → Discord pa
 | List guilds | `GET /api/discord/guilds` | LABZ admin (requireDiscordAdmin) |
 | List channels | `GET /api/discord/channels?guildId=` | LABZ admin |
 | Ingest event | `POST /api/discord/events` | `MOODMNKY_API_KEY` |
+| Profile by Discord ID | `GET /api/discord/profile-by-discord-id?discordUserId=` | `MOODMNKY_API_KEY` |
+| Agent reply (bots) | `POST /api/discord/agent-reply` (body: agentSlug, message, …) | `MOODMNKY_API_KEY` |
 | Stored webhooks | `GET/POST /api/discord/webhooks/stored?guildId=` | LABZ admin |
 | Execute webhook | `POST /api/discord/webhooks/execute` (body: webhook id or url + payload) | LABZ admin |
 | Server info (channels, member count) | **Discord MCP** `discord_get_server_info` with `guildId` | MCP config |

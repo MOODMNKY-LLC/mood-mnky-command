@@ -2,6 +2,7 @@ import { serve } from "inngest/next"
 import { inngest } from "@/lib/inngest/client"
 import {
   shopifyOrderPaid,
+  shopifyOrderCancelledOrRefunded,
   discordEventReceived,
   questEvaluate,
   magReadCompleted,
@@ -16,6 +17,7 @@ export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
     shopifyOrderPaid,
+    shopifyOrderCancelledOrRefunded,
     discordEventReceived,
     questEvaluate,
     magReadCompleted,

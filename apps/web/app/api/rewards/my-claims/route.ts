@@ -18,6 +18,7 @@ export async function GET() {
       id,
       status,
       issued_at,
+      external_ref,
       rewards (
         id,
         type,
@@ -40,6 +41,7 @@ export async function GET() {
     id: c.id,
     status: c.status,
     issuedAt: c.issued_at,
+    externalRef: (c as { external_ref?: string | null }).external_ref ?? null,
     reward: c.rewards
       ? {
           id: (c.rewards as { id: string }).id,

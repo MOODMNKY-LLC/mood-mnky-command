@@ -11,10 +11,10 @@ import {
   maskBaseUrl,
   type RedisClient,
 } from "@mnky/discord-bots-shared"
-import { CODE_COMMANDS, AGENT_SLUG } from "./commands.js"
+import { MOOD_COMMANDS, AGENT_SLUG } from "./commands.js"
 
 const log = createLogger("bot")
-const token = process.env.CODE_MNKY_DISCORD_BOT_TOKEN
+const token = process.env.MOOD_MNKY_DISCORD_BOT_TOKEN
 const apiKey = process.env.MOODMNKY_API_KEY
 const baseUrl = (process.env.VERSE_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").replace(
   /\/$/,
@@ -23,7 +23,7 @@ const baseUrl = (process.env.VERSE_APP_URL || process.env.NEXT_PUBLIC_APP_URL ||
 const redisUrl = process.env.REDIS_URL
 
 if (!token) {
-  log.error("startup_failed", { reason: "Missing CODE_MNKY_DISCORD_BOT_TOKEN" })
+  log.error("startup_failed", { reason: "Missing MOOD_MNKY_DISCORD_BOT_TOKEN" })
   process.exit(1)
 }
 
@@ -31,18 +31,12 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 let redis: RedisClient | null = null
 
 async function main() {
-  log.info("startup", {
-    bot: "CODE_MNKY",
-    verse_app_url: baseUrl ? maskBaseUrl(baseUrl) : "(not set)",
-    api_key_set: !!apiKey,
-    redis_url_set: !!redisUrl,
-  })
   redis = await createRedisClient(redisUrl)
 
   client.once(Events.ClientReady, async (c) => {
-    log.info("ready", { bot: c.user.tag })
+    console.log(`MOOD MNKY bot ready as ${c.user.tag}`)
     const rest = new REST().setToken(token!)
-    const commandsJson = CODE_COMMANDS.map((cmd) =>
+    const commandsJson = MOOD_COMMANDS.map((cmd) =>
       typeof cmd.options !== "undefined" && cmd.options.length > 0
         ? { ...cmd, options: cmd.options }
         : { ...cmd }
@@ -79,12 +73,10 @@ async function main() {
     }
 
     const query =
-      interaction.options.getString("question") ??
-      interaction.options.getString("context") ??
-      interaction.options.getString("topic") ??
-      (commandName === "lab" ? "Tell me about MNKY LABZ and developer resources." : "")
-    const message =
-      commandName === "lab" ? "Tell me about MNKY LABZ and developer docs." : query
+      interaction.options.getString("query") ??
+      interaction.options.getString("theme") ??
+      (commandName === "verse" ? "verse" : "")
+    const message = commandName === "verse" ? "Tell me about MNKY VERSE and how to get there." : query
 
     await interaction.deferReply()
 
@@ -128,10 +120,10 @@ async function main() {
     }
 
     const text = reply.text.slice(0, 2000)
-    if (commandName === "lab") {
-      const labzUrl = `${baseUrl}/labz`
+    if (commandName === "verse") {
+      const verseUrl = `${baseUrl}/verse`
       await interaction.editReply({
-        content: `${text}\n\n**MNKY LABZ:** ${labzUrl}`,
+        content: `${text}\n\n**MNKY VERSE:** ${verseUrl}`,
       })
     } else {
       await interaction.editReply({ content: text })

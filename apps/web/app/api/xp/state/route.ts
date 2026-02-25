@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { getTierName, parseVipTiersFromConfig } from "@/lib/gamification/vip-tiers"
 
 export async function GET() {
   const supabase = await createClient()
@@ -10,12 +11,20 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { data, error } = await supabase
-    .from("xp_state")
-    .select("xp_total, level, updated_at")
-    .eq("profile_id", user.id)
-    .single()
+  const [xpResult, vipResult] = await Promise.all([
+    supabase
+      .from("xp_state")
+      .select("xp_total, level, updated_at")
+      .eq("profile_id", user.id)
+      .single(),
+    supabase
+      .from("config_xp_rules")
+      .select("value")
+      .eq("key", "vip_tiers")
+      .maybeSingle(),
+  ])
 
+  const { data, error } = xpResult
   if (error && error.code !== "PGRST116") {
     return NextResponse.json(
       { error: "Failed to fetch XP state", details: error.message },
@@ -23,9 +32,14 @@ export async function GET() {
     )
   }
 
+  const level = data?.level ?? 1
+  const tiers = parseVipTiersFromConfig(vipResult.data?.value ?? null)
+  const tierName = getTierName(level, tiers)
+
   return NextResponse.json({
     xpTotal: data?.xp_total ?? 0,
-    level: data?.level ?? 1,
+    level,
+    tierName,
     updatedAt: data?.updated_at ?? null,
   })
 }

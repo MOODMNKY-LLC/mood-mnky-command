@@ -88,6 +88,16 @@ docker-compose down
 docker-compose pull && docker-compose up -d
 ```
 
+## MNKY Discord Bots Stack
+
+Three Discord agent bots (MOOD MNKY, SAGE MNKY, CODE MNKY) run in a shared Compose stack with Redis:
+
+- **Location:** `services/discord-bots/`
+- **Services:** `redis`, `mood-mnky-bot`, `sage-mnky-bot`, `code-mnky-bot`
+- **Quick start:** Copy `.env.example` to `.env`, set bot tokens and `MOODMNKY_API_KEY`, then `docker compose up -d`
+
+For full setup (Notion credentials, Discord applications, slash commands, event ingestion), see [MNKY Discord Bots](/developer-resources/discord-bots) and the repo [services/discord-bots/README.md](https://github.com/mood-mnky/mood-mnky-command/blob/main/services/discord-bots/README.md).
+
 ## MNKY Agents Demo Container
 
 The MNKY Agents Demo application includes Docker support:
@@ -189,6 +199,7 @@ docker-compose ps
 ## Related Resources
 
 - [n8n Workflows](/api/devops/n8n/workflows) - Workflow management guide
+- [MNKY Discord Bots](/developer-resources/discord-bots) - Discord agent bots (MOOD, SAGE, CODE)
 - [MNKY Agents Demo](/applications/mnky-agents-demo) - Demo application documentation
 - [Supabase Local Development](/developer-resources/supabase-local-development) - Local Supabase setup
 - [Environment Setup](/developer-resources/environment-setup) - Development environment guide

@@ -11,10 +11,10 @@ import {
   maskBaseUrl,
   type RedisClient,
 } from "@mnky/discord-bots-shared"
-import { CODE_COMMANDS, AGENT_SLUG } from "./commands.js"
+import { SAGE_COMMANDS, AGENT_SLUG } from "./commands.js"
 
 const log = createLogger("bot")
-const token = process.env.CODE_MNKY_DISCORD_BOT_TOKEN
+const token = process.env.SAGE_MNKY_DISCORD_BOT_TOKEN
 const apiKey = process.env.MOODMNKY_API_KEY
 const baseUrl = (process.env.VERSE_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "").replace(
   /\/$/,
@@ -23,7 +23,7 @@ const baseUrl = (process.env.VERSE_APP_URL || process.env.NEXT_PUBLIC_APP_URL ||
 const redisUrl = process.env.REDIS_URL
 
 if (!token) {
-  log.error("startup_failed", { reason: "Missing CODE_MNKY_DISCORD_BOT_TOKEN" })
+  log.error("startup_failed", { reason: "Missing SAGE_MNKY_DISCORD_BOT_TOKEN" })
   process.exit(1)
 }
 
@@ -32,7 +32,7 @@ let redis: RedisClient | null = null
 
 async function main() {
   log.info("startup", {
-    bot: "CODE_MNKY",
+    bot: "SAGE_MNKY",
     verse_app_url: baseUrl ? maskBaseUrl(baseUrl) : "(not set)",
     api_key_set: !!apiKey,
     redis_url_set: !!redisUrl,
@@ -42,7 +42,7 @@ async function main() {
   client.once(Events.ClientReady, async (c) => {
     log.info("ready", { bot: c.user.tag })
     const rest = new REST().setToken(token!)
-    const commandsJson = CODE_COMMANDS.map((cmd) =>
+    const commandsJson = SAGE_COMMANDS.map((cmd) =>
       typeof cmd.options !== "undefined" && cmd.options.length > 0
         ? { ...cmd, options: cmd.options }
         : { ...cmd }
@@ -72,7 +72,7 @@ async function main() {
     const allowed = await checkRateLimit(redis, rlKey, 20, 60)
     if (!allowed) {
       await interaction.reply({
-        content: "You’re sending too many requests. Please wait a minute.",
+        content: "You're sending too many requests. Please wait a minute.",
         ephemeral: true,
       })
       return
@@ -80,31 +80,23 @@ async function main() {
 
     const query =
       interaction.options.getString("question") ??
-      interaction.options.getString("context") ??
       interaction.options.getString("topic") ??
-      (commandName === "lab" ? "Tell me about MNKY LABZ and developer resources." : "")
+      (commandName === "dojo" ? "Tell me about the Dojo and how to get there." : "")
     const message =
-      commandName === "lab" ? "Tell me about MNKY LABZ and developer docs." : query
+      commandName === "dojo" ? "Tell me about the Dojo and learning resources." : query
 
     await interaction.deferReply()
 
     const profileId = await getProfileIdByDiscordUserId(baseUrl, apiKey, userId)
     if (profileId && guildId !== "dm") {
-      const eventResult = await sendDiscordEvent(baseUrl, apiKey, {
+      await sendDiscordEvent(baseUrl, apiKey, {
         profileId,
         discordUserId: userId,
         guildId,
         channelId,
         eventType: "message",
-        eventRef: `slash:${commandName}`,
+        eventRef: "slash:" + commandName,
       })
-      if (!eventResult.ok) {
-        log.warn("event_ingestion_failed", {
-          command: commandName,
-          guildId,
-          error: eventResult.error,
-        })
-      }
     }
 
     const reply = await getAgentReply(baseUrl, apiKey, {
@@ -115,23 +107,17 @@ async function main() {
     })
 
     if ("error" in reply) {
-      log.error("agent_reply_failed", {
-        command: commandName,
-        guildId,
-        userId,
-        error: reply.error,
-      })
       await interaction.editReply({
-        content: `Something went wrong: ${reply.error}. Try again later.`,
+        content: "Something went wrong: " + reply.error + ". Try again later.",
       })
       return
     }
 
     const text = reply.text.slice(0, 2000)
-    if (commandName === "lab") {
-      const labzUrl = `${baseUrl}/labz`
+    if (commandName === "dojo") {
+      const dojoUrl = baseUrl + "/dojo"
       await interaction.editReply({
-        content: `${text}\n\n**MNKY LABZ:** ${labzUrl}`,
+        content: text + "\n\n**Dojo:** " + dojoUrl,
       })
     } else {
       await interaction.editReply({ content: text })

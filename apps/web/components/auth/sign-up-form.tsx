@@ -23,6 +23,7 @@ export function SignUpForm({ redirectTo = "/auth/sign-up-success", emailRedirect
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
+  const [referralCode, setReferralCode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -62,6 +63,19 @@ export function SignUpForm({ redirectTo = "/auth/sign-up-success", emailRedirect
         },
       })
       if (error) throw error
+      const code = referralCode.trim().toUpperCase()
+      if (code) {
+        try {
+          await fetch("/api/referral/record-signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ code }),
+          })
+        } catch {
+          // Non-blocking: referral record failed, still redirect
+        }
+      }
       router.push(redirectTo.startsWith("/") ? redirectTo : "/auth/sign-up-success")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred")
@@ -127,6 +141,20 @@ export function SignUpForm({ redirectTo = "/auth/sign-up-success", emailRedirect
           onChange={(e) => setConfirmPassword(e.target.value)}
           className="bg-secondary border-border"
           autoComplete="new-password"
+        />
+      </div>
+      <div className="grid gap-1.5">
+        <Label htmlFor="referral-code" className="text-xs font-medium text-muted-foreground">
+          Referral code <span className="font-normal">(optional)</span>
+        </Label>
+        <Input
+          id="referral-code"
+          type="text"
+          placeholder="e.g. MNKY-XXXXXX"
+          value={referralCode}
+          onChange={(e) => setReferralCode(e.target.value)}
+          className="bg-secondary border-border font-mono text-sm uppercase"
+          autoComplete="off"
         />
       </div>
       {error && (

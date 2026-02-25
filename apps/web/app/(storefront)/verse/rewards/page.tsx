@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent } from "@/components/ui/card"
 import { VerseRewardsCatalog } from "@/components/verse/verse-rewards-catalog"
 import { VerseReferralCode } from "@/components/verse/verse-referral-code"
+import { VerseMyClaims } from "@/components/verse/verse-my-claims"
+import { VerseRecentXp } from "@/components/verse/verse-recent-xp"
 import { getVerseSubscriptionStatus } from "@/lib/verse-subscription"
 import { VerseFreeTierBanner } from "@/components/verse/verse-free-tier-banner"
 import { getTierName, parseVipTiersFromConfig } from "@/lib/gamification/vip-tiers"
@@ -56,7 +58,8 @@ export default async function VerseRewardsPage() {
       />
       <h1 className="text-2xl font-semibold md:text-3xl">MNKY Rewards</h1>
       <p className="text-muted-foreground">
-        Spend your XP on discount codes and perks.{" "}
+        XP and level unlock rewards; quests and purchases grow both. Spend XP on
+        discount codes and perks.{" "}
         <Link href="/verse/quests" className="text-primary underline">
           Earn more XP
         </Link>{" "}
@@ -81,6 +84,11 @@ export default async function VerseRewardsPage() {
           </Card>
 
           <VerseReferralCode />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <VerseRecentXp />
+            <VerseMyClaims />
+          </div>
 
           {rewardList.length === 0 ? (
             <p className="text-muted-foreground">

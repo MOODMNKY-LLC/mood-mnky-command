@@ -96,6 +96,8 @@ All under `apps/web/app/apps/mnky/`; prefix `apps`, subpath `mnky` in Partner Da
 |-------|--------|------|---------|
 | `apps/web/app/api/referral/my-code/route.ts` | GET | Supabase session | Returns current user's referral code (creates one if none) |
 | `apps/web/app/api/referral/apply/route.ts` | POST | `MOODMNKY_API_KEY` | Body: code, refereeId, eventType (signed_up \| first_order); idempotent by source_ref; records referral_events |
+| `apps/web/app/api/referral/record-signup/route.ts` | POST | Supabase session | Body: code; records referral_events for signed_up (referee = current user). Call after sign-up when user had a referral code. |
+| `apps/web/app/api/xp/recent/route.ts` | GET | Supabase session | Returns current user's recent xp_ledger entries (for "Recent activity" / earn acknowledgment). Query: limit (default 5). |
 
 ### 2.7 Leaderboard
 
@@ -129,7 +131,7 @@ All in `apps/web/lib/inngest/functions.ts`.
 | `mag/quiz.passed` | mag-quiz-passed | Idempotent XP from config mag_quiz; sends quest/evaluate |
 | `mag/download.recorded` | mag-download-recorded | Idempotent XP from config mag_download; sends quest/evaluate |
 | `ugc/on.approved` | ugc-on-approved | Awards ugc_approved XP from config; sends quest/evaluate |
-| `shopify/order.cancelled_or_refunded` | (if implemented) | Optional: reverse or adjust XP |
+| `shopify/order.cancelled_or_refunded` | shopify-order-cancelled-or-refunded | Reverses purchase XP for that order (idempotent) |
 
 Client: `apps/web/app/api/inngest/route.ts`.
 
@@ -153,9 +155,11 @@ Client: `apps/web/app/api/inngest/route.ts`.
 | `apps/web/app/(storefront)/verse/leaderboard/page.tsx` | Leaderboard: top N by XP, rank, display name, tier name (from vip_tiers); uses getLeaderboard() server-side |
 | `apps/web/components/verse/verse-rewards-catalog.tsx` | Client: redeem button, dialog with claimed code (copy) |
 | `apps/web/components/verse/verse-referral-code.tsx` | Client: fetches /api/referral/my-code, shows code and copy button |
-| `apps/web/components/verse/verse-header-xp.tsx` | Client: fetches /api/xp/state, shows "N XP · Tier" link to /verse/rewards in header |
+| `apps/web/components/verse/verse-header-xp.tsx` | Client: fetches /api/xp/state (includes tierName), shows "N XP · Tier" with tooltip; link to /verse/rewards |
 | `apps/web/components/verse/verse-header.tsx` | Includes Rewards nav link and VerseHeaderXp when user present |
 | `apps/web/components/verse/verse-free-tier-banner.tsx` | Banner for free-tier / subscription context on quests and XP |
+| `apps/web/components/verse/verse-my-claims.tsx` | Fetches /api/rewards/my-claims; shows claimed rewards with discount code copy |
+| `apps/web/components/verse/verse-recent-xp.tsx` | Fetches /api/xp/recent; shows recent earn activity on Rewards page |
 
 ### 4.3 Dojo
 

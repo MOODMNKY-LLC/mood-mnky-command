@@ -1,0 +1,52 @@
+# MNKY Discord Agent Bots + Redis
+# From services/discord-bots: docker compose up -d
+# Set env via .env (copy from .env.example) or env_file.
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  mood-mnky-bot:
+    build:
+      context: .
+      dockerfile: mood-mnky-bot/Dockerfile
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  sage-mnky-bot:
+    build:
+      context: .
+      dockerfile: sage-mnky-bot/Dockerfile
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  code-mnky-bot:
+    build:
+      context: .
+      dockerfile: code-mnky-bot/Dockerfile
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  redis_data: {}

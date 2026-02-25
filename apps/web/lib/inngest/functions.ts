@@ -145,7 +145,94 @@ export const shopifyOrderPaid = inngest.createFunction(
       p_xp_delta: xp,
       p_reason: `Order ${orderId} ($${subtotal})`,
     })
+
+    const { count } = await supabase
+      .from("xp_ledger")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profileId)
+      .eq("source", "purchase")
+    const isFirstOrder = (count ?? 0) === 1
+    if (isFirstOrder) {
+      const { data: signupEvent } = await supabase
+        .from("referral_events")
+        .select("code_used")
+        .eq("referee_id", profileId)
+        .eq("event_type", "signed_up")
+        .limit(1)
+        .maybeSingle()
+      if (signupEvent?.code_used) {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.VERCEL_URL ||
+          "http://localhost:3000"
+        const apiKey = process.env.MOODMNKY_API_KEY
+        if (apiKey) {
+          await fetch(`${baseUrl.replace(/\/$/, "")}/api/referral/apply`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              code: signupEvent.code_used,
+              refereeId: profileId,
+              eventType: "first_order",
+            }),
+          })
+        }
+      }
+    }
+
     return { xp, profileId }
+  }
+)
+
+/**
+ * Optional: reverse XP when order is cancelled or refunded.
+ * Policy: one clawback per order (idempotent by source_ref order_refund:orderId).
+ */
+export const shopifyOrderCancelledOrRefunded = inngest.createFunction(
+  {
+    id: "shopify-order-cancelled-or-refunded",
+    name: "Shopify order cancelled or refunded – optional XP clawback",
+  },
+  { event: "shopify/order.cancelled_or_refunded" },
+  async ({ event }) => {
+    const payload = event.data.payload as { id?: number; order_id?: number }
+    const orderId = String(payload?.id ?? payload?.order_id ?? "")
+    if (!orderId) return { skipped: true, reason: "no order id" }
+
+    const supabase = createAdminClient()
+
+    const { data: existing } = await supabase
+      .from("xp_ledger")
+      .select("id")
+      .eq("source", "order_refund")
+      .eq("source_ref", orderId)
+      .limit(1)
+      .maybeSingle()
+    if (existing) return { skipped: true, reason: "already reversed", orderId }
+
+    const { data: purchaseRow } = await supabase
+      .from("xp_ledger")
+      .select("profile_id, xp_delta")
+      .eq("source", "purchase")
+      .eq("source_ref", orderId)
+      .limit(1)
+      .maybeSingle()
+
+    if (!purchaseRow || purchaseRow.xp_delta <= 0) {
+      return { skipped: true, reason: "no purchase XP to reverse", orderId }
+    }
+
+    await supabase.rpc("award_xp", {
+      p_profile_id: purchaseRow.profile_id,
+      p_source: "order_refund",
+      p_source_ref: orderId,
+      p_xp_delta: -purchaseRow.xp_delta,
+      p_reason: "Order cancelled or refunded",
+    })
+    return { reversed: purchaseRow.xp_delta, orderId, profileId: purchaseRow.profile_id }
   }
 )
 
