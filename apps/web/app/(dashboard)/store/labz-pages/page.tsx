@@ -62,7 +62,7 @@ function suffixToLabel(suffix: string): string {
     glossary: "Glossary (app embed)",
     formulas: "Formulas (app embed)",
     "fragrance-oils": "Fragrance Oils (app embed)",
-    "labz-landing": "MOOD LABZ Landing",
+    "labz-landing": "MOOD MNKY LABZ Landing",
     "glossary-native": "Glossary (native metaobjects)",
   }
   return labels[suffix] ?? suffix.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")

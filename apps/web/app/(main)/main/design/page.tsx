@@ -6,7 +6,7 @@ import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 export const metadata = {
   title: "Design Tokens – MOOD MNKY",
   description:
-    "Design tokens of the MOOD MNKY virtual universe: voice, visual, and layout primitives used across Main, Dojo, and LABZ.",
+    "Design tokens of the MOOD MNKY virtual universe: voice, visual, and layout primitives used across Main, Dojo, and MNKY LABZ.",
 }
 
 export default function DesignTokensPage() {

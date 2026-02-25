@@ -120,7 +120,7 @@ export default function ElevenLabsConfigPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Eleven Labs</h1>
           <p className="text-sm text-muted-foreground">
-            Configure the MOOD MNKY voice agent for Verse and LABZ.
+            Configure the MOOD MNKY voice agent for Verse and MNKY LABZ.
           </p>
           <Link
             href="/chat/eleven-labs/main"
@@ -210,7 +210,7 @@ export default function ElevenLabsConfigPage() {
                 onChange={(e) => setDefaultVoiceId(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Optional default voice for the Verse/LABZ voice picker.
+                Optional default voice for the Verse/MNKY LABZ voice picker.
               </p>
             </div>
 

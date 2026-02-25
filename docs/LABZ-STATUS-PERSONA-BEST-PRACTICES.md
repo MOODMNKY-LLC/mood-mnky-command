@@ -1,4 +1,4 @@
-# LABZ Status Ring & Persona Best Practices
+# MNKY LABZ Status Ring & Persona Best Practices
 
 Summary from research on status indicators and AI persona states, used to drive the dock and chat UI design.
 

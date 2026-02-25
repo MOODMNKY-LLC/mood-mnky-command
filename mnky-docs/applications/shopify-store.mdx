@@ -17,7 +17,7 @@ The MOOD MNKY Shopify Store integrates a **Dawn-derived Liquid theme**, **theme 
 | **App Proxy** | `/apps/mnky/*` | Backend routes for theme JS (session, issues, quests) |
 | **Storefront API** | `lib/shopify/storefront-queries.ts` | MNKY VERSE catalog, products, collections |
 | **Customer Account API** | `api/customer-account-api/` | Login with Shopify on `/verse` |
-| **LABZ pages** | Admin sync, metaobjects | Formulas, oils, glossary exposed to store as LABZ pages |
+| **MNKY LABZ pages** | Admin sync, metaobjects | Formulas, oils, glossary exposed to store as MNKY LABZ pages |
 
 ## Architecture
 
@@ -43,7 +43,7 @@ flowchart TB
   subgraph App [mood-mnky-command Next.js]
     Proxy[/apps/mnky/*]
     Verse[/verse/*]
-    Labz[LABZ pages]
+    Labz[MNKY LABZ pages]
   end
 
   Theme --> Extensions
@@ -150,7 +150,7 @@ The MNKY VERSE (`app/(storefront)/verse/`, `lib/shopify/storefront-queries.ts`) 
 | Variable | Purpose |
 |----------|---------|
 | `SHOPIFY_STORE_DOMAIN` | Admin API host |
-| `SHOPIFY_ADMIN_API_TOKEN` | Admin API auth (LABZ, product sync) |
+| `SHOPIFY_ADMIN_API_TOKEN` | Admin API auth (MNKY LABZ, product sync) |
 | `NEXT_PUBLIC_STORE_DOMAIN` | Storefront API store domain |
 | `NEXT_PUBLIC_STOREFRONT_API_TOKEN` | Storefront API public token |
 | `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID` | OAuth client ID for Login with Shopify |

@@ -1,6 +1,6 @@
 /**
  * POST /api/labz/document-store/upsert/[id]
- * Proxies to Flowise document store upsert (multipart/form-data). LABZ backend context.
+ * Proxies to Flowise document store upsert (multipart/form-data). MNKY LABZ backend context.
  */
 
 import { NextRequest, NextResponse } from "next/server";

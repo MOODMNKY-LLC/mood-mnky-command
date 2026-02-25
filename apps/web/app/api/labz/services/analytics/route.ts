@@ -22,7 +22,7 @@ async function requireAdmin() {
 
 /**
  * GET /api/labz/services/analytics
- * Admin-only. Returns status and metrics for all deployed services (for LABZ Service Analytics).
+ * Admin-only. Returns status and metrics for all deployed services (for MNKY LABZ Service Analytics).
  */
 export async function GET() {
   const auth = await requireAdmin()

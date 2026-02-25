@@ -29,7 +29,7 @@ This doc describes the one-way sync from Supabase **fragrance_notes** to Shopify
 1. Shopify env: `SHOPIFY_STORE_DOMAIN`, `SHOPIFY_ADMIN_API_TOKEN` (with metaobject scopes).
 2. Supabase migration applied: `20260220100000_fragrance_notes_shopify_metaobject.sql` (adds `shopify_metaobject_id`, `shopify_synced_at`).
 
-**When to run:** After adding or editing fragrance notes in LABZ, or on a schedule (e.g. cron or manual trigger from dashboard).
+**When to run:** After adding or editing fragrance notes in MNKY LABZ, or on a schedule (e.g. cron or manual trigger from dashboard).
 
 ## Theme templates
 
@@ -45,9 +45,9 @@ This doc describes the one-way sync from Supabase **fragrance_notes** to Shopify
 
 ## Using the native Glossary on the store
 
-1. **Sync data:** Call `POST /api/shopify/sync/metaobject-fragrance-notes` (e.g. from LABZ or a script).
-2. **Push theme:** Ensure `metaobject.fragrance_note.json`, `page.glossary-native.json`, and the two sections are in the theme (`shopify theme push --path Shopify/theme` or upload from LABZ Pages).
-3. **Create a page (optional):** In Shopify Admin or LABZ Pages, create a page with handle e.g. `glossary-native` and template **Glossary (native)** (`page.glossary-native`). This page will show the list of fragrance notes with links to `/metaobject/fragrance_note/{handle}`.
+1. **Sync data:** Call `POST /api/shopify/sync/metaobject-fragrance-notes` (e.g. from MNKY LABZ or a script).
+2. **Push theme:** Ensure `metaobject.fragrance_note.json`, `page.glossary-native.json`, and the two sections are in the theme (`shopify theme push --path Shopify/theme` or upload from MNKY LABZ Pages).
+3. **Create a page (optional):** In Shopify Admin or MNKY LABZ Pages, create a page with handle e.g. `glossary-native` and template **Glossary (native)** (`page.glossary-native`). This page will show the list of fragrance notes with links to `/metaobject/fragrance_note/{handle}`.
 4. **Menu:** You can point the MOOD LABZ dropdown item “Glossary” to this native page instead of the iframe page, or keep both (e.g. “Glossary (native)” vs “Glossary (app)”).
 
 ## Related

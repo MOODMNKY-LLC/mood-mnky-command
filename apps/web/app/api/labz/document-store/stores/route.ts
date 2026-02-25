@@ -1,6 +1,6 @@
 /**
  * GET /api/labz/document-store/stores
- * Proxies to Flowise list document stores. LABZ backend context; uses system FLOWISE_API_KEY.
+ * Proxies to Flowise list document stores. MNKY LABZ backend context; uses system FLOWISE_API_KEY.
  */
 
 import { NextResponse } from "next/server";

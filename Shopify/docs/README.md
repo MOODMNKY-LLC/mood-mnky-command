@@ -82,9 +82,9 @@ The project includes a **Theme App Extension** (`extensions/mood-mnky-theme/`) w
 
 **Block settings**: Each block has an **App base URL** setting (e.g. `https://mnky-command.moodmnky.com`). Leave blank to show a disabled state.
 
-### MOOD LABZ on the store
+### MOOD MNKY LABZ on the store
 
-To show **MOOD LABZ** in the main nav with a landing page and dropdown (Fragrance Wheel, Blending Lab, Glossary, Formulas, Fragrance Oils), use **Store → LABZ Pages** in the app to create pages and upload theme templates, then configure **Main menu** in Shopify Admin. See [SHOPIFY-LABZ-PAGES-AND-MENU.md](../../docs/SHOPIFY-LABZ-PAGES-AND-MENU.md) and [NAVIGATION-MENU-SETUP.md](NAVIGATION-MENU-SETUP.md).
+To show **MOOD MNKY LABZ** in the main nav with a landing page and dropdown (Fragrance Wheel, Blending Lab, Glossary, Formulas, Fragrance Oils), use **Store → MNKY LABZ Pages** in the app to create pages and upload theme templates, then configure **Main menu** in Shopify Admin. See [SHOPIFY-LABZ-PAGES-AND-MENU.md](../../docs/SHOPIFY-LABZ-PAGES-AND-MENU.md) and [NAVIGATION-MENU-SETUP.md](NAVIGATION-MENU-SETUP.md).
 
 ### Future Integration (Phases 2 & 4)
 

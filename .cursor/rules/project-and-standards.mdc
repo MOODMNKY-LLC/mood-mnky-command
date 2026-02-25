@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Project identity
 
-This repo is **mood-mnky-command**: MNKY VERSE storefront, LABZ dashboard, Blending Lab, and Shopify theme in one codebase. Consult **`README.md`** and the **`docs/`** directory for goals, architecture, and features. If the project has **`PRD.md`**, use it for product goals. For additional or updated documentation, use MCP tools (Brave Search, FireCrawl, etc.) to find official sources.
+This repo is **mood-mnky-command**: MNKY VERSE storefront, MNKY LABZ dashboard, Blending Lab, and Shopify theme in one codebase. Consult **`README.md`** and the **`docs/`** directory for goals, architecture, and features. If the project has **`PRD.md`**, use it for product goals. For additional or updated documentation, use MCP tools (Brave Search, FireCrawl, etc.) to find official sources.
 
 ## Technical stack compliance
 

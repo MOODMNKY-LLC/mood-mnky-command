@@ -6,7 +6,7 @@ import { requireDiscordAdmin } from "@/lib/discord/auth"
 /**
  * POST /api/discord/send
  * Body: { channelId: string, content: string, auditLogReason?: string }
- * Send a message to a channel. Requires LABZ admin.
+ * Send a message to a channel. Requires MNKY LABZ admin.
  */
 export async function POST(request: NextRequest) {
   const auth = await requireDiscordAdmin(request)

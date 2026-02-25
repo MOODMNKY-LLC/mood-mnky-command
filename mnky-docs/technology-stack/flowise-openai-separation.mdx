@@ -67,7 +67,7 @@ Set in Flowise `.env`, not in app. App proxies document store via `FLOWISE_BASE_
 
 Flowise document store uses S3/MinIO for blob storage. The app proxies document store API requests to Flowise.
 
-### LABZ Storage Control Panel
+### MNKY LABZ Storage Control Panel
 
 Admins can manage MinIO/S3 buckets and objects at **Platform → Storage** (`/platform/storage`). Uses the same S3 env vars. See [docs/PLATFORM-STORAGE.md](../../docs/PLATFORM-STORAGE.md) for API overview and credential behavior.
 
@@ -82,16 +82,16 @@ Admins can manage MinIO/S3 buckets and objects at **Platform → Storage** (`/pl
 | `/api/flowise/document-store/vectorstore/query` | POST | Retrieval query |
 | `/api/flowise/document-store/loader/[storeId]/[loaderId]` | DELETE | Delete loader |
 
-### LABZ Document Store
+### MNKY LABZ Document Store
 
 | App Route | Purpose |
 |-----------|---------|
-| `/api/labz/document-store/stores` | List stores (LABZ context) |
+| `/api/labz/document-store/stores` | List stores (MNKY LABZ context) |
 | `/api/labz/document-store/upsert/[id]` | Upsert files (formula docs, knowledge base) |
 
 ## Flowise-MNKY Components
 
-The `components/flowise-mnky/` library provides Flowise-specific UI for the Dojo and LABZ:
+The `components/flowise-mnky/` library provides Flowise-specific UI for the Dojo and MNKY LABZ:
 
 - **FlowiseChatflowControlPanel** — Chatflow selector, override config editor, document store upload
 - **FlowiseOverrideConfigEditor** — Structured + raw JSON editor for overrideConfig (documentStoreId, supabaseMetadataFilter, topK, systemMessage)

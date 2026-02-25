@@ -193,7 +193,7 @@ export async function getServiceStatus(slug: string): Promise<{
 }
 
 /**
- * Returns status for all known deployed services (for LABZ analytics).
+ * Returns status for all known deployed services (for MNKY LABZ analytics).
  * Uses MAIN_SERVICES order and ids.
  */
 export async function getAllServicesAnalytics(): Promise<

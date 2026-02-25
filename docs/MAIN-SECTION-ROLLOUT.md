@@ -23,7 +23,7 @@ Host-based routing uses the `Host` header. To test each domain locally:
 2. **Start the app:** From repo root, `pnpm dev` (app runs at http://localhost:3000).
 
 3. **Test each host:**
-   - **http://mnky-command.moodmnky.com:3000** – Should show LABZ (dashboard) at root. If not logged in, redirects to `/auth/login`.
+   - **http://mnky-command.moodmnky.com:3000** – Should show MNKY LABZ (dashboard) at root. If not logged in, redirects to `/auth/login`.
    - **http://mnky-verse.moodmnky.com:3000** – Should show MNKY VERSE (root path rewritten to `/verse`).
    - **http://www.moodmnky.com:3000** – Should show Main landing (root path rewritten to `/main`). No auth required.
    - **http://moodmnky.com:3000** – Same as www (Main).
@@ -36,7 +36,7 @@ Host-based routing uses the `Host` header. To test each domain locally:
 
 Preview URLs (e.g. `project--branch.vercel.app`) do not match `mnky-verse.moodmnky.com` or `www.moodmnky.com`. The proxy does **not** rewrite for preview hosts, so:
 
-- Preview deployments behave like the default domain: root is LABZ; unauthenticated users are redirected to login.
+- Preview deployments behave like the default domain: root is MNKY LABZ; unauthenticated users are redirected to login.
 - To test Main or Verse routing on a branch, use production-like domains (e.g. after merging to main and deploying) or use the hosts file locally with `pnpm dev`.
 
 Optional: To test a section on preview, you could add a query parameter (e.g. `?section=main`) and have the proxy rewrite when that param is present; this is not implemented by default.
@@ -73,7 +73,7 @@ Optional: To test a section on preview, you could add a query parameter (e.g. `?
 7. **Smoke test**
    - [ ] Open https://www.moodmnky.com – Main landing loads, no auth required.
    - [ ] Open https://mnky-verse.moodmnky.com – Verse loads.
-   - [ ] Open https://mnky-command.moodmnky.com – LABZ or login.
+   - [ ] Open https://mnky-command.moodmnky.com – MNKY LABZ or login.
    - [ ] From Main, click "Join MNKY VERSE" and "Sign in" – correct destinations.
 
 8. **Marketing**

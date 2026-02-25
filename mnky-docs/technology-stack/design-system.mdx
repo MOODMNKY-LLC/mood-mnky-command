@@ -32,7 +32,7 @@ flowchart TB
         authShell[auth-shell.css]
         authLayout[AuthPageLayout]
     end
-    subgraph Labz [LABZ Dashboard]
+    subgraph Labz [MNKY LABZ Dashboard]
         appSidebar[app-sidebar]
         dashboardLayout[dashboard layout]
     end
@@ -70,7 +70,7 @@ flowchart TB
 
 The app uses **two palettes**, each with **light and dark mode**:
 
-1. **Main** — Black/white/grayscale only, glassmorphic. Used for the main site and LABZ.
+1. **Main** — Black/white/grayscale only, glassmorphic. Used for the main site and MNKY LABZ.
 2. **Dojo** — The Dojo theme: slate light (`#f1f5f9`, `#0f172a`, `#475569`), Dojo dark (`#181619`, `#c8c4c4`, `#94a3b8`). Applied to the MNKY DOJO storefront and auth; one palette, one product name.
 
 **Palette** is controlled by `data-theme` on `<html>`: `main` or `dojo`. It is set by `ThemePaletteProvider` and persisted in localStorage under `theme-palette`. Use `ThemePaletteSwitcher` or `useThemePalette()` from `@/components/theme-palette-provider`.
@@ -99,7 +99,7 @@ The root design system defines one **token contract** and two **theme implementa
 |--------|---------------|------------|
 | **MNKY DOJO storefront** | `verse-storefront.css`, `verse-glass.css`, `mnky-box.css` | `components/verse/` |
 | **Auth** | `auth-shell.css`, verse tokens | `AuthPageLayout`, `AuthVerseShell` |
-| **LABZ** | Root tokens, shadcn | `app-sidebar`, dashboard layout |
+| **MNKY LABZ** | Root tokens, shadcn | `app-sidebar`, dashboard layout |
 | **Dojo (member hub)** | Root tokens, `.dojo-dashboard` | `dojo-sidebar`, `dojo-sidebar-config.tsx` |
 | **Main** | `main-site.css`, `main-glass.css` | `components/main/`, `(main)/main` layout |
 

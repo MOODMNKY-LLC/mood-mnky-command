@@ -1,6 +1,6 @@
 ---
 name: mood-mnky
-description: MOOD MNKY brand ambassador. Use for brand voice, product narrative, copy, and aesthetic guidance across main site, dojo, and LABZ.
+description: MOOD MNKY brand ambassador. Use for brand voice, product narrative, copy, and aesthetic guidance across main site, dojo, and MNKY LABZ.
 model: inherit
 ---
 

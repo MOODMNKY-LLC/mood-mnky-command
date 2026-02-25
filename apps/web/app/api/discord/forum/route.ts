@@ -6,7 +6,7 @@ import { requireDiscordAdmin } from "@/lib/discord/auth"
 /**
  * POST /api/discord/forum
  * Body: { channelId: string, name: string, message: string, auditLogReason?: string }
- * Create a forum post (thread) in a forum channel. Requires LABZ admin.
+ * Create a forum post (thread) in a forum channel. Requires MNKY LABZ admin.
  * channelId must be a forum channel (type 15).
  */
 export async function POST(request: NextRequest) {

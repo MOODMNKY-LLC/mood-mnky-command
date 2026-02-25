@@ -8,7 +8,7 @@ const DISCORD_API_BASE = "https://discord.com/api/v10"
 /**
  * POST /api/discord/webhooks/execute
  * Body: { webhookId: string, content?, embeds?, components?, allowed_mentions?, thread_id? }
- * Executes a stored webhook (token looked up from DB). Requires LABZ admin.
+ * Executes a stored webhook (token looked up from DB). Requires MNKY LABZ admin.
  */
 export async function POST(request: NextRequest) {
   const auth = await requireDiscordAdmin(request)

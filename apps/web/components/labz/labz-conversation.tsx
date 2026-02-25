@@ -44,7 +44,7 @@ const LABZ_EMPTY_CLASS =
 export function LabzConversationEmptyState({
   className,
   title = "CODE MNKY",
-  description = "Ask CODE MNKY (MNKY LABZ virtual assistant) about formulas, fragrance oils, glossary, blending, or LABZ Pages…",
+  description = "Ask CODE MNKY (MNKY LABZ virtual assistant) about formulas, fragrance oils, glossary, blending, or MNKY LABZ Pages…",
   icon,
   children,
   ...props

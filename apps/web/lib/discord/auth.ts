@@ -1,5 +1,5 @@
 /**
- * Require LABZ admin for Discord control panel API routes.
+ * Require MNKY LABZ admin for Discord control panel API routes.
  */
 
 import { NextRequest, NextResponse } from "next/server"

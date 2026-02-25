@@ -304,7 +304,7 @@ export function LabzChatPopup({ trigger }: { trigger?: ReactNode }) {
                       <div className="space-y-1">
 <h3 className="font-medium text-sm text-foreground">CODE MNKY</h3>
                       <p className="text-muted-foreground text-sm">
-                        MNKY LABZ virtual assistant – ask about formulas, fragrance oils, glossary, blending, or LABZ Pages…
+                        MNKY LABZ virtual assistant – ask about formulas, fragrance oils, glossary, blending, or MNKY LABZ Pages…
                       </p>
                       </div>
                       <div className="mt-2 flex flex-wrap justify-center gap-2">

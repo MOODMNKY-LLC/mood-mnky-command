@@ -1,9 +1,9 @@
 ---
-title: LABZ Backoffice
-description: Map of LABZ contexts, sidebar groups, Settings, and credentials documentation.
+title: MNKY LABZ Backoffice
+description: Map of MNKY LABZ contexts, sidebar groups, Settings, and credentials documentation.
 ---
 
-# LABZ Backoffice
+# MNKY LABZ Backoffice
 
 MNKY LABZ is the app and ecosystem backoffice for MOOD MNKY. This document maps contexts, sidebar groups, credentials, and where to configure things.
 

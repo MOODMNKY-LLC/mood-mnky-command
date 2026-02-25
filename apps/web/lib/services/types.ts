@@ -1,6 +1,6 @@
 /**
  * Normalized result for deployed service status / metrics.
- * Used by public status API and LABZ analytics.
+ * Used by public status API and MNKY LABZ analytics.
  */
 export interface ServiceStatusResult {
   status?: string

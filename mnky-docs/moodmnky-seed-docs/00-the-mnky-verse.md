@@ -30,7 +30,7 @@ A sensory-first lifestyle experience focused on radical personalization, self-ca
 
 ### 🧪 **Flagship Features**
 - **Bespoke Fragrance Library**: Hundreds of raw notes that can be uniquely blended by scent-crafters and AI agents to create fully customized fragrances.
-- **Scent Profiles**: Users build and evolve a **living scent identity**, stored in the MOOD LABZ system and editable anytime.
+- **Scent Profiles**: Users build and evolve a **living scent identity**, stored in the MOOD MNKY LABZ system and editable anytime.
 - **Product Range**:
   - Candles  
   - Bath & body  
@@ -190,7 +190,7 @@ _“A scent for the soul. A system for the self.”_
 ### **Commerce & Digital Infrastructure**
 - **Shopify Storefront:**  
   A high-conversion platform that drives direct sales and elevates the user experience.
-- **MOOD LABZ App (Next.js):**  
+- **MOOD MNKY LABZ App (Next.js):**  
   An immersive, gamified interface where users can craft scents, manage their profiles, and interact with AI-driven personalization.
 - **Supabase-Integrated Profiles:**  
   Seamlessly tracks user preferences, past blends, and mood evolution, ensuring each experience is tailored and evolving.

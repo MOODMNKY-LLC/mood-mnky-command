@@ -4,7 +4,7 @@ import { requireDiscordAdmin } from "@/lib/discord/auth"
 /**
  * GET /api/discord/primary-guild?guildId=...
  * Returns whether the given guild is the configured primary (DISCORD_GUILD_ID_MNKY_VERSE).
- * Used by LABZ Platform → Discord to show a "Primary server" badge.
+ * Used by MNKY LABZ Platform → Discord to show a "Primary server" badge.
  */
 export async function GET(request: NextRequest) {
   const auth = await requireDiscordAdmin(request)

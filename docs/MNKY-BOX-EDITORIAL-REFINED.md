@@ -41,7 +41,7 @@ The box CTA (“Unlock Members Access” → **/verse/join**) can be used to beg
 
 ## 7. Discord and free-tier
 
-- **Discord:** Drop announcements (webhooks), drop quests (Discord events → `discord_event_ledger` → quest evaluate → XP), and app-wide integration are documented in [DISCORD-INTEGRATION-PLAN.md](DISCORD-INTEGRATION-PLAN.md). Use the Discord MCP (`discord_get_server_info` with guild ID from LABZ or `DISCORD_GUILD_ID_MNKY_VERSE`) to inspect the MOOD MNKY server.
+- **Discord:** Drop announcements (webhooks), drop quests (Discord events → `discord_event_ledger` → quest evaluate → XP), and app-wide integration are documented in [DISCORD-INTEGRATION-PLAN.md](DISCORD-INTEGRATION-PLAN.md). Use the Discord MCP (`discord_get_server_info` with guild ID from MNKY LABZ or `DISCORD_GUILD_ID_MNKY_VERSE`) to inspect the MOOD MNKY server.
 - **Free-tier:** Box CTA “Unlock Members Access” → `/verse/join`; free sign-up and Discord link support drop quests and community without a paid tier. See §6 and [FREE-TIER-SUBSCRIPTION.md](FREE-TIER-SUBSCRIPTION.md).
 
 ## 8. References

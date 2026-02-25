@@ -9,13 +9,13 @@ This document guides how to keep the MNKY|VERSE Discord server aligned with MOOD
 
 ## Voice and tone
 
-- **Inclusive and community-first.** Welcome all levels of interest (curious, blender, collector). Avoid jargon unless the channel is clearly for insiders (e.g. LABZ builders).
+- **Inclusive and community-first.** Welcome all levels of interest (curious, blender, collector). Avoid jargon unless the channel is clearly for insiders (e.g. MNKY LABZ builders).
 - **Fragrance and wellness.** MOOD MNKY is about scent, wellness, and discovery; Discord is an extension of that, not a generic chat room.
 - **Tied to the ecosystem.** Reference the Verse, Dojo, Blending Lab, and “Link Discord” where it helps (e.g. welcome message, announcements). See [DISCORD-ONBOARDING.md](DISCORD-ONBOARDING.md) for welcome copy.
 
 ## Role names and colors
 
-- **Roles** can reflect the design system or gamification. Examples: level-based names (e.g. “Scent Runner” at a given XP level), “Blender,” “Drop Hunter,” or “MNKY VERSE Member.” Set colors in LABZ Platform → Discord → Roles; use palette from [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) where it makes sense (e.g. primary/muted) so Discord doesn’t clash with the app.
+- **Roles** can reflect the design system or gamification. Examples: level-based names (e.g. “Scent Runner” at a given XP level), “Blender,” “Drop Hunter,” or “MNKY VERSE Member.” Set colors in MNKY LABZ Platform → Discord → Roles; use palette from [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) where it makes sense (e.g. primary/muted) so Discord doesn’t clash with the app.
 - **Default role (@everyone):** Keep permissions minimal; grant access to channels via other roles or onboarding.
 
 ## Channel topics

@@ -7,7 +7,7 @@ The MNKY VERSE gamification system is a behavior-driven progression layer that t
 ## Target audience
 
 - **Primary:** Shoppers and community members who engage with MOOD MNKY (store, Verse, Discord). They want recognition, status, and tangible rewards (early access, discounts, badges).
-- **Secondary:** Merchants and operators who configure XP rules, quests, and rewards via the LABZ dashboard (Verse Backoffice).
+- **Secondary:** Merchants and operators who configure XP rules, quests, and rewards via the MNKY LABZ dashboard (Verse Backoffice).
 
 ## Core features and functionality
 
@@ -43,7 +43,7 @@ All profile_id fields reference `public.profiles(id)`.
 
 ## UI design principles
 
-- **Verse Backoffice (LABZ):** Clear list and detail views for manga issues, XP/quests config, UGC queue, and Discord event log. Use existing design system (shadcn, Tailwind). Moderation actions (approve/reject UGC) are explicit and auditable.
+- **Verse Backoffice (MNKY LABZ):** Clear list and detail views for manga issues, XP/quests config, UGC queue, and Discord event log. Use existing design system (shadcn, Tailwind). Moderation actions (approve/reject UGC) are explicit and auditable.
 - **Verse storefront:** Quest list and UGC upload are lightweight; XP/level can be shown in a header or profile. No sensitive controls on the client.
 
 ## Security considerations

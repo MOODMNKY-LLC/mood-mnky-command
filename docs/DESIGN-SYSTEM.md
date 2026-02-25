@@ -20,7 +20,7 @@ flowchart TB
         authShell[auth-shell.css]
         authLayout[AuthPageLayout]
     end
-    subgraph Labz [LABZ / Dashboard]
+    subgraph Labz [MNKY LABZ / Dashboard]
         appSidebar[app-sidebar]
         dashboardLayout[dashboard layout]
     end
@@ -69,7 +69,7 @@ So: **palette** = Main or Dojo. **Mode** = light or dark. Four combinations: Mai
 
 The app has **two palettes**, each with **light and dark mode**:
 
-1. **Main** — Black/white/grayscale only, glassmorphic (main site, LABZ).
+1. **Main** — Black/white/grayscale only, glassmorphic (main site, MNKY LABZ).
 2. **Dojo** — The Dojo theme: slate light (#f1f5f9, #0f172a, #475569), Dojo dark (#181619, #c8c4c4, #94a3b8). Used for the MNKY DOJO storefront and member hub; one palette, one product name.
 
 - **Palette** is controlled by `data-theme` on `<html>`: `main` or `dojo`. It is set by `ThemePaletteProvider` and persisted in localStorage under `theme-palette`. Use `ThemePaletteSwitcher` or `useThemePalette()` from `@/components/theme-palette-provider`.
@@ -112,9 +112,9 @@ The MNKY DOJO storefront uses the **Dojo theme**: root-supplied tokens (defined 
 
 ---
 
-## LABZ
+## MNKY LABZ
 
-The LABZ dashboard uses the root layout, `next-themes`, and shared shadcn components. It does not have a separate component folder.
+The MNKY LABZ dashboard uses the root layout, `next-themes`, and shared shadcn components. It does not have a separate component folder.
 
 ### Dashboard
 
@@ -126,15 +126,15 @@ The dashboard page uses the root design tokens and shadcn patterns: **Card**, **
 - Viewport `themeColor`: `#f1f5f9` (matches slate-100)
 - PWA manifest: `background_color` and `theme_color` → `#f1f5f9`
 
-### Auth LABZ Tab
+### Auth MNKY LABZ Tab
 
-The auth page has two tabs: **Dojo** (storefront) and **LABZ** (admin). The LABZ tab uses explicit light overrides:
+The auth page has two tabs: **Dojo** (storefront) and **MNKY LABZ** (admin). The MNKY LABZ tab uses explicit light overrides:
 
 ```tsx
 <DualAuthTabs appearance={activeTab === "labz" ? "light" : "default"} />
 ```
 
-This ensures the LABZ auth card always renders in light mode, regardless of system preference.
+This ensures the MNKY LABZ auth card always renders in light mode, regardless of system preference.
 
 ---
 
@@ -151,7 +151,7 @@ Auth pages (`app/auth/`) use the **Dojo theme** for consistent aesthetic with th
 
 ### Auth Page Structure
 
-- **Login** (`/auth/login`): Uses `AuthPageLayout` with mascot (Verse or LABZ per tab), DualAuthTabs with glass-style cards
+- **Login** (`/auth/login`): Uses `AuthPageLayout` with mascot (Verse or MNKY LABZ per tab), DualAuthTabs with glass-style cards
 - **Other pages** (sign-up, forgot-password, update-password, etc.): Use `AuthPageLayout` (no mascot), glass `.auth-card` for form containers
 
 ### Auth Design Tokens
@@ -173,7 +173,7 @@ Auth pages inherit verse tokens via `.verse-storefront.auth-shell`:
 
 ## Dojo
 
-The Dojo (`app/dojo/`) is the members' private hub. It uses **root design tokens** (grayscale primary) and shared shadcn components, aligned with LABZ. No separate CSS file; the `.dojo-dashboard` wrapper class scopes layout styling. Components: `components/dojo/dojo-sidebar.tsx`, `lib/dojo-sidebar-config.tsx`. See `docs/DOJO-SECTION.md` for route structure and auth.
+The Dojo (`app/dojo/`) is the members' private hub. It uses **root design tokens** (grayscale primary) and shared shadcn components, aligned with MNKY LABZ. No separate CSS file; the `.dojo-dashboard` wrapper class scopes layout styling. Components: `components/dojo/dojo-sidebar.tsx`, `lib/dojo-sidebar-config.tsx`. See `docs/DOJO-SECTION.md` for route structure and auth.
 
 The Dojo home profile block uses the **Elements AI SDK Agent** component (`components/ai-elements/agent.tsx`) as a character card: `AgentHeader` accepts an optional `icon` (user Avatar), `AgentInstructions` an optional `label` (e.g. "Summary"). Prop mapping and rationale: `docs/dojo/DOJO-CHARACTER-CARD-DESIGN.md`.
 
@@ -181,7 +181,7 @@ The Dojo home profile block uses the **Elements AI SDK Agent** component (`compo
 
 ## Main (main-site.css, main-glass.css)
 
-The Main section (`app/(main)/main/`) is the public marketing site served at www.moodmnky.com. It uses **root design tokens** from `globals.css` (no Verse or LABZ overrides) plus Main-specific glassmorphism tokens. The wrapper class `.main-site` scopes layout utilities. The Main landing follows a **monochrome, high-contrast editorial** layout: split hero with Dotted Map + Globe + mascot (no card), feature cards, social proof, customization, FAQ, optional Explore block and chat. **No background pattern overload** on Main—hero and sections use `bg-background` or subtle gradients only; no AnimatedGridPattern or busy backgrounds.
+The Main section (`app/(main)/main/`) is the public marketing site served at www.moodmnky.com. It uses **root design tokens** from `globals.css` (no Verse or MNKY LABZ overrides) plus Main-specific glassmorphism tokens. The wrapper class `.main-site` scopes layout utilities. The Main landing follows a **monochrome, high-contrast editorial** layout: split hero with Dotted Map + Globe + mascot (no card), feature cards, social proof, customization, FAQ, optional Explore block and chat. **No background pattern overload** on Main—hero and sections use `bg-background` or subtle gradients only; no AnimatedGridPattern or busy backgrounds.
 
 ### Theme (light/dark)
 
@@ -264,7 +264,7 @@ Monochromatic grayscale glassmorphism, GQ-inspired tech-forward aesthetic:
 
 ### ElevenLabs UI and main-* wrappers
 
-Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components/main/elevenlabs/`: MainOrb, MainShimmeringText, MainAudioPlayer, MainBarVisualizer, MainMatrix, MainMessage, MainResponse, MainConversationBar, MainLiveWaveform, MainMicSelector, MainScrubBar, MainSpeechInput, MainTranscriptViewer, MainVoiceButton, MainVoicePicker, MainWaveform. **ElevenLabs agents JavaScript libraries**: `@elevenlabs/client` (Conversational AI / Scribe in `hooks/use-scribe.ts`) and `@elevenlabs/react` (useConversation in Conversation Bar, Verse voice chat) are installed and configured to use agent ID from server/config only; API key stays server-side (see `.env.example`). Config: Supabase `main_elevenlabs_config`; server-only `GET /api/main/elevenlabs-config`; LABZ at `/chat/main-elevenlabs`. No API keys on client.
+Main uses [ElevenLabs UI](https://ui.elevenlabs.io/) via wrappers in `components/main/elevenlabs/`: MainOrb, MainShimmeringText, MainAudioPlayer, MainBarVisualizer, MainMatrix, MainMessage, MainResponse, MainConversationBar, MainLiveWaveform, MainMicSelector, MainScrubBar, MainSpeechInput, MainTranscriptViewer, MainVoiceButton, MainVoicePicker, MainWaveform. **ElevenLabs agents JavaScript libraries**: `@elevenlabs/client` (Conversational AI / Scribe in `hooks/use-scribe.ts`) and `@elevenlabs/react` (useConversation in Conversation Bar, Verse voice chat) are installed and configured to use agent ID from server/config only; API key stays server-side (see `.env.example`). Config: Supabase `main_elevenlabs_config`; server-only `GET /api/main/elevenlabs-config`; MNKY LABZ at `/chat/main-elevenlabs`. No API keys on client.
 
 ### Motion and AI Elements on Main
 
@@ -336,9 +336,9 @@ The `components/flowise-mnky/` library provides Flowise-specific UI: chatflow co
 
 ---
 
-## Optional Future LABZ Overrides
+## Optional Future MNKY LABZ Overrides
 
-If LABZ-specific overrides are needed later:
+If MNKY LABZ-specific overrides are needed later:
 
 1. Introduce `app/(dashboard)/labz.css`
 2. Add a `.labz-dashboard` wrapper, similar to `.verse-storefront`
@@ -350,7 +350,7 @@ If LABZ-specific overrides are needed later:
 
 | Font | Usage |
 |------|-------|
-| Inter | Root app, LABZ, Main |
+| Inter | Root app, MNKY LABZ, Main |
 | Source Code Pro | Monospace |
 | Oswald | Verse headings |
 | Roboto | Verse body |

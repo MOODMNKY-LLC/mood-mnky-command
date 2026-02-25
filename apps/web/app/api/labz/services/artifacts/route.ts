@@ -22,7 +22,7 @@ async function requireAdmin() {
 
 /**
  * GET /api/labz/services/artifacts
- * Admin-only. Returns current theme/docker artifact URLs per service (for LABZ Service Analytics).
+ * Admin-only. Returns current theme/docker artifact URLs per service (for MNKY LABZ Service Analytics).
  */
 export async function GET() {
   const auth = await requireAdmin()

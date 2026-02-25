@@ -62,7 +62,7 @@ So: **rendering is Supabase-backed; Notion is not used at render time**, only as
 **Dedicated Storage bucket: `manga-assets`**  
 Manga cover and panel images are stored in Supabase Storage in the **manga-assets** bucket (see `apps/web/lib/supabase/storage.ts` and migration `supabase/migrations/20260221150000_manga_assets_bucket.sql`). Path convention: **Covers:** `covers/{issue_id}.{ext}`; **Panels:** `panels/{panel_id}.{ext}`. For MNKY BOX hero art you can use the same bucket (e.g. `box-hero/{issue_id}.{ext}`) and set `mnky_issues.hero_asset_url` to that URL, or reuse `cover_asset_url`. The bucket is public read; uploads are performed server-side with admin client (API routes require manga admin auth).
 
-**LABZ Verse Backoffice upload (recommended)**  
+**MNKY LABZ Verse Backoffice upload (recommended)**  
 On the issue detail page (`/verse-backoffice/manga/[slug]`): use the **Cover** card to upload/change cover (writes to `manga-assets/covers/`, updates `mnky_issues.cover_asset_url`, and pushes Cover URL to Notion when `notion_id` exists); in **Chapters & panels**, each panel has an "Upload" button (writes to `manga-assets/panels/`, updates `mnky_panels.asset_url`, pushes Asset URL to Notion when `notion_id` exists). See [NOTION-MANGA-2WAY-SYNC.md](./NOTION-MANGA-2WAY-SYNC.md) for 2-way sync.
 
 **URL-based (alternative)**  
@@ -101,6 +101,6 @@ Upload images to any host you like; then put that **URL** into either Notion (an
 - **Required:** Collections + Issues DB IDs in env. Optional: Chapters, Panels, Hotspots DB IDs.
 - **Panel images:** In Notion, set the **Asset URL** (or “Asset” / “asset_url”) property on the panel page; sync copies it to `mnky_panels.asset_url`, which the chapter reader then renders.
 
-**Push (Supabase → Notion):** When you upload a cover or panel image in LABZ, the new URL is written to Supabase and, if the row has a `notion_id`, pushed to the corresponding Notion page (Cover URL / Asset URL). See [NOTION-MANGA-2WAY-SYNC.md](./NOTION-MANGA-2WAY-SYNC.md).
+**Push (Supabase → Notion):** When you upload a cover or panel image in MNKY LABZ, the new URL is written to Supabase and, if the row has a `notion_id`, pushed to the corresponding Notion page (Cover URL / Asset URL). See [NOTION-MANGA-2WAY-SYNC.md](./NOTION-MANGA-2WAY-SYNC.md).
 
 For full sync details and property names, see `apps/web/app/api/notion/sync/manga/route.ts` and `docs/COMPANION-MANGA-ROADMAP.md`.

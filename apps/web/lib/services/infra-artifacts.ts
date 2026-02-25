@@ -8,7 +8,7 @@ export interface ServiceArtifactUrls {
 
 /**
  * Fetches latest artifact versions from infra_artifact_versions and returns
- * public URLs per service (theme and docker). Used by LABZ Service Analytics.
+ * public URLs per service (theme and docker). Used by MNKY LABZ Service Analytics.
  */
 export async function getLatestArtifactUrls(
   supabase: SupabaseClient,

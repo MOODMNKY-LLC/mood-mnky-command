@@ -36,7 +36,7 @@ const DEFAULT_PAYLOAD = {
       title: "Example embed",
       description: "Edit the JSON and preview.",
       color: 5814783,
-      footer: { text: "LABZ" },
+      footer: { text: "MNKY LABZ" },
     },
   ],
   allowed_mentions: { parse: [] as string[] },

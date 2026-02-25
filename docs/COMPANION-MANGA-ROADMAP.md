@@ -13,7 +13,7 @@ This document summarizes the roadmap for the **MNKY VERSE Companion** and **Coll
 | [MAG-XP-RULES.md](MAG-XP-RULES.md) | config_xp_rules keys (mag_read, mag_quiz, mag_download, purchase, ugc_approved) |
 | [DOJO-SECTION.md](DOJO-SECTION.md) | Dojo routes, XP/quests/manga cards, Flowise Blending Lab |
 | [FLOWISE-FRAGRANCE-CRAFTING.md](FLOWISE-FRAGRANCE-CRAFTING.md) | Flowise embed env (NEXT_PUBLIC_FLOWISE_*), Dojo chat |
-| [SHOPIFY-INTEGRATION-ROADMAP.md](SHOPIFY-INTEGRATION-ROADMAP.md) | Verse/LABZ Shopify APIs, phased initiatives |
+| [SHOPIFY-INTEGRATION-ROADMAP.md](SHOPIFY-INTEGRATION-ROADMAP.md) | Verse/MNKY LABZ Shopify APIs, phased initiatives |
 | [VERSE-STOREFRONT-STACK.md](VERSE-STOREFRONT-STACK.md) | Next.js + Hydrogen React, Storefront API |
 | [SHOPIFY-METAOBJECTS-SYNC.md](SHOPIFY-METAOBJECTS-SYNC.md) | Pattern for Supabase → Shopify metaobject sync (fragrance_notes) |
 | [MNKY-VERSE-APP-PROXY-SETUP.md](MNKY-VERSE-APP-PROXY-SETUP.md) | App Proxy, session, api/issues, api/quests, metaobject publish plan |

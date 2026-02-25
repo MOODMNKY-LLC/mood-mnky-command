@@ -10,9 +10,9 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 
 | Name | Purpose | Invoke |
 | --- | --- | --- |
-| **shopify** | Theme (Liquid), Admin API, app extension, LABZ page creation, menu updates | `/shopify` or describe a Shopify/theme/LABZ-page task |
+| **shopify** | Theme (Liquid), Admin API, app extension, MNKY LABZ page creation, menu updates | `/shopify` or describe a Shopify/theme/MNKY LABZ-page task |
 | **verse-storefront** | Public Verse routes, iframe-embedded pages, CSP/frame-ancestors, storefront UX | `/verse-storefront` or describe a Verse/store embed task |
-| **labz** | Dashboard LABZ, Supabase-backed data (fragrance oils, notes, formulas), LABZ APIs, Blending/glossary/formulas UI | `/labz` or describe a dashboard LABZ or data task |
+| **labz** | MNKY LABZ dashboard, Supabase-backed data (fragrance oils, notes, formulas), MNKY LABZ APIs, Blending/glossary/formulas UI | `/labz` or describe a dashboard MNKY LABZ or data task |
 | **verifier** | Validate that completed work is implemented and working; run tests and check edge cases | `/verifier` or ask to verify the last change |
 | **debugger** | Root cause and minimal fix for errors and test failures | `/debugger` or paste an error and ask to debug |
 | **mood-mnky** | Brand ambassador; brand voice, copy, product narrative, aesthetic guidance | `/mood-mnky` or ask for brand-facing copy or tone |
@@ -24,7 +24,7 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 
 ## How to use
 
-- **Explicit:** In Agent chat, type `/name` and the task (e.g. `/verifier confirm the LABZ page creation flow`, `/shopify add a new theme template for the glossary page`).
+- **Explicit:** In Agent chat, type `/name` and the task (e.g. `/verifier confirm the MNKY LABZ page creation flow`, `/shopify add a new theme template for the glossary page`).
 - **Automatic:** Agent may delegate to a subagent when the task matches the description (e.g. “fix the theme dropdown menu” → shopify; “make the fragrance wheel embeddable” → verse-storefront).
 
 ---
@@ -33,7 +33,7 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 
 - `.cursor/agents/shopify.md` — Shopify specialist
 - `.cursor/agents/verse-storefront.md` — Verse/storefront specialist
-- `.cursor/agents/labz.md` — LABZ dashboard and data specialist
+- `.cursor/agents/labz.md` — MNKY LABZ dashboard and data specialist
 - `.cursor/agents/verifier.md` — Verification specialist
 - `.cursor/agents/debugger.md` — Debugging specialist
 - `.cursor/agents/mood-mnky.md` — MOOD MNKY brand ambassador

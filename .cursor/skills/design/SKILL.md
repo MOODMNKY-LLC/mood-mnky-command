@@ -11,7 +11,7 @@ Use this skill when doing UI/UX work, component authoring, design systems, themi
 
 - User asks for UI/UX work, new or updated components, design systems, theming, or layouts.
 - User wants design research, design-system best practices, or comparative analysis (e.g. "research dashboard patterns," "best practices for X").
-- Building or refining interfaces in this repo (Next.js, Tailwind, shadcn, Verse/LABZ).
+- Building or refining interfaces in this repo (Next.js, Tailwind, shadcn, Verse/MNKY LABZ).
 
 ## Instructions
 
@@ -34,7 +34,7 @@ Use this skill when doing UI/UX work, component authoring, design systems, themi
 
 ### Project alignment
 
-- Read `docs/DESIGN-SYSTEM.md` when touching tokens, theme, or Verse/LABZ.
+- Read `docs/DESIGN-SYSTEM.md` when touching tokens, theme, or Verse/MNKY LABZ.
 - For Flowise integration (chatflow config, document store, override config), use `components/flowise-mnky/` and `docs/FLOWISE-MNKY-COMPONENTS.md`.
 - Follow existing tokens and structure: `globals.css`, `tailwind.config`, `verse-storefront.css`, `verse-glass.css`.
 - Do not introduce new design tokens or theme layers without aligning with the documented architecture.

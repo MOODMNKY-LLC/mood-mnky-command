@@ -51,7 +51,7 @@ The bucket is created by migration **`supabase/migrations/20260223140000_service
 
 ## Back office: App Assets
 
-In **LABZ → Create & Chat → App Assets** (`/studio/app-assets`), you can browse all app-facing image slots by category (e.g. **Main → Services**), upload or replace the image for each slot, and remove it. Uploads go to the `service-cards` bucket and are linked to the slot; the Main Services page resolves images from these slots automatically. Optional: link a slot to a Notion page (`notion_page_id`) for two-way sync (push URL after upload).
+In **MNKY LABZ → Create & Chat → App Assets** (`/studio/app-assets`), you can browse all app-facing image slots by category (e.g. **Main → Services**), upload or replace the image for each slot, and remove it. Uploads go to the `service-cards` bucket and are linked to the slot; the Main Services page resolves images from these slots automatically. Optional: link a slot to a Notion page (`notion_page_id`) for two-way sync (push URL after upload).
 
 ## Code reference
 

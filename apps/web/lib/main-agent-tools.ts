@@ -86,16 +86,16 @@ export const MAIN_AGENT_TOOLS: Record<string, MainAgentToolDef> = {
     description: "Search the fragrance glossary and notes.",
   },
   get_labz_pages_summary: {
-    name: "LABZ Pages",
-    description: "Get a summary of LABZ dashboard pages.",
+    name: "MNKY LABZ Pages",
+    description: "Get a summary of MNKY LABZ dashboard pages.",
   },
   notion_sync_status: {
     name: "Notion Sync",
     description: "Check Notion sync status for content.",
   },
   open_labz_section: {
-    name: "Open LABZ",
-    description: "Open a specific LABZ dashboard section.",
+    name: "Open MNKY LABZ",
+    description: "Open a specific MNKY LABZ dashboard section.",
   },
   flowise: {
     name: "Flowise",

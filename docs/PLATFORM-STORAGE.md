@@ -1,6 +1,6 @@
-# LABZ Platform Storage (MinIO/S3 Control Panel)
+# MNKY LABZ Platform Storage (MinIO/S3 Control Panel)
 
-The LABZ platform includes a MinIO/S3 storage control panel at `/platform/storage` for admins to manage buckets and objects directly.
+The MNKY LABZ platform includes a MinIO/S3 storage control panel at `/platform/storage` for admins to manage buckets and objects directly.
 
 ## Environment Variables
 

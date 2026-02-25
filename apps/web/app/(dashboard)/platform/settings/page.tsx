@@ -489,7 +489,7 @@ export default function PlatformSettingsPage() {
           {effectiveDashboard ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="dc-hub" className="text-sm font-normal cursor-pointer">Show LABZ hub card</Label>
+                <Label htmlFor="dc-hub" className="text-sm font-normal cursor-pointer">Show MNKY LABZ hub card</Label>
                 <Switch
                   id="dc-hub"
                   checked={effectiveDashboard.showLabzHubCard}

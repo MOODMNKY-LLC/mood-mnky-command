@@ -134,7 +134,7 @@ export function VerseVoiceChat({
         }
       >
         <p className="text-sm text-verse-text-muted">
-          Voice agent not configured. Set Agent ID in LABZ → Eleven Labs.
+          Voice agent not configured. Set Agent ID in MNKY LABZ → Eleven Labs.
         </p>
       </div>
     );

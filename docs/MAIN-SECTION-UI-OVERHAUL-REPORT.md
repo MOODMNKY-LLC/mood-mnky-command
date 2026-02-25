@@ -41,7 +41,7 @@ Implementation proceeded in the order specified: design tokens and typography, h
 ## Three core next steps for UI/UX optimization
 
 1. **Collections page and search UX**  
-   Build out `/main/collections` with real data: list collections from Shopify (Storefront API or LABZ-backed API), grid of collection cards (image, title, product count), links to collection pages or VERSE, and optional filters (e.g. by product type). Refine `/main/search` with debounced input, loading/empty states, and optional filters (e.g. type: fragrances vs formulas) and result highlighting.
+   Build out `/main/collections` with real data: list collections from Shopify (Storefront API or MNKY LABZ-backed API), grid of collection cards (image, title, product count), links to collection pages or VERSE, and optional filters (e.g. by product type). Refine `/main/search` with debounced input, loading/empty states, and optional filters (e.g. type: fragrances vs formulas) and result highlighting.
 
 2. **ElevenLabs transcript and waveform**  
    Wire real transcript data into the voice block when `showTranscriptViewer` is on (e.g. from `useConversation` or Scribe), and drive `MainLiveWaveform` from actual audio when `showWaveformInVoiceBlock` is on so the waveform reflects live input/output instead of decorative-only state.

@@ -14,7 +14,7 @@ Suggested properties:
 | Label     | Title     | Display name, e.g. MNKY CLOUD                 |
 | Category  | Select    | e.g. `main-services`, `main-hero`            |
 | Route Hint| Rich text | e.g. `/main/services`                        |
-| Current URL | URL     | Updated by LABZ when you upload (push only)  |
+| Current URL | URL     | Updated by MNKY LABZ when you upload (push only)  |
 
 Set `NOTION_APP_ASSETS_DATABASE_ID` in `.env` to the database ID (with or without dashes).
 
@@ -22,7 +22,7 @@ Set `NOTION_APP_ASSETS_DATABASE_ID` in `.env` to the database ID (with or withou
 
 - **Notion → Supabase (pull):** In **Create & Chat → App Assets**, click **Sync from Notion**. This calls `POST /api/app-assets/sync-from-notion`, which reads the Notion database and upserts `app_asset_slots` with slot_key, label, category, route_hint, and notion_page_id. Existing slots are matched by `slot_key`; new pages create new slots. Image URLs and `media_asset_id` are not overwritten from Notion.
 
-- **Supabase → Notion (push):** When you upload or replace an image for a slot that has `notion_page_id` set, LABZ pushes the new image URL to the Notion page’s **Current URL** property (see `lib/notion.ts` → `pushAppAssetSlotUrlToNotion`).
+- **Supabase → Notion (push):** When you upload or replace an image for a slot that has `notion_page_id` set, MNKY LABZ pushes the new image URL to the Notion page’s **Current URL** property (see `lib/notion.ts` → `pushAppAssetSlotUrlToNotion`).
 
 ## APIs
 

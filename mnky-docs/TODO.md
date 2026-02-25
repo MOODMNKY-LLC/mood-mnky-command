@@ -54,7 +54,7 @@
 
 ## Phase 3: Navigation Update
 
-- [x] Update docs.json for MNKY VERSE, Dojo, LABZ (2026-02-20: Core Experiences, Applications, Database & Backend)
+- [x] Update docs.json for MNKY VERSE, Dojo, MNKY LABZ (2026-02-20: Core Experiences, Applications, Database & Backend)
 - [ ] Finalize the docs.json.new file (if separate migration file exists)
 - [ ] Test navigation with staging environment
 - [ ] Make adjustments based on testing feedback

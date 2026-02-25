@@ -1,6 +1,6 @@
 # Infra artifacts storage (Supabase)
 
-Theme CSS, Dockerfiles, and n8n workflows for MOOD MNKY services are stored in Supabase Storage and registered in the `infra_artifact_versions` table. This gives a single source of truth and public URLs (CDN-style) for deployment and LABZ.
+Theme CSS, Dockerfiles, and n8n workflows for MOOD MNKY services are stored in Supabase Storage and registered in the `infra_artifact_versions` table. This gives a single source of truth and public URLs (CDN-style) for deployment and MNKY LABZ.
 
 ## Buckets
 
@@ -71,7 +71,7 @@ dotenv -e ../../.env.production -e ../../.env -- tsx scripts/publish-infra-artif
 
 ## Resolving “current” artifact URL
 
-In app or LABZ, to get the public URL for the latest theme for a service:
+In app or MNKY LABZ, to get the public URL for the latest theme for a service:
 
 1. Query `infra_artifact_versions` where `artifact_type = 'service_theme'` and `service_id = 'mnky-cloud'`, order by `created_at desc`, limit 1.
 2. Take `storage_path` and build the public URL with `supabase.storage.from('infra-artifacts').getPublicUrl(storage_path).data.publicUrl`.

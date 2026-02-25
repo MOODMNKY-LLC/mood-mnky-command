@@ -37,7 +37,7 @@ async function requireAdmin(): Promise<
 
 /**
  * GET /api/labz/steam/analytics
- * Admin-only. Returns Steam config status and linked-account count for LABZ Steam page.
+ * Admin-only. Returns Steam config status and linked-account count for MNKY LABZ Steam page.
  */
 export async function GET() {
   const auth = await requireAdmin()

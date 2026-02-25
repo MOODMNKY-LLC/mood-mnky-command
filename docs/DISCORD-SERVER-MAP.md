@@ -1,6 +1,6 @@
 # Discord Server Map: MNKY|VERSE
 
-This document is the canonical map of the MOOD MNKY Discord server (MNKY|VERSE). It is used for onboarding design, MNKY category structure, and app integration (LABZ default guild, drop webhooks, quest channel references).
+This document is the canonical map of the MOOD MNKY Discord server (MNKY|VERSE). It is used for onboarding design, MNKY category structure, and app integration (MNKY LABZ default guild, drop webhooks, quest channel references).
 
 ## How to refresh this map
 
@@ -172,19 +172,19 @@ Categories whose names contain "MNKY" and their intended use (for onboarding and
 | **MNKY MEDIA** | Jellyfin, Jellyseer, Lidarr | Media stack updates. |
 | **MNKY_MIND_DB** | #updates | Database/backend updates. |
 | **POKÉ MNKY🐵** | #announcements | Game/community announcements. |
-| **MNKY LABZ** | *(empty)* | **Populate:** Blending Lab, formulas, fragrance oils, glossary (LABZ dashboard). |
+| **MNKY LABZ** | *(empty)* | **Populate:** Blending Lab, formulas, fragrance oils, glossary (MNKY LABZ dashboard). |
 | **MNKY VERSE** | *(empty)* | **Populate:** Verse storefront, blog, drops, quests, Dojo. |
 | **MNKY MAIN** | *(empty)* | **Populate:** Main site, community hub, Discord invite. |
 
-Empty MNKY LABZ, MNKY VERSE, and MNKY MAIN categories are placeholders for the brand/community overhaul: add channels (e.g. #drops, #blending-lab, #verse-blog) and link from the app (Verse community page, Dojo, LABZ).
+Empty MNKY LABZ, MNKY VERSE, and MNKY MAIN categories are placeholders for the brand/community overhaul: add channels (e.g. #drops, #blending-lab, #verse-blog) and link from the app (Verse community page, Dojo, MNKY LABZ).
 
 ### Populating MNKY LABZ, MNKY VERSE, MNKY MAIN
 
-Use the following as a checklist when adding channels. Create them via LABZ Platform → Discord (Messages / channel list) or the Discord MCP (`discord_create_text_channel` with the appropriate `guildId` and `parent_id` for the category).
+Use the following as a checklist when adding channels. Create them via MNKY LABZ Platform → Discord (Messages / channel list) or the Discord MCP (`discord_create_text_channel` with the appropriate `guildId` and `parent_id` for the category).
 
 | Category | Suggested channels | Purpose |
 |----------|---------------------|---------|
-| **MNKY LABZ** | #blending-lab, #formulas, #glossary, #fragrance-oils | Blending Lab, formulas, glossary, and fragrance data discussion; ties to LABZ dashboard. |
+| **MNKY LABZ** | #blending-lab, #formulas, #glossary, #fragrance-oils | Blending Lab, formulas, glossary, and fragrance data discussion; ties to MNKY LABZ dashboard. |
 | **MNKY VERSE** | #drops, #verse-blog, #quests, #dojo | Drops and seasonal releases; MNKY VERSE blog; quests and XP; Dojo (member hub). Link from Verse community page. |
 | **MNKY MAIN** | #community-hub, #announcements-main | Main site community hub; cross‑ecosystem announcements. Link from main community page. |
 

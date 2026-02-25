@@ -24,5 +24,5 @@ These HTTP APIs are **public** (no authentication required) and are used by the 
 
 ## Related
 
-- [SHOPIFY-LABZ-PAGES-AND-MENU.md](./SHOPIFY-LABZ-PAGES-AND-MENU.md) – MOOD LABZ pages and iframe routes.
+- [SHOPIFY-LABZ-PAGES-AND-MENU.md](./SHOPIFY-LABZ-PAGES-AND-MENU.md) – MOOD MNKY LABZ pages and iframe routes.
 - Verse routes are listed in `lib/supabase/middleware.ts` (`publicVersePaths`).
