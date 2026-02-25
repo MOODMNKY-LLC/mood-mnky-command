@@ -36,7 +36,7 @@ export function MainTryMoodMnkySection({ config, className, showHeading = true }
     {
       id: "chat",
       title: "Chat with MOOD MNKY",
-      description: "Ask about our brand, fragrances, or the MNKY VERSE.",
+      description: "Ask about our brand, fragrances, or the Dojo.",
       icon: MessageSquare,
       cta: "Try chat",
       onClick: () => setChatOpen(true),

@@ -1,13 +1,6 @@
-import { DojoFlowiseConfigClient } from "@/components/dojo/dojo-flowise-config-client";
+import { redirect } from "next/navigation";
 
-export default function DojoFlowisePage() {
-  return (
-    <div className="flex flex-col gap-6 p-4">
-      <h1 className="text-xl font-semibold">Flowise config</h1>
-      <p className="text-sm text-muted-foreground">
-        Manage override settings for your assigned chatflows. Open any chatflow in Dojo chat to use it.
-      </p>
-      <DojoFlowiseConfigClient />
-    </div>
-  );
+/** Canonical route is /dojo/me/flowise. Redirect so bookmarks and legacy links work. */
+export default function DojoFlowiseRedirect() {
+  redirect("/dojo/me/flowise");
 }

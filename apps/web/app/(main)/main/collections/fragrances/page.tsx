@@ -83,7 +83,7 @@ export default function MainCollectionsFragrancesPage() {
               Fragrances
             </h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
-              Explore our fragrance oil library. Use the Blending Lab in MNKY VERSE
+              Explore our fragrance oil library. Use the Blending Lab in the Dojo
               to create your own scent.
             </p>
           </div>

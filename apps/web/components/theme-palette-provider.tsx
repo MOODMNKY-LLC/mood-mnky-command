@@ -4,6 +4,7 @@ import * as React from 'react'
 
 const THEME_PALETTE_KEY = 'theme-palette'
 
+/** Palette = Main | Dojo (which look). Distinct from mode = light | dark (next-themes). */
 export type ThemePalette = 'main' | 'dojo'
 
 type ThemePaletteContextValue = {

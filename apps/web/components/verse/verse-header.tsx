@@ -72,7 +72,7 @@ export function VerseHeader({
             MOOD MNKY
           </Link>
           <Link
-            href="/dojo"
+            href="/dojo/me"
             className="font-verse-heading text-xl font-semibold tracking-tight text-verse-text"
           >
             MNKY DOJO
@@ -94,7 +94,7 @@ export function VerseHeader({
             </>
           )}
           <Link
-            href="/dojo"
+            href="/dojo/me"
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
           >
             <Home className="h-4 w-4" />
@@ -149,7 +149,7 @@ export function VerseHeader({
                 <span className="hidden sm:inline">Rewards</span>
               </Link>
               <Link
-                href="/dojo"
+                href="/dojo/me"
                 className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
                 title="Your Dojo"
               >

@@ -52,12 +52,25 @@ flowchart TB
 
 ---
 
+## Palette vs mode (don’t mix them)
+
+We have **two independent choices** that together define the look:
+
+| Concept | What it is | Values | Where it lives |
+|--------|-------------|--------|----------------|
+| **Palette** | Which look/brand (Main vs Dojo) | `main` \| `dojo` | `data-theme` on `<html>`, `ThemePaletteProvider`, localStorage `theme-palette`. Use **palette** in code and docs when you mean Main vs Dojo. |
+| **Mode** | Light vs dark (and system) | `light` \| `dark` \| `system` | next-themes, `class="dark"` on `<html>`. Use **mode** (or “theme” only when referring to next-themes) when you mean light/dark. |
+
+So: **palette** = Main or Dojo. **Mode** = light or dark. Four combinations: Main+light, Main+dark, Dojo+light, Dojo+dark. In code, prefer naming variables and props `palette` and `mode` (or `resolvedMode`) so the two are not confused.
+
+---
+
 ## Palette themes and mode (data-theme + next-themes)
 
-The app has **two palette themes**, each with **light and dark mode**:
+The app has **two palettes**, each with **light and dark mode**:
 
 1. **Main** — Black/white/grayscale only, glassmorphic (main site, LABZ).
-2. **Dojo** — Exact /verse palette: slate light (#f1f5f9, #0f172a, #475569), Verse dark (#181619, #c8c4c4, #94a3b8). Site-wide Dojo matches Verse storefront colors.
+2. **Dojo** — The Dojo theme: slate light (#f1f5f9, #0f172a, #475569), Dojo dark (#181619, #c8c4c4, #94a3b8). Used for the MNKY DOJO storefront and member hub; one palette, one product name.
 
 - **Palette** is controlled by `data-theme` on `<html>`: `main` or `dojo`. It is set by `ThemePaletteProvider` and persisted in localStorage under `theme-palette`. Use `ThemePaletteSwitcher` or `useThemePalette()` from `@/components/theme-palette-provider`.
 - **Mode** (light / dark / system) is controlled by **next-themes** via the `class` attribute on `<html>` (e.g. `class="dark"`). Existing togglers (`ThemeToggle`, `AnimatedThemeToggler`, `AuthModeToggle`) continue to use `setTheme("light"|"dark"|"system")`.
@@ -74,9 +87,9 @@ The root design system defines one **token contract** and two **theme implementa
 
 **Light:** White backgrounds, dark text, cool gray primary (`215 19% 35%`). **Dark:** Near-black backgrounds, light text, lighter gray primary (`213 24% 65%`).
 
-### Theme: Dojo (Verse palette)
+### Theme: Dojo
 
-**Light:** Same as /verse light — slate-100 background (#f1f5f9), slate-900 text (#0f172a), slate-600 primary/muted (#475569). **Dark:** Same as /verse dark — #181619 background, #c8c4c4 text, #94a3b8 muted/primary.
+**Light:** Slate-100 background (#f1f5f9), slate-900 text (#0f172a), slate-600 primary/muted (#475569). **Dark:** #181619 background, #c8c4c4 text, #94a3b8 muted/primary. This is the Dojo theme applied to the MNKY DOJO storefront and auth.
 
 ### Chart Colors
 
@@ -89,9 +102,9 @@ The root design system defines one **token contract** and two **theme implementa
 
 ---
 
-## MNKY DOJO storefront (verse-storefront.css)
+## MNKY DOJO storefront (Dojo theme)
 
-The MNKY DOJO storefront uses **root-supplied** `--verse-*` tokens (defined in `app/globals.css` per `[data-theme="main"]` / `[data-theme="dojo"]` and `.dark`). The **Dojo** palette (`data-theme="dojo"`) applies to the MNKY DOJO storefront so one palette equals one product name. The `.verse-storefront` class scopes layout and typography; `--verse-page-width` and `--verse-spacing-sections` are defined in verse-storefront.css. All color tokens (`--verse-bg`, `--verse-text`, `--verse-text-muted`, `--verse-button`, `--verse-button-text`, `--verse-border`, and RGB variants) come from the active palette theme and mode.
+The MNKY DOJO storefront uses the **Dojo theme**: root-supplied tokens (defined in `app/globals.css` under `[data-theme="dojo"]` and `.dark`) are consumed by the storefront and auth. The `.verse-storefront` class (in `verse-storefront.css`) scopes layout and typography; `--verse-page-width` and `--verse-spacing-sections` are defined there. Color tokens (`--verse-bg`, `--verse-text`, `--verse-text-muted`, `--verse-button`, `--verse-button-text`, `--verse-border`, and RGB variants) are the Dojo theme values when `data-theme="dojo"`. One palette, one product name (Dojo).
 
 ### Dropdown
 
@@ -115,7 +128,7 @@ The dashboard page uses the root design tokens and shadcn patterns: **Card**, **
 
 ### Auth LABZ Tab
 
-The auth page has two tabs: **Verse** (storefront) and **LABZ** (admin). The LABZ tab uses explicit light overrides:
+The auth page has two tabs: **Dojo** (storefront) and **LABZ** (admin). The LABZ tab uses explicit light overrides:
 
 ```tsx
 <DualAuthTabs appearance={activeTab === "labz" ? "light" : "default"} />
@@ -127,7 +140,7 @@ This ensures the LABZ auth card always renders in light mode, regardless of syst
 
 ## Auth
 
-Auth pages (`app/auth/`) use the **Verse design system** for consistent aesthetic with the storefront. They consume verse-storefront tokens via an auth shell.
+Auth pages (`app/auth/`) use the **Dojo theme** for consistent aesthetic with the storefront. They consume Dojo theme tokens via verse-storefront.css and auth-shell.
 
 ### Auth Shell
 
@@ -176,12 +189,12 @@ Main supports **light** and **dark** mode driven by the **Animated Theme Toggler
 
 ### Section architecture (landing page order)
 
-1. **Split hero** — Left: headline, subline, CTA pair (Shop the VERSE → `/verse`, Customize your scent → `/verse/blending-guide`). Right: **layered visual** (aligned with verse hero): **Dotted Map** (layer 0, low opacity, theme-aware), **Globe** (layer 1, grayscale COBE config by theme; hidden on iOS/narrow), **mascot** (layer 2, bottom-left, no card, optional drop-shadow by theme). Responsive: stack copy then right block on small screens.
+1. **Split hero** — Left: headline, subline, CTA pair (Shop the store → `/dojo`, Customize your scent → `/dojo/blending-guide`). Right: **layered visual** (aligned with Dojo hero): **Dotted Map** (layer 0, low opacity, theme-aware), **Globe** (layer 1, grayscale COBE config by theme; hidden on iOS/narrow), **mascot** (layer 2, bottom-left, no card, optional drop-shadow by theme). Responsive: stack copy then right block on small screens.
 2. **Feature cards** — 3–6 cards with icon (Lucide), title, and short copy (Extreme Personalization, Sensory Journeys, Handcrafted, The Dojo, Blending Lab, AI Companions). Uses `MainGlassCard` and `--main-section-gap`.
 3. **Social proof** — Single row of stats or “Trusted by” copy; grayscale, minimal.
 4. **Customization** — One section for scent and container personalization (copy + optional list); Tailwind tokens only.
-5. **FAQ** — shadcn Accordion with 4–6 MOOD MNKY / VERSE / product questions.
-6. **Explore** (optional) — Condensed VERSE + Blending Lab CTAs in two cards.
+5. **FAQ** — shadcn Accordion with 4–6 MOOD MNKY / Dojo / product questions.
+6. **Explore** (optional) — Condensed Dojo + Blending Lab CTAs in two cards.
 7. **Meet MOOD MNKY** (optional) — Compact chatbot block.
 8. **Footer** — `MainFooter` with glass treatment; no pattern overload.
 
@@ -276,7 +289,7 @@ The Jellyfin Custom CSS theme served from Supabase ([infra/service-themes/jellyf
 
 ## Shopify theme (storefront)
 
-The Shopify storefront theme (MNKY VERSE Theme) is aligned with the **Main** design system: grayscale-only color schemes and glassmorphism matching Main tokens.
+The Shopify storefront theme is aligned with the **Main** design system: grayscale-only color schemes and glassmorphism matching Main tokens.
 
 ### Token mapping
 
@@ -303,7 +316,7 @@ The MNKY BOX is a **Framed Editorial Modular Commerce** view for seasonal drops,
 ### Components and routes
 
 - **Components:** `components/mnky-box/` — BoxFrame, BoxHero, BoxGrid, BoxCard, BoxCTA. Use shadcn Card for BoxCard structure.
-- **Verse route:** `/verse/drops/[slug]` — loads issue + chapters from Supabase and renders the box layout. Link from issue detail: “View as MNKY BOX”.
+- **Dojo route:** `/dojo/drops/[slug]` — loads issue + chapters from Supabase and renders the box layout. Link from issue detail: “View as MNKY BOX”.
 - **API:** `GET /api/mag/issues/[slug]/box` returns issue, collection, and products (chapters with optional card_image_url from first panel).
 
 ### Files
@@ -351,8 +364,8 @@ If LABZ-specific overrides are needed later:
 - Auth shell: `app/auth/auth-shell.css`, `components/auth/auth-verse-shell.tsx`, `components/auth/auth-page-layout.tsx`
 - Dojo: `app/dojo/layout.tsx`, `docs/DOJO-SECTION.md`
 - Main: `app/(main)/main/main-site.css`, `app/(main)/main/main-glass.css`, `app/(main)/main/layout.tsx`, `components/main/`, `docs/MAIN-SECTION-DOMAINS.md`
-- Verse tokens: `app/(storefront)/verse/verse-storefront.css`
-- Glass effects: `app/(storefront)/verse/verse-glass.css`
+- Dojo storefront (tokens/layout): `app/(storefront)/verse/verse-storefront.css`
+- Dojo storefront glass: `app/(storefront)/verse/verse-glass.css`
 - MNKY BOX: `app/(storefront)/verse/mnky-box.css`, `components/mnky-box/`, `docs/MNKY-BOX-EDITORIAL-REFINED.md`
 - Shopify theme: `Shopify/theme/layout/theme.liquid`, `Shopify/theme/assets/component-glass.css`, `Shopify/theme/config/settings_data.json`, [Shopify/docs/SHOPIFY-THEME-BASELINE.md](Shopify/docs/SHOPIFY-THEME-BASELINE.md)
 - Tailwind config: `tailwind.config.ts`

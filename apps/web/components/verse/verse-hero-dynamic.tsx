@@ -136,7 +136,7 @@ export function VerseHeroDynamic() {
                 <Link href="/auth/login?next=/dojo">Sign in</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
-                <Link href="/dojo">Visit your Dojo</Link>
+                <Link href="/dojo/me">Visit your Dojo</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
                 <Link href="/dojo/products">Shop Products</Link>
@@ -154,7 +154,7 @@ export function VerseHeroDynamic() {
                 <Link href="/dojo/collections">Browse Collections</Link>
               </VerseButton>
               <VerseButton asChild variant="outline" size="lg">
-                <Link href="/dojo">Visit your Dojo</Link>
+                <Link href="/dojo/me">Visit your Dojo</Link>
               </VerseButton>
             </>
           )}
@@ -172,7 +172,7 @@ export function VerseHeroDynamic() {
               mapSamples={mapSamples}
               dotRadius={0.15}
               dotColor="currentColor"
-              className="h-full w-full text-verse-text"
+              className="h-full w-full text-verse-text-muted"
             />
           </div>
         </div>

@@ -22,12 +22,13 @@ import { DojoChatProvider } from "@/components/dojo/dojo-chat-context";
 import { DojoChatSidebarWithContext } from "@/components/dojo/dojo-chat-sidebar";
 
 function getBreadcrumbPage(pathname: string): string {
-  if (pathname === "/dojo" || pathname === "/dojo/") return "Home";
-  if (pathname.startsWith("/dojo/profile")) return "Profile";
-  if (pathname.startsWith("/dojo/chat")) return "MNKY CHAT";
-  if (pathname.startsWith("/dojo/preferences")) return "Preferences";
-  if (pathname.startsWith("/dojo/crafting/saved")) return "Saved Blends";
-  if (pathname.startsWith("/dojo/crafting")) return "Crafting";
+  if (pathname === "/dojo/me" || pathname === "/dojo/me/") return "Home";
+  if (pathname.startsWith("/dojo/me/profile")) return "Profile";
+  if (pathname.startsWith("/dojo/me/chat")) return "MNKY CHAT";
+  if (pathname.startsWith("/dojo/me/preferences")) return "Preferences";
+  if (pathname.startsWith("/dojo/me/crafting/saved")) return "Saved Blends";
+  if (pathname.startsWith("/dojo/me/crafting")) return "Crafting";
+  if (pathname.startsWith("/dojo/me/community")) return "Community";
   return "Home";
 }
 

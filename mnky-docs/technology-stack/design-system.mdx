@@ -6,7 +6,11 @@ icon: "palette"
 
 # Design System
 
-This document describes the color palette, design tokens, and design architecture for the MOOD MNKY ecosystem: **MOOD MNKY** (main site), **MNKY LABZ** (dashboard), and **MNKY DOJO** (storefront and member hub). The canonical source in the repo is `docs/DESIGN-SYSTEM.md`.
+This document describes the color palette, design tokens, and design architecture for the MOOD MNKY ecosystem: **MOOD MNKY** (main site), **MNKY LABZ** (dashboard), and **MNKY DOJO** (storefront and member hub).
+
+<Info>
+**Source of truth:** The app implementation is canonical. Token values and theme behavior are defined in `apps/web/app/globals.css` and section CSS under `apps/web/app/`. The repo doc `docs/DESIGN-SYSTEM.md` is the single design-system reference; this page mirrors it for the docs site.
+</Info>
 
 ## Architecture Overview
 
@@ -58,12 +62,16 @@ flowchart TB
     authShell --> authLayout
 ```
 
-## Palette Themes and Mode
+## Palette vs mode
 
-The app uses **two palette themes**, each with **light and dark mode**:
+**Palette** = Main | Dojo (which look). **Mode** = light | dark (next-themes). They are independent: four combinations (Main+light, Main+dark, Dojo+light, Dojo+dark). In code and docs, use **palette** when you mean Main vs Dojo, and **mode** when you mean light vs dark, so the two are not mixed up.
+
+## Palette themes and mode (data-theme + next-themes)
+
+The app uses **two palettes**, each with **light and dark mode**:
 
 1. **Main** — Black/white/grayscale only, glassmorphic. Used for the main site and LABZ.
-2. **Dojo** — Slate-based palette matching the MNKY DOJO storefront. Light: `#f1f5f9`, `#0f172a`, `#475569`. Dark: `#181619`, `#c8c4c4`, `#94a3b8`.
+2. **Dojo** — The Dojo theme: slate light (`#f1f5f9`, `#0f172a`, `#475569`), Dojo dark (`#181619`, `#c8c4c4`, `#94a3b8`). Applied to the MNKY DOJO storefront and auth; one palette, one product name.
 
 **Palette** is controlled by `data-theme` on `<html>`: `main` or `dojo`. It is set by `ThemePaletteProvider` and persisted in localStorage under `theme-palette`. Use `ThemePaletteSwitcher` or `useThemePalette()` from `@/components/theme-palette-provider`.
 
@@ -80,10 +88,10 @@ The root design system defines one **token contract** and two **theme implementa
 - **Light:** White backgrounds, dark text, cool gray primary (`215 19% 35%`).
 - **Dark:** Near-black backgrounds, light text, lighter gray primary (`213 24% 65%`).
 
-### Theme: Dojo (Verse palette)
+### Theme: Dojo
 
 - **Light:** Slate-100 background (#f1f5f9), slate-900 text (#0f172a), slate-600 primary/muted (#475569).
-- **Dark:** #181619 background, #c8c4c4 text, #94a3b8 muted/primary.
+- **Dark:** #181619 background, #c8c4c4 text, #94a3b8 muted/primary. This is the Dojo theme applied to the MNKY DOJO storefront and auth.
 
 ## Section Mapping
 

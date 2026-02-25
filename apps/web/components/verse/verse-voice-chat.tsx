@@ -7,14 +7,16 @@ import { ShimmeringText } from "@/components/ui/shimmering-text";
 import { VerseButton } from "@/components/verse/ui/button";
 import { Phone, PhoneOff, Loader2 } from "lucide-react";
 
-const VERSE_ORB_COLORS_LIGHT: [string, string] = ["#94a3b8", "#64748b"];
-const VERSE_ORB_COLORS_DARK: [string, string] = ["#c8c4c4", "#94a3b8"];
+const VERSE_ORB_COLORS_FALLBACK: [string, string] = ["#94a3b8", "#64748b"];
 
 function getVerseOrbColors(): [string, string] {
-  if (typeof document === "undefined") return VERSE_ORB_COLORS_LIGHT;
-  const storefront = document.querySelector(".verse-storefront");
-  const isDark = storefront?.getAttribute("data-verse-theme") === "dark";
-  return isDark ? VERSE_ORB_COLORS_DARK : VERSE_ORB_COLORS_LIGHT;
+  if (typeof document === "undefined") return VERSE_ORB_COLORS_FALLBACK;
+  const root = document.documentElement;
+  const style = getComputedStyle(root);
+  const primary = style.getPropertyValue("--verse-button").trim();
+  const secondary = style.getPropertyValue("--verse-text-muted").trim();
+  if (primary && secondary) return [primary, secondary];
+  return VERSE_ORB_COLORS_FALLBACK;
 }
 
 export interface VerseVoiceChatProps {
@@ -35,7 +37,7 @@ export function VerseVoiceChat({
   onError,
 }: VerseVoiceChatProps) {
   const [agentState, setAgentState] = useState<AgentState>(null);
-  const [colors, setColors] = useState<[string, string]>(VERSE_ORB_COLORS_LIGHT);
+  const [colors, setColors] = useState<[string, string]>(VERSE_ORB_COLORS_FALLBACK);
 
   const conversation = useConversation({
     onError: (err) => {
@@ -59,10 +61,9 @@ export function VerseVoiceChat({
 
   useEffect(() => {
     setColors(getVerseOrbColors());
-    const el = document.querySelector(".verse-storefront");
-    if (!el) return;
+    const root = document.documentElement;
     const obs = new MutationObserver(() => setColors(getVerseOrbColors()));
-    obs.observe(el, { attributes: true, attributeFilter: ["data-verse-theme"] });
+    obs.observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
     return () => obs.disconnect();
   }, []);
 

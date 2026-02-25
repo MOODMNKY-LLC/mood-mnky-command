@@ -1,6 +1,5 @@
 ---
-description: when asked to create a prd. 
-globs: 
+description: when asked to create a prd.
 alwaysApply: false
 ---
 \`\`\`yaml

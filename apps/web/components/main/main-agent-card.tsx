@@ -41,9 +41,9 @@ export interface MainAgentCardProps {
 }
 
 const AGENT_ROUTES: Record<string, string> = {
-  mood_mnky: "/verse/agents/mood_mnky",
-  sage_mnky: "/verse/agents/sage_mnky",
-  code_mnky: "/verse/agents/code_mnky",
+  mood_mnky: "/dojo/agents/mood_mnky",
+  sage_mnky: "/dojo/agents/sage_mnky",
+  code_mnky: "/dojo/agents/code_mnky",
 }
 
 export function MainAgentCard({
@@ -57,8 +57,8 @@ export function MainAgentCard({
   withDialog = true,
   className,
 }: MainAgentCardProps) {
-  const profileHref = AGENT_ROUTES[slug] ?? "/verse/chat"
-  const chatHref = "/verse/chat"
+  const profileHref = AGENT_ROUTES[slug] ?? "/dojo/chat"
+  const chatHref = "/dojo/chat"
   const bio = description?.trim() || "No bio."
 
   const card = (

@@ -7,8 +7,8 @@ import { useThemePalette, type ThemePalette } from '@/components/theme-palette-p
 import { cn } from '@/lib/utils'
 
 /**
- * Toggles palette theme between Main (grayscale) and Dojo (brown/blue/off-white).
- * One click switches to the other theme, like the light/dark mode toggle.
+ * Toggles palette (Main | Dojo) between grayscale and Dojo slate. One click switches to the other.
+ * This is palette, not mode: for light/dark use AnimatedThemeToggler or ThemeToggle.
  */
 export function ThemePaletteSwitcher({
   className,

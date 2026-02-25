@@ -12,7 +12,7 @@ import { CheckCircle2, ShoppingBag } from "lucide-react"
 const COLLECTIONS_FEATURES = [
   "List collections from Shopify (Storefront API or LABZ-backed API).",
   "Grid of collection cards with image, title, and product count.",
-  "Link to collection pages or MNKY VERSE.",
+  "Link to collection pages or the Dojo.",
   "Optional filters (e.g. by product type).",
 ]
 
@@ -121,7 +121,7 @@ export default function MainCollectionsShopPage() {
               </MainGlassCard>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button asChild>
-                  <Link href="/dojo">Shop MNKY VERSE</Link>
+                  <Link href="/dojo">Shop the Dojo</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link href="/main/collections">Back to collections</Link>
@@ -183,7 +183,7 @@ export default function MainCollectionsShopPage() {
           </div>
           <div className="flex justify-center pt-4">
             <Button asChild variant="outline">
-              <Link href="/dojo">Shop all in MNKY VERSE</Link>
+              <Link href="/dojo">Shop all in the Dojo</Link>
             </Button>
           </div>
         </div>

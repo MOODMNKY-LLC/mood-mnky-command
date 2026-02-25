@@ -10,7 +10,7 @@ const COLLECTION_SECTIONS = [
   {
     href: "/main/collections/shop",
     label: "Shop",
-    description: "Browse our Shopify collections. Shop in MNKY VERSE.",
+    description: "Browse our Shopify collections. Shop in the Dojo.",
     icon: ShoppingBag,
     mascot: MAIN_MASCOT_ASSETS.collections,
   },

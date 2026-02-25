@@ -15,7 +15,7 @@ export function VerseBrandBand() {
         "verse-brand-band flex w-full items-center justify-center py-2 md:py-3",
         isDark
           ? "border-y border-[var(--verse-border)] bg-[var(--verse-text)] text-[var(--verse-bg)]"
-          : "border-y border-white/10 bg-slate-900 text-slate-100"
+          : "border-y border-[var(--verse-border)] bg-[var(--verse-text)] text-[var(--verse-bg)]"
       )}
       aria-hidden
     >

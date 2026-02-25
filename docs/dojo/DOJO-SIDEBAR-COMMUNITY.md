@@ -16,15 +16,15 @@ Short reference for the Dojo sidebar structure and Community hub after the sideb
 
 - **Community** is a second section in the Dojo team/context switcher dropdown, below the context list.
 - **Join Discord**: Shown when `NEXT_PUBLIC_DISCORD_INVITE_URL` is set; opens invite in a new tab.
-- **Link Discord account**: Links to `/verse/auth/discord/link` (same tab for OAuth).
-- **Community hub**: Links to `/dojo/community` (dashboard).
+- **Link Discord account**: Links to `/dojo/auth/discord/link` (same tab for OAuth).
+- **Community hub**: Links to `/dojo/me/community` (member hub dashboard).
 - **MNKY VERSE Blog**, **Quests & XP**, **Manga & Issues**: Open Verse routes in a new tab.
 
 ## Dojo Community hub page
 
-- **Route**: `/dojo/community`.
+- **Route**: `/dojo/me/community`.
 - **Purpose**: Single dashboard page with cards for Discord (invite + link account), Blog, Quests, Manga, UGC, and link to Verse community page. Keeps users inside the dashboard while offering all community entry points.
-- **Quick access**: The sidebar "Community" (formerly "More") button links to `/dojo/community`.
+- **Quick access**: The sidebar "Community" (formerly "More") button links to `/dojo/me/community`.
 
 ## Config and files
 

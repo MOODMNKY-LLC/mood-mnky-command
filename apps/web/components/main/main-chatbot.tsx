@@ -37,16 +37,16 @@ type MainAgent = {
 
 const SUGGESTIONS = [
   "What is MOOD MNKY?",
-  "Tell me about the MNKY VERSE",
+  "Tell me about the Dojo",
   "What fragrances do you offer?",
 ]
 
 const HANDOFF_SUGGESTIONS: { label: string; agentSlug: string; text: string }[] = [
   { label: "Ask SAGE about learning", agentSlug: "sage_mnky", text: "I'd like to learn more about fragrance and wellness. Can you guide me?" },
-  { label: "Talk to CODE about tech", agentSlug: "code_mnky", text: "I'm curious about how the Blending Lab and VERSE work technically." },
+  { label: "Talk to CODE about tech", agentSlug: "code_mnky", text: "I'm curious about how the Blending Lab and Dojo work technically." },
 ]
 
-const DEFAULT_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the MNKY VERSE."
+const DEFAULT_QUERY = "Tell me about MOOD MNKY – bespoke fragrance and the Dojo."
 
 export interface MainChatbotProps {
   className?: string
@@ -156,7 +156,7 @@ export function MainChatbot({ className }: MainChatbotProps) {
             {messages.length === 0 && (
               <ConversationEmptyState
                 title={`Ask ${currentAgent?.displayName ?? "MOOD MNKY"}`}
-                description="Learn about our brand, the MNKY VERSE, fragrances, and more."
+                description="Learn about our brand, the Dojo, fragrances, and more."
                 icon={<MessageSquare className="h-8 w-8" />}
               >
                 <Suggestions className="mt-4">
@@ -249,7 +249,7 @@ export function MainChatbot({ className }: MainChatbotProps) {
               placeholder={
                 currentAgent
                   ? `Ask ${currentAgent.displayName}…`
-                  : "Ask about MOOD MNKY, fragrances, MNKY VERSE..."
+                  : "Ask about MOOD MNKY, fragrances, the Dojo..."
               }
               className="min-h-[44px] resize-none"
             />

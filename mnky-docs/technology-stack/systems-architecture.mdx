@@ -98,10 +98,26 @@ The fix is to keep **VerseAuthContext** and **DojoAuthContext** in **server layo
 
 The root dojo layout stays a simple pass-through server component, so it never imports those contexts. All storefront and member pages are covered by their own server layouts, and the client-only chrome components (DojoStorefrontChrome, DojoDashboardLayout) do not import server code.
 
+## App and data as source of truth
+
+The Next.js app (`apps/web`) and its Supabase data are the source of truth for behavior and content. Documentation in mnky-docs reflects this implementation.
+
+### Key data sources (Main and Dojo)
+
+| Surface | Data source | Repo reference |
+|---------|-------------|----------------|
+| Main landing FAQ, features, social proof | Supabase `main_landing_faq`, `main_landing_features`, `main_landing_social_proof` | `lib/main-landing-data.ts` → `getMainLandingData()` |
+| Main agent cards | Supabase `agent_profiles` (active) | `lib/main-landing-data.ts` → `getMainAgents()` |
+| Main voice/config | Supabase `main_elevenlabs_config` | `lib/main-landing-data.ts` → `getMainElevenLabsConfig()` |
+| Main featured fragrances | Supabase `fragrance_oils` (admin) | `lib/main-landing-data.ts` → `getMainFeaturedFragrances()` |
+
+When tables are empty or missing, the app falls back to static content (e.g. FAQ fallbacks in components). For full design tokens and section mapping, see [Design System](/technology-stack/design-system).
+
 ## Summary
 
 - **Routes:** `/main` (brand), `/dojo` (storefront + member at `/dojo/me`), LABZ at `/` or `/platform`; `/verse` redirects to `/dojo`.
 - **Layouts:** Dojo uses route-group server layouts for storefront and member hub; root dojo layout is pass-through.
 - **Boundary:** Auth and cookie-dependent code live in server components (layouts); client components only handle UI and theme so the build stays valid.
+- **Source of truth:** App (`apps/web`) and Supabase data (tables above); mnky-docs and `docs/` describe the implemented state.
 
 For navigation surfaces and cross-links, see [Navigation and MNKY DOJO](/technology-stack/navigation-and-dojo). For design tokens and section mapping, see [Design System](/technology-stack/design-system).

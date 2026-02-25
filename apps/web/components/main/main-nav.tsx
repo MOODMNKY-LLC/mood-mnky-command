@@ -34,7 +34,7 @@ const COLLECTIONS_LINKS = [
 ] as const
 
 const NAV_LINKS = [
-  { href: "/verse", label: "Dojo" },
+  { href: "/dojo", label: "Dojo" },
   { href: "/main/about", label: "About" },
   { href: "/main/design", label: "Design" },
   { href: "/main/services", label: "Services" },

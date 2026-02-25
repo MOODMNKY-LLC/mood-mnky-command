@@ -39,7 +39,7 @@ export default async function MainMediaPage() {
                 Media
               </h1>
               <p className="text-muted-foreground">
-                A showcase of the media we serve across the MNKY VERSE.
+                A showcase of the media we serve across the Dojo.
               </p>
             </div>
           </BlurFade>

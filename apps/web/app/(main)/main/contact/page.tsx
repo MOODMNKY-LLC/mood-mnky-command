@@ -19,13 +19,13 @@ export default function MainContactPage() {
               Contact
             </h1>
             <p className="mt-4 text-muted-foreground">
-              Reach out via the form below, or connect in the MNKY VERSE
+              Reach out via the form below, or connect in the Dojo
               community. Questions about fragrances, orders, or the MNKY
               ecosystem—we&apos;re here.
             </p>
             <div className="mt-6 flex flex-wrap gap-4">
               <Button asChild>
-                <Link href="/dojo">Go to MNKY VERSE</Link>
+                <Link href="/dojo">Go to the Dojo</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/dojo/community">Community</Link>

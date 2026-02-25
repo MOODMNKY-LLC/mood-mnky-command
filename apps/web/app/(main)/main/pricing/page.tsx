@@ -4,7 +4,7 @@ import { MainNav, MainGlassCard, MainFooter } from "@/components/main"
 
 export const metadata = {
   title: "Pricing – MOOD MNKY",
-  description: "Explore MOOD MNKY and MNKY VERSE offerings.",
+  description: "Explore MOOD MNKY and the Dojo offerings.",
 }
 
 export default function MainPricingPage() {
@@ -18,13 +18,13 @@ export default function MainPricingPage() {
             Pricing
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Discover products and membership in the MNKY VERSE. We offer
+            Discover products and membership in the Dojo. We offer
             accessible premium experiences through engagement-based
             alternatives—subscribe and save on refills. Always scentsing the MOOD.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Button asChild>
-              <Link href="/dojo">Shop in MNKY VERSE</Link>
+              <Link href="/dojo">Shop in the Dojo</Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/dojo/blending-guide">Blending Lab</Link>

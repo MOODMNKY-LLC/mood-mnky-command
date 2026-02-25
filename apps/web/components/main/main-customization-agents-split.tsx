@@ -39,7 +39,7 @@ const FAQ_FALLBACK: MainLandingFaqItem[] = [
   { id: "2", question: "What is the Blending Lab?", answer: "The Blending Lab is our interactive space where you choose fragrance notes and ratios to create a custom scent. You can experiment with accords and receive a handcrafted bottle that's uniquely yours.", sort_order: 1 },
   { id: "3", question: "How do I customize my scent?", answer: "Visit the Blending Lab (or blending guide) to explore our note library, adjust ratios, and save your profile. You can also work with MOOD MNKY—our AI companion—for recommendations before you blend.", sort_order: 2 },
   { id: "4", question: "Do you ship internationally?", answer: "We currently ship to select regions. Check the footer or contact page for the latest shipping options and delivery times. Custom blends may have slightly longer lead times.", sort_order: 3 },
-  { id: "5", question: "What is the VERSE?", answer: "The VERSE is our storefront and community space: shop ready-to-wear scents, explore the Blending Lab, and connect with MOOD MNKY and other AI companions for a full sensory journey.", sort_order: 4 },
+  { id: "5", question: "What is the Dojo?", answer: "The Dojo is our storefront and community space: shop ready-to-wear scents, explore the Blending Lab, and connect with MOOD MNKY and other AI companions for a full sensory journey.", sort_order: 4 },
 ]
 
 function roleFromDisplayName(displayName: string): string {
@@ -200,7 +200,7 @@ export function MainCustomizationAgentsSplit({
                     href="/dojo/chat"
                     className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:underline"
                   >
-                    Open in VERSE
+                    Open in Dojo
                   </Link>
                 </div>
               </div>

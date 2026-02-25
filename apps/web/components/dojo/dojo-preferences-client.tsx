@@ -460,7 +460,7 @@ export function DojoPreferencesClient() {
               )}
             </p>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dojo/crafting/saved">View saved blends</Link>
+              <Link href="/dojo/me/crafting/saved">View saved blends</Link>
             </Button>
           </div>
         </CardContent>

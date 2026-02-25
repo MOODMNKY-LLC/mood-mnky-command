@@ -1,6 +1,5 @@
 ---
 description: Comprehensive MCP tool usage guidelines for all configured servers
-globs: 
 alwaysApply: true
 ---
 

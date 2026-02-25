@@ -204,21 +204,13 @@ export function VerseChatPopup({
             {agents.length > 0 && (
               <Select value={agentSlug} onValueChange={setAgentSlug}>
                 <SelectTrigger
-                  className={
-                    theme === "dark"
-                      ? "h-8 w-[130px] border-[rgba(200,196,196,0.2)] bg-[rgba(24,22,25,0.9)] text-verse-text"
-                      : "h-8 w-[130px] border-[var(--verse-border)] bg-[rgba(241,245,249,0.9)] text-verse-text"
-                  }
+                  className="h-8 w-[130px] border-[var(--verse-border)] bg-[var(--verse-bg)]/90 text-verse-text"
                 >
                   <SelectValue placeholder="Agent" />
                 </SelectTrigger>
                 <SelectContent
                   data-verse-theme={theme}
-                  className={
-                    theme === "dark"
-                      ? "verse-storefront border-[rgba(200,196,196,0.2)] bg-[rgba(24,22,25,0.98)] text-[#c8c4c4] backdrop-blur-xl"
-                      : "verse-storefront border-[rgba(15,23,42,0.12)] bg-[rgba(241,245,249,0.98)] text-[#0f172a] backdrop-blur-xl"
-                  }
+                  className="verse-storefront border-[var(--verse-border)] bg-[var(--verse-bg)]/98 text-[var(--verse-text)] backdrop-blur-xl"
                 >
                   {agents.map((a) => (
                     <SelectItem key={a.slug} value={a.slug}>

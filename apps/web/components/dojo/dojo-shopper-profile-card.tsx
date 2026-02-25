@@ -63,7 +63,7 @@ export function DojoShopperProfileCard({
                 )}
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-full justify-between" asChild>
-                <Link href="/dojo/preferences">
+                <Link href="/dojo/me/preferences">
                   Manage preferences
                   <ChevronRight className="h-4 w-4" />
                 </Link>

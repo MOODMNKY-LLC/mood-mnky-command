@@ -582,7 +582,7 @@ export function VerseProfileClient({
             )}
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/dojo/preferences">More preferences in Dojo</Link>
+            <Link href="/dojo/me/preferences">More preferences in Dojo</Link>
           </Button>
         </CardContent>
       </Card>
@@ -902,7 +902,7 @@ export function VerseProfileClient({
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/dojo/preferences">Dojo preferences</Link>
+            <Link href="/dojo/me/preferences">Dojo preferences</Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/dojo">Open Dojo</Link>

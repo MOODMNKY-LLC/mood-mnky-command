@@ -65,9 +65,9 @@ export function DojoContextProvider({
   // Sync context from pathname on mount/navigation (pathname overrides persisted)
   React.useEffect(() => {
     if (!pathname) return;
-    if (pathname.startsWith("/dojo/chat")) {
+    if (pathname.startsWith("/dojo/me/chat")) {
       setContextIdState("chat");
-    } else if (pathname.startsWith("/dojo/crafting")) {
+    } else if (pathname.startsWith("/dojo/me/crafting")) {
       setContextIdState("crafting");
     } else if (pathname.startsWith("/dojo")) {
       setContextIdState("home");

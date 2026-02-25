@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useThemePalette } from "@/components/theme-palette-provider";
 import { useVersePersonaState } from "@/components/verse/verse-persona-state-context";
 import { useVerseTheme } from "@/components/verse/verse-theme-provider";
 import { VerseChatPopup } from "@/components/verse/verse-chat-popup";
@@ -34,9 +35,11 @@ export function VerseAdminDock({
   isAdmin?: boolean;
   user?: VerseUser;
 }) {
+  const { palette } = useThemePalette();
   const { personaState } = useVersePersonaState();
   const { theme } = useVerseTheme();
   const [realtimeOpen, setRealtimeOpen] = useState(false);
+  const isDojoPalette = palette === "dojo";
 
   return (
     <div
@@ -47,9 +50,11 @@ export function VerseAdminDock({
         <Dock
           className={cn(
             "shadow-2xl backdrop-blur-2xl",
-            theme === "dark"
-              ? "border-[var(--verse-border)] bg-[var(--verse-bg)]/90 shadow-black/20"
-              : "border-verse-text/20 bg-slate-200/90 shadow-black/5"
+            isDojoPalette && "verse-dock-bar border-[var(--verse-dock-border,var(--verse-border))]",
+            !isDojoPalette &&
+              (theme === "dark"
+                ? "border-[var(--verse-border)] bg-[var(--verse-bg)]/90 shadow-black/20"
+                : "border-[var(--verse-border)] bg-[var(--verse-bg)]/90 shadow-black/5")
           )}
           iconSize={36}
           iconMagnification={48}
@@ -74,7 +79,7 @@ export function VerseAdminDock({
               {user && (
                 <DockIcon>
                   <Link
-                    href="/dojo"
+                    href="/dojo/me"
                     className="flex size-full items-center justify-center text-verse-text"
                     title="Your Dojo"
                   >
@@ -120,7 +125,7 @@ export function VerseAdminDock({
               {user && (
                 <DockIcon>
                   <Link
-                    href="/dojo"
+                    href="/dojo/me"
                     className="flex size-full items-center justify-center text-verse-text"
                     title="Your Dojo"
                   >
@@ -139,7 +144,7 @@ export function VerseAdminDock({
               </DockIcon>
               <DockIcon>
                 <Link
-                  href="/dojo"
+                  href="/dojo/me"
                   className="flex size-full items-center justify-center text-verse-text"
                   title="Dojo"
                 >

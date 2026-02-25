@@ -247,7 +247,7 @@ export function DojoHomeSections({
                 <Heart className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{wishlistCount} in wishlist</span>
                 <Button variant="link" className="h-auto p-0 text-xs" asChild>
-                  <Link href="/dojo/preferences">Manage</Link>
+                  <Link href="/dojo/me/preferences">Manage</Link>
                 </Button>
               </p>
             )}
@@ -301,13 +301,13 @@ export function DojoHomeSections({
               )}
             <div className="flex flex-col gap-1">
               <Button variant="ghost" size="sm" className="h-8 w-full justify-start" asChild>
-                <Link href="/dojo/crafting">
+                <Link href="/dojo/me/crafting">
                   Open Crafting
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="ghost" size="sm" className="h-8 w-full justify-start" asChild>
-                <Link href="/dojo/preferences">
+                <Link href="/dojo/me/preferences">
                   Manage in Preferences
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>

@@ -40,38 +40,47 @@ export const AnimatedThemeToggler = ({
     if (!buttonRef.current) return
     const newTheme = !isDark ? "dark" : "light"
 
-    await document.startViewTransition(() => {
+    const runUpdate = () => {
       flushSync(() => {
         setIsDark(!isDark)
         document.documentElement.classList.toggle("dark", newTheme === "dark")
         localStorage.setItem("theme", newTheme)
         setTheme(newTheme)
       })
-    }).ready
+    }
 
-    const { top, left, width, height } =
-      buttonRef.current.getBoundingClientRect()
-    const x = left + width / 2
-    const y = top + height / 2
-    const maxRadius = Math.hypot(
-      Math.max(left, window.innerWidth - left),
-      Math.max(top, window.innerHeight - top)
-    )
+    const supportsViewTransition =
+      typeof document !== "undefined" && "startViewTransition" in document
 
-    document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${maxRadius}px at ${x}px ${y}px)`,
-        ],
-      },
-      {
-        duration,
-        easing: "ease-in-out",
-        pseudoElement: "::view-transition-new(root)",
-      }
-    )
-  }, [isDark, duration])
+    if (supportsViewTransition) {
+      await document.startViewTransition(runUpdate).ready
+
+      const { top, left, width, height } =
+        buttonRef.current.getBoundingClientRect()
+      const x = left + width / 2
+      const y = top + height / 2
+      const maxRadius = Math.hypot(
+        Math.max(left, window.innerWidth - left),
+        Math.max(top, window.innerHeight - top)
+      )
+
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      )
+    } else {
+      runUpdate()
+    }
+  }, [isDark, duration, setTheme])
 
   return (
     <button

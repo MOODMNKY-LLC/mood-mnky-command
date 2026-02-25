@@ -10,7 +10,7 @@ const DISCORD_INVITE_URL =
 export const metadata = {
   title: "Community – MOOD MNKY",
   description:
-    "Our community touchpoints: Discord server, blog, and the MNKY VERSE. Connect with MOOD MNKY.",
+    "Our community touchpoints: Discord server, blog, and the Dojo. Connect with MOOD MNKY.",
 }
 
 export default async function MainCommunityPage() {
@@ -28,7 +28,7 @@ export default async function MainCommunityPage() {
             </h1>
             <p className="text-muted-foreground">
               Connect with MOOD MNKY through our blog, Discord server, and the
-              MNKY VERSE. Join the conversation and stay in the loop.
+              The Dojo. Join the conversation and stay in the loop.
             </p>
           </div>
 
@@ -43,7 +43,7 @@ export default async function MainCommunityPage() {
                 and member-only features.
               </p>
               <Button asChild className="w-fit">
-                <Link href="/dojo/community">Visit your Dojo</Link>
+                <Link href="/dojo/me">Visit your Dojo</Link>
               </Button>
             </MainGlassCard>
           )}
@@ -68,7 +68,7 @@ export default async function MainCommunityPage() {
                   Chat with the community, get early drops, and connect with
                   other fragrance enthusiasts. Join for events, support, and
                   exclusive updates. Start in #welcome-and-rules, then explore
-                  MNKY VERSE and MNKY LABZ channels.
+                  Dojo and MNKY LABZ channels.
                 </p>
                 <Button asChild className="w-fit">
                   <a
@@ -89,7 +89,7 @@ export default async function MainCommunityPage() {
                 </span>
                 <div>
                   <h2 className="font-semibold text-foreground">
-                    MNKY VERSE Blog
+                    Dojo Blog
                   </h2>
                   <p className="text-xs text-muted-foreground">
                     Stories and guides
@@ -97,7 +97,7 @@ export default async function MainCommunityPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Read about fragrance, blending, and the MNKY VERSE. Guides,
+                Read about fragrance, blending, and the Dojo. Guides,
                 behind-the-scenes, and community spotlights.
               </p>
               <Button asChild variant="outline" className="w-fit">
@@ -108,7 +108,7 @@ export default async function MainCommunityPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             More community features—quests, manga, and UGC—live in the Dojo and
-            on the MNKY VERSE. Sign in to unlock your Dojo.
+            in the Dojo. Sign in to unlock your Dojo hub.
           </p>
         </div>
       </main>

@@ -1,6 +1,5 @@
 ---
 description: Project identity (mood-mnky-command), documentation usage, tech stack, and coding standards
-globs:
 alwaysApply: true
 ---
 

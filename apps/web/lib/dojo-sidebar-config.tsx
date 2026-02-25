@@ -163,9 +163,9 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
     label: "Dojo",
     items: [
       { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Dojo Home", url: "/verse", icon: Globe },
+      { title: "Dojo Home", url: "/dojo", icon: Globe },
       { title: "Home", url: "/dojo", icon: Home },
-      { title: "Preferences", url: "/dojo/preferences", icon: Settings },
+      { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
   },
 ];
@@ -200,7 +200,7 @@ export const dojoCraftingQuickAccessItems: { name: string; url: string; icon: Lu
 /** Chat quick access */
 export const dojoChatQuickAccessItems: { name: string; url: string; icon: LucideIcon }[] = [
   { name: "New chat", url: "/dojo/chat", icon: MessageSquare },
-  { name: "Flowise config", url: "/dojo/flowise", icon: Sliders },
+  { name: "Flowise config", url: "/dojo/me/flowise", icon: Sliders },
 ];
 
 /** Get quick access items for the active context */

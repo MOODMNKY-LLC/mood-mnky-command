@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const QUICK_ACTIONS = [
   {
     title: "Preferences",
-    href: "/dojo/preferences",
+    href: "/dojo/me/preferences",
     icon: Settings,
     subtitle: "Agent, fragrance, shop sync",
   },

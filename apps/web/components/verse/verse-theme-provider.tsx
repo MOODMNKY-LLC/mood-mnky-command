@@ -14,10 +14,10 @@ type VerseThemeContextValue = {
 const VerseThemeContext = createContext<VerseThemeContextValue | null>(null);
 
 /**
- * Bridges next-themes to Verse: useVerseTheme() returns the same theme as the rest of the app
- * so data-verse-theme and verse CSS stay in sync with the app-wide theme (and AnimatedThemeToggler).
- * Uses a mounted guard so the initial theme is "light" until after hydration, avoiding a server/client
- * mismatch when next-themes resolves to "dark" from localStorage on the client.
+ * Bridges next-themes (light/dark MODE) to Verse. useVerseTheme() returns the same mode as the rest
+ * of the app so verse CSS stays in sync with the app-wide mode (AnimatedThemeToggler).
+ * Note: "theme" here = mode (light|dark). For palette (Main|Dojo) use useThemePalette().
+ * Uses a mounted guard so the initial mode is "light" until after hydration.
  */
 export function VerseThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme: resolvedTheme, setTheme: setNextTheme } = useTheme();

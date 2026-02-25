@@ -19,7 +19,7 @@ import { BlurFade } from "@/components/ui/blur-fade"
 export const metadata = {
   title: "Loyalty – MNKY Rewards",
   description:
-    "Earn XP, level up, complete quests, and unlock rewards. See how our gamification ties into the shop, community, and MNKY VERSE.",
+    "Earn XP, level up, complete quests, and unlock rewards. See how our gamification ties into the shop, community, and the Dojo.",
 }
 
 const XP_TO_LEVEL_2 = 100

@@ -40,7 +40,7 @@ export function MainWaitlistForm({ className }: { className?: string }) {
     <MainGlassCard className={cn("max-w-md", className)}>
       <h3 className="font-semibold text-foreground">Get early access</h3>
       <p className="mt-1 text-sm text-muted-foreground">
-        Join the waitlist for updates and early access to the MNKY VERSE.
+        Join the waitlist for updates and early access to the Dojo.
       </p>
       {status === "success" ? (
         <p className="mt-4 text-sm text-green-600 dark:text-green-400">

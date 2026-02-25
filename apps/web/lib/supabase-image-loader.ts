@@ -31,10 +31,10 @@ export default function supabaseLoader({
       return `${url.origin}${renderPath}?${params.toString()}`
     }
 
-    // Local paths like /verse/mood-mnky-3d.png: serve directly from public/ to avoid
-    // Image Optimization fetching issues in dev/production.
+    // Local paths like /verse/mood-mnky-3d.png: serve from public/; append width so loader implements width (Next.js contract).
     if (src.startsWith("/") && !src.startsWith("//")) {
-      return src
+      const sep = src.includes("?") ? "&" : "?"
+      return `${src}${sep}w=${width}`
     }
   } catch {
     // Invalid URL, fall through

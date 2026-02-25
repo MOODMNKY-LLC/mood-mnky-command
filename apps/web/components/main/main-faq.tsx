@@ -40,9 +40,9 @@ const FAQ_FALLBACK: MainLandingFaqItem[] = [
   },
   {
     id: "5",
-    question: "What is the VERSE?",
+    question: "What is the Dojo?",
     answer:
-      "The VERSE is our storefront and community space: shop ready-to-wear scents, explore the Blending Lab, and connect with MOOD MNKY and other AI companions for a full sensory journey.",
+      "The Dojo is our storefront and community space: shop ready-to-wear scents, explore the Blending Lab, and connect with MOOD MNKY and other AI companions for a full sensory journey.",
     sort_order: 4,
   },
 ]

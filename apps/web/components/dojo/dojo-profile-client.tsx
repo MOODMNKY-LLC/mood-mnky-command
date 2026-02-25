@@ -564,7 +564,7 @@ export function DojoProfileClient({
               {prefsSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save preferences"}
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dojo/preferences">More preferences in Dojo</Link>
+              <Link href="/dojo/me/preferences">More preferences in Dojo</Link>
             </Button>
           </CardContent>
         </Card>
@@ -864,7 +864,7 @@ export function DojoProfileClient({
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dojo/preferences">Dojo preferences</Link>
+              <Link href="/dojo/me/preferences">Dojo preferences</Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link href="/dojo">Open Dojo</Link>

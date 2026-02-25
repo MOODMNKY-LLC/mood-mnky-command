@@ -117,7 +117,7 @@ export function DojoSidebarFooter() {
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dojo/preferences">
+                <Link href="/dojo/me/preferences">
                   <Settings className="h-4 w-4" />
                   Preferences
                 </Link>

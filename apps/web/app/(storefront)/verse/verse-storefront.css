@@ -1,5 +1,5 @@
-/* MNKY VERSE storefront - tokens from root (data-theme + .dark) */
-/* --verse-bg, --verse-text, etc. are set in app/globals.css per [data-theme="main"] / [data-theme="dojo"] and .dark */
+/* MNKY DOJO storefront – Dojo theme tokens from root (data-theme + .dark) */
+/* --verse-bg, --verse-text, etc. are set in app/globals.css per [data-theme="dojo"] and .dark */
 
 .verse-storefront {
   --verse-page-width: 1600px;
@@ -41,4 +41,22 @@
   background-color: var(--verse-bg) !important;
   color: var(--verse-text);
   isolation: isolate;
+}
+
+/* Dojo dock bar: theme-aware (light = darker bar for contrast, dark = page bg). Uses --verse-dock-* from globals.css. */
+.verse-dock-bar {
+  background: var(--verse-dock-bg, var(--verse-bg)) !important;
+  border-color: var(--verse-dock-border, var(--verse-border));
+  color: var(--verse-dock-text, var(--verse-text));
+}
+.verse-dock-bar a,
+.verse-dock-bar button,
+.verse-dock-bar [class*="text-verse"] {
+  color: var(--verse-dock-text, var(--verse-text)) !important;
+}
+.verse-dock-bar a:hover,
+.verse-dock-bar button:hover {
+  color: var(--verse-dock-text, var(--verse-text)) !important;
+  opacity: 0.95;
+  filter: brightness(1.1);
 }

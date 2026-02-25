@@ -82,18 +82,18 @@ export default async function MainLandingPage() {
           </BlurFade>
         )}
 
-        {/* Explore – VERSE + Blending (bento 2-col) */}
+        {/* Explore – Dojo + Blending (bento 2-col) */}
         <BlurFade delay={0.17} inView inViewMargin="-20px" className="col-span-full">
           <section className="grid gap-6 md:grid-cols-2">
             <MainGlassCard className="flex flex-col">
               <h2 className="text-xl font-semibold text-foreground">
-                MNKY VERSE
+                The Dojo
               </h2>
               <p className="mt-2 flex-1 text-sm text-muted-foreground">
                 Shop, explore the blending guide, and connect in the community.
               </p>
               <Button asChild className="mt-4">
-                <Link href="/dojo">Explore VERSE</Link>
+                <Link href="/dojo">Explore Dojo</Link>
               </Button>
             </MainGlassCard>
             <MainGlassCard className="flex flex-col">

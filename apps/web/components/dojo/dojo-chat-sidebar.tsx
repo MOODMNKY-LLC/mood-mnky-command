@@ -351,12 +351,12 @@ export function DojoChatSidebar({
               <SidebarMenuSub>
                 <SidebarMenuSubItem>
                   <SidebarMenuSubButton asChild>
-                    <Link href="/dojo/flowise">Flowise config</Link>
+                    <Link href="/dojo/me/flowise">Flowise config</Link>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
                 <SidebarMenuSubItem>
                   <SidebarMenuSubButton asChild>
-                    <Link href="/dojo/preferences">Settings</Link>
+                    <Link href="/dojo/me/preferences">Settings</Link>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               </SidebarMenuSub>

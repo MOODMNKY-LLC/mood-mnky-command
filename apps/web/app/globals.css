@@ -272,8 +272,8 @@ select {
   }
 
   /* ---------------------------------------------------------------------
-     Theme: DOJO (exact /verse palette – slate light, #181619 dark)
-     Site-wide Dojo = same colors as Verse storefront light/dark.
+     Theme: DOJO (Dojo storefront – slate light, #181619 dark)
+     Applied to MNKY DOJO storefront and auth; one palette, one product name.
      --------------------------------------------------------------------- */
   [data-theme="dojo"] {
     --theme: dojo;
@@ -334,6 +334,10 @@ select {
     --verse-button: #475569;
     --verse-button-rgb: 71, 85, 105;
     --verse-button-text: #f8fafc;
+    /* Dock bar: darker than page so icons are visible (Dojo light) */
+    --verse-dock-bg: #475569;
+    --verse-dock-text: #f8fafc;
+    --verse-dock-border: rgba(15, 23, 42, 0.12);
   }
 
   [data-theme="dojo"].dark {
@@ -390,6 +394,10 @@ select {
     --verse-button: #94a3b8;
     --verse-button-rgb: 148, 163, 184;
     --verse-button-text: #0f172a;
+    /* Dock bar: Dojo dark uses palette accent (light blue) for dock icons */
+    --verse-dock-bg: #181619;
+    --verse-dock-text: #94a3b8;
+    --verse-dock-border: rgba(200, 196, 196, 0.12);
   }
 
   .theme {

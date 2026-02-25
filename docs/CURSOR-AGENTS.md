@@ -15,6 +15,10 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 | **labz** | Dashboard LABZ, Supabase-backed data (fragrance oils, notes, formulas), LABZ APIs, Blending/glossary/formulas UI | `/labz` or describe a dashboard LABZ or data task |
 | **verifier** | Validate that completed work is implemented and working; run tests and check edge cases | `/verifier` or ask to verify the last change |
 | **debugger** | Root cause and minimal fix for errors and test failures | `/debugger` or paste an error and ask to debug |
+| **mood-mnky** | Brand ambassador; brand voice, copy, product narrative, aesthetic guidance | `/mood-mnky` or ask for brand-facing copy or tone |
+| **sage-mnky** | Wisdom-focused advisor; reflection on architecture, product direction, process, trade-offs | `/sage-mnky` or ask for guidance or a sounding board |
+| **code-mnky** | DevOps and coding companion; implementation, commands, step-by-step technical guidance | `/code-mnky` or ask for implementation or DevOps help |
+| **docs** | Documentation and Mintlify specialist; mnky-docs, docs/, technical writing | `/docs` or ask to create or edit documentation |
 
 ---
 
@@ -32,5 +36,9 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 - `.cursor/agents/labz.md` — LABZ dashboard and data specialist
 - `.cursor/agents/verifier.md` — Verification specialist
 - `.cursor/agents/debugger.md` — Debugging specialist
+- `.cursor/agents/mood-mnky.md` — MOOD MNKY brand ambassador
+- `.cursor/agents/sage-mnky.md` — SAGE MNKY advisor
+- `.cursor/agents/code-mnky.md` — CODE MNKY coding companion
+- `.cursor/agents/docs.md` — Documentation and Mintlify specialist
 
 Edit the `description` field in each file’s YAML frontmatter to tune when Agent delegates. Keep prompts concise and focused.
