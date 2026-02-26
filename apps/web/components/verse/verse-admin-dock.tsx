@@ -81,7 +81,7 @@ export function VerseAdminDock({
                   <Link
                     href="/dojo/me"
                     className="flex size-full items-center justify-center text-verse-text"
-                    title="Your Dojo"
+                    title="Dashboard"
                   >
                     <Swords className="h-5 w-5" />
                   </Link>
@@ -127,7 +127,7 @@ export function VerseAdminDock({
                   <Link
                     href="/dojo/me"
                     className="flex size-full items-center justify-center text-verse-text"
-                    title="Your Dojo"
+                    title="Dashboard"
                   >
                     <Swords className="h-5 w-5" />
                   </Link>
@@ -146,7 +146,7 @@ export function VerseAdminDock({
                 <Link
                   href="/dojo/me"
                   className="flex size-full items-center justify-center text-verse-text"
-                  title="Dojo"
+                  title="Dashboard"
                 >
                   <Store className="h-5 w-5" />
                 </Link>

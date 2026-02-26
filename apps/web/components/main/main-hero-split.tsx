@@ -14,8 +14,6 @@ import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern
 import { DottedMap } from "@/components/ui/dotted-map"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
-import { MainShimmeringText } from "@/components/main/elevenlabs/main-shimmering-text"
-import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { cn } from "@/lib/utils"
 import type { COBEOptions } from "cobe"
 
@@ -161,37 +159,22 @@ export function MainHeroSplit() {
             <BrandMatrixText variant="MOOD" size={3} gap={0.5} className="mx-0.5 inline-block h-5 align-baseline md:h-6" />
             .
           </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Create an account to shop, blend, and save your scents.
+          </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild size="lg" className="main-btn-float">
-              <Link href="/dojo">Shop the store</Link>
+              <Link href="/auth/sign-up">Join the Dojo</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="main-btn-glass">
-              <Link href="/dojo/blending-guide">Customize your scent</Link>
+            <Button asChild size="lg" variant="outline" className="main-btn-glass">
+              <a
+                href="https://shop.moodmnky.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Shop the store
+              </a>
             </Button>
-            <button
-              type="button"
-              className="main-btn-float inline-flex h-12 items-center justify-center gap-2 px-4 text-lg text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              aria-label="Talk to MOOD MNKY"
-              onClick={() =>
-                document.getElementById("voice-block")?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              <VerseLogoHairIcon
-                withRing
-                size="md"
-                className="shrink-0 text-foreground"
-                ringClassName="border-foreground/80"
-              />
-              <MainShimmeringText
-                text="Talk to MOOD MNKY"
-                duration={2.5}
-                repeat
-                repeatDelay={0.5}
-                startOnView
-                once={false}
-                className="whitespace-nowrap text-lg"
-              />
-            </button>
           </div>
         </div>
 

@@ -18,11 +18,36 @@ export type MainElevenLabsConfigGet = {
   showWaveformInVoiceBlock: boolean
 }
 
+function fallbackConfig(): MainElevenLabsConfigGet {
+  return {
+    agentId: null,
+    defaultVoiceId: null,
+    audioSampleUrl: process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
+    showVoiceSection: true,
+    showAudioSample: true,
+    connectionType: "webrtc",
+    showTranscriptViewer: false,
+    showWaveformInVoiceBlock: false,
+  }
+}
+
 /**
  * GET: Returns Main ElevenLabs config (public fields only). Used by Main page for voice block and Listen section.
  * Server-only: no API keys; safe for unauthenticated Main landing.
  */
 export async function GET() {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.error(
+      "[main/elevenlabs-config] GET: Supabase env vars missing in production. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    )
+    const res = NextResponse.json(fallbackConfig())
+    res.headers.set("Cache-Control", "no-store, max-age=0")
+    return res
+  }
+
   const supabase = await createClient()
 
   const { data: row, error } = await supabase
@@ -36,18 +61,9 @@ export async function GET() {
   }
 
   if (error) {
-    console.error("Main ElevenLabs config GET error:", error)
+    console.error("[main/elevenlabs-config] GET error:", error.code, error.message)
     if (error.code === "42P01") {
-      return NextResponse.json({
-        agentId: null,
-        defaultVoiceId: null,
-        audioSampleUrl: process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
-        showVoiceSection: true,
-        showAudioSample: true,
-        connectionType: "webrtc",
-        showTranscriptViewer: false,
-        showWaveformInVoiceBlock: false,
-      } satisfies MainElevenLabsConfigGet)
+      return NextResponse.json(fallbackConfig())
     }
     return NextResponse.json(
       { error: "Failed to load config" },

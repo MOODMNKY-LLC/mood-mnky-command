@@ -42,14 +42,31 @@ export function MainTalkToAgentDialog() {
     Array<{ source: "user" | "ai"; message: string }>
   >([])
 
+  const getConfigUrl = useCallback(() => {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      return `${window.location.origin}/api/main/elevenlabs-config`
+    }
+    return "/api/main/elevenlabs-config"
+  }, [])
+
   const fetchConfig = useCallback(() => {
     setLoading(true)
     setLoadError(null)
-    fetch("/api/main/elevenlabs-config", { cache: "no-store" })
-      .then((res) => res.json().then((data: unknown) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
+    const url = getConfigUrl()
+    fetch(url, { cache: "no-store" })
+      .then(async (res) => {
+        const data: unknown = await res.json().catch(() => ({}))
+        return { ok: res.ok, status: res.status, data }
+      })
+      .then(({ ok, status, data }) => {
         if (!ok) {
-          const msg = (data as { error?: string })?.error ?? "Failed to load voice config"
+          const msg =
+            (data as { error?: string })?.error ??
+            (status === 500
+              ? "Server error loading voice config. Check production logs."
+              : status === 503
+                ? "Voice config temporarily unavailable."
+                : "Failed to load voice config.")
           setConfig(null)
           setLoadError(msg)
           return
@@ -62,12 +79,19 @@ export function MainTalkToAgentDialog() {
           setLoadError("Couldn't load voice config. Try again.")
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setConfig(null)
-        setLoadError("Couldn't load voice config. Try again.")
+        const isNetwork =
+          err?.name === "TypeError" ||
+          err?.message?.toLowerCase?.().includes("fetch")
+        setLoadError(
+          isNetwork
+            ? "Couldn't reach the server. Check your connection and try again."
+            : "Couldn't load voice config. Try again."
+        )
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [getConfigUrl])
 
   useEffect(() => {
     if (!open) return

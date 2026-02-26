@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { BlurFade } from "@/components/ui/blur-fade"
 import {
   MainNav,
+  MainOnboardingBanner,
   MainHeroSplit,
   MainFeatureCards,
   MainSocialProof,
@@ -31,6 +32,7 @@ export default async function MainLandingPage() {
   return (
     <>
       <MainNav />
+      <MainOnboardingBanner />
 
       <main className="main-container w-full py-12 md:py-16">
         {/* Hero: full-width */}

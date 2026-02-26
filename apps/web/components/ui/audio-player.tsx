@@ -101,10 +101,14 @@ export const useAudioPlayerTime = () => {
 
 export function AudioPlayerProvider<TData = unknown>({
   children,
+  onEnded,
 }: {
   children: ReactNode
+  onEnded?: () => void
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const onEndedRef = useRef(onEnded)
+  onEndedRef.current = onEnded
   const itemRef = useRef<AudioPlayerItem<TData> | null>(null)
   const playPromiseRef = useRef<Promise<void> | null>(null)
   const [readyState, setReadyState] = useState<number>(0)
@@ -267,10 +271,20 @@ export function AudioPlayerProvider<TData = unknown>({
     ]
   )
 
+  const handleEnded = useCallback(() => {
+    onEndedRef.current?.()
+  }, [])
+
   return (
     <AudioPlayerContext.Provider value={api as AudioPlayerApi<unknown>}>
       <AudioPlayerTimeContext.Provider value={time}>
-        <audio ref={audioRef} className="hidden" crossOrigin="anonymous" />
+        <audio
+          ref={audioRef}
+          className="hidden"
+          crossOrigin="anonymous"
+          onEnded={handleEnded}
+          data-global-audio
+        />
         {children}
       </AudioPlayerTimeContext.Provider>
     </AudioPlayerContext.Provider>

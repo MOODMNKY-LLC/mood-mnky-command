@@ -2,17 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import useSWR from "swr";
-import {
-  AudioPlayer,
-  AudioPlayerElement,
-  AudioPlayerPlayButton,
-  AudioPlayerTimeDisplay,
-  AudioPlayerTimeRange,
-  AudioPlayerDurationDisplay,
-  AudioPlayerVolumeRange,
-  AudioPlayerMuteButton,
-} from "@/components/ai-elements/audio-player";
-import { Repeat, Repeat1, Shuffle, SkipBack, SkipForward, FileAudio, ListMusic, ChevronDown, ChevronUp } from "lucide-react";
+import { FileAudio, ListMusic, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { cn } from "@/lib/utils";
@@ -30,6 +20,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useVerseUser } from "@/components/verse/verse-user-context";
+import {
+  useGlobalPlaylist,
+  type GlobalPlaylistTrack,
+} from "@/components/main/global-playlist-context";
 
 export type VerseTrack = {
   id: string;
@@ -43,20 +37,22 @@ export type VerseTrack = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-function shuffleArray<T>(arr: T[]): number[] {
-  const indices = arr.map((_, i) => i);
-  const result: number[] = [];
-  const pool = [...indices];
-  while (pool.length > 0) {
-    const idx = Math.floor(Math.random() * pool.length);
-    result.push(pool.splice(idx, 1)[0]!);
-  }
-  return result;
+function toGlobalTrack(t: VerseTrack): GlobalPlaylistTrack {
+  return {
+    id: t.id,
+    public_url: t.public_url,
+    audio_title: t.audio_title ?? null,
+    audio_artist: t.audio_artist ?? null,
+    audio_album: t.audio_album ?? null,
+    cover_art_url: t.cover_art_url ?? null,
+    file_name: t.file_name ?? null,
+  };
 }
 
 export function DojoMusicPlayer() {
   const user = useVerseUser();
   const isAuthenticated = !!user?.id;
+  const playlist = useGlobalPlaylist();
 
   const { data, error, isLoading, mutate } = useSWR<{ tracks: VerseTrack[] }>(
     isAuthenticated ? "/api/dojo/music" : "/api/verse/music",
@@ -70,74 +66,20 @@ export function DojoMusicPlayer() {
 
   const tracks = data?.tracks ?? [];
   const poolTracks = poolData?.tracks ?? [];
+  const globalTracks = tracks.map(toGlobalTrack);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isShuffle, setIsShuffle] = useState(false);
-  type RepeatMode = "off" | "repeatOne" | "repeatAll";
-  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
-  const isRepeatOne = repeatMode === "repeatOne";
-  const [shuffleOrder, setShuffleOrder] = useState<number[]>([]);
-  const [replayKey, setReplayKey] = useState(0);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
-  const displayIndex =
-    isShuffle && shuffleOrder.length > 0 ? shuffleOrder[currentIndex] ?? 0 : currentIndex;
-  const displayTrack = tracks[displayIndex];
-
-  const advanceTrack = useCallback(
-    (direction: 1 | -1) => {
-      if (tracks.length === 0) return;
-      if (isShuffle && shuffleOrder.length > 0) {
-        const nextIdx = currentIndex + direction;
-        if (nextIdx < 0) setCurrentIndex(shuffleOrder.length - 1);
-        else if (nextIdx >= shuffleOrder.length) setCurrentIndex(0);
-        else setCurrentIndex(nextIdx);
-      } else {
-        const next = (displayIndex + direction + tracks.length) % tracks.length;
-        setCurrentIndex(next);
-      }
+  const handlePlayTrack = useCallback(
+    (index: number) => {
+      if (globalTracks.length === 0) return
+      playlist.setPlaylist(globalTracks, index)
     },
-    [tracks.length, isShuffle, shuffleOrder, currentIndex, displayIndex]
+    [globalTracks, playlist]
   );
-
-  const selectTrackByDisplayIndex = useCallback(
-    (idx: number) => {
-      if (isShuffle && shuffleOrder.length > 0) {
-        const pos = shuffleOrder.indexOf(idx);
-        setCurrentIndex(pos >= 0 ? pos : 0);
-      } else {
-        setCurrentIndex(idx);
-      }
-    },
-    [isShuffle, shuffleOrder]
-  );
-
-  useEffect(() => {
-    if (tracks.length > 0 && isShuffle && shuffleOrder.length !== tracks.length) {
-      setShuffleOrder(shuffleArray(tracks));
-      setCurrentIndex(0);
-    } else if (!isShuffle) {
-      setShuffleOrder([]);
-    }
-  }, [tracks.length, isShuffle]);
-
-  const handleEnded = useCallback(() => {
-    if (repeatMode === "repeatOne" && displayTrack) {
-      setReplayKey((k) => k + 1);
-      return;
-    }
-    if (tracks.length <= 1) return;
-    if (repeatMode === "off") {
-      const isLastTrack = isShuffle
-        ? currentIndex >= shuffleOrder.length - 1
-        : currentIndex >= tracks.length - 1;
-      if (isLastTrack) return;
-    }
-    advanceTrack(1);
-  }, [repeatMode, displayTrack, tracks.length, isShuffle, currentIndex, shuffleOrder.length, advanceTrack]);
 
   useEffect(() => {
     if (editSheetOpen && tracks.length > 0) {
@@ -197,14 +139,20 @@ export function DojoMusicPlayer() {
     );
   }
 
+  const nowPlaying =
+    playlist.currentTrack &&
+    globalTracks.some((t) => t.id === playlist.currentTrack?.id)
+      ? playlist.currentTrack
+      : null
+
   return (
     <div className="dojo-music-player flex flex-col gap-2">
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-sidebar-accent/50 p-3">
-        {/* Large album art (Spotify-style) */}
+        {/* Now playing: cover + title (playback is in global bar) */}
         <div className="flex justify-center">
-          {displayTrack?.cover_art_url ? (
+          {(nowPlaying ?? globalTracks[0])?.cover_art_url ? (
             <img
-              src={displayTrack.cover_art_url}
+              src={(nowPlaying ?? globalTracks[0])?.cover_art_url ?? ""}
               alt=""
               className="aspect-square w-full max-w-[140px] rounded-lg object-cover shadow-md"
             />
@@ -214,102 +162,22 @@ export function DojoMusicPlayer() {
             </div>
           )}
         </div>
-
-        {/* Track title and play status */}
         <div className="min-w-0 text-center">
           <p className="truncate text-sm font-medium">
-            {displayTrack?.audio_title || displayTrack?.file_name || "Track"}
+            {(nowPlaying ?? globalTracks[0])?.audio_title ||
+              (nowPlaying ?? globalTracks[0])?.file_name ||
+              "Track"}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {displayTrack?.audio_artist ?? "Unknown artist"}
-            {displayTrack?.audio_album ? ` · ${displayTrack.audio_album}` : ""}
+            {(nowPlaying ?? globalTracks[0])?.audio_artist ?? "Unknown artist"}
+            {(nowPlaying ?? globalTracks[0])?.audio_album
+              ? ` · ${(nowPlaying ?? globalTracks[0])?.audio_album}`
+              : ""}
           </p>
         </div>
-
-        <AudioPlayer key={`${displayTrack?.id}-${replayKey}`}>
-          <AudioPlayerElement
-            src={displayTrack?.public_url ?? ""}
-            onEnded={handleEnded}
-          />
-          {/* Track timers — centered above volume */}
-          <div className="flex w-full justify-center py-1">
-            <div className="flex items-center gap-1.5 text-[10px] tabular-nums text-muted-foreground">
-              <AudioPlayerTimeDisplay className="!p-0 !border-0 !bg-transparent !shadow-none !rounded-none" />
-              <span aria-hidden>/</span>
-              <AudioPlayerDurationDisplay className="!p-0 !border-0 !bg-transparent !shadow-none !rounded-none" />
-            </div>
-          </div>
-
-          {/* Volume — icon + slim slider */}
-          <div className="flex w-full items-center justify-center gap-1">
-            <AudioPlayerMuteButton className="!p-0 !h-7 !w-7 !min-w-7 !bg-transparent !border-0 shrink-0 text-muted-foreground hover:text-foreground" />
-            <div className="flex w-full max-w-[160px]">
-              <AudioPlayerVolumeRange className="min-w-0 w-full h-1.5 [&::-webkit-slider-runnable-track]:h-1 [&::-moz-range-track]:h-1" />
-            </div>
-          </div>
-
-          {/* Playback controls — Shuffle | Prev track | Play | Next track | Repeat (no bg) */}
-          <div className="flex w-full items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
-              onClick={() => setIsShuffle(!isShuffle)}
-              title={isShuffle ? "Shuffle (on)" : "Shuffle"}
-            >
-              <Shuffle className={cn("h-4 w-4", isShuffle && "text-primary")} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
-              onClick={() => advanceTrack(-1)}
-              title="Previous track"
-            >
-              <SkipBack className="h-4 w-4" />
-            </Button>
-            <AudioPlayerPlayButton className="!h-12 !w-12 !bg-transparent !border-0 hover:bg-muted/50" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
-              onClick={() => advanceTrack(1)}
-              title="Next track"
-            >
-              <SkipForward className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 !bg-transparent !border-0 hover:bg-muted/50"
-              onClick={() => {
-                const next: RepeatMode =
-                  repeatMode === "off" ? "repeatOne" : repeatMode === "repeatOne" ? "repeatAll" : "off";
-                setRepeatMode(next);
-              }}
-              title={
-                repeatMode === "off"
-                  ? "Repeat off"
-                  : repeatMode === "repeatOne"
-                    ? "Repeat one"
-                    : "Repeat all"
-              }
-            >
-              {repeatMode === "repeatOne" ? (
-                <Repeat1 className="h-4 w-4 text-primary" />
-              ) : (
-                <Repeat className={cn("h-4 w-4", repeatMode === "off" && "text-muted-foreground", repeatMode === "repeatAll" && "text-primary")} />
-              )}
-            </Button>
-          </div>
-
-          {/* Progress bar — scrubber only, same width as volume bar */}
-          <div className="flex w-full flex-col items-center gap-1">
-            <div className="flex w-full max-w-[200px] mx-auto">
-              <AudioPlayerTimeRange className="min-w-0 w-full !py-1" />
-            </div>
-          </div>
-        </AudioPlayer>
+        <p className="text-center text-[10px] text-muted-foreground">
+          Playback continues in the bar below when you navigate away.
+        </p>
       </div>
 
       <Collapsible open={playlistOpen} onOpenChange={setPlaylistOpen}>
@@ -327,7 +195,12 @@ export function DojoMusicPlayer() {
           {isAuthenticated && (
             <Sheet open={editSheetOpen} onOpenChange={setEditSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon-sm" className="h-7 w-7" title="Edit playlist">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="h-7 w-7"
+                  title="Edit playlist"
+                >
                   <ListMusic className="h-3.5 w-3.5" />
                 </Button>
               </SheetTrigger>
@@ -336,56 +209,56 @@ export function DojoMusicPlayer() {
                   <SheetTitle>Edit playlist</SheetTitle>
                   <SheetDescription>
                     Choose tracks for your Dojo sidebar. Unselected = use full
-                    MNKY VERSE playlist.
+                    MNKY DOJO playlist.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="relative flex-1 min-h-0 py-4">
                   <div className="h-full overflow-y-auto">
-                  <div className="flex flex-col gap-1">
-                    {poolTracks.map((track) => (
-                      <button
-                        key={track.id}
-                        type="button"
-                        onClick={() => toggleTrackInSelection(track.id)}
-                        className={cn(
-                          "flex w-full items-center gap-2 rounded p-2 text-left transition-colors hover:bg-muted/50",
-                          selectedIds.has(track.id) && "bg-muted"
-                        )}
-                      >
-                        {track.cover_art_url ? (
-                          <img
-                            src={track.cover_art_url}
-                            alt=""
-                            className="h-8 w-8 shrink-0 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted">
-                            <FileAudio className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm">
-                            {track.audio_title || track.file_name || "Track"}
-                          </p>
-                          {track.audio_artist && (
-                            <p className="truncate text-xs text-muted-foreground">
-                              {track.audio_artist}
-                            </p>
-                          )}
-                        </div>
-                        <span
+                    <div className="flex flex-col gap-1">
+                      {poolTracks.map((track) => (
+                        <button
+                          key={track.id}
+                          type="button"
+                          onClick={() => toggleTrackInSelection(track.id)}
                           className={cn(
-                            "text-xs",
-                            selectedIds.has(track.id)
-                              ? "text-primary"
-                              : "text-muted-foreground"
+                            "flex w-full items-center gap-2 rounded p-2 text-left transition-colors hover:bg-muted/50",
+                            selectedIds.has(track.id) && "bg-muted"
                           )}
                         >
-                          {selectedIds.has(track.id) ? "On" : "Off"}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                          {track.cover_art_url ? (
+                            <img
+                              src={track.cover_art_url}
+                              alt=""
+                              className="h-8 w-8 shrink-0 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted">
+                              <FileAudio className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm">
+                              {track.audio_title || track.file_name || "Track"}
+                            </p>
+                            {track.audio_artist && (
+                              <p className="truncate text-xs text-muted-foreground">
+                                {track.audio_artist}
+                              </p>
+                            )}
+                          </div>
+                          <span
+                            className={cn(
+                              "text-xs",
+                              selectedIds.has(track.id)
+                                ? "text-primary"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            {selectedIds.has(track.id) ? "On" : "Off"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <ProgressiveBlur position="bottom" height="35%" />
                 </div>
@@ -411,40 +284,38 @@ export function DojoMusicPlayer() {
         <CollapsibleContent>
           <div className="relative max-h-[120px]">
             <div className="max-h-[120px] overflow-y-auto rounded border border-border">
-            {tracks.map((track, idx) => {
-              const isActive =
-                isShuffle
-                  ? shuffleOrder[currentIndex] === idx
-                  : currentIndex === idx;
-              return (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={() => selectTrackByDisplayIndex(idx)}
-                  className={cn(
-                    "flex w-full items-center gap-2 p-2 text-left transition-colors hover:bg-muted/50",
-                    isActive && "bg-muted"
-                  )}
-                >
-                  {track.cover_art_url ? (
-                    <img
-                      src={track.cover_art_url}
-                      alt=""
-                      className="h-6 w-6 shrink-0 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted">
-                      <FileAudio className="h-3 w-3 text-muted-foreground" />
+              {globalTracks.map((track, idx) => {
+                const isActive =
+                  nowPlaying != null && playlist.currentTrack?.id === track.id
+                return (
+                  <button
+                    key={track.id}
+                    type="button"
+                    onClick={() => handlePlayTrack(idx)}
+                    className={cn(
+                      "flex w-full items-center gap-2 p-2 text-left transition-colors hover:bg-muted/50",
+                      isActive && "bg-muted"
+                    )}
+                  >
+                    {track.cover_art_url ? (
+                      <img
+                        src={track.cover_art_url}
+                        alt=""
+                        className="h-6 w-6 shrink-0 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted">
+                        <FileAudio className="h-3 w-3 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs">
+                        {track.audio_title || track.file_name || "Track"}
+                      </p>
                     </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs">
-                      {track.audio_title || track.file_name || "Track"}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
             </div>
             <ProgressiveBlur position="bottom" height="40%" />
           </div>

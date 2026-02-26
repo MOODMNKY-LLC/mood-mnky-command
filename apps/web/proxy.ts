@@ -22,7 +22,27 @@ function getEffectivePathname(host: string, pathname: string): string {
   if (VERSE_DOMAIN === normalizedHost && !pathname.startsWith("/verse")) {
     return pathname === "/" ? "/verse" : `/verse${pathname}`
   }
+  // Main domain: rewrite to /main except these prefixes so sign-in, Dojo, Lab, and other app routes work.
+  const mainDomainNoRewritePrefixes = [
+    "/auth",
+    "/api",
+    "/dojo",
+    "/platform",
+    "/verse",
+    "/docs",
+    "/chat",
+    "/assistant",
+    "/notion",
+    "/verse-backoffice",
+    "/craft",
+    "/blending",
+    "/store",
+    "/code-mnky",
+  ] as const
   if (MAIN_DOMAINS.some((d) => d === normalizedHost) && !pathname.startsWith("/main")) {
+    for (const prefix of mainDomainNoRewritePrefixes) {
+      if (pathname === prefix || pathname.startsWith(prefix + "/")) return pathname
+    }
     return pathname === "/" ? "/main" : `/main${pathname}`
   }
   return pathname

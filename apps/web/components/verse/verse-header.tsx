@@ -1,9 +1,14 @@
 "use client";
 
+/**
+ * Verse (MNKY DOJO storefront) header. Nav: Home (/main), Discover (Explore, Blog, Agents), Shop, Rewards, Dashboard (/dojo/me).
+ * Dojo entry points: brand "MNKY DOJO" and "Dashboard" link → /dojo/me. Main site "Enter the Dojo" → /verse (storefront).
+ */
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { FlaskConical, User, LogOut, Home, BookOpen, Bot, Swords, Gift } from "lucide-react";
+import { FlaskConical, User, LogOut, Home, BookOpen, Bot, Swords, Gift, ChevronDown } from "lucide-react";
 import { VerseHeaderCartLink } from "./verse-header-cart-link";
 import { VerseHeaderShopifyLink } from "./verse-header-shopify-link";
 import { VerseHeaderXp } from "./verse-header-xp";
@@ -94,32 +99,46 @@ export function VerseHeader({
             </>
           )}
           <Link
-            href="/dojo/me"
+            href="/main"
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
+            title="MOOD MNKY home"
           >
             <Home className="h-4 w-4" />
             Home
           </Link>
-          <Link
-            href="/dojo/explore"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-          >
-            Explore
-          </Link>
-          <Link
-            href="/dojo/blog"
-            className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-1 text-sm font-medium text-verse-text transition-colors hover:opacity-90 sm:flex"
-          >
-            <BookOpen className="h-4 w-4" />
-            Blog
-          </Link>
-          <Link
-            href="/dojo/agents"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-          >
-            <Bot className="h-4 w-4" />
-            Agents
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <VerseButton
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px] min-w-[44px] gap-1 font-medium text-verse-text hover:opacity-90"
+                aria-label="Discover menu"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Discover</span>
+                <ChevronDown className="h-4 w-4" />
+              </VerseButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="verse-dropdown min-w-[10rem]">
+              <DropdownMenuItem asChild>
+                <Link href="/dojo/explore" className="flex items-center gap-2">
+                  Explore
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dojo/blog" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Blog
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dojo/agents" className="flex items-center gap-2">
+                  <Bot className="h-4 w-4" />
+                  Agents
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {user && shopifyLinked ? (
             <Link
               href="/dojo/products"
@@ -151,10 +170,10 @@ export function VerseHeader({
               <Link
                 href="/dojo/me"
                 className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm font-medium text-verse-text transition-colors hover:opacity-90"
-                title="Your Dojo"
+                title="Dashboard"
               >
                 <Swords className="h-4 w-4" />
-                <span className="hidden sm:inline">Dojo</span>
+                <span className="hidden sm:inline">Dashboard</span>
               </Link>
             </>
           )}

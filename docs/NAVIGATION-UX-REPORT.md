@@ -61,6 +61,17 @@ This report documents the current navigation architecture, identified UX issues,
 - Replace "Back to VERSE" with **"Dojo Home"** or **"Store"** pointing to `/verse` (storefront home), so the Dojo sidebar uses one product name and the link is clearly "back to the public dojo."
 - **Implemented:** `dojo-sidebar-config.tsx` uses "Dojo Home" (or "Back to Dojo") and "MNKY DOJO" in community links.
 
+### 2.5 Main onboarding and sign-up clarity
+
+- **Problem:** Users landing on www.moodmnky.com (`/main`) reported they could not navigate well or find where/how to sign up. The nav showed only "Sign in"; sign-up lived at `/auth/sign-up` but was only linked from inside the login form.
+- **Implemented:**
+  - **Nav:** `MainNavAuth` now shows both **Sign in** and **Sign up** when unauthenticated; tooltip "Sign in or create an account to shop and blend."
+  - **Hero:** Primary CTA **Join the Dojo** links to `/auth/sign-up`; guided line "Create an account to shop, blend, and save your scents"; **Shop the store** and **Customize your scent** remain.
+  - **Footer:** **Sign up** link added to footer links.
+  - **Waitlist:** Copy clarifies that the waitlist is for email updates; "To shop and blend, create an account" with link to `/auth/sign-up`.
+  - **Tooltips:** Collections ("Shop, fragrances, and formulas"), Dojo ("Shop and blend in the Dojo"), and auth group tooltips on desktop and mobile sheet.
+  - **Onboarding banner:** Dismissible strip (`MainOnboardingBanner`) for first-time visitors: "New here? Sign up to shop and use the Blending Lab" with Sign up CTA; hidden when dismissed (localStorage) or when user is signed in.
+
 ---
 
 ## 3. Rebrand: Verse → MNKY DOJO

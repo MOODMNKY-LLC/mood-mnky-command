@@ -20,28 +20,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { ThemePaletteSwitcher } from "@/components/theme-palette-switcher"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MainNavAuth } from "@/components/main/main-nav-auth"
 import { cn } from "@/lib/utils"
-
-const COLLECTIONS_LINKS = [
-  { href: "/main/collections/shop", label: "Shop" },
-  { href: "/main/collections/fragrances", label: "Fragrances" },
-  { href: "/main/collections/formulas", label: "Formulas" },
-] as const
-
-const NAV_LINKS = [
-  { href: "/dojo", label: "Dojo" },
-  { href: "/main/about", label: "About" },
-  { href: "/main/design", label: "Design" },
-  { href: "/main/services", label: "Services" },
-  { href: "/main/media", label: "Media" },
-  { href: "/main/loyalty", label: "Loyalty" },
-  { href: "/main/community", label: "Community" },
-] as const
+import { ROUTES } from "@/lib/nav-routes"
+import {
+  COLLECTIONS_LINKS,
+  ABOUT_LINKS,
+  JOIN_LINKS,
+  DOJO_CTA,
+} from "@/lib/main-nav-config"
 
 function MainSearchForm({
   className,
@@ -57,7 +53,7 @@ function MainSearchForm({
     e.preventDefault()
     const trimmed = q.trim()
     if (trimmed) {
-      router.push(`/main/search?q=${encodeURIComponent(trimmed)}`)
+      router.push(`${ROUTES.MAIN_SEARCH}?q=${encodeURIComponent(trimmed)}`)
       onSubmitted?.()
     }
   }
@@ -87,9 +83,66 @@ function MainSearchForm({
 const linkClass =
   "text-sm text-muted-foreground transition-colors hover:text-foreground"
 
+type NavLink = { href: string; label: string }
+
+function MainNavDropdown({
+  links,
+  label,
+  ariaLabel,
+  tooltip,
+  onNavigate,
+  triggerClassName,
+}: {
+  links: readonly NavLink[]
+  label: string
+  ariaLabel: string
+  tooltip: string
+  onNavigate?: () => void
+  triggerClassName?: string
+}) {
+  const content = (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={cn(linkClass, "flex items-center gap-0.5 outline-none", triggerClassName)}
+        aria-haspopup="menu"
+        aria-label={ariaLabel}
+      >
+        {label}
+        <ChevronDown className="h-4 w-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="main-glass-panel-card min-w-[10rem] border-border rounded-xl p-1"
+      >
+        {links.map(({ href, label: itemLabel }) => (
+          <DropdownMenuItem key={href} asChild>
+            <Link
+              href={href}
+              className="cursor-pointer"
+              onClick={onNavigate}
+            >
+              {itemLabel}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-xs">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 export function MainNav() {
   const [open, setOpen] = useState(false)
   const talk = useMainTalkToAgent()
+  const onMobileNav = () => setOpen(false)
 
   return (
     <header
@@ -101,7 +154,7 @@ export function MainNav() {
         aria-label="Main navigation"
       >
         <Link
-          href="/main"
+          href={ROUTES.MAIN}
           className="relative flex shrink-0 items-center gap-2 overflow-hidden rounded-md py-1 pr-1 text-lg font-semibold text-foreground transition-colors hover:text-primary"
           aria-label="MOOD MNKY – Home"
         >
@@ -121,12 +174,10 @@ export function MainNav() {
           />
         </Link>
 
-        {/* Center: search bar – hidden on small screens, shown md+ */}
         <div className="hidden flex-1 justify-center px-4 md:flex">
           <MainSearchForm />
         </div>
 
-        {/* Right: theme toggler + nav links + collections dropdown – hidden on small screens */}
         <div className="hidden items-center gap-5 lg:flex xl:gap-6">
           <ThemePaletteSwitcher
             className="text-muted-foreground transition-colors hover:text-foreground"
@@ -135,37 +186,42 @@ export function MainNav() {
             className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Toggle theme"
           />
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(linkClass, "flex items-center gap-0.5 outline-none")}
-              aria-haspopup="menu"
-              aria-label="Collections menu"
-            >
-              Collections
-              <ChevronDown className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="main-glass-panel-card min-w-[10rem] border-border rounded-xl p-1"
-            >
-              {COLLECTIONS_LINKS.map(({ href, label }) => (
-                <DropdownMenuItem key={href} asChild>
-                  <Link href={href} className="cursor-pointer">
-                    {label}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {NAV_LINKS.map(({ href, label }) => (
-            <Link key={href} href={href} className={linkClass}>
-              {label}
-            </Link>
-          ))}
+          <MainNavDropdown
+            links={COLLECTIONS_LINKS}
+            label="Collections"
+            ariaLabel="Collections menu"
+            tooltip="Shop, fragrances, and formulas"
+          />
+          <MainNavDropdown
+            links={ABOUT_LINKS}
+            label="About"
+            ariaLabel="About menu"
+            tooltip="What we offer: brand, design, media, and services"
+          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="default"
+                size="sm"
+                className="font-medium shrink-0"
+                asChild
+              >
+                <Link href={DOJO_CTA.href}>{DOJO_CTA.label}</Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs">
+              {DOJO_CTA.tooltip}
+            </TooltipContent>
+          </Tooltip>
+          <MainNavDropdown
+            links={JOIN_LINKS}
+            label="Join"
+            ariaLabel="Join menu"
+            tooltip="Community and loyalty"
+          />
           <MainNavAuth />
         </div>
 
-        {/* Mobile: menu button */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -216,45 +272,45 @@ export function MainNav() {
             )}
             <MainSearchForm
               className="w-full max-w-none"
-              onSubmitted={() => setOpen(false)}
+              onSubmitted={onMobileNav}
             />
             <div className="flex flex-col gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  className={cn(linkClass, "flex min-h-[44px] items-center gap-1 rounded-md outline-none text-left")}
-                  aria-haspopup="menu"
-                  aria-label="Collections menu"
-                >
-                  Collections
-                  <ChevronDown className="h-4 w-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  className="main-glass-panel-card border-border rounded-xl p-1"
-                >
-                  {COLLECTIONS_LINKS.map(({ href, label }) => (
-                    <DropdownMenuItem key={href} asChild>
-                      <Link
-                        href={href}
-                        className="cursor-pointer"
-                        onClick={() => setOpen(false)}
-                      >
-                        {label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {NAV_LINKS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(linkClass, "flex min-h-[44px] items-center rounded-md")}
-                  onClick={() => setOpen(false)}
-                >
-                  {label}
-                </Link>
-              ))}
+              <MainNavDropdown
+                links={COLLECTIONS_LINKS}
+                label="Collections"
+                ariaLabel="Collections menu"
+                tooltip="Shop, fragrances, and formulas"
+                onNavigate={onMobileNav}
+                triggerClassName="flex min-h-[44px] items-center gap-1 rounded-md text-left"
+              />
+              <MainNavDropdown
+                links={ABOUT_LINKS}
+                label="About"
+                ariaLabel="About menu"
+                tooltip="What we offer: brand, design, media, and services"
+                onNavigate={onMobileNav}
+                triggerClassName="flex min-h-[44px] items-center gap-1 rounded-md text-left"
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="default" size="sm" className="w-full justify-center font-medium min-h-[44px]" asChild>
+                    <Link href={DOJO_CTA.href} onClick={onMobileNav}>
+                      {DOJO_CTA.label}
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  {DOJO_CTA.tooltip}
+                </TooltipContent>
+              </Tooltip>
+              <MainNavDropdown
+                links={JOIN_LINKS}
+                label="Join"
+                ariaLabel="Join menu"
+                tooltip="Community and loyalty"
+                onNavigate={onMobileNav}
+                triggerClassName="flex min-h-[44px] items-center gap-1 rounded-md text-left"
+              />
               <MainNavAuth className="self-start" />
             </div>
           </SheetContent>

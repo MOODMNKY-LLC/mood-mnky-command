@@ -1,14 +1,35 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Play, Pause, ChevronUp, ChevronDown, X, Info } from "lucide-react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import {
+  Play,
+  Pause,
+  ChevronUp,
+  ChevronDown,
+  X,
+  Info,
+  SkipBack,
+  SkipForward,
+  Repeat1,
+  Repeat,
+  Shuffle,
+  Volume2,
+} from "lucide-react"
 import { useAudioPlayer, useAudioPlayerTime } from "@/components/ui/audio-player"
 import { AudioPlayerProgress } from "@/components/ui/audio-player"
 import { Button } from "@/components/ui/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
+import { useGlobalPlaylist, type RepeatMode } from "@/components/main/global-playlist-context"
 
 const STORAGE_KEY_HIDDEN = "mnky-persistent-player-hidden"
 const STORAGE_KEY_COLLAPSED = "mnky-persistent-player-collapsed"
+const STORAGE_KEY_VOLUME = "mnky-persistent-player-volume"
 
 export type MainMediaAudioTrack = {
   id: string
@@ -40,6 +61,16 @@ function getStoredCollapsed(): boolean {
   }
 }
 
+function getStoredVolume(): number {
+  if (typeof window === "undefined") return 1
+  try {
+    const v = parseFloat(localStorage.getItem(STORAGE_KEY_VOLUME) ?? "1")
+    return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1
+  } catch {
+    return 1
+  }
+}
+
 function setStoredHidden(value: boolean) {
   try {
     localStorage.setItem(STORAGE_KEY_HIDDEN, String(value))
@@ -52,21 +83,47 @@ function setStoredCollapsed(value: boolean) {
   } catch {}
 }
 
+function setStoredVolume(value: number) {
+  try {
+    localStorage.setItem(STORAGE_KEY_VOLUME, String(value))
+  } catch {}
+}
+
+function getGlobalAudio(): HTMLAudioElement | null {
+  if (typeof document === "undefined") return null
+  return document.querySelector("audio[data-global-audio]")
+}
+
+function cycleMode(current: RepeatMode, shuffle: boolean): RepeatMode | "shuffle" {
+  if (current === "repeatOne") return "repeatAll"
+  if (current === "repeatAll") return "shuffle"
+  return "repeatOne"
+}
+
 export function PersistentPlayerBar() {
   const player = useAudioPlayer<{ track?: MainMediaAudioTrack }>()
-  const time = useAudioPlayerTime()
+  const playlist = useGlobalPlaylist()
   const [hidden, setHidden] = useState(true)
   const [collapsed, setCollapsed] = useState(true)
   const [expanded, setExpanded] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [volume, setVolumeState] = useState(1)
 
   useEffect(() => {
     setMounted(true)
     setHidden(getStoredHidden())
     setCollapsed(getStoredCollapsed())
+    setVolumeState(getStoredVolume())
   }, [])
 
-  // When user plays a track (e.g. from media page), show the bar even if they had hidden it before
+  useEffect(() => {
+    const el = getGlobalAudio()
+    if (el) {
+      el.volume = volume
+      setStoredVolume(volume)
+    }
+  }, [volume])
+
   useEffect(() => {
     if (player.activeItem !== null) setHidden(false)
   }, [player.activeItem])
@@ -91,9 +148,34 @@ export function PersistentPlayerBar() {
     setExpanded((e) => !e)
   }, [])
 
+  const handleVolumeChange = useCallback((value: number[]) => {
+    const v = value[0] ?? 1
+    setVolumeState(v)
+  }, [])
+
+  const handleCycleMode = useCallback(() => {
+    const next = cycleMode(playlist.repeatMode, playlist.shuffle)
+    if (next === "shuffle") {
+      playlist.setRepeatMode("off")
+      playlist.setShuffle(true)
+    } else {
+      playlist.setShuffle(false)
+      playlist.setRepeatMode(next)
+    }
+  }, [playlist])
+
   const activeItem = player.activeItem
   const track = activeItem?.data?.track as MainMediaAudioTrack | undefined
   const showBar = mounted && !hidden && activeItem !== null
+  const hasPlaylist = playlist.tracks.length > 0
+  const cycleLabel =
+    playlist.repeatMode === "repeatOne"
+      ? "Repeat one"
+      : playlist.repeatMode === "repeatAll"
+        ? "Repeat all"
+        : playlist.shuffle
+          ? "Shuffle"
+          : "Play mode"
 
   if (!mounted) return null
   if (!showBar) return null
@@ -111,9 +193,20 @@ export function PersistentPlayerBar() {
       role="region"
       aria-label="Global audio player"
     >
-      <div className="main-container flex items-center gap-3 px-4">
-        {/* Play/Pause + optional art in collapsed mode */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="main-container flex items-center gap-2 px-4 sm:gap-3">
+        {/* Skip prev (when playlist) + Play/Pause + Skip next (when playlist) + optional art */}
+        <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
+          {hasPlaylist && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={() => playlist.prev()}
+              aria-label="Previous track"
+            >
+              <SkipBack className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -127,6 +220,17 @@ export function PersistentPlayerBar() {
               <Play className="h-4 w-4" />
             )}
           </Button>
+          {hasPlaylist && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={() => playlist.next()}
+              aria-label="Next track"
+            >
+              <SkipForward className="h-4 w-4" />
+            </Button>
+          )}
           {coverUrl && collapsed && (
             <img
               src={coverUrl}
@@ -144,10 +248,63 @@ export function PersistentPlayerBar() {
           </div>
         </div>
 
-        {/* Collapsed: progress + collapse/hide */}
+        {/* Cycle mode (repeat one / repeat all / shuffle) */}
+        {hasPlaylist && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+            onClick={handleCycleMode}
+            aria-label={cycleLabel}
+            title={cycleLabel}
+          >
+            {playlist.repeatMode === "repeatOne" ? (
+              <Repeat1 className="h-4 w-4 text-primary" />
+            ) : playlist.shuffle ? (
+              <Shuffle className="h-4 w-4 text-primary" />
+            ) : (
+              <Repeat
+                className={cn(
+                  "h-4 w-4",
+                  playlist.repeatMode === "repeatAll" && "text-primary"
+                )}
+              />
+            )}
+          </Button>
+        )}
+
+        {/* Volume popover */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+              aria-label="Volume"
+            >
+              <Volume2 className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-40 p-3" align="end">
+            <div className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <Slider
+                value={[volume]}
+                onValueChange={handleVolumeChange}
+                min={0}
+                max={1}
+                step={0.05}
+                className="w-full"
+                aria-label="Volume"
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Collapsed: progress + expand/hide */}
         {collapsed && (
           <>
-            <div className="hidden min-w-[120px] flex-1 md:block">
+            <div className="hidden min-w-[100px] flex-1 md:block">
               <AudioPlayerProgress className="w-full" />
             </div>
             <div className="flex shrink-0 items-center gap-1">

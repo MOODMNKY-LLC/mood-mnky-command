@@ -5,6 +5,7 @@ import { Music, Disc3, Play, Pause } from "lucide-react"
 import { Marquee } from "@/components/ui/marquee"
 import { MainGlassCard } from "@/components/main/main-glass-card"
 import { useAudioPlayer } from "@/components/ui/audio-player"
+import { useGlobalPlaylist } from "@/components/main/global-playlist-context"
 import { cn } from "@/lib/utils"
 import type { MainMediaAudioTrack } from "@/lib/main-media-data"
 import type { JellyfinFeaturedItem } from "@/lib/services/jellyfin"
@@ -68,6 +69,7 @@ function MnkyMusikMarquee({
   enable3D?: boolean
 }) {
   const player = useAudioPlayer<{ track?: MainMediaAudioTrack }>()
+  const playlist = useGlobalPlaylist()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const playingId = player.activeItem?.id ?? null
   const isPlaying = player.isPlaying
@@ -76,14 +78,9 @@ function MnkyMusikMarquee({
     (track: MainMediaAudioTrack) => {
       const url = track.public_url?.trim()
       if (!url) return
-      player.setActiveItem({
-        id: track.id,
-        src: url,
-        data: { track },
-      })
-      player.play()
+      playlist.setPlaylist([track], 0)
     },
-    [player]
+    [playlist]
   )
 
   const handlePause = useCallback(() => {

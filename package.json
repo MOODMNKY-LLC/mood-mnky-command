@@ -14,6 +14,9 @@
     "dev:tunnel": "pnpm --filter web dev:tunnel",
     "supabase:tls-setup": "node scripts/gen-supabase-certs.mjs",
     "lint": "turbo run lint",
+    "dev:mood-mnky": "pnpm --filter mood-mnky dev",
+    "dev:sage-mnky": "pnpm --filter sage-mnky dev",
+    "dev:code-mnky": "pnpm --filter code-mnky dev",
     "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
     "docs:validate": "cd mnky-docs && pnpm exec mint validate"
   },

@@ -1,4 +1,5 @@
 export { MainNav } from "./main-nav"
+export { MainOnboardingBanner } from "./main-onboarding-banner"
 export { MainGlassCard } from "./main-glass-card"
 export { MediaMusicMarquee } from "./media-music-marquee"
 export type { MediaMusicMarqueeProps } from "./media-music-marquee"

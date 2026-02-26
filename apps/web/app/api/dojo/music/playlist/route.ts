@@ -52,7 +52,7 @@ export async function PATCH(req: Request) {
 
   if (filtered.length !== trackIds.length) {
     return NextResponse.json(
-      { error: "Some track IDs are not in the MNKY VERSE playlist" },
+      { error: "Some track IDs are not in the MNKY DOJO playlist" },
       { status: 400 }
     )
   }

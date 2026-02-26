@@ -71,6 +71,16 @@ export async function POST() {
     )
   }
 
+  if (!NOTION_MNKY_MIND_DATABASE_ID) {
+    return NextResponse.json(
+      {
+        error:
+          "NOTION_MNKY_MIND_DATABASE_ID is not set. Set it to the Notion *database* ID (from the database URL), not the MNKY_MIND Databases page ID. Notion returns 400 when a page ID is used instead of a database ID.",
+      },
+      { status: 503 },
+    )
+  }
+
   const admin = createAdminClient()
   let synced = 0
 
@@ -117,8 +127,17 @@ export async function POST() {
     })
   } catch (err) {
     console.error("[POST /api/labz/mnky-mind]", err)
+    const message =
+      err instanceof Error ? err.message : "Sync failed"
+    const isPageNotDatabase =
+      message.includes("is a page, not a database") ||
+      message.includes("Use the retrieve page API instead")
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Sync failed" },
+      {
+        error: isPageNotDatabase
+          ? "NOTION_MNKY_MIND_DATABASE_ID must be a Notion database ID, not a page ID. Open the actual database in Notion and copy its ID from the URL."
+          : message,
+      },
       { status: 500 },
     )
   }

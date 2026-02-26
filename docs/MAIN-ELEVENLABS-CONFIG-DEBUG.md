@@ -40,6 +40,25 @@ Use this to confirm what the API is reading from the DB.
 - **"Couldn't load voice config. Try again."** — The request failed (network, 500, or invalid response). Use "Try again" or check server logs and DB.
 - **"Voice is not configured yet. Set the Main agent in LABZ → Chat → Main ElevenLabs."** — The request succeeded but `agent_id` is null in the returned config. Fix in LABZ or verify DB (step 1).
 
+## 5. Production checklist (Talk to MOOD MNKY on /main)
+
+When the dock or dialog "isn't working" in production:
+
+1. **Same Supabase as production**
+   - Production app must use the same Supabase project as where you set the Main agent (LABZ). Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the production environment point to that project.
+
+2. **Migrations applied in production DB**
+   - Table `main_elevenlabs_config` and RLS policies must exist. Run the same migrations on the production Supabase project (e.g. `supabase db push` or run `20260221200000_main_elevenlabs_config.sql` and related migrations).
+
+3. **Agent ID set in production**
+   - In production, open LABZ → Chat → Main ElevenLabs, set the agent ID, and save. The row `id = 'default'` must have `agent_id` set in the **production** DB.
+
+4. **Config API reachable**
+   - The dialog fetches `GET /api/main/elevenlabs-config` using the current origin. If the main site and API are on the same deployment (e.g. Vercel), relative URL works. If you see "Couldn't reach the server" or "Server error loading voice config", check production logs for `[main/elevenlabs-config] GET error` or missing Supabase env.
+
+5. **ElevenLabs voice connection**
+   - After config loads, starting the call uses ElevenLabs Conversational AI. Ensure your ElevenLabs agent is published and that any server-side API key or signed-URL flow used by the client is configured for production (see DESIGN-SYSTEM.md and ElevenLabs docs).
+
 ## References
 
 - API: [apps/web/app/api/main/elevenlabs-config/route.ts](apps/web/app/api/main/elevenlabs-config/route.ts)

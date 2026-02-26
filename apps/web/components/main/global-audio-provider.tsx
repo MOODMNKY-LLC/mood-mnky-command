@@ -1,18 +1,19 @@
 "use client"
 
-import { AudioPlayerProvider } from "@/components/main/elevenlabs"
+import { GlobalPlaylistProvider } from "@/components/main/global-playlist-context"
 import { PersistentPlayerBar } from "@/components/main/persistent-player-bar"
 
 /**
- * Wraps the app with the global AudioPlayerProvider and renders the persistent
- * MNKY MUSIK player bar. Mount in root layout so any page can set the active
- * track (e.g. from /main/media) and the bar persists across navigation.
+ * Wraps the app with the global playlist and AudioPlayerProvider and renders the
+ * persistent MNKY MUSIK player bar. Mount in root layout so any page can set
+ * the active track or playlist (e.g. from /main/media or dojo sidebar) and
+ * playback persists across navigation.
  */
 export function GlobalAudioProvider({ children }: { children: React.ReactNode }) {
   return (
-    <AudioPlayerProvider>
+    <GlobalPlaylistProvider>
       {children}
       <PersistentPlayerBar />
-    </AudioPlayerProvider>
+    </GlobalPlaylistProvider>
   )
 }

@@ -7,7 +7,7 @@ export function VerseBackgroundLogo() {
   return (
     <div className="verse-bg-logo" aria-hidden>
       <div className="verse-bg-logo-inner">
-        <VerseLogoBlock variant="background" primaryText="MNKY VERSE" />
+        <VerseLogoBlock variant="background" primaryText="MNKY DOJO" />
       </div>
     </div>
   );

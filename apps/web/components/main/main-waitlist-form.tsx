@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -40,7 +41,11 @@ export function MainWaitlistForm({ className }: { className?: string }) {
     <MainGlassCard className={cn("max-w-md", className)}>
       <h3 className="font-semibold text-foreground">Get early access</h3>
       <p className="mt-1 text-sm text-muted-foreground">
-        Join the waitlist for updates and early access to the Dojo.
+        We&apos;ll email you news and early access. To shop and blend,{" "}
+        <Link href="/auth/sign-up" className="text-primary underline hover:no-underline">
+          create an account
+        </Link>
+        .
       </p>
       {status === "success" ? (
         <p className="mt-4 text-sm text-green-600 dark:text-green-400">

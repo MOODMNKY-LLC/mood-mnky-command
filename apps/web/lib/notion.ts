@@ -3,9 +3,10 @@ const NOTION_API_VERSION = "2022-06-28"
 const NOTION_BASE_URL = "https://api.notion.com/v1"
 
 // ---- MNKY_MIND Database IDs ----
-// MNKY_MIND Databases page: https://www.notion.so/mood-mnky/MNKY_MIND-Databases-2e1cd2a654228009920ee6fa51188f46
+// Must be a Notion *database* ID (from the database URL in Notion), not the "MNKY_MIND Databases" *page* ID.
+// The page 2e1cd2a6-5422-8009-920e-e6fa51188f46 is a page; use the ID of the actual database that holds MNKY MIND entries.
 export const NOTION_MNKY_MIND_DATABASE_ID =
-  process.env.NOTION_MNKY_MIND_DATABASE_ID ?? "2e1cd2a6-5422-8009-920e-e6fa51188f46"
+  process.env.NOTION_MNKY_MIND_DATABASE_ID ?? ""
 
 export const NOTION_DATABASE_IDS = {
   fragranceOils: "2c8cd2a6-5422-813a-8d0f-efdd74a80a6f",

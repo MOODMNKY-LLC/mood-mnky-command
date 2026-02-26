@@ -88,7 +88,7 @@ export interface DojoNavItem {
 
 /** Dojo section: dashboard-only */
 export const dojoItems: DojoNavItem[] = [
-  { title: "Home", href: "/dojo", icon: Home },
+  { title: "Dashboard", href: "/dojo/me", icon: Home },
   { title: "Preferences", href: "/dojo/me/preferences", icon: Settings },
 ];
 
@@ -111,15 +111,14 @@ export type DojoNavGroup = {
   items: DojoNavGroupItem[];
 };
 
-/** Nav groups for sidebar (dashboard-only) */
+/** Nav groups for sidebar (dashboard-only): one Dojo group, single Dashboard entry */
 export const dojoNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
-      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Dojo Home", url: "/dojo", icon: Globe },
-      { title: "Home", url: "/dojo", icon: Home, isActive: true },
-      { title: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+      { title: "MOOD MNKY", url: "/main", icon: Globe },
+      { title: "Dashboard", url: "/dojo/me", icon: Home, isActive: true },
+      { title: "MNKY Chat", url: "/dojo/me/chat", icon: MessageSquare },
       { title: "Profile", url: "/dojo/me/profile", icon: User },
       { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
@@ -133,15 +132,15 @@ export const dojoCraftingNavGroups: DojoNavGroup[] = [
     items: [
       { title: "Blending Lab", url: "/dojo/me/crafting", icon: FlaskConical, isActive: true },
       { title: "Saved Blends", url: "/dojo/me/crafting/saved", icon: BookMarked },
-      { title: "MNKY CHAT", url: "/dojo/me/chat", icon: MessageSquare },
+      { title: "MNKY Chat", url: "/dojo/me/chat", icon: MessageSquare },
       { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
   },
   {
     label: "Dojo",
     items: [
-      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Home", url: "/dojo", icon: Home },
+      { title: "MOOD MNKY", url: "/main", icon: Globe },
+      { title: "Dashboard", url: "/dojo/me", icon: Home },
       { title: "Profile", url: "/dojo/me/profile", icon: User },
     ],
   },
@@ -162,9 +161,8 @@ export const dojoChatNavGroups: DojoNavGroup[] = [
   {
     label: "Dojo",
     items: [
-      { title: "MOOD MNKY (Home)", url: "/main", icon: Globe },
-      { title: "Dojo Home", url: "/dojo", icon: Globe },
-      { title: "Home", url: "/dojo", icon: Home },
+      { title: "MOOD MNKY", url: "/main", icon: Globe },
+      { title: "Dashboard", url: "/dojo/me", icon: Home },
       { title: "Preferences", url: "/dojo/me/preferences", icon: Settings },
     ],
   },
@@ -219,7 +217,7 @@ export const dojoCommunityLinks: {
   external: boolean;
   icon: LucideIcon;
 }[] = [
-  { label: "MOOD MNKY (Home)", href: "/main", external: false, icon: Home },
+  { label: "MOOD MNKY", href: "/main", external: false, icon: Home },
   { label: "Community hub", href: "/dojo/me/community", external: false, icon: Users },
   { label: "MNKY DOJO Blog", href: "/dojo/blog", external: false, icon: Newspaper },
   { label: "Quests & XP", href: "/dojo/quests", external: false, icon: Trophy },

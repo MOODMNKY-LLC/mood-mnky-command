@@ -19,7 +19,7 @@ export function VerseBrandBand() {
       )}
       aria-hidden
     >
-      <VerseLogoBlock variant="band" primaryText="MNKY VERSE" />
+      <VerseLogoBlock variant="band" primaryText="MNKY DOJO" />
     </section>
   );
 }

@@ -5,12 +5,12 @@ import { VerseLogoFlame } from "./verse-logo-flame";
 
 /**
  * Centered logo block matching reference proportions:
- * Flame (centered) → MNKY VERSE (primary) → SCENTS THE MOOD (tagline)
+ * Flame (centered) → MNKY DOJO (primary) → SCENTS THE MOOD (tagline)
  * Flame height ~ primary text cap height; wide tracking on both lines.
  */
 export function VerseLogoBlock({
   variant = "primary",
-  primaryText = "MNKY VERSE",
+  primaryText = "MNKY DOJO",
   className,
 }: {
   variant?: "primary" | "background" | "band";

@@ -20,6 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { createClient } from "@/lib/supabase/client"
 import { useMainUser } from "@/components/main/main-user-context"
 import { cn } from "@/lib/utils"
@@ -73,13 +78,29 @@ export function MainNavAuth({ className }: { className?: string }) {
 
   if (!user) {
     return (
-      <Link
-        href="/auth/login"
-        className={cn(linkClass, className)}
-        aria-label="Sign in"
-      >
-        Sign in
-      </Link>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn("inline-flex items-center gap-3", className)}>
+            <Link
+              href="/auth/login"
+              className={linkClass}
+              aria-label="Sign in"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className={cn(linkClass, "font-medium text-foreground")}
+              aria-label="Create account"
+            >
+              Sign up
+            </Link>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-xs">
+          Sign in or create an account to shop and blend
+        </TooltipContent>
+      </Tooltip>
     )
   }
 

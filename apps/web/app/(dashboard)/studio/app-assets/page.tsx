@@ -57,6 +57,7 @@ function SlotCardImage({
 
 const CATEGORY_LABELS: Record<string, string> = {
   "main-services": "Main → Services",
+  "main-community": "Main → Community",
   "main-hero": "Main → Hero",
   "main-features": "Main → Features",
 }
@@ -169,7 +170,7 @@ export default function AppAssetsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">App Assets</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sitemap of front-facing image slots. Upload or replace images to control what appears on the app (e.g. Main → Services).
+          Single location for editing and uploading all front-end images: Main → Services, Main → Community, and other app-wide slots. Upload or replace to control what appears on the app.
         </p>
       </div>
 
