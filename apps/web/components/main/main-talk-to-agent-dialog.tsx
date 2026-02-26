@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Component, useCallback, useEffect, useRef, useState } from "react"
+import type { ErrorInfo, ReactNode } from "react"
 import Link from "next/link"
 import {
   Dialog,
@@ -32,6 +33,42 @@ function isConfigShape(data: unknown): data is MainElevenLabsConfigGet {
     typeof data === "object" &&
     typeof (data as Record<string, unknown>).showVoiceSection === "boolean"
   )
+}
+
+/** Catches client errors in voice UI (e.g. ElevenLabs SDK, media APIs on mobile) so the app doesn't crash. */
+class MainTalkToAgentErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error("[MainTalkToAgentErrorBoundary]", error.message, error.stack, errorInfo.componentStack)
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Voice chat isn&apos;t available on this device or browser. Try on desktop or check microphone permissions.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            You can still{" "}
+            <Link href="/dojo/chat" className="underline hover:text-foreground">
+              chat with MOOD MNKY in the Dojo
+            </Link>
+            .
+          </p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 export function MainTalkToAgentDialog() {
@@ -138,10 +175,11 @@ export function MainTalkToAgentDialog() {
             Voice is not available. Enable it in LABZ → Chat → ElevenLabs → Main.
           </p>
         ) : (
-          <div className="flex flex-col items-center gap-4">
-            {/* Avatar centered */}
-            <div className="relative h-28 w-28 overflow-hidden rounded-xl border border-border sm:h-32 sm:w-32">
-              <MainMascotImage
+          <MainTalkToAgentErrorBoundary>
+            <div className="flex flex-col items-center gap-4">
+              {/* Avatar centered */}
+              <div className="relative h-28 w-28 overflow-hidden rounded-xl border border-border sm:h-32 sm:w-32">
+                <MainMascotImage
                 src={MAIN_MASCOT_FALLBACK_HERO}
                 fallbackSrc={MAIN_MASCOT_ASSETS.hero}
                 alt="MOOD MNKY – Voice"
@@ -223,7 +261,8 @@ export function MainTalkToAgentDialog() {
                 </div>
               </div>
             )}
-          </div>
+            </div>
+          </MainTalkToAgentErrorBoundary>
         )}
       </DialogContent>
     </Dialog>

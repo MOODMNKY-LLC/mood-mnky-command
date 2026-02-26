@@ -220,6 +220,15 @@ export function MicSelector({
   )
 }
 
+function isMediaDevicesAvailable(): boolean {
+  if (typeof navigator === "undefined") return false
+  try {
+    return !!navigator.mediaDevices
+  } catch {
+    return false
+  }
+}
+
 export function useAudioDevices() {
   const [devices, setDevices] = useState<AudioDevice[]>([])
   const [loading, setLoading] = useState(true)
@@ -227,6 +236,11 @@ export function useAudioDevices() {
   const [hasPermission, setHasPermission] = useState(false)
 
   const loadDevicesWithoutPermission = useCallback(async () => {
+    if (!isMediaDevicesAvailable()) {
+      setLoading(false)
+      setError("Microphone not available")
+      return
+    }
     try {
       setLoading(true)
       setError(null)
@@ -260,7 +274,10 @@ export function useAudioDevices() {
 
   const loadDevicesWithPermission = useCallback(async () => {
     if (loading) return
-
+    if (!isMediaDevicesAvailable()) {
+      setError("Microphone not available")
+      return
+    }
     try {
       setLoading(true)
       setError(null)
@@ -299,10 +316,17 @@ export function useAudioDevices() {
   }, [loading])
 
   useEffect(() => {
+    if (!isMediaDevicesAvailable()) {
+      setLoading(false)
+      setError("Microphone not available")
+      return
+    }
     loadDevicesWithoutPermission()
   }, [loadDevicesWithoutPermission])
 
   useEffect(() => {
+    if (!isMediaDevicesAvailable()) return
+
     const handleDeviceChange = () => {
       if (hasPermission) {
         loadDevicesWithPermission()

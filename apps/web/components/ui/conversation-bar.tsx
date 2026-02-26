@@ -128,6 +128,9 @@ export const ConversationBar = React.forwardRef<
     const getMicStream = React.useCallback(async () => {
       if (mediaStreamRef.current) return mediaStreamRef.current
 
+      if (typeof navigator === "undefined" || !navigator.mediaDevices) {
+        throw new Error("Microphone not available in this browser or context.")
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream
 
