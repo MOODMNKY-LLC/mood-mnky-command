@@ -28,6 +28,7 @@ function getEffectivePathname(host: string, pathname: string): string {
     "/auth",
     "/api",
     "/dojo",
+    "/members",
     "/platform",
     "/verse",
     "/docs",
