@@ -11,6 +11,10 @@ export type ElevenLabsConfigGet = {
   defaultVoiceId?: string | null;
   showTranscriptViewer?: boolean;
   showWaveformInVoiceBlock?: boolean;
+  pronunciationDictionaryLocators?: Array<{
+    pronunciation_dictionary_id: string;
+    version_id?: string;
+  }> | null;
 };
 
 /**
@@ -40,11 +44,22 @@ export async function GET() {
   const agentId =
     row?.agent_id ?? process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? null;
 
+  const pronDictId = process.env.ELEVENLABS_PRON_DICT_ID?.trim();
+  const pronunciationDictionaryLocators = pronDictId
+    ? [
+        {
+          pronunciation_dictionary_id: pronDictId,
+          version_id: process.env.ELEVENLABS_PRON_DICT_VERSION_ID?.trim() || undefined,
+        },
+      ]
+    : null;
+
   const response: ElevenLabsConfigGet = {
     agentId,
     defaultVoiceId: row?.default_voice_id ?? null,
     showTranscriptViewer: row?.show_transcript_viewer ?? false,
     showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
+    pronunciationDictionaryLocators,
   };
 
   const supabase = await createClient();

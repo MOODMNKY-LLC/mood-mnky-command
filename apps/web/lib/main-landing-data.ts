@@ -53,6 +53,10 @@ export type MainElevenLabsConfig = {
   connectionType: "webrtc" | "websocket"
   showTranscriptViewer: boolean
   showWaveformInVoiceBlock: boolean
+  pronunciationDictionaryLocators: Array<{
+    pronunciation_dictionary_id: string
+    version_id?: string
+  }> | null
 }
 
 /**
@@ -144,6 +148,16 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
     }
 
     const connectionType = row?.connection_type === "websocket" ? "websocket" : "webrtc"
+    const pronDictId = process.env.ELEVENLABS_PRON_DICT_ID?.trim()
+    const pronunciationDictionaryLocators =
+      pronDictId
+        ? [
+            {
+              pronunciation_dictionary_id: pronDictId,
+              version_id: process.env.ELEVENLABS_PRON_DICT_VERSION_ID?.trim() || undefined,
+            },
+          ]
+        : null
     return {
       agentId: row?.agent_id ?? null,
       defaultVoiceId: row?.default_voice_id ?? null,
@@ -154,6 +168,7 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
       connectionType,
       showTranscriptViewer: row?.show_transcript_viewer ?? false,
       showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
+      pronunciationDictionaryLocators,
     }
   } catch {
     return {
@@ -165,6 +180,7 @@ export async function getMainElevenLabsConfig(): Promise<MainElevenLabsConfig> {
       connectionType: "webrtc",
       showTranscriptViewer: false,
       showWaveformInVoiceBlock: false,
+      pronunciationDictionaryLocators: null,
     }
   }
 }

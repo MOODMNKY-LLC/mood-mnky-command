@@ -7,6 +7,11 @@ const CONFIG_ID = "default"
 /** Ensure clients always get fresh config (no cached "agent not set" after LABZ save). */
 export const dynamic = "force-dynamic"
 
+export type PronunciationDictionaryLocator = {
+  pronunciation_dictionary_id: string
+  version_id?: string
+}
+
 export type MainElevenLabsConfigGet = {
   agentId: string | null
   defaultVoiceId: string | null
@@ -16,6 +21,7 @@ export type MainElevenLabsConfigGet = {
   connectionType: "webrtc" | "websocket"
   showTranscriptViewer: boolean
   showWaveformInVoiceBlock: boolean
+  pronunciationDictionaryLocators: PronunciationDictionaryLocator[] | null
 }
 
 function fallbackConfig(): MainElevenLabsConfigGet {
@@ -86,6 +92,7 @@ export async function GET() {
     connectionType,
     showTranscriptViewer: row?.show_transcript_viewer ?? false,
     showWaveformInVoiceBlock: row?.show_waveform_in_voice_block ?? false,
+    pronunciationDictionaryLocators: getPronunciationDictionaryLocators(),
   }
 
   const res = NextResponse.json(response)
@@ -171,5 +178,6 @@ export async function PATCH(request: NextRequest) {
     connectionType,
     showTranscriptViewer: data?.show_transcript_viewer ?? false,
     showWaveformInVoiceBlock: data?.show_waveform_in_voice_block ?? false,
+    pronunciationDictionaryLocators: getPronunciationDictionaryLocators(),
   })
 }

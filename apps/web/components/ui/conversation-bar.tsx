@@ -70,6 +70,14 @@ export interface ConversationBarProps {
    * Default: "Customer Support"
    */
   idleLabel?: string
+
+  /**
+   * Pronunciation dictionary locators (id + optional version_id) so the agent pronounces e.g. "MOOD MNKY" correctly.
+   */
+  pronunciationDictionaryLocators?: Array<{
+    pronunciation_dictionary_id: string
+    version_id?: string
+  }> | null
 }
 
 export const ConversationBar = React.forwardRef<
@@ -145,11 +153,16 @@ export const ConversationBar = React.forwardRef<
 
         await getMicStream()
 
-        await conversation.startSession({
+        const sessionOptions: Parameters<typeof conversation.startSession>[0] = {
           agentId,
           connectionType,
           onStatusChange: (status) => setAgentState(status.status),
-        })
+        }
+        if (pronunciationDictionaryLocators?.length) {
+          (sessionOptions as Record<string, unknown>).pronunciation_dictionary_locators =
+            pronunciationDictionaryLocators
+        }
+        await conversation.startSession(sessionOptions)
       } catch (error) {
         setAgentState("disconnected")
         const message = error instanceof Error ? error.message : String(error)
@@ -160,7 +173,7 @@ export const ConversationBar = React.forwardRef<
           onError?.(error as Error)
         }
       }
-    }, [conversation, getMicStream, agentId, connectionType, onError])
+    }, [conversation, getMicStream, agentId, connectionType, onError, pronunciationDictionaryLocators])
 
     const handleEndSession = React.useCallback(() => {
       conversation.endSession()

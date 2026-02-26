@@ -25,6 +25,10 @@ type MainElevenLabsConfigGet = {
   connectionType: "webrtc" | "websocket"
   showTranscriptViewer: boolean
   showWaveformInVoiceBlock: boolean
+  pronunciationDictionaryLocators?: Array<{
+    pronunciation_dictionary_id: string
+    version_id?: string
+  }> | null
 }
 
 function isConfigShape(data: unknown): data is MainElevenLabsConfigGet {
@@ -229,6 +233,7 @@ export function MainTalkToAgentDialog() {
                   onMessage={onMessage}
                   onDisconnect={onDisconnect}
                   onError={onVoiceError}
+                  pronunciationDictionaryLocators={config?.pronunciationDictionaryLocators ?? undefined}
                 />
               ) : (
                 <p className="text-center text-sm text-muted-foreground">

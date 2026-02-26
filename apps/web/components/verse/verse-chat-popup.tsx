@@ -84,6 +84,9 @@ export function VerseChatPopup({
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"chat" | "voice">("chat");
   const [voiceAgentId, setVoiceAgentId] = useState<string | null>(null);
+  const [pronunciationDictionaryLocators, setPronunciationDictionaryLocators] = useState<
+    Array<{ pronunciation_dictionary_id: string; version_id?: string }> | null
+  >(null);
   const [text, setText] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [agents, setAgents] = useState<{ slug: string; display_name: string }[]>([]);
@@ -94,8 +97,22 @@ export function VerseChatPopup({
     if (!open) return;
     fetch("/api/chat/eleven-labs-config")
       .then((r) => r.json())
-      .then((d: { agentId?: string | null }) => setVoiceAgentId(d.agentId ?? null))
-      .catch(() => setVoiceAgentId(null));
+      .then(
+        (d: {
+          agentId?: string | null;
+          pronunciationDictionaryLocators?: Array<{
+            pronunciation_dictionary_id: string;
+            version_id?: string;
+          }> | null;
+        }) => {
+          setVoiceAgentId(d.agentId ?? null);
+          setPronunciationDictionaryLocators(d.pronunciationDictionaryLocators ?? null);
+        }
+      )
+      .catch(() => {
+        setVoiceAgentId(null);
+        setPronunciationDictionaryLocators(null);
+      });
   }, [open]);
 
   useEffect(() => {
@@ -270,6 +287,7 @@ export function VerseChatPopup({
               <VerseVoiceChat
                 agentId={voiceAgentId ?? process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? null}
                 connectionType="webrtc"
+                pronunciationDictionaryLocators={pronunciationDictionaryLocators ?? undefined}
               />
             </div>
           ) : (

@@ -74,6 +74,7 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
               connectionType={config.connectionType}
               onMessage={onMessage}
               onDisconnect={onDisconnect}
+              pronunciationDictionaryLocators={config.pronunciationDictionaryLocators ?? undefined}
             />
           ) : (
             <p className="text-sm text-muted-foreground">

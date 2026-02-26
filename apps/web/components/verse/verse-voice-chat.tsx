@@ -24,6 +24,11 @@ export interface VerseVoiceChatProps {
   connectionType?: "webrtc" | "websocket";
   className?: string;
   onError?: (error: unknown) => void;
+  /** Pronunciation dictionary locators so the agent pronounces e.g. "MOOD MNKY" correctly. */
+  pronunciationDictionaryLocators?: Array<{
+    pronunciation_dictionary_id: string;
+    version_id?: string;
+  }> | null;
 }
 
 /**
@@ -35,6 +40,7 @@ export function VerseVoiceChat({
   connectionType = "webrtc",
   className,
   onError,
+  pronunciationDictionaryLocators,
 }: VerseVoiceChatProps) {
   const [agentState, setAgentState] = useState<AgentState>(null);
   const [colors, setColors] = useState<[string, string]>(VERSE_ORB_COLORS_FALLBACK);
@@ -104,7 +110,7 @@ export function VerseVoiceChat({
     try {
       setAgentState("connecting");
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      await startSession({
+      const sessionOptions: Parameters<typeof startSession>[0] = {
         agentId,
         connectionType,
         onStatusChange: (ev) => {
@@ -113,13 +119,18 @@ export function VerseVoiceChat({
           else if (s === "connecting" || s === "reconnecting") setAgentState("thinking");
           else setAgentState(null);
         },
-      });
+      };
+      if (pronunciationDictionaryLocators?.length) {
+        (sessionOptions as Record<string, unknown>).pronunciation_dictionary_locators =
+          pronunciationDictionaryLocators;
+      }
+      await startSession(sessionOptions);
     } catch (err) {
       console.error("Start voice session failed:", err);
       setAgentState(null);
       onError?.(err);
     }
-  }, [agentId, connectionType, status, startSession, endSession, onError]);
+  }, [agentId, connectionType, status, startSession, endSession, onError, pronunciationDictionaryLocators]);
 
   const isConnecting =
     status === "connecting" || status === "reconnecting" || derivedState === "thinking";

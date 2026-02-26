@@ -86,6 +86,10 @@ type ElevenLabsConfig = {
   agentId: string | null
   audioSampleUrl: string | null
   connectionType: "webrtc" | "websocket"
+  pronunciationDictionaryLocators?: Array<{
+    pronunciation_dictionary_id: string
+    version_id?: string
+  }> | null
 }
 
 function LiveWaveformDemoCard() {
@@ -287,6 +291,7 @@ export function ComponentLibraryContent() {
                   connectionType={config.connectionType}
                   onMessage={() => {}}
                   onDisconnect={() => {}}
+                  pronunciationDictionaryLocators={config.pronunciationDictionaryLocators ?? undefined}
                 />
               </div>
             ) : (
