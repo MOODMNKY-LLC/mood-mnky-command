@@ -38,6 +38,12 @@ type LinkedAccountsResponse = {
 const linkClass =
   "text-sm text-muted-foreground transition-colors hover:text-foreground"
 
+/** Lab (dashboard) URL. Use command domain so Lab works from www.moodmnky.com. */
+const LAB_PLATFORM_HREF =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL)
+    ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/platform`
+    : "https://mnky-command.moodmnky.com/platform"
+
 function getInitials(displayName?: string, email?: string): string {
   if (displayName) {
     const parts = displayName.trim().split(/\s+/)
@@ -201,7 +207,7 @@ export function MainNavAuth({ className }: { className?: string }) {
           </DropdownMenuItem>
           {user.isAdmin && (
             <DropdownMenuItem asChild>
-              <Link href="/platform" className="flex items-center gap-2 cursor-pointer">
+              <Link href={LAB_PLATFORM_HREF} className="flex items-center gap-2 cursor-pointer">
                 <FlaskConical className="h-4 w-4" />
                 Lab
               </Link>
