@@ -1,0 +1,106 @@
+# Credentials from Notion (95da498bdc724b4190fe67dcd61e23de)
+
+**Note:** The Notion page with ID `95da498bdc724b4190fe67dcd61e23de` is the **Credentials hub page**. It does not contain a single database; it contains **four** linked databases. Rows were gathered via `notion-fetch` (database schema + hub content) and `notion-search` (data_source_url per collection). `notion-query-database-view` was attempted but requires a full **view URL** (e.g. from the Notion UI with `?v=view-id`), not a constructed URL from schema view IDs, so it was not used for bulk export.
+
+---
+
+## Notion MCP tools used (plugin-notion-workspace-notion)
+
+| Tool | Parameters | Notes |
+|------|------------|--------|
+| **notion-fetch** | `id` (required): URL or UUID of page, database, or data source (e.g. `collection://...`). Optional: `include_transcript`, `include_discussions`. | Use to load a database by ID/URL; returns schema, data sources, and view descriptors. For databases, use the returned `<data-source url="collection://...">` for search. |
+| **notion-query-database-view** | `view_url` (required): Full URL of a database **view** (e.g. `https://www.notion.so/workspace/db-id?v=view-id`). | Fails if view URL is not the exact one from the Notion UI. Cannot query by database ID alone. |
+| **notion-search** | `query` (required). Optional: `query_type` (internal | user), `data_source_url` (collection://...), `page_url`, `teamspace_id`, `content_search_mode`, `filters` (created_date_range, created_by_user_ids). | Use `data_source_url` with a collection ID to search within a specific database; returns page IDs/titles (semantic, may not be exhaustive). |
+| notion-create-pages | (see tool schema) | |
+| notion-update-page | (see tool schema) | |
+| notion-create-database | (see tool schema) | |
+| notion-update-data-source | (see tool schema) | |
+| notion-duplicate-page | (see tool schema) | |
+| notion-move-pages | (see tool schema) | |
+| notion-get-comments | (see tool schema) | |
+| notion-create-comment | (see tool schema) | |
+| notion-get-users | (see tool schema) | |
+| notion-get-teams | (see tool schema) | |
+| notion-query-meeting-notes | (see tool schema) | |
+
+---
+
+## Structured credential list (all four databases)
+
+### 1. MOOD MNKY Credentials (database: 6f2a478a094342d59c80e03eb6c2a5ef)
+
+Schema: Parent Program (title), Key Code, Use Cases, Examples, Text, Text 1–3, API Key, Date.
+
+| Name | Category | Description / What it's for |
+|------|----------|-----------------------------|
+| Jellyfin | auth / media | Use Cases: API KEY: MOOD MNKY COMMAND. Key Code: env/key identifier. |
+| Supabase | db / storage | Use Cases: MNKY MIND S3. Key Code: Access Key ID. Text: Secret Access Key. |
+| Notion | auth | Use Cases: MNKY MIND API KEY. Key Code: Notion token identifier. |
+| Shopify Hydrogen & Oxygen | commerce | Multiple entries (5) for Shopify Hydrogen & Oxygen. |
+| OpenAI | AI | Use Cases: MOOD_MNKY. Key Code: API key; Examples: Organization ID. |
+| Firecrawl | automation / scraping | Use Cases: API Key. |
+
+---
+
+### 2. n8n Credentials (database: 280cd2a6542281a8a0ebfdbad1d26a6d)
+
+Schema: name (title), typeKey (select), data, enabled, notes.
+
+| Name | Category | Description / What it's for |
+|------|----------|-----------------------------|
+| GitHub Default | auth | typeKey: github. n8n credential for GitHub API. |
+| Supabase Default | db | typeKey: supabase. n8n credential for Supabase. |
+| Brave Default | AI / search | typeKey: brave. n8n credential for Brave Search. |
+| Tavily Default | AI / search | typeKey: tavily. n8n credential for Tavily. |
+| Wolfram Default | AI | typeKey: wolfram. n8n credential for Wolfram. |
+| OpenAI Default | AI | typeKey: openai. n8n credential for OpenAI. |
+| Hugging Face Default | AI | typeKey: huggingface. n8n credential for Hugging Face. |
+| LangSmith Default | AI | typeKey: langsmith. n8n credential for LangSmith. |
+| ElevenLabs Default | AI | typeKey: elevenlabs. n8n credential for ElevenLabs. |
+| Firecrawl Default | automation | typeKey: firecrawl. n8n credential for Firecrawl. |
+
+---
+
+### 3. n8n Credentials (v2 - User Friendly) (database: 280cd2a65422811bb400c16f752eed61)
+
+Schema: name (title), typeKey (select), accessToken, anonKey, apiKey, appId, enabled, host, notes, server, serviceRole, token.
+
+| Name | Category | Description / What it's for |
+|------|----------|-----------------------------|
+| GitHub Default | auth | typeKey: github. |
+| Supabase Default | db | typeKey: supabase. |
+| Brave Default | AI / search | typeKey: brave. |
+| Tavily Default | AI / search | typeKey: tavily. |
+| Notion Default | auth | typeKey: notion. |
+| LangSmith Default | AI | typeKey: langsmith. |
+| Wolfram Default | AI | typeKey: wolfram. |
+| ElevenLabs Default | AI | typeKey: elevenlabs. |
+| Hugging Face Default | AI | typeKey: huggingface. |
+| OpenAI Default | AI | typeKey: openai. |
+
+---
+
+### 4. Credentials (AI) (database: 2c5cd2a6542281eebc82e132ff2aee07)
+
+Schema: Name (title), Service/Provider, Description, Credential Type, Primary Value, Secondary Value, Tertiary Value, Environment Variable Name, MCP Env Variable, MCP Server Name, Enabled, Status, Environment, Tags, etc.
+
+| Name | Category | Description / What it's for |
+|------|----------|-----------------------------|
+| LangSmith | AI | Service/Provider: LangSmith. Credential Type: API Key. Description: API Key. Environment Variable Name: LANGSMITH_API_KEY. Status: Active. |
+| Google | AI / docs | Service/Provider: Google Cloud. Credential Type: API Key. Description: MNKY DOCS. Environment Variable Name: GOOGLE_CLOUD_API_KEY. Status: Active. |
+| Notion | auth | Service/Provider: Notion. Credential Type: API Key. Description: n8n integration key. Environment Variable Name: NOTION_API_KEY. Status: Active. |
+| Smithery | Other | Service/Provider: Other. Credential Type: API Key. Description: DEV-MNKY. Status: Active. |
+| Untitled | — | Multiple placeholder/untitled entries (no description or service set). |
+
+---
+
+## Category summary
+
+- **auth:** Notion (MNKY MIND, n8n), GitHub (n8n), Jellyfin.
+- **db:** Supabase (MNKY MIND S3, n8n).
+- **commerce:** Shopify Hydrogen & Oxygen.
+- **AI:** OpenAI (MOOD_MNKY, n8n), Brave, Tavily, Wolfram, Hugging Face, LangSmith, ElevenLabs.
+- **automation:** Firecrawl (API key, n8n).
+- **Other:** Google (MNKY DOCS), Smithery (DEV-MNKY).
+
+Use this file as the source to create or update `INTEGRATIONS-MASTER.md` (e.g. merge by service name, deduplicate n8n vs MOOD MNKY vs Credentials (AI), and add env var names and rotation/status where needed).
