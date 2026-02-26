@@ -1,0 +1,78 @@
+.main-site {
+  --main-glass-blur: 20px;
+  --main-glass-blur-soft: 26px;
+  --main-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --main-glass-radius: 1rem;
+  --main-card-hover-lift: 2px;
+  --main-card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --main-float-offset: -4px;
+  --main-float-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --main-float-duration: 0.3s;
+}
+.main-site {
+  --main-glass-bg: rgba(255, 255, 255, 0.12);
+  --main-glass-bg-soft: rgba(255, 255, 255, 0.08);
+  --main-glass-bg-card: rgba(255, 255, 255, 0.15);
+  --main-glass-border: rgba(0, 0, 0, 0.06);
+  --main-glass-bg-solid: var(--glass-bg-solid, rgba(255, 255, 255, 0.92));
+}
+.dark .main-site {
+  --main-glass-bg: rgba(0, 0, 0, 0.08);
+  --main-glass-bg-soft: rgba(0, 0, 0, 0.05);
+  --main-glass-bg-card: rgba(0, 0, 0, 0.12);
+  --main-glass-border: rgba(255, 255, 255, 0.12);
+  --main-glass-bg-solid: var(--glass-bg-solid, rgba(0, 0, 0, 0.88));
+}
+.main-site .main-glass-panel,
+.main-site .main-glass-panel-card {
+  background: var(--main-glass-bg-card);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--main-glass-border);
+  box-shadow: var(--main-glass-shadow);
+  border-radius: var(--main-glass-radius);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-panel,
+  .main-site .main-glass-panel-card {
+    background: var(--main-glass-bg-solid);
+  }
+}
+.main-site .main-glass-nav {
+  background: var(--glass-bg-nav);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--glass-border-nav);
+  border-radius: var(--main-glass-radius);
+  box-shadow: var(--main-glass-shadow), 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-nav {
+    background: var(--glass-bg-solid);
+  }
+}
+.main-site .main-glass-footer {
+  background: var(--glass-bg-nav);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--glass-border-nav);
+  border-radius: var(--main-glass-radius) var(--main-glass-radius) 0 0;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06), var(--main-glass-shadow);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-footer {
+    background: var(--glass-bg-solid);
+  }
+}
+.main-site .main-float {
+  transition: transform var(--main-float-duration) ease, box-shadow var(--main-float-duration) ease;
+}
+.main-site .main-float:hover {
+  transform: translateY(var(--main-float-offset));
+  box-shadow: var(--main-float-shadow);
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-site .main-float:hover {
+    transform: none;
+  }
+}
