@@ -76,9 +76,10 @@ export async function GET() {
   }
 
   const connectionType = (row?.connection_type === "websocket" ? "websocket" : "webrtc") as "webrtc" | "websocket"
+  // Env fallbacks so production can use ELEVEN_LABS_DEFAULT_AGENT_ID / ELEVEN_LABS_DEFAULT_VOICE_ID when DB row is empty
   const response: MainElevenLabsConfigGet = {
-    agentId: row?.agent_id ?? null,
-    defaultVoiceId: row?.default_voice_id ?? null,
+    agentId: row?.agent_id ?? process.env.ELEVEN_LABS_DEFAULT_AGENT_ID ?? null,
+    defaultVoiceId: row?.default_voice_id ?? process.env.ELEVEN_LABS_DEFAULT_VOICE_ID ?? null,
     audioSampleUrl: row?.audio_sample_url ?? process.env.NEXT_PUBLIC_MAIN_LANDING_AUDIO_SAMPLE_URL ?? null,
     showVoiceSection: row?.show_voice_section ?? true,
     showAudioSample: row?.show_audio_sample ?? true,

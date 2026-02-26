@@ -77,7 +77,7 @@ export function MainVoiceBlock({ config }: MainVoiceBlockProps) {
             />
           ) : (
             <p className="text-sm text-muted-foreground">
-              Voice is not configured yet. Set the Main agent in LABZ → Chat → Main ElevenLabs.
+              Voice is not configured yet. Set the Main agent in LABZ → Chat → ElevenLabs → Main.
             </p>
           )}
           {config.showTranscriptViewer && (

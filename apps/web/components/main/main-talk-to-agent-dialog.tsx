@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import Link from "next/link"
 import {
   Dialog,
   DialogContent,
@@ -134,7 +135,7 @@ export function MainTalkToAgentDialog() {
           </div>
         ) : !showVoice ? (
           <p className="text-center text-sm text-muted-foreground">
-            Voice is not available. Enable it in LABZ → Chat → Main ElevenLabs.
+            Voice is not available. Enable it in LABZ → Chat → ElevenLabs → Main.
           </p>
         ) : (
           <div className="flex flex-col items-center gap-4">
@@ -174,8 +175,11 @@ export function MainTalkToAgentDialog() {
                 />
               ) : (
                 <p className="text-center text-sm text-muted-foreground">
-                  Voice is not configured yet. Set the Main agent in LABZ → Chat
-                  → Main ElevenLabs.
+                  Voice is not configured yet. Set the Main agent in{" "}
+                  <Link href="/chat/eleven-labs/main" className="underline hover:text-foreground">
+                    LABZ → Chat → ElevenLabs → Main
+                  </Link>
+                  .
                 </p>
               )}
             </div>

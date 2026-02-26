@@ -278,7 +278,7 @@ export function ComponentLibraryContent() {
           </DemoCard>
           <DemoCard
             title="Conversation Bar"
-            description={config?.agentId ? "Voice conversation (wired to agent)" : "Configure Main ElevenLabs agent in MNKY LABZ to see this."}
+            description={config?.agentId ? "Voice conversation (wired to agent)" : "Configure Main ElevenLabs agent in LABZ → Chat → ElevenLabs → Main to see this."}
           >
             {config?.agentId ? (
               <div className="w-full max-w-sm">
@@ -290,7 +290,7 @@ export function ComponentLibraryContent() {
                 />
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">Set agent in MNKY LABZ → Chat → Main ElevenLabs.</p>
+              <p className="text-xs text-muted-foreground">Set agent in LABZ → Chat → ElevenLabs → Main.</p>
             )}
           </DemoCard>
           <DemoCard title="Conversation" description="Chat container">

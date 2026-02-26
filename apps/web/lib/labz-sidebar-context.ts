@@ -23,7 +23,7 @@ export interface LabzContextConfig {
 export const labzContexts: LabzContextConfig[] = [
   { id: "lab", name: "Lab", icon: FlaskConical, plan: "Product data & builder", href: "/" },
   { id: "store", name: "Store", icon: Store, plan: "Shopify admin", href: "/store" },
-  { id: "verse", name: "Dojo", icon: Globe, plan: "Storefront & community", href: "/dojo" },
+  { id: "verse", name: "Dojo", icon: Globe, plan: "Storefront & community", href: "/verse-backoffice/manga" },
   { id: "platform", name: "Platform", icon: Server, plan: "Data & automation", href: "/platform" },
   { id: "ai-tools", name: "AI Tools", icon: Bot, plan: "Chat & studio", href: "/chat" },
 ];
