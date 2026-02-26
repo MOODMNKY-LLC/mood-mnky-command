@@ -2,6 +2,8 @@
 
 This report documents the current navigation architecture, identified UX issues, streamlining recommendations, and the Verse → MNKY DOJO rebrand direction. It supports the consolidation where **MOOD MNKY** (`/main`) is the brand site, **MNKY LABZ** is the back office, and **MNKY DOJO** unifies the storefront and member hub.
 
+**Three domains and routing:** Host-based routing is handled by Next.js middleware ([apps/web/middleware.ts](apps/web/middleware.ts)), which invokes [apps/web/proxy.ts](apps/web/proxy.ts). **Middleware must run** for the following to work: **www.moodmnky.com** and **moodmnky.com** rewrite `/` to `/main`; **mnky-verse.moodmnky.com** rewrites `/` to `/verse`; **mnky-command.moodmnky.com** has no rewrite (root is dashboard/Dojo). All three domains point to the same deployment; the middleware uses the `Host` header to apply the correct rewrite.
+
 ---
 
 ## 1. Current state

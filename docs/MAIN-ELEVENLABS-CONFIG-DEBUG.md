@@ -37,6 +37,7 @@ Use this to confirm what the API is reading from the DB.
 
 ## 4. Error vs not configured
 
+- **"Voice config unavailable."** (or 503 from API) — The API returns **503** when `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` are missing in the deployment (e.g. Vercel production). Set both env vars and redeploy. Response includes `X-Voice-Config: env-missing` for debugging.
 - **"Couldn't load voice config. Try again."** — The request failed (network, 500, or invalid response). Use "Try again" or check server logs and DB.
 - **"Voice is not configured yet. Set the Main agent in LABZ → Chat → Main ElevenLabs."** — The request succeeded but `agent_id` is null in the returned config. Fix in LABZ or verify DB (step 1).
 
@@ -44,8 +45,9 @@ Use this to confirm what the API is reading from the DB.
 
 When the dock or dialog "isn't working" in production:
 
-1. **Same Supabase as production**
-   - Production app must use the same Supabase project as where you set the Main agent (LABZ). Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the production environment point to that project.
+1. **Production env (required)**
+   - In Vercel (or your production host), set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the production environment. If either is missing, the API returns 503 and the dialog shows "Voice config unavailable."
+   - Production app must use the same Supabase project as where you set the Main agent (LABZ).
 
 2. **Migrations applied in production DB**
    - Table `main_elevenlabs_config` and RLS policies must exist. Run the same migrations on the production Supabase project (e.g. `supabase db push` or run `20260221200000_main_elevenlabs_config.sql` and related migrations).

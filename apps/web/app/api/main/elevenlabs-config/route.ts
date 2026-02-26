@@ -43,8 +43,12 @@ export async function GET() {
     console.error(
       "[main/elevenlabs-config] GET: Supabase env vars missing in production. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
     )
-    const res = NextResponse.json(fallbackConfig())
+    const res = NextResponse.json(
+      { error: "Voice config unavailable.", code: "CONFIG_UNAVAILABLE" },
+      { status: 503 }
+    )
     res.headers.set("Cache-Control", "no-store, max-age=0")
+    res.headers.set("X-Voice-Config", "env-missing")
     return res
   }
 
