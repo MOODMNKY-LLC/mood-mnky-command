@@ -231,14 +231,15 @@ function isMediaDevicesAvailable(): boolean {
 
 export function useAudioDevices() {
   const [devices, setDevices] = useState<AudioDevice[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasPermission, setHasPermission] = useState(false)
 
   const loadDevicesWithoutPermission = useCallback(async () => {
     if (!isMediaDevicesAvailable()) {
-      setLoading(false)
-      setError("Microphone not available")
+      setError(
+        "Microphone access isn't available. Use Safari (or Chrome) over HTTPS and allow the microphone when prompted. On iPhone/iPad: Settings → Safari → Microphone."
+      )
       return
     }
     try {
@@ -275,7 +276,9 @@ export function useAudioDevices() {
   const loadDevicesWithPermission = useCallback(async () => {
     if (loading) return
     if (!isMediaDevicesAvailable()) {
-      setError("Microphone not available")
+      setError(
+        "Microphone access isn't available. Use Safari over HTTPS and allow the microphone when prompted. On iPhone/iPad: Settings → Safari → Microphone."
+      )
       return
     }
     try {
@@ -306,8 +309,14 @@ export function useAudioDevices() {
       setDevices(audioInputs)
       setHasPermission(true)
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to get audio devices"
+      const isDenied =
+        (err instanceof Error && err.name === "NotAllowedError") ||
+        /permission denied|not allowed/i.test(message)
       setError(
-        err instanceof Error ? err.message : "Failed to get audio devices"
+        isDenied
+          ? "Microphone access was denied. Tap Allow when prompted, or enable in Settings → Safari → Microphone for this site."
+          : message
       )
       console.error("Error getting audio devices:", err)
     } finally {
@@ -315,14 +324,8 @@ export function useAudioDevices() {
     }
   }, [loading])
 
-  useEffect(() => {
-    if (!isMediaDevicesAvailable()) {
-      setLoading(false)
-      setError("Microphone not available")
-      return
-    }
-    loadDevicesWithoutPermission()
-  }, [loadDevicesWithoutPermission])
+  // Defer any mediaDevices access until user gesture (e.g. open mic dropdown).
+  // On iOS, touching the API on mount can report "unavailable"; first use must be after a tap.
 
   useEffect(() => {
     if (!isMediaDevicesAvailable()) return

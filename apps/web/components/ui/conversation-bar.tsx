@@ -129,7 +129,9 @@ export const ConversationBar = React.forwardRef<
       if (mediaStreamRef.current) return mediaStreamRef.current
 
       if (typeof navigator === "undefined" || !navigator.mediaDevices) {
-        throw new Error("Microphone not available in this browser or context.")
+        throw new Error(
+          "Microphone access isn't available. Use Safari over HTTPS and allow the microphone when prompted. On iPhone/iPad: Settings → Safari → Microphone."
+        )
       }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream

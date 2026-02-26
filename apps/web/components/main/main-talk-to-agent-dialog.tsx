@@ -76,6 +76,7 @@ export function MainTalkToAgentDialog() {
   const [config, setConfig] = useState<MainElevenLabsConfigGet | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
   const [transcriptLines, setTranscriptLines] = useState<
     Array<{ source: "user" | "ai"; message: string }>
   >([])
@@ -138,11 +139,25 @@ export function MainTalkToAgentDialog() {
 
   const onMessage = useCallback(
     (message: { source: "user" | "ai"; message: string }) => {
+      setVoiceError(null)
       setTranscriptLines((prev) => [...prev, message])
     },
     []
   )
-  const onDisconnect = useCallback(() => setTranscriptLines([]), [])
+  const onDisconnect = useCallback(() => {
+    setTranscriptLines([])
+    setVoiceError(null)
+  }, [])
+  const onVoiceError = useCallback((err: Error) => {
+    const msg = err?.message ?? "Voice connection failed."
+    const isMic =
+      /microphone|permission|not allowed|denied/i.test(msg) || err?.name === "NotAllowedError"
+    setVoiceError(
+      isMic
+        ? "Microphone access is needed. Tap Allow when prompted, or enable in Settings → Safari → Microphone (iPhone/iPad)."
+        : msg
+    )
+  }, [])
   const transcriptEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -201,6 +216,9 @@ export function MainTalkToAgentDialog() {
             )}
 
             {/* Command bar centered beneath avatar */}
+            {voiceError && (
+              <p className="text-center text-sm text-destructive">{voiceError}</p>
+            )}
             <div className="w-full max-w-[300px]">
               {hasAgent ? (
                 <MainConversationBar
@@ -210,6 +228,7 @@ export function MainTalkToAgentDialog() {
                   className="p-2"
                   onMessage={onMessage}
                   onDisconnect={onDisconnect}
+                  onError={onVoiceError}
                 />
               ) : (
                 <p className="text-center text-sm text-muted-foreground">
