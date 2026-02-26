@@ -19,8 +19,9 @@ function normalizeHost(host: string): string {
 function getEffectivePathname(host: string, pathname: string): string {
   const normalizedHost = normalizeHost(host)
 
-  if (VERSE_DOMAIN === normalizedHost && !pathname.startsWith("/verse")) {
-    return pathname === "/" ? "/verse" : `/verse${pathname}`
+  // On Verse domain only rewrite root to /verse so /dojo and /main links work (no /verse/dojo → /dojo/dojo 404).
+  if (VERSE_DOMAIN === normalizedHost) {
+    return pathname === "/" ? "/verse" : pathname
   }
   // Main domain: rewrite to /main except these prefixes so sign-in, Dojo, Lab, and other app routes work.
   const mainDomainNoRewritePrefixes = [
