@@ -54,7 +54,7 @@ From repo root: `pnpm dev:hydaelyn` if configured in root `package.json`.
 
 In Vercel, set **Root Directory** to `apps/hydaelyn`. This app’s `vercel.json` overrides install and build so that:
 
-- Install runs from the monorepo root (`pnpm install`).
+- Install runs in the app directory (`pnpm install`); pnpm discovers the monorepo and installs the workspace. This keeps Next.js detectable in `package.json`.
 - Build runs Turbo with the **package name** filter: `--filter=hydaelyn` (do not use path filters like `/apps/hydaelyn` or `{/apps/hydaelyn}` — Turbo rejects them as “invalid anchored path”).
 
 If you use a custom Build Command in the dashboard, it must use `--filter=hydaelyn`, not `--filter={/apps/hydaelyn}`.
