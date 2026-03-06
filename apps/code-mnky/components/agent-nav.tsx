@@ -14,6 +14,12 @@ export function AgentNav() {
         </Link>
         <nav className="flex items-center gap-4">
           <Link
+            href="/cluster"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Cluster
+          </Link>
+          <Link
             href="/roadmap"
             className="text-sm text-muted-foreground hover:text-foreground"
           >

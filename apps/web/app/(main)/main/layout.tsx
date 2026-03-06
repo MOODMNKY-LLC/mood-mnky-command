@@ -1,6 +1,10 @@
 import type { Metadata } from "next"
 import { MainAuthContext } from "@/components/main/main-auth-context"
 import { MainTalkToAgentProvider } from "@/components/main/main-talk-to-agent-context"
+import {
+  MainTouchpointTourProvider,
+  MainTouchpointTour,
+} from "@/components/main"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import "./main-site.css"
 import "./main-glass.css"
@@ -45,7 +49,10 @@ export default async function MainLayout({
     <div className="main-site min-h-screen bg-background text-foreground">
       <TooltipProvider>
         <MainTalkToAgentProvider>
-          <MainAuthContext>{children}</MainAuthContext>
+          <MainTouchpointTourProvider>
+            <MainAuthContext>{children}</MainAuthContext>
+            <MainTouchpointTour />
+          </MainTouchpointTourProvider>
         </MainTalkToAgentProvider>
       </TooltipProvider>
     </div>

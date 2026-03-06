@@ -97,7 +97,7 @@ Shopify’s Customer Account API **does not support localhost or HTTP URLs** for
 **Using `pnpm dev:https` or Supabase `[api.tls]` does not help:**
 
 - **Next.js `--experimental-https`** gives `https://localhost:3000`, but Shopify still rejects localhost.
-- **Supabase `config.toml` `[api.tls]`** is for the **Supabase local API** (port 54321), not for the Next.js app. The OAuth callback hits the Next.js app, so Supabase TLS has no effect on this flow.
+- **Supabase `config.toml` `[api.tls]`** is for the **Supabase local API** (port 54221), not for the Next.js app. The OAuth callback hits the Next.js app, so Supabase TLS has no effect on this flow.
 
 **Conclusion:** ngrok (or cloudflare tunnel, localtunnel) is required for local Customer Account API testing.
 

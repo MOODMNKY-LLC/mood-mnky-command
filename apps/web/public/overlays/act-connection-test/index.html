@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACT connection test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 1rem;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      max-width: 420px;
+    }
+    h1 { font-size: 1rem; margin: 0 0 0.5rem 0; color: #888; }
+    .status { font-weight: 600; margin-bottom: 0.5rem; }
+    .status.connected { color: #4ade80; }
+    .status.waiting { color: #fbbf24; }
+    .status.error { color: #f87171; }
+    .data { font-size: 0.875rem; background: #252525; padding: 0.75rem; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+    .hint { font-size: 0.75rem; color: #666; margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h1>ACT / OverlayPlugin connection test</h1>
+  <div id="status" class="status waiting">Checking for ACT data…</div>
+  <div id="data" class="data">No combat data yet. Enter combat or load this overlay in ACT with OverlayPlugin.</div>
+  <div class="hint" id="hint">In a browser: add ?OVERLAY_WS=ws://127.0.0.1:10501/ws and enable WSServer in OverlayPlugin.</div>
+  <script src="https://overlayplugin.github.io/OverlayPlugin/assets/shared/common.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

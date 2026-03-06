@@ -2,7 +2,7 @@
 
 **Main** (www.moodmnky.com / `/main`) is the **mono app home page**: the brand’s public landing and primary entry point. It is linked from sidebars, headers, auth, and the MNKY DOJO dock so users can reach the brand home from every section.
 
-This document lists where Main is linked from the app and the Shopify theme.
+This document lists where Main is linked from the app and the Shopify theme. For the optional **touch-point tutorial** (first-time and on-demand tour of Main, Dojo, and sign-up), see [MAIN-TOUCHPOINT-TOUR.md](MAIN-TOUCHPOINT-TOUR.md).
 
 ## In-app navigation
 

@@ -21,3 +21,7 @@ Brief note driving implementation of the editable CODE MNKY panel and Flowise co
 - **Instance:** flowise-dev.moodmnky.com; API base path `/api/v1` (chatflows, prediction). Auth: Bearer token (FLOWISE_API_KEY).
 - **Proxy:** All Flowise calls from Next.js API routes only; never from the browser. GET /api/flowise/chatflows → Flowise GET /api/v1/chatflows; POST /api/flowise/predict → Flowise POST /api/v1/prediction/:id.
 - **SDK:** flowise-sdk (FlowiseClient, createPrediction) used server-side in proxy routes; baseUrl and auth headers from env. No key or chatflow IDs exposed to client.
+
+## Proxmox cluster (Integrations)
+
+- **Dashboard:** Link to `/cluster` in the CODE MNKY app for MOODMNKY cluster visibility (nodes, guests). Cluster name and guest count can be shown in an Integrations tab snippet (e.g. “MOODMNKY — 5 nodes, 17 guests”). No Proxmox API key or token in the UI; config stays server/env (PROXMOX_BASE_URL, PROXMOX_API_TOKEN).

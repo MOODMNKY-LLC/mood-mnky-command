@@ -35,6 +35,11 @@ export {
   MainTalkToAgentProvider,
   useMainTalkToAgent,
 } from "./main-talk-to-agent-context"
+export {
+  MainTouchpointTourProvider,
+  useMainTouchpointTour,
+} from "./main-touchpoint-tour-context"
+export { MainTouchpointTour } from "./main-touchpoint-tour"
 
 export {
   MainOrb,

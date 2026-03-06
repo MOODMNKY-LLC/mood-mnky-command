@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACT Ingest — Hydaelyn</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 12px; margin: 0; background: #1a1a1a; color: #e0e0e0; }
+    .config { max-width: 400px; }
+    .config label { display: block; margin-top: 8px; }
+    .config input { width: 100%; padding: 6px; margin-top: 2px; box-sizing: border-box; }
+    .config button { margin-top: 12px; padding: 8px 16px; cursor: pointer; }
+    .status { margin-top: 12px; font-size: 12px; color: #888; }
+    .status.ok { color: #6b6; }
+    .status.err { color: #c66; }
+  </style>
+</head>
+<body>
+  <div id="config-panel" class="config" style="display: none;">
+    <p>Set your API base URL and overlay token (from the raid stream dashboard).</p>
+    <label>API base URL (e.g. https://your-app.com)</label>
+    <input id="api-base" type="text" placeholder="https://your-app.com" />
+    <label>Overlay token</label>
+    <input id="overlay-token" type="text" placeholder="Paste token from dashboard" />
+    <button id="save-config">Save and start</button>
+  </div>
+  <div id="status" class="status">Loading…</div>
+  <script src="https://overlayplugin.github.io/OverlayPlugin/assets/shared/common.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

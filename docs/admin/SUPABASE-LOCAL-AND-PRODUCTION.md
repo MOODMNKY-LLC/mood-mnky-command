@@ -31,11 +31,13 @@ supabase status
 
 In `.env.local` set:
 
-- `NEXT_PUBLIC_SUPABASE_URL` = **Project URL** from `supabase status` (e.g. `http://127.0.0.1:54321`)
+- `NEXT_PUBLIC_SUPABASE_URL` = **Project URL** from `supabase status` (e.g. `http://127.0.0.1:54221`)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key from `supabase status` (often labeled “Publishable” or see Studio → Settings → API)
 - `SUPABASE_SERVICE_ROLE_KEY` = service role key (often labeled “Secret” or service_role in Studio)
 
-So in local dev, **one** database: the one at `127.0.0.1:54321`. Both the Next.js app and any seed script (using `.env.local`) use it.
+So in local dev, **one** database: the one at `127.0.0.1:54221`. Both the Next.js app and any seed script (using `.env.local`) use it.
+
+**Local status snapshot (FFXIV / other apps):** Run `supabase status` to get current values. Example output (project `mood-mnky-command`, ports from `supabase/config.toml`): Project URL `http://127.0.0.1:54221`, REST `http://127.0.0.1:54221/rest/v1`, GraphQL `http://127.0.0.1:54221/graphql/v1`, DB URL `postgresql://postgres:postgres@127.0.0.1:54200/postgres`, Studio `http://127.0.0.1:54223`. Auth keys appear as Publishable (anon) and Secret (service_role). Use these in `.env.local` for any app in the monorepo (e.g. FFXIV apps) that uses this Supabase project.
 
 ### 3. Apply migrations to local
 
@@ -79,7 +81,7 @@ When `supabase/config.toml` has `[api.tls] enabled = true` (for Shopify Customer
 4. Restart Supabase: `supabase stop` then `supabase start`
 5. Retry login — the browser will trust the cert automatically
 
-**Alternative (manual trust):** Open `https://127.0.0.1:54321` in your browser, accept the security warning (Chrome: Advanced → Proceed), then retry login. Must be done once per browser.
+**Alternative (manual trust):** Open `https://127.0.0.1:54221` in your browser, accept the security warning (Chrome: Advanced → Proceed), then retry login. Must be done once per browser.
 
 ---
 

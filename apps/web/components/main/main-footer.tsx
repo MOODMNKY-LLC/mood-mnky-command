@@ -4,11 +4,13 @@ import Link from "next/link"
 import { OpenInChat } from "@/components/ai-elements/open-in-chat"
 import { VerseLogoHairIcon } from "@/components/verse/verse-logo-hair-icon"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
+import { useMainTouchpointTour } from "@/components/main/main-touchpoint-tour-context"
 import { ROUTES } from "@/lib/nav-routes"
 import { FOOTER_GROUPS } from "@/lib/main-nav-config"
 
 export function MainFooter() {
   const { discover, dojo, connect } = FOOTER_GROUPS
+  const { openTour } = useMainTouchpointTour()
 
   return (
     <footer
@@ -56,6 +58,13 @@ export function MainFooter() {
                   </Link>
                 )
               )}
+              <button
+                type="button"
+                onClick={openTour}
+                className="transition-colors hover:text-foreground"
+              >
+                Take a tour
+              </button>
             </div>
           </div>
           <div className="flex flex-col gap-2">

@@ -17,6 +17,8 @@
     "dev:mood-mnky": "pnpm --filter mood-mnky dev",
     "dev:sage-mnky": "pnpm --filter sage-mnky dev",
     "dev:code-mnky": "pnpm --filter code-mnky dev",
+    "dev:hydaelyn": "pnpm --filter hydaelyn dev",
+    "dev:web": "pnpm --filter web dev",
     "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
     "docs:validate": "cd mnky-docs && pnpm exec mint validate"
   },

@@ -12,6 +12,9 @@ node_modules/
 .cursor/mcp.json
 .cursor/mcp.json.tmp
 .cursor/mcp.json.backup
+# Shopify and other app-specific MCP configs may contain tokens
+**/.cursor/mcp.json
+Shopify/.cursor/
 .next/
 .turbo/
 .env

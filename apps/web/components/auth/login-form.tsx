@@ -50,11 +50,21 @@ export function LoginForm({ variant = "default", redirectTo = "/", onSuccess }: 
         (typeof message === "string" && (message.includes("fetch") || message.includes("Fetch"))) ||
         (cause?.message?.includes("self-signed") ?? false) ||
         (cause as { code?: string })?.code === "DEPTH_ZERO_SELF_SIGNED_CERT"
+      const isCertError =
+        (cause?.message?.includes("self-signed") ?? false) ||
+        (cause as { code?: string })?.code === "DEPTH_ZERO_SELF_SIGNED_CERT"
 
       if (isFetchError) {
-        setError(
-          "Self-signed certificate. Run: pnpm supabase:tls-setup, then supabase stop && supabase start. Or visit https://127.0.0.1:54321 and accept the certificate."
-        )
+        if (isCertError) {
+          setError(
+            "Self-signed certificate. Run: pnpm supabase:tls-setup, then supabase stop && supabase start. Or visit https://127.0.0.1:54221 and accept the certificate."
+          )
+        } else {
+          const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "(not set)"
+          setError(
+            `Cannot reach Supabase at ${url}. Ensure supabase start is running and .env.local has NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54221 (use https if you enabled TLS).`
+          )
+        }
       } else {
         setError(message)
       }

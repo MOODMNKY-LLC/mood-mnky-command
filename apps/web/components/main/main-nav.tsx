@@ -28,6 +28,7 @@ import {
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { ThemePaletteSwitcher } from "@/components/theme-palette-switcher"
 import { useMainTalkToAgent } from "@/components/main/main-talk-to-agent-context"
+import { useMainTouchpointTour } from "@/components/main/main-touchpoint-tour-context"
 import { BrandMatrixText } from "@/components/main/elevenlabs/brand-matrix-text"
 import { MainNavAuth } from "@/components/main/main-nav-auth"
 import { cn } from "@/lib/utils"
@@ -142,6 +143,7 @@ function MainNavDropdown({
 export function MainNav() {
   const [open, setOpen] = useState(false)
   const talk = useMainTalkToAgent()
+  const { openTour } = useMainTouchpointTour()
   const onMobileNav = () => setOpen(false)
 
   return (
@@ -219,6 +221,14 @@ export function MainNav() {
             ariaLabel="Join menu"
             tooltip="Community and loyalty"
           />
+          <button
+            type="button"
+            onClick={openTour}
+            className={cn(linkClass, "shrink-0")}
+            aria-label="Take a quick tour of the site"
+          >
+            Take a tour
+          </button>
           <MainNavAuth />
         </div>
 
@@ -311,6 +321,17 @@ export function MainNav() {
                 onNavigate={onMobileNav}
                 triggerClassName="flex min-h-[44px] items-center gap-1 rounded-md text-left"
               />
+              <button
+                type="button"
+                onClick={() => {
+                  openTour()
+                  setOpen(false)
+                }}
+                className="min-h-[44px] rounded-md text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Take a quick tour of the site"
+              >
+                Take a tour
+              </button>
               <MainNavAuth className="self-start" />
             </div>
           </SheetContent>

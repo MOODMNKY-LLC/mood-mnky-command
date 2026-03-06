@@ -80,7 +80,10 @@
     "JELLYFIN_BASE_URL",
     "JELLYFIN_API_KEY",
     "TRUENAS_BASE_URL",
-    "TRUENAS_API_KEY"
+    "TRUENAS_API_KEY",
+    "FFLOGS_CLIENT_ID",
+    "FFLOGS_CLIENT_SECRET",
+    "FFLOGS_OAUTH_REDIRECT_URI"
   ],
   "tasks": {
     "build": {

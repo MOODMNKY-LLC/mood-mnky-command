@@ -10,6 +10,28 @@ description: "Version history and updates for the CODE MNKY agent"
 This document tracks all significant changes, improvements, and fixes to the CODE MNKY agent. The changelog is organized by version, with the most recent versions listed first.
 </div>
 
+## Cluster Dashboard (2025-02)
+
+### New Features
+- **Cluster dashboard**: Proxmox cluster overview at `/cluster` with node cards (status, CPU, memory), design-system-aligned loading skeleton, and links to node and guest detail.
+- **Guests filters**: `/cluster/guests` supports URL filters `?node=`, `?type=`, `?status=` with pill-style filter UI.
+- **Node detail**: “View in guests list →” on node page links to guests list filtered by that node.
+
+### Comprehensive dashboard update (2025-02)
+- **Cluster overview**: Cluster RAM (used/total across nodes), guest counts by type (VMs, LXC); per-node guest count and uptime on node cards; **Storage** section (table of storage pools with used/total/avail); **Recent activity** section (last 15–20 cluster tasks). Storage and tasks are fetched with `Promise.allSettled` and omitted if the API fails (e.g. 403 for tasks).
+- **Node page**: Uptime card; guest count in page header.
+- **Guest detail**: Used/total memory and disk; current CPU %; **Live** section with uptime and network in/out (from typed `getGuestStatus`). Cores and storage name retained.
+- **Guests list**: **Usage** column showing live CPU % and memory used when available (from `getClusterResources`).
+- **Client**: `getClusterStorage()`, `getClusterTasks(limit)`, `formatUptime(seconds)`, `formatBytes(bytes)`; `GuestStatusCurrent` interface and typed `getGuestStatus` return.
+
+### Improvements
+- Cluster page uses stable unique keys for node list: `key={n.id ?? n.node ?? \`node-${index}\`}` to fix React “unique key” warning (Proxmox client normalizes node name from `node` / `name` / `id`).
+- Loading state matches main glass panel card layout (6-card grid).
+- Node cards show CPU % and memory when available; fallback to “Node {name}”.
+
+### Documentation
+- **cluster-dashboard.md**: Routes, Proxmox integration, env vars, key fix, guests filters, Storage and Recent activity, client functions and helpers, node and guest detail, and related docs.
+
 ## Version 1.3.0 (2024-01-10)
 
 ### New Features

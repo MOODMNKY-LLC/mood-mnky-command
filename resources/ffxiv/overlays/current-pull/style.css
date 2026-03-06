@@ -1,0 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; }
+.hydaelyn-current-pull {
+  --bg: rgba(12, 14, 22, 0.88);
+  --border: rgba(100, 148, 200, 0.3);
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  min-width: 200px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
+.current-pull-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 4px; }
+.current-pull-value { font-weight: 500; color: var(--text); }
+.current-pull-value.dps { color: #7dd3fc; }
+.empty-state { color: var(--text-dim); font-style: italic; }

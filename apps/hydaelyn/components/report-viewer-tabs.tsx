@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { FFLogsFight } from "@/lib/fflogs/client";
+import { JobIcon } from "@/components/job-icon";
 
 export function ReportViewerTabs({
   reportCode,
@@ -222,9 +223,20 @@ function ReportTableTab({ reportCode, fightIds, reportStartTime, reportEndTime }
             <TableBody>
               {flat.slice(0, 100).map((row, i) => (
                 <TableRow key={i}>
-                  {ordered.map((k) => (
-                    <TableCell key={k} className="text-muted-foreground">{formatCell(row[k])}</TableCell>
-                  ))}
+                  {ordered.map((k) => {
+                    const isJobColumn = k === "job" || k === "class";
+                    const jobVal = row[k];
+                    const jobStr = jobVal != null ? String(jobVal).trim() : null;
+                    return (
+                      <TableCell key={k} className="text-muted-foreground">
+                        {isJobColumn && jobStr ? (
+                          <JobIcon job={jobStr} size={20} showName />
+                        ) : (
+                          formatCell(row[k])
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
@@ -467,13 +479,18 @@ function ReportRosterTab({ reportCode, fightIds }: { reportCode: string; fightId
           {players.slice(0, 24).map((p, i) => {
             const name = getDisplayName(p) ?? `Player ${i + 1}`;
             const flat = flattenRow(p);
+            const jobName = flat.job ?? flat.class;
+            const jobStr = jobName != null ? String(jobName).trim() : null;
             const keys = ROSTER_DISPLAY_KEYS.filter((k) => k in flat && flat[k] != null);
             const rest = Object.keys(flat).filter((k) => !/^name|playerName|displayName$/i.test(k) && !keys.includes(k)).slice(0, 4);
             const allKeys = [...keys, ...rest];
             return (
               <Card key={i} className="overflow-hidden">
                 <CardHeader className="py-3 pb-1">
-                  <CardTitle className="text-sm font-medium leading-tight">{name}</CardTitle>
+                  <CardTitle className="text-sm font-medium leading-tight flex items-center gap-1.5">
+                    {jobStr ? <JobIcon job={jobStr} size={18} /> : null}
+                    {name}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1.5 py-0 text-xs text-muted-foreground">
                   {allKeys.slice(0, 10).map((k) => (

@@ -25,10 +25,10 @@ https://mnky-command.moodmnky.com/**
 https://mnky-verse.moodmnky.com/**
 ```
 
-**Discord OAuth (MNKY VERSE):** Supabase redirects to the app after Discord login. Ensure verse callback is allowed (covered by wildcards above):
+**Discord OAuth (MNKY VERSE + Hydaelyn):** Supabase redirects to the app after Discord login. Ensure verse/Hydaelyn callback is allowed (covered by wildcards above). In **Discord Developer Portal** → your application → **OAuth2 → Redirects**, add the **Supabase** callback URL (this is what Discord validates; the app URL is configured in Supabase `additional_redirect_urls`):
 
-- `https://mnky-verse.moodmnky.com/verse/auth/callback`
-- In Discord Developer Portal, set OAuth2 Redirect URI to your Supabase project callback: `https://<project-ref>.supabase.co/auth/v1/callback`
+- **Local:** Add both: `http://127.0.0.1:54521/auth/v1/callback` and `http://localhost:54521/auth/v1/callback` (port must match your Supabase local API port in `supabase/config.toml`).
+- **Prod:** `https://<project-ref>.supabase.co/auth/v1/callback`
 
 **Optional (explicit paths):** If you prefer exact URLs instead of wildcards:
 
