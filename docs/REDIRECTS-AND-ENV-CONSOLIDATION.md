@@ -6,6 +6,8 @@ This document lists all redirects and production environment variables that must
 
 ## 1. Domain-level redirects (Vercel or middleware)
 
+Legacy production hosts only; localhost and Vercel preview hosts are not redirected.
+
 | Source | Destination | Where configured |
 |--------|-------------|------------------|
 | `mnky-command.moodmnky.com` (root `/`) | `https://www.moodmnky.com/platform` | [apps/web/proxy.ts](apps/web/proxy.ts) (middleware) |
