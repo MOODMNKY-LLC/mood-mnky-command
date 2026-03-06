@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Swords, Users, Database, Sparkles } from "lucide-react";
+import { Swords, Users, Database, Sparkles, RefreshCw } from "lucide-react";
 import { JobIcon } from "@/components/job-icon";
 
 type Encounter = {
@@ -55,11 +56,14 @@ export function ActContextClient({
   encounters,
   combatants,
   current,
+  error: initialError,
 }: {
   encounters: Encounter[];
   combatants: Combatant[];
   current: CurrentRow[];
+  error?: string | null;
 }) {
+  const router = useRouter();
   const [insightEncid, setInsightEncid] = useState<string>("");
   const [insightText, setInsightText] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
@@ -89,6 +93,22 @@ export function ActContextClient({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {initialError && (
+          <p className="text-sm text-amber-600 dark:text-amber-400" role="alert">
+            {initialError}
+          </p>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.refresh()}
+          className="ml-auto shrink-0"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
       {encounters.length > 0 && (
         <Card>
           <CardHeader>
@@ -145,13 +165,13 @@ export function ActContextClient({
             <CardTitle className="text-base">Encounters</CardTitle>
           </div>
           <CardDescription>
-            ACT ODBC mirror: encounter_table. Export from ACT or use a companion to populate.
+            Data from ACT ODBC export or overlay ingest. Export from ACT to Supabase, or use the ACT ingest overlay to send live data.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {encounters.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No encounter data yet. Point ACT ODBC to Supabase and export, or use the overlay ingest to send live data.
+              No encounter data yet. Use ACT ODBC export to Supabase or the ACT ingest overlay (with a stream session token) to send live data.
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -191,7 +211,7 @@ export function ActContextClient({
             <CardTitle className="text-base">Combatants</CardTitle>
           </div>
           <CardDescription>
-            Per-encounter combatant stats from combatant_table.
+            Per-encounter combatant stats (ACT ODBC or overlay ingest).
           </CardDescription>
         </CardHeader>
         <CardContent>

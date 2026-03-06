@@ -1,5 +1,7 @@
 # ACT → Local Supabase ODBC Setup
 
+Hydaelyn consumes ACT data via two paths: **ODBC (Postgres)** — ACT exports to `public` tables after combat — and **OverlayPlugin (HTTP ingest)** — the ACT ingest overlay POSTs combat data to the app. Both flows feed the same dashboard; overlay ingest also writes into the ODBC-shaped tables so encounters appear in one place. See [ACT-Data-Mapping.md](ACT-Data-Mapping.md) for column and payload mapping.
+
 ## Driver installed
 
 The **PostgreSQL ODBC driver (psqlODBC)** 64-bit is installed. Registered driver names:

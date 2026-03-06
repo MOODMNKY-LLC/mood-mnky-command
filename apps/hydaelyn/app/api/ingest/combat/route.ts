@@ -123,6 +123,49 @@ export async function POST(request: Request) {
       ended_at: new Date().toISOString(),
     });
     pull_number = nextNumber;
+
+    // Option A: also write to ODBC-shaped tables so the ACT dashboard shows overlay ingest data.
+    const enc = encounter as Record<string, unknown>;
+    const encidRes = await supabase.rpc("get_next_overlay_encid");
+    const encid = encidRes.data as number | null;
+    if (encid != null) {
+      const num = (v: unknown): number | null =>
+        typeof v === "number" && !Number.isNaN(v) ? v : typeof v === "string" ? parseFloat(v) ?? null : null;
+      const endedAt = new Date();
+      const durationSec = duration ?? num(enc.duration) ?? 0;
+      const startTime = durationSec > 0 ? new Date(endedAt.getTime() - durationSec * 1000) : endedAt;
+
+      await supabase.from("encounter_table").insert({
+        encid,
+        title: (enc.title as string) ?? (enc.Title as string) ?? `Session ${session.id.slice(0, 8)} #${nextNumber}`,
+        starttime: startTime.toISOString().slice(0, 19).replace("T", " "),
+        endtime: endedAt.toISOString().slice(0, 19).replace("T", " "),
+        duration: durationSec,
+        damage: num(enc.damage) ?? (enc.Damage != null ? num(enc.Damage) : null),
+        encdps: num(enc.ENCDPS) ?? num(enc.EncDPS) ?? null,
+        zone: (enc.zone as string) ?? (enc.Zone as string) ?? null,
+        kills: enc.kills != null ? num(enc.kills) : null,
+        deaths: enc.deaths != null ? num(enc.deaths) : null,
+      });
+
+      const combatantEntries = Object.entries(combatants).filter(
+        ([name]) => name && !name.startsWith(" ")
+      ) as [string, Record<string, unknown>][];
+      if (combatantEntries.length > 0) {
+        const starttimeStr = startTime.toISOString().slice(0, 19).replace("T", " ");
+        await supabase.from("combatant_table").insert(
+          combatantEntries.map(([name, row]) => ({
+            encid,
+            name,
+            job: (row.Job as string) ?? (row.job as string) ?? null,
+            dps: num(row.ENCDPS) ?? num(row.EncDPS) ?? null,
+            encdps: num(row.ENCDPS) ?? num(row.EncDPS) ?? null,
+            damage: num(row.damage) ?? num(row.Damage) ?? null,
+            starttime: starttimeStr,
+          }))
+        );
+      }
+    }
   }
 
   return NextResponse.json(

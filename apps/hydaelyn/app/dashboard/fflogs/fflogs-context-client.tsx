@@ -36,6 +36,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { DutyCategory } from "@/lib/dashboard-context";
 import { filterZonesByDuty } from "@/lib/fflogs/zone-categories";
 import { createClient } from "@/lib/supabase/client";
+import dynamic from "next/dynamic";
+
+const ModelViewer = dynamic(
+  () => import("@/components/model-viewer").then((m) => ({ default: m.ModelViewer })),
+  { ssr: false }
+);
 
 type ReportListItem = {
   code: string;
@@ -984,13 +990,14 @@ export function FflogsContextClient({
                 </CardContent>
               </Card>
 
-              {/* Right: Character model placeholder */}
+              {/* Right: Character / monk-mnky 3D model (GLB with textures) */}
               <Card className="hidden xl:block">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 w-full aspect-[3/4] max-w-[200px] flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground text-center px-2">Character model</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">View on FFLogs for 3D model</p>
+                <CardContent className="flex flex-col items-center justify-center p-4">
+                  <ModelViewer
+                    modelUrl="/models/mood-mnky.glb"
+                    className="w-full aspect-[3/4] max-w-[200px] min-h-[240px] rounded-lg"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">3D model · drag to rotate</p>
                 </CardContent>
               </Card>
             </div>

@@ -14,7 +14,7 @@ Hunyuan3D is from Tencent. The official repo is [Tencent-Hunyuan/Hunyuan3D-2](ht
 
 ## How It Fits With Your Setup
 
-1. **Hunyuan3D API server** — You run Tencent’s `api_server.py` on your machine (default `http://localhost:8080`). It loads the Hunyuan3D models and handles image-to-3D and text-to-3D requests.
+1. **Hunyuan3D API server** — You run Tencent’s `api_server.py` on your machine (default `http://localhost:8081`). It loads the Hunyuan3D models and handles image-to-3D and text-to-3D requests.
 2. **Blender MCP** — Already configured in Cursor; it talks to Blender’s addon over the socket. When you use Hunyuan3D from Cursor, the MCP server sends generation requests to your local Hunyuan3D API and then can import the resulting mesh into Blender.
 
 So: **Blender (addon) ↔ Blender MCP (Cursor) ↔ Hunyuan3D API (local)**. You must install and run the Hunyuan3D stack separately; Blender MCP only connects to the API.
@@ -133,19 +133,19 @@ From the `Hunyuan3D-2` directory, with your venv activated:
 **Shape only (no texture, lower VRAM):**
 
 ```bash
-python api_server.py --host 127.0.0.1 --port 8080
+python api_server.py --host 127.0.0.1 --port 8081
 ```
 
 **Shape + texture (full pipeline):**
 
 ```bash
-python api_server.py --host 127.0.0.1 --port 8080 --tex_model_path tencent/Hunyuan3D-2 --enable_tex --device cuda
+python api_server.py --host 127.0.0.1 --port 8081 --tex_model_path tencent/Hunyuan3D-2 --enable_tex --device cuda
 ```
 
 Use `--low_vram_mode` if you have limited GPU memory. Leave this server running while you use Blender MCP with Hunyuan3D.
 
 <Tip>
-Blender MCP expects the Hunyuan3D API at **http://localhost:8080** by default. If you use a different host or port, configure the Blender MCP server environment (or the addon, if it exposes the URL) accordingly.
+Blender MCP expects the Hunyuan3D API at **http://localhost:8081** by default. If you use a different host or port, configure the Blender MCP server environment (or the addon, if it exposes the URL) accordingly.
 </Tip>
 
 ## Option B: Windows portable bundle (no clone)
@@ -155,7 +155,7 @@ For a quicker Windows setup without cloning and building:
 - **[Hunyuan3D-2-WinPortable](https://github.com/YanWenKun/Hunyuan3D-2-WinPortable)** — Community bundle; check releases for a prebuilt package that includes dependencies and optionally the API server.
 - **[Hunyuan3D-2-for-windows](https://github.com/sdbds/Hunyuan3D-2-for-windows)** — Windows-oriented fork with install notes.
 
-After installation, run the included API server (if provided) on port 8080 so Blender MCP can connect.
+After installation, run the included API server (if provided) on port 8081 so Blender MCP can connect.
 
 ## Using Hunyuan3D from Blender MCP
 
@@ -164,7 +164,7 @@ After installation, run the included API server (if provided) on port 8080 so Bl
 3. In **Cursor**, ensure the Blender MCP server is enabled (and that it’s configured to use your local Hunyuan3D API URL if you changed it).
 4. In Cursor, you can ask the AI to generate a 3D model via Hunyuan3D (text or image); the MCP will call your local API and can then import the result into Blender.
 
-If the MCP or addon exposes a URL setting for “Hunyuan3D API”, set it to `http://localhost:8080` (or your custom host/port).
+If the MCP or addon exposes a URL setting for “Hunyuan3D API”, set it to `http://localhost:8081` (or your custom host/port).
 
 ## Alternative: Tencent Blender addon only
 
@@ -195,7 +195,7 @@ This does not provide an API for Blender MCP; use `api_server.py` for that.
 |-------|------------|
 | **Out of memory (OOM)** | Use `tencent/Hunyuan3D-2mini` or Turbo models, `--low_vram_mode`, or shape-only (no `--enable_tex`). |
 | **Build errors (rasterizer/renderer)** | Ensure Visual Studio Build Tools (Windows) or build-essential (Linux) are installed; check Python and CUDA versions. |
-| **Blender MCP doesn’t generate with Hunyuan** | Confirm the Hunyuan3D API server is running on port 8080 and that Blender MCP (or addon) is configured to use that URL. |
+| **Blender MCP doesn’t generate with Hunyuan** | Confirm the Hunyuan3D API server is running on port 8081 and that Blender MCP (or addon) is configured to use that URL. |
 | **Models not found** | Run `huggingface-cli login` if the repo is gated; allow first-run download or use a pre-download script. |
 
 ## References
