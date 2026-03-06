@@ -47,7 +47,13 @@ export default function OnboardingPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Failed to create organization");
+        if (res.status === 401) {
+          setError(
+            "You need to sign in first. If you just signed up, check your email to confirm your account, then sign in."
+          );
+        } else {
+          setError(data.error ?? "Failed to create organization");
+        }
         return;
       }
       router.push(`/t/${data.tenant.slug}`);
@@ -71,6 +77,13 @@ export default function OnboardingPage() {
             {error && (
               <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 {error}
+                {error.includes("sign in") && (
+                  <p className="mt-2">
+                    <Link href="/auth/login" className="underline font-medium">
+                      Sign in
+                    </Link>
+                  </p>
+                )}
               </div>
             )}
             <div className="space-y-2">

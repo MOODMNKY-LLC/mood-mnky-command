@@ -1,5 +1,20 @@
 # Auth troubleshooting (production)
 
+## 405 Method Not Allowed on sign-up or sign-in
+
+If the browser shows **405 (Method Not Allowed)** for `POST .../auth/v1/signup` or `.../auth/v1/token`, the request is hitting the **Portal app** (e.g. `portal.moodmnky.com`) instead of the **Supabase Auth API**.
+
+**Cause:** `NEXT_PUBLIC_SUPABASE_MT_URL` in production is set to the Portal’s URL (e.g. `https://portal.moodmnky.com`) instead of the Supabase project URL.
+
+**Fix:** In your production env (e.g. Vercel → Project → Settings → Environment Variables), set:
+
+- `NEXT_PUBLIC_SUPABASE_MT_URL` = **Supabase project API URL**, e.g. `https://<project-ref>.supabase.co`  
+  (from Supabase Dashboard → Project Settings → API → Project URL)
+
+The Portal URL is only for the Next.js app. The Supabase client must talk directly to the Supabase API URL for auth.
+
+---
+
 ## "Unexpected end of JSON input" on sign-up or sign-in
 
 This error means the browser received a response from the Supabase Auth API that was empty or not valid JSON when the client tried to parse it.
