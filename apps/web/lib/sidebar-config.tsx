@@ -6,6 +6,8 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Bot,
+  Box,
+  Building2,
   Droplets,
   LayoutDashboard,
   Package,
@@ -43,7 +45,6 @@ import {
   BarChart3,
   Settings,
   Link2,
-  Box,
   GitBranch,
   Gamepad2,
   Film,
@@ -183,7 +184,7 @@ export const verseItemsWithBackoffice = {
   backoffice: verseBackofficeItems,
 } as const
 
-/** Platform: Data & Admin (tables, SQL, storage, members, main media). */
+/** Platform: Data & Admin (tables, SQL, storage, members, main media, tenants). */
 export const platformDataAdminItems: NavItem[] = [
   { title: "Overview", href: "/platform", icon: Server },
   { title: "Table Editor", href: "/platform/tables", icon: Table2 },
@@ -191,6 +192,8 @@ export const platformDataAdminItems: NavItem[] = [
   { title: "Storage", href: "/platform/storage", icon: HardDrive },
   { title: "Members", href: "/members", icon: Users },
   { title: "Main Media", href: "/platform/main-media", icon: Film },
+  { title: "Tenants", href: "/platform/tenants", icon: Building2 },
+  { title: "App Instances", href: "/platform/app-instances", icon: Link2 },
 ]
 
 /** Platform: Automation & Workflows (funnels, Flowise, storefront assistant, deployed services, infra). */

@@ -12,6 +12,11 @@
     "dev": "dotenv -e .env.local -e .env -- turbo run dev",
     "dev:https": "dotenv -e .env.local -e .env -- pnpm --filter web dev:https",
     "dev:tunnel": "pnpm --filter web dev:tunnel",
+    "supabase:start": "supabase start",
+    "supabase:status": "supabase status",
+    "supabase-mt:start": "supabase start --workdir supabase-mt",
+    "supabase-mt:stop": "supabase stop --workdir supabase-mt",
+    "supabase-mt:status": "supabase status --workdir supabase-mt",
     "supabase:tls-setup": "node scripts/gen-supabase-certs.mjs",
     "lint": "turbo run lint",
     "dev:mood-mnky": "pnpm --filter mood-mnky dev",
@@ -20,11 +25,19 @@
     "dev:hydaelyn": "pnpm --filter hydaelyn dev",
     "dev:web": "pnpm --filter web dev",
     "docs:dev": "cd mnky-docs && pnpm exec mint dev --port 3333",
-    "docs:validate": "cd mnky-docs && pnpm exec mint validate"
+    "docs:validate": "cd mnky-docs && pnpm exec mint validate",
+    "verify-mt-rls": "tsx scripts/verify-mt-rls-isolation.ts",
+    "provision-mt-tenant": "dotenv -e .env.local -e .env -- tsx scripts/provision-mt-tenant.ts",
+    "switch-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/switch-mt-dev-owner.ts",
+    "restore-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/restore-mt-dev-owner.ts",
+    "dev:mt-portal": "pnpm --filter mt-portal dev",
+    "add-mt-overseer": "dotenv -e .env.local -e .env -- tsx scripts/add-mt-overseer.ts"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "dotenv-cli": "^7.4.4",
     "mint": "latest",
+    "tsx": "^4.19.0",
     "turbo": "latest"
   }
 }

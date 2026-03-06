@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Sparkles, Palette, Shield } from "lucide-react"
+import { getDefaultTenantBrandCopyByScope } from "@mnky/mt-supabase"
 
 const features = [
   {
@@ -37,12 +38,16 @@ const integrations = [
   { name: "Shopify", use: "Product narrative, collections, storefront." },
 ] as const
 
-export default function MoodMnkyLanding() {
+export default async function MoodMnkyLanding() {
+  const mainCopy = await getDefaultTenantBrandCopyByScope("main")
   return (
     <>
       <AgentNav />
       <main className="main-container w-full flex-1 py-12 md:py-16">
-        <AgentHero />
+        <AgentHero
+          headline={mainCopy.hero_headline}
+          description={mainCopy.hero_subline}
+        />
         <section
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           style={{ marginTop: "var(--main-section-gap)" }}

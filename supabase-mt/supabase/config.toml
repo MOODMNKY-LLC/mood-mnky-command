@@ -1,0 +1,43 @@
+# Multi-tenant Supabase (MT) project config.
+# Run LOCAL from repo root: supabase start --workdir supabase-mt  (Studio at http://127.0.0.1:54525)
+# Run CLOUD:  cd supabase-mt && supabase link --project-ref <MT_REF> && supabase db push
+# CLI expects workdir to contain a "supabase" subfolder (this file lives in supabase-mt/supabase/).
+# Ports are offset from main project (repo root supabase/) so both can run on the same machine.
+
+project_id = "mood-mnky-mt"
+
+[api]
+enabled = true
+port = 54522
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54502
+shadow_port = 54503
+major_version = 15
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false
+
+[studio]
+enabled = true
+port = 54525
+api_url = "http://127.0.0.1"
+
+[realtime]
+enabled = true
+
+[inbucket]
+enabled = true
+port = 54526
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+
+[storage]
+enabled = true

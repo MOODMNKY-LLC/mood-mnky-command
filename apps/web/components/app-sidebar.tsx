@@ -114,7 +114,7 @@ export function AppSidebar() {
     { revalidateOnFocus: false },
   )
 
-  const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/platform/main-media") || pathname.startsWith("/members")
+  const platformDataOpen = pathname === "/platform" || pathname.startsWith("/platform/tables") || pathname.startsWith("/platform/sql") || pathname.startsWith("/platform/storage") || pathname.startsWith("/platform/main-media") || pathname.startsWith("/platform/tenants") || pathname.startsWith("/platform/app-instances") || pathname.startsWith("/members")
   const platformAutoOpen = pathname.startsWith("/platform/funnels") || pathname.startsWith("/platform/flowise") || pathname.startsWith("/platform/storefront") || pathname.startsWith("/platform/services") || pathname.startsWith("/platform/artifacts") || pathname.startsWith("/platform/mnky-mind")
   const platformSettingsOpen = pathname.startsWith("/platform/settings") || pathname.startsWith("/platform/integrations")
 

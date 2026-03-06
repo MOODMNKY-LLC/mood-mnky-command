@@ -4,12 +4,68 @@ Single source of truth so the app and CLI always target the right database.
 
 ---
 
+## Two projects in this repo
+
+| Project | Start from | Studio URL | Use |
+|--------|------------|------------|-----|
+| **Main (monorepo)** | Repo root: `supabase start` or `pnpm supabase:start` | http://127.0.0.1:54523 | apps/web, Hydaelyn, Dojo, LABZ — single-tenant DB |
+| **Multi-tenant (MT)** | Repo root: `supabase start --workdir supabase-mt` or `pnpm supabase-mt:start` | http://127.0.0.1:54525 | Tenants, tenant_members, brand copy, etc. |
+
+The **main** project is in `supabase/`; the **MT** project is in `supabase-mt/supabase/` (CLI expects a `supabase` subfolder). If you only run `supabase start` from the repo root, you get the main DB only. To see the MT schema locally, run **from repo root**: `pnpm supabase-mt:start` or `supabase start --workdir supabase-mt` — do not `cd` into `supabase-mt`; the `--workdir` flag tells the CLI which project to use.
+
+---
+
 ## Rule
 
 - **Local development** — App and scripts use the **local** Supabase instance. Migrations are applied to local with `supabase db reset` (not `supabase db push`).
 - **Production** — Migrations are applied to the **linked remote** with `supabase db push` when you’re ready to deploy.
 
 `supabase db push` only affects the **linked remote**. It does **not** update your local database. The local DB is updated only by `supabase start` (first run) or `supabase db reset`.
+
+---
+
+## New local project (e.g. after `supabase stop`)
+
+If you just ran `supabase stop` or are setting up from scratch:
+
+1. **Start local Supabase** (from repo root):
+
+   ```bash
+   supabase start
+   ```
+   Or: `pnpm supabase:start`
+
+2. **Copy local credentials** into `.env.local`:
+
+   ```bash
+   supabase status
+   ```
+
+   From the output, set in `.env.local`:
+
+   - `NEXT_PUBLIC_SUPABASE_URL` = **API URL** (e.g. `http://127.0.0.1:54521` — port from `supabase/config.toml` [api] port)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = **anon key** (labeled "anon key" or "anon public" in output)
+   - `SUPABASE_SERVICE_ROLE_KEY` = **service_role key**
+
+3. **Apply migrations and seed** (first time or after adding migrations):
+
+   ```bash
+   supabase db reset
+   ```
+
+   Then run any extra seeds (e.g. `pnpm glossary:seed-local` if you use it).
+
+4. **Link to production when you have a fresh project** — Create a new project in the [Supabase Dashboard](https://supabase.com/dashboard), then from repo root:
+
+   If you had a project linked before and want to point at the new one:
+
+   ```bash
+   supabase unlink   # optional: remove existing link
+   supabase link --project-ref <your-new-project-ref>
+   supabase db push
+   ```
+
+   Project ref is in Dashboard → Project Settings → General. Your `.env.local` stays pointed at local; production (e.g. Vercel) uses the new project's URL and keys.
 
 ---
 
@@ -31,13 +87,13 @@ supabase status
 
 In `.env.local` set:
 
-- `NEXT_PUBLIC_SUPABASE_URL` = **Project URL** from `supabase status` (e.g. `http://127.0.0.1:54221`)
+- `NEXT_PUBLIC_SUPABASE_URL` = **API URL** from `supabase status` (e.g. `http://127.0.0.1:54521` — see `supabase/config.toml` [api] port)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key from `supabase status` (often labeled “Publishable” or see Studio → Settings → API)
 - `SUPABASE_SERVICE_ROLE_KEY` = service role key (often labeled “Secret” or service_role in Studio)
 
-So in local dev, **one** database: the one at `127.0.0.1:54221`. Both the Next.js app and any seed script (using `.env.local`) use it.
+So in local dev, **one** database at the API port (54521 in this config). Both the Next.js app and any seed script (using `.env.local`) use it.
 
-**Local status snapshot (FFXIV / other apps):** Run `supabase status` to get current values. Example output (project `mood-mnky-command`, ports from `supabase/config.toml`): Project URL `http://127.0.0.1:54221`, REST `http://127.0.0.1:54221/rest/v1`, GraphQL `http://127.0.0.1:54221/graphql/v1`, DB URL `postgresql://postgres:postgres@127.0.0.1:54200/postgres`, Studio `http://127.0.0.1:54223`. Auth keys appear as Publishable (anon) and Secret (service_role). Use these in `.env.local` for any app in the monorepo (e.g. FFXIV apps) that uses this Supabase project.
+**Local status snapshot:** Run `supabase status` to get current values. Ports come from `supabase/config.toml`: API `54521`, DB `54500`, Studio `54523`. Use the anon and service_role keys in `.env.local` for any app in the monorepo (web, hydaelyn, agent apps) that uses this Supabase project.
 
 ### 3. Apply migrations to local
 

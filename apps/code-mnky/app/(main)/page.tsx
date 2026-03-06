@@ -1,6 +1,7 @@
 import { AgentNav } from "@/components/agent-nav"
 import { AgentFooter } from "@/components/agent-footer"
 import { AgentHero } from "@/components/agent-hero"
+import { getDefaultTenantBrandCopyByScope } from "@mnky/mt-supabase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
@@ -37,12 +38,16 @@ const integrations = [
   { name: "n8n", use: "Workflows; orchestrate agent flows." },
 ] as const
 
-export default function CodeMnkyLanding() {
+export default async function CodeMnkyLanding() {
+  const agentsCopy = await getDefaultTenantBrandCopyByScope("agents")
   return (
     <>
       <AgentNav />
       <main className="main-container w-full flex-1 py-12 md:py-16">
-        <AgentHero />
+        <AgentHero
+          subline={agentsCopy.code_mnky_description}
+          description={agentsCopy.code_mnky_description}
+        />
         <section
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           style={{ marginTop: "var(--main-section-gap)" }}

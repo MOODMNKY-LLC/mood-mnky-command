@@ -20,9 +20,10 @@ Three Next.js apps in the monorepo, each themed and structured for its agent per
 
 ## Auth and Supabase
 
-- **Single Supabase**: All three apps use the same `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from repo root `.env` / `.env.local`; turbo passes them).
+- **Main Supabase**: Auth and profiles remain on the main Supabase project (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`). Sign-in and session are unchanged.
+- **MT project for tenant-scoped data**: Agent apps use the **Multi-Tenant Supabase** project for tenant-scoped data (brand copy, design tokens, tenant content). Default tenant is **MOOD MNKY LLC** (slug `mood-mnky`). MT access is **server-side only**: server components and API routes use `@mnky/mt-supabase`; set `NEXT_PUBLIC_SUPABASE_MT_URL` and `SUPABASE_MT_SERVICE_ROLE_KEY` (see [ENV-MULTITENANT-SUPABASE.md](ENV-MULTITENANT-SUPABASE.md)).
 - **Sign in**: Each app’s “Sign in” link points to the main auth entry (e.g. `NEXT_PUBLIC_MAIN_AUTH_URL` or `https://mnky-command.moodmnky.com/auth`) so one place manages sign-up/sign-in. No multi-tenancy; same `profiles` and session across the ecosystem.
-- **Database**: No new tables. For future agent-scoped data (e.g. SAGE reflections, CODE snippets), add tables with `profile_id` and optionally `app_slug` or `agent_id`; do not introduce full org-based multi-tenancy unless required. See [CHATGPT-SUPABASE-MULTITENANT-DISCUSSION.md](../CHATGPT-SUPABASE-MULTITENANT-DISCUSSION.md).
+- **Database**: Main Supabase holds auth and app tables. MT Supabase holds `tenants`, `tenant_members`, `tenant_brand_copy`, `tenant_design_tokens`, `tenant_content`. See [MULTITENANT-SCOPE-REGISTER.md](MULTITENANT-SCOPE-REGISTER.md).
 
 ## Running
 
@@ -33,7 +34,8 @@ From repo root:
 
 ## Environment variables
 
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` – shared Supabase (required for auth if you add protected routes).
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` – main Supabase (auth and profiles).
+- `NEXT_PUBLIC_SUPABASE_MT_URL`, `SUPABASE_MT_SERVICE_ROLE_KEY` – MT Supabase (tenant-scoped brand copy, design tokens, content); required for agent apps that use `@mnky/mt-supabase`.
 - `NEXT_PUBLIC_MAIN_AUTH_URL` – main app auth URL for “Sign in” redirect (optional; defaults to mnky-command.moodmnky.com/auth).
 - `NEXT_PUBLIC_MAIN_APP_URL` – main site URL for footer/nav links and 3D avatar assets at `/verse/{agent}-mnky-3d.png` (optional; defaults to www.moodmnky.com).
 

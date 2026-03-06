@@ -6,8 +6,23 @@ const DOJO_URL = process.env.NEXT_PUBLIC_MAIN_APP_URL
   ? `${process.env.NEXT_PUBLIC_MAIN_APP_URL}/dojo`
   : "https://www.moodmnky.com/dojo"
 
-export function AgentHero() {
+const DEFAULT_HEADLINE = "MOOD MNKY"
+const DEFAULT_SUBLINE = "Your virtual brand ambassador."
+const DEFAULT_DESCRIPTION = "Refined, minimalist elegance—innovation and fragrance in one place."
+
+export function AgentHero({
+  headline,
+  subline,
+  description,
+}: {
+  headline?: string | null
+  subline?: string | null
+  description?: string | null
+} = {}) {
   const avatarUrl = getAgentAvatarUrl()
+  const h = headline ?? DEFAULT_HEADLINE
+  const s = subline ?? DEFAULT_SUBLINE
+  const d = description ?? DEFAULT_DESCRIPTION
   return (
     <section
       className="flex min-h-[var(--main-hero-min-height)] flex-col justify-center py-16 md:flex-row md:items-center md:gap-12"
@@ -18,16 +33,16 @@ export function AgentHero() {
           className="font-bold tracking-tight text-foreground"
           style={{ fontSize: "var(--main-hero-title-size)" }}
         >
-          MOOD MNKY
+          {h}
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          Your virtual brand ambassador.
+          {s}
         </p>
         <p
           className="max-w-2xl text-muted-foreground"
           style={{ fontSize: "var(--main-hero-subtitle-size)" }}
         >
-          Refined, minimalist elegance—innovation and fragrance in one place.
+          {d}
         </p>
         <div className="flex flex-wrap gap-4">
           <Button size="lg" asChild>

@@ -277,6 +277,7 @@ Classification is migration-based (no live DB snapshot). Tables from `remote_sch
 8. (Optional) Add `integrations` (or equivalent) for per-tenant Notion/n8n/Shopify connections.
 9. (Optional) Extend storage policies to tenant-scoped paths if assets are per-tenant.
 10. Document rollback steps and default tenant id for operations.
+11. For the **dedicated MT project** (separate Supabase instance), see [MULTITENANT-SCOPE-REGISTER.md](MULTITENANT-SCOPE-REGISTER.md) and [MULTITENANT-SUPABASE-SCHEMA-CONTRACT.md](MULTITENANT-SUPABASE-SCHEMA-CONTRACT.md); keep the scope register updated when adding tenant-scoped tables or routes.
 
 ---
 

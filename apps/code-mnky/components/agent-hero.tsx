@@ -2,8 +2,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { getAgentAvatarUrl } from "@/lib/agent-avatar"
 
-export function AgentHero() {
+const DEFAULT_SUBLINE = "Your virtual A.I. coding companion."
+const DEFAULT_DESCRIPTION = "DevOps expertise, code completions, and step-by-step technical guidance."
+
+export function AgentHero({
+  subline,
+  description,
+}: { subline?: string | null; description?: string | null } = {}) {
   const avatarUrl = getAgentAvatarUrl()
+  const s = subline ?? DEFAULT_SUBLINE
+  const d = description ?? DEFAULT_DESCRIPTION
   return (
     <section
       className="flex min-h-[var(--main-hero-min-height)] flex-col justify-center py-16 md:flex-row md:items-center md:gap-12"
@@ -17,13 +25,13 @@ export function AgentHero() {
           CODE MNKY
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground font-sans">
-          Your virtual A.I. coding companion.
+          {s}
         </p>
         <p
           className="max-w-2xl text-muted-foreground font-sans"
           style={{ fontSize: "var(--main-hero-subtitle-size)" }}
         >
-          DevOps expertise, code completions, and step-by-step technical guidance.
+          {d}
         </p>
         <div className="flex flex-wrap gap-4">
           <Button size="lg" asChild>
