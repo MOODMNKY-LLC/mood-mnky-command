@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_APP_URL || "https://www.moodmnky.com";
 const DOCS_URL = process.env.NEXT_PUBLIC_DOCS_URL || `${MAIN_URL}/docs`;
@@ -11,6 +11,7 @@ export function PortalFooter() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) return;
     createClient().auth.getUser().then(({ data: { user } }) => setAuthenticated(!!user));
   }, []);
 

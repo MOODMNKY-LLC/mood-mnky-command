@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ export function HeaderNav() {
   }, []);
 
   const handleSignOut = async () => {
+    if (!isSupabaseConfigured()) return;
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/");
