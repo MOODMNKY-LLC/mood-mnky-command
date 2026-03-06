@@ -28,6 +28,15 @@ export default function LoginPage() {
       }
       router.push("/dashboard");
       router.refresh();
+    } catch (raw) {
+      const message = raw instanceof Error ? raw.message : String(raw);
+      if (message.includes("Unexpected end of JSON input") || message.includes("JSON input")) {
+        setError(
+          "The auth server returned an invalid response. Please check that your Supabase URL is correct and the auth service is reachable. If this persists, try again later or contact support."
+        );
+      } else {
+        setError(message || "Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
