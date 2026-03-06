@@ -8,6 +8,12 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("platform_role")
+    .eq("id", user.id)
+    .single();
+
   const { data: memberships } = await supabase
     .from("tenant_members")
     .select("tenant_id, role, tenants(id, slug, name)")
@@ -38,6 +44,17 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {profile?.platform_role === "platform_admin" && (
+            <div className="main-glass-panel-card main-float border-primary/20 p-6">
+              <h3 className="text-lg font-semibold">Backoffice &amp; config</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Admin dashboard, Supabase backoffice (DB, Auth, Storage, Logs).</p>
+              <div className="mt-4">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin">Open Admin</Link>
+                </Button>
+              </div>
+            </div>
+          )}
           {tenants.map((t) => (
             <div key={t.id} className="main-glass-panel-card main-float p-6">
               <h3 className="text-lg font-semibold">{t.name}</h3>

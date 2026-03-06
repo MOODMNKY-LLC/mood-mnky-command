@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, User } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { SemanticSearchBar } from "@/components/semantic-search-bar";
 
 function getInitials(name: string | null | undefined, email: string | undefined): string {
   if (name?.trim()) {
@@ -32,6 +33,7 @@ export function HeaderNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string } } | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -41,6 +43,23 @@ export function HeaderNav() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user?.id || !isSupabaseConfigured()) {
+      setIsPlatformAdmin(false);
+      return;
+    }
+    const supabase = createClient();
+    supabase
+      .from("profiles")
+      .select("platform_role")
+      .eq("id", user.id)
+      .single()
+      .then(
+        ({ data }) => setIsPlatformAdmin(data?.platform_role === "platform_admin"),
+        () => setIsPlatformAdmin(false)
+      );
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     if (!isSupabaseConfigured()) return;
@@ -53,21 +72,38 @@ export function HeaderNav() {
   return (
     <header className="sticky top-0 z-50 w-full main-glass-nav">
       <div className="main-container flex h-14 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" className="flex items-center gap-2 font-semibold shrink-0">
           MOOD MNKY Portal
         </Link>
-        <nav className="flex items-center gap-4">
+        <div className="flex flex-1 items-center justify-center px-4 max-w-md">
+          <SemanticSearchBar />
+        </div>
+        <nav className="flex items-center gap-4 shrink-0">
           {user && (
-            <Link
-              href="/dashboard"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/dashboard" ? "text-foreground" : "text-muted-foreground"
+            <>
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  pathname === "/dashboard" ? "text-foreground" : "text-muted-foreground"
+                )}
+              >
+                <LayoutDashboard className="mr-1 inline h-4 w-4" />
+                Dashboard
+              </Link>
+              {isPlatformAdmin && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    pathname === "/admin" ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  <Settings className="mr-1 inline h-4 w-4" />
+                  Admin
+                </Link>
               )}
-            >
-              <LayoutDashboard className="mr-1 inline h-4 w-4" />
-              Dashboard
-            </Link>
+            </>
           )}
           {user ? (
             <DropdownMenu>
