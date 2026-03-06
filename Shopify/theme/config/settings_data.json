@@ -186,7 +186,7 @@
         "disabled": false,
         "settings": {
           "enabled": true,
-          "app_base_url": "https://mnky-command.moodmnky.com",
+          "app_base_url": "https://www.moodmnky.com",
           "position": "bottom-right",
           "primary_color": "#1a1a1a"
         }

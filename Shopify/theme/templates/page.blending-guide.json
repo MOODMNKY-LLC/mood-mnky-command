@@ -19,7 +19,7 @@
     "blending-guide-embed": {
       "type": "custom-liquid",
       "settings": {
-        "custom_liquid": "<iframe src=\"https://mnky-command.moodmnky.com/verse/blending-guide\" title=\"Blending Guide\" style=\"width:100%;height:80vh;min-height:500px;border:none;\"></iframe>",
+        "custom_liquid": "<iframe src=\"https://www.moodmnky.com/verse/blending-guide\" title=\"Blending Guide\" style=\"width:100%;height:80vh;min-height:500px;border:none;\"></iframe>",
         "color_scheme": "background-1",
         "padding_top": 0,
         "padding_bottom": 0

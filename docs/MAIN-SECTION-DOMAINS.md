@@ -1,39 +1,42 @@
 # Main Section – Domain and Environment Configuration
 
-This document describes how the mood-mnky-command app serves three sections from one deployment using host-based routing and which environment variables apply to each.
+This document describes how the mood-mnky-command app uses a **single canonical domain** (www.moodmnky.com) with path-based routing. Legacy domains redirect to www with path mapping.
 
-## Domain to section mapping
+## Single canonical domain
 
-| Domain | Section | Path prefix | Purpose |
-|--------|---------|-------------|---------|
-| **mnky-command.moodmnky.com** | MNKY LABZ | `/` (root) | Admin dashboard, formulas, blending, platform, store, studio. |
-| **mnky-verse.moodmnky.com** | MNKY VERSE | `/verse` | Community and member storefront, blog, Dojo entry. |
-| **www.moodmnky.com** | Main | `/main` | Public marketing site (landing, about, contact, pricing). |
-| **moodmnky.com** | Main | `/main` | Same as www; both rewrite to `/main`. |
+| Domain / path | Section | Purpose |
+|---------------|---------|---------|
+| **www.moodmnky.com** | Canonical host | All app traffic. Root `/` rewrites to `/main`. |
+| **www.moodmnky.com/main** | Main | Public marketing site (landing, about, contact, pricing). |
+| **www.moodmnky.com/dojo**, **www.moodmnky.com/verse** | MNKY DOJO | Storefront and member hub; `/verse` redirects to `/dojo`. |
+| **www.moodmnky.com/platform**, **www.moodmnky.com/labz** | MNKY LABZ | Back office (dashboard, platform, store, studio). `/labz` redirects to `/platform`. |
 
-The proxy (`apps/web/proxy.ts`) reads the `Host` header and rewrites requests so that:
+## Legacy domain redirects (middleware)
 
-- Requests to **mnky-verse.moodmnky.com** with path `/` or `/shop` become `/verse` or `/verse/shop` internally.
-- Requests to **www.moodmnky.com** or **moodmnky.com** with path `/` or `/about` become `/main` or `/main/about` internally.
+The proxy ([apps/web/proxy.ts](apps/web/proxy.ts)) redirects non-canonical hosts to www with path mapping:
 
-The browser URL does not change; only the internal route does.
+- **mnky-command.moodmnky.com** → `https://www.moodmnky.com/platform` (root) or same path.
+- **mnky-verse.moodmnky.com** → `https://www.moodmnky.com/dojo` (root) or same path.
+- **moodmnky.com** (apex) → `https://www.moodmnky.com` (same path).
+
+Redirects are 301 so bookmarks and shared links land on the correct section.
 
 ## Environment variables
 
-| Variable | Section | Example (production) | Use |
-|----------|---------|----------------------|-----|
-| `NEXT_PUBLIC_APP_URL` | MNKY LABZ | `https://mnky-command.moodmnky.com` | App base URL for theme, API, embeds. |
-| `NEXT_PUBLIC_VERSE_APP_URL` | Verse | `https://mnky-verse.moodmnky.com` | Verse storefront base; auth callbacks when origin unknown. |
-| `NEXT_PUBLIC_MAIN_APP_URL` | Main | `https://www.moodmnky.com` | Main site canonical URL; metadata, sitemap, CTAs. |
+| Variable | Example (production) | Use |
+|----------|----------------------|-----|
+| `NEXT_PUBLIC_APP_URL` | `https://www.moodmnky.com` | App base URL for theme, API, embeds, and auth. |
+| `NEXT_PUBLIC_VERSE_APP_URL` | `https://www.moodmnky.com` | Can match APP_URL; auth callbacks when origin unknown. |
+| `NEXT_PUBLIC_MAIN_APP_URL` | `https://www.moodmnky.com` | Main site canonical URL; metadata, sitemap, CTAs. |
 
-Set all three in Vercel (Production and Preview as needed). For local development, use `.env.local`; hosts file entries (see MAIN-SECTION-ROLLOUT.md) allow testing host-based routing.
+Set all three to the same canonical URL in Vercel (Production and Preview as needed). For local development, use `.env.local` with `http://localhost:3000` or an ngrok URL.
 
 ## Vercel domain setup
 
-1. In the Vercel project, add **www.moodmnky.com** and optionally **moodmnky.com** as custom domains.
-2. Point DNS for those domains to Vercel (or use Vercel DNS).
-3. The same deployment serves all three domains; no separate project or zone is required.
+1. In the Vercel project, add **www.moodmnky.com** as the primary custom domain and **moodmnky.com** (apex) if desired.
+2. Keep **mnky-command.moodmnky.com** and **mnky-verse.moodmnky.com** attached to the same project so the app can serve 301 redirects to www.
+3. Point DNS for all domains to Vercel (or use Vercel DNS).
 
 ## Preview deployments
 
-Vercel preview URLs (e.g. `project--branch.vercel.app`) do not match the production hostnames. The proxy does not rewrite for preview hosts, so preview deployments behave like the default domain (MNKY LABZ at root). To test Main or Verse on preview, use production-like domains locally via hosts file or test on staging/production.
+Vercel preview URLs do not match production hostnames. The proxy redirects unknown hosts to www with the same path; for previews, set `NEXT_PUBLIC_APP_URL` to the preview URL if you need correct absolute URLs during development.

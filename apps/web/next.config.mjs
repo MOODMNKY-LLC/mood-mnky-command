@@ -8,6 +8,7 @@ const nextConfig = {
   serverExternalPackages: ["openid"],
   async redirects() {
     return [
+      { source: "/labz", destination: "/platform", permanent: true },
       { source: "/verse", destination: "/dojo", permanent: true },
       { source: "/verse/community", destination: "/dojo/community", permanent: true },
       { source: "/verse/chat", destination: "/dojo/chat", permanent: true },
@@ -117,6 +118,8 @@ const withSerwist = withSerwistInit({
     { url: "/verse", revision },
     { url: "/dojo", revision },
     { url: "/main", revision },
+    { url: "/labz", revision },
+    { url: "/platform", revision },
   ],
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",

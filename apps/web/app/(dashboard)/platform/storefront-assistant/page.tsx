@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input"
 const DEFAULT_APP_BASE_URL =
   typeof window !== "undefined"
     ? window.location.origin
-    : process.env.NEXT_PUBLIC_APP_URL ?? "https://mnky-command.moodmnky.com"
+    : process.env.NEXT_PUBLIC_APP_URL ?? "https://www.moodmnky.com"
 
 export default function StorefrontAssistantPage() {
   const [appBaseUrl, setAppBaseUrl] = useState(DEFAULT_APP_BASE_URL)

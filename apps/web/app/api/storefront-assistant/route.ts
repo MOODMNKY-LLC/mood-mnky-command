@@ -131,7 +131,7 @@ export async function POST(request: Request) {
   const appBaseUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "https://mnky-command.moodmnky.com"
+    "https://www.moodmnky.com"
 
   let systemPrompt = STOREFRONT_SYSTEM_PROMPT.replace(
     /\{app_base_url\}/g,

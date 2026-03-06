@@ -56,7 +56,7 @@
             "heading_size": "h1",
             "subheading": "Your private corner in the MNKY VERSE. Preferences, your default agent, and your connection to the ecosystem—all in one place. Enter through the MNKY VERSE app.",
             "button_label": "Enter the MNKY VERSE",
-            "link": "https://mnky-command.moodmnky.com/verse",
+            "link": "https://www.moodmnky.com/verse",
             "button_style_secondary": false,
             "box_align": "bottom-center",
             "show_text_box": true,
@@ -199,7 +199,7 @@
         "mood_mnky_command_blending_cta_7jd49A": {
           "type": "shopify://apps/mood-mnky-command/blocks/blending-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
           "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
+            "app_base_url": "https://www.moodmnky.com",
             "cta_path": "/blending",
             "heading": "The Foundation — Create your custom fragrance blend",
             "subheading": "Extreme personalization meets the Blending Lab. Craft unique scents and explore the MOOD MNKY fragrance library in the MNKY VERSE.",
@@ -211,7 +211,7 @@
         "mood_mnky_command_fragrance_finder_cta_VKLzif": {
           "type": "shopify://apps/mood-mnky-command/blocks/fragrance-finder-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
           "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
+            "app_base_url": "https://www.moodmnky.com",
             "cta_path": "/craft",
             "heading": "The Experience — Match My Mood",
             "subheading": "Multi-sensory integration. Find the perfect fragrance for how you feel right now in the MNKY VERSE.",
@@ -264,7 +264,7 @@
         "mood_mnky_command_subscription_cta_dAfKiL": {
           "type": "shopify://apps/mood-mnky-command/blocks/subscription-cta/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
           "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
+            "app_base_url": "https://www.moodmnky.com",
             "cta_path": "/blending",
             "heading": "Subscribe to the Vibe — Accessible premium",
             "subheading": "Engagement-based alternatives to traditional payment. Subscribe and save on refills. Always scentsing the MOOD.",
@@ -286,7 +286,7 @@
       "type": "app-cta",
       "disabled": true,
       "settings": {
-        "app_base_url": "https://mnky-command.moodmnky.com",
+        "app_base_url": "https://www.moodmnky.com",
         "cta_path": "/blending",
         "heading": "The Foundation — Create your custom fragrance blend",
         "heading_size": "h2",
@@ -315,7 +315,7 @@
         "show_date": true,
         "show_author": true,
         "show_view_all": true,
-        "verse_blog_url": "https://mnky-command.moodmnky.com/verse/blog",
+        "verse_blog_url": "https://www.moodmnky.com/verse/blog",
         "verse_blog_label": "View all in the MNKY VERSE",
         "padding_top": 60,
         "padding_bottom": 60
@@ -327,7 +327,7 @@
         "mood_mnky_command_verse_blog_LiC3bt": {
           "type": "shopify://apps/mood-mnky-command/blocks/verse-blog/019c640a-eb95-7b8e-a4ce-a8998d7d7e66",
           "settings": {
-            "app_base_url": "https://mnky-command.moodmnky.com",
+            "app_base_url": "https://www.moodmnky.com",
             "post_limit": 3,
             "heading": "Latest from MNKY VERSE",
             "view_all_label": "View all MNKY VERSE post"

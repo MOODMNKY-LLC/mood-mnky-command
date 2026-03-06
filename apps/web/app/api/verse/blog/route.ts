@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://mnky-command.moodmnky.com"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.moodmnky.com"
   const items = (posts ?? []).map((p) => ({
     id: p.id,
     title: p.title,

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 /**
  * GET /api/auth/nextcloud/callback
  * Nextcloud OAuth2 redirect target. Register this URL in Nextcloud Admin → Security → OAuth2
- * as the "Redirection URL" for the MNKY Command app (e.g. https://mnky-command.moodmnky.com/api/auth/nextcloud/callback).
+ * as the "Redirection URL" for the app (e.g. https://www.moodmnky.com/api/auth/nextcloud/callback).
  *
  * For client_credentials-only use (server-side status), Nextcloud still requires a redirect URI at registration;
  * this route makes the URI valid. Redirects the user to the MNKY CLOUD service page.

@@ -38,11 +38,8 @@ type LinkedAccountsResponse = {
 const linkClass =
   "text-sm text-muted-foreground transition-colors hover:text-foreground"
 
-/** Lab (dashboard) URL. Use command domain so Lab works from www.moodmnky.com. */
-const LAB_PLATFORM_HREF =
-  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL)
-    ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/platform`
-    : "https://mnky-command.moodmnky.com/platform"
+/** Lab (dashboard) URL. Relative so Lab stays on same domain (single-domain consolidation). */
+const LAB_PLATFORM_HREF = "/platform"
 
 function getInitials(displayName?: string, email?: string): string {
   if (displayName) {

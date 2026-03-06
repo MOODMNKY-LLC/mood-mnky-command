@@ -10,7 +10,7 @@ Bespoke fragrance in the MNKY ecosystem: the Dojo (storefront and community), Bl
 
 This repository is a **monorepo** containing:
 
-- **Next.js app** — One app, three surfaces: **Main** (brand/marketing), **The Dojo** (storefront + member hub: catalog, cart, blog, Blending Lab, community), and **MNKY LABZ** (dashboard); deployed on Vercel.
+- **Next.js app** — One app, three surfaces: **Main** (brand/marketing at `/main`), **The Dojo** (storefront + member hub at `/dojo`), and **MNKY LABZ** (dashboard at `/platform`, `/labz`); served from a single canonical domain (www.moodmnky.com) and deployed on Vercel.
 - **Shopify theme** — Liquid theme in `Shopify/theme/` (Dawn-derived) for the store; links to the app for the Dojo and Community.
 - **Theme app extension** — `extensions/mood-mnky-theme/` for app blocks (Blending CTA, Fragrance Finder, Subscription CTA) and app embed.
 - **Supabase** — Backend for Dojo blog, auth, and other data; optional Edge Functions in `supabase/functions/`.

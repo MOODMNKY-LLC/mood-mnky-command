@@ -543,9 +543,9 @@ export const discordDropAnnounce = inngest.createFunction(
     }
 
     const verseBase =
-      process.env.NEXT_PUBLIC_VERSE_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      "https://mnky-verse.moodmnky.com"
+process.env.NEXT_PUBLIC_VERSE_APP_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://www.moodmnky.com"
     const dropUrl = `${verseBase.replace(/\/$/, "")}/verse/drops/${payload.slug}`
 
     const embed = {

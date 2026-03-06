@@ -125,7 +125,7 @@ export const searchVerseBlogTool = tool({
       const baseUrl =
         process.env.NEXT_PUBLIC_VERSE_URL ||
         process.env.NEXT_PUBLIC_APP_URL ||
-        "https://mnky-command.moodmnky.com"
+        "https://www.moodmnky.com"
       const posts = (data ?? []).map((post) => ({
         ...post,
         url: `${baseUrl}/verse/blog/${post.slug ?? post.id}`,

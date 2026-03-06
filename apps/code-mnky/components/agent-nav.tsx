@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 const AUTH_URL =
-  process.env.NEXT_PUBLIC_MAIN_AUTH_URL || "https://mnky-command.moodmnky.com/auth"
+  process.env.NEXT_PUBLIC_MAIN_AUTH_URL || "https://www.moodmnky.com/auth"
 const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_APP_URL || "https://www.moodmnky.com"
 
 export function AgentNav() {
