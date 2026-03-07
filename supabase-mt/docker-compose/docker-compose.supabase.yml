@@ -1,0 +1,40 @@
+# =============================================================================
+# Supabase self-hosted stack (option B: dedicated file for Supabase inclusion)
+# =============================================================================
+# This file does NOT define the 14+ Supabase services in this repo. It
+# documents how to run the reference Supabase stack so "pulling in" Supabase
+# is explicit and versioned. The actual Supabase compose lives in
+# temp/supabase/docker/ (or clone supabase/supabase and use its docker/).
+#
+# Standalone = temp Supabase + this compose. A full standalone deployment is:
+# (1) self-hosted Supabase from temp/supabase/docker, (2) this compose
+# (Flowise, n8n, Postgres, Redis, MinIO), (3) Portal. "Each their own
+# Supabase instance" means one Supabase instance per environment (e.g. one
+# for homelab), not one per app: Flowise and n8n already have their own
+# Postgres in this compose (see CHATGPT-MULTITENANT-APP-STACK.md).
+#
+# How to run full self-hosted Supabase alongside this stack:
+#
+# 1. Start the reference Supabase stack (from repo root):
+#      cd temp/supabase/docker
+#      docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d
+#    (Adds MinIO for Supabase Storage. Requires .env there; see temp/.env.example.supabase.)
+#
+# 2. Set in this directory's .env:
+#      SUPABASE_MODE=self_hosted
+#      NEXT_PUBLIC_SUPABASE_MT_URL=http://<host>:8000
+#      NEXT_PUBLIC_SUPABASE_MT_ANON_KEY=...
+#      SUPABASE_MT_SERVICE_ROLE_KEY=...
+#    (Kong API is typically on port 8000; use HTTPS tunnel URL in production.)
+#
+# 3. Start this stack (Flowise, n8n, Postgres, Redis, MinIO) as usual:
+#      cd docker-compose
+#      docker compose up -d
+#
+# Two stacks run separately: Supabase (auth, rest, storage, db, etc.) and this
+# compose (Flowise, n8n, shared Postgres/Redis/MinIO). See README "Supabase Modes",
+# "Homelab / standalone deployment", and "Design decisions (open questions)".
+# =============================================================================
+
+version: '3.8'
+services: {}

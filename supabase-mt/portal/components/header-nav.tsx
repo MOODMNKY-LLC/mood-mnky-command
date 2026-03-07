@@ -18,6 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { SemanticSearchBar } from "@/components/semantic-search-bar";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 function getInitials(name: string | null | undefined, email: string | undefined): string {
   if (name?.trim()) {
@@ -75,8 +76,12 @@ export function HeaderNav() {
         <Link href="/" className="flex items-center gap-2 font-semibold shrink-0">
           MOOD MNKY Portal
         </Link>
-        <div className="flex flex-1 items-center justify-center px-4 max-w-md">
+        <div className="flex flex-1 items-center justify-center px-4 max-w-md gap-2">
           <SemanticSearchBar />
+          <AnimatedThemeToggler
+            className="h-6 w-6 shrink-0 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent [&_svg]:size-3.5"
+            aria-label="Toggle theme"
+          />
         </div>
         <nav className="flex items-center gap-4 shrink-0">
           {user && (

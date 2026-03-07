@@ -34,8 +34,8 @@ Without `NEXT_PUBLIC_SUPABASE_MT_PROJECT_REF`, the backoffice button is hidden o
 The **Admin** page (`/admin`) is the main backoffice/config surface:
 
 - **Supabase backoffice** — Opens the platform kit dialog (Database, Storage, Auth, Users, Secrets, Logs, Suggestions).
+- **App instances** — List, add, edit, and remove Flowise and n8n instances per tenant. Configure links open the Flowise or n8n configuration panels (chatflows, assistants, variables, tools; workflows, executions, credentials). See [BACKOFFICE-FLOWISE-N8N.md](./BACKOFFICE-FLOWISE-N8N.md).
 - **Quick links** — Dashboard, organizations (tenant list), profile.
-- Future: tenant app instances, feature flags, env config, etc.
 
 **Access control:** Only users with **platform_role = platform_admin** can open `/admin` and see the Admin link. The **first authenticated user** (earliest by signup) is automatically assigned `platform_admin`; everyone else gets `user`. Tenant membership does **not** grant backoffice access—tenants cannot see or use the Supabase backoffice unless they are also platform admins.
 

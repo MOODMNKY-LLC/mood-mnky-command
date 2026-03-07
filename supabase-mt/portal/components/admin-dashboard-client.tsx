@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Settings, LayoutDashboard, Building2, User, Database } from "lucide-react";
 import SupabaseManagerDialog from "@/components/index";
+import { AdminAppInstances } from "@/components/admin-app-instances";
 
 const projectRef =
   typeof process !== "undefined" ? process.env.NEXT_PUBLIC_SUPABASE_MT_PROJECT_REF ?? "" : "";
@@ -61,6 +62,9 @@ export function AdminDashboardClient() {
           </p>
         )}
       </div>
+
+      {/* App instances (Flowise / n8n) */}
+      <AdminAppInstances />
 
       {/* Quick links */}
       <div className="main-glass-panel-card main-float p-6">

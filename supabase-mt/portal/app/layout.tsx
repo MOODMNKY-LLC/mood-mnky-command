@@ -5,8 +5,9 @@ import "./main-site.css";
 import "./main-glass.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { HeaderNav } from "@/components/header-nav";
-import { PortalFooter } from "@/components/portal-footer";
+import { Toaster } from "@/components/ui/sonner";
+import { ConditionalHeader } from "@/components/conditional-header";
+import { ConditionalFooter } from "@/components/conditional-footer";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -30,10 +31,11 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <div className="main-site min-h-screen flex flex-col bg-background text-foreground">
-              <HeaderNav />
+              <ConditionalHeader />
               <main className="flex-1">{children}</main>
-              <PortalFooter />
+              <ConditionalFooter />
             </div>
+            <Toaster richColors position="bottom-right" />
           </TooltipProvider>
         </ThemeProvider>
       </body>

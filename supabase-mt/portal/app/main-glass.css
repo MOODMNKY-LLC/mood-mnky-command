@@ -17,20 +17,24 @@
   --main-glass-bg-solid: var(--glass-bg-solid, rgba(255, 255, 255, 0.92));
 }
 .dark .main-site {
-  --main-glass-bg: rgba(0, 0, 0, 0.08);
-  --main-glass-bg-soft: rgba(0, 0, 0, 0.05);
-  --main-glass-bg-card: rgba(0, 0, 0, 0.12);
-  --main-glass-border: rgba(255, 255, 255, 0.12);
-  --main-glass-bg-solid: var(--glass-bg-solid, rgba(0, 0, 0, 0.88));
+  /* Grayscale to match dark theme */
+  --main-glass-bg: oklch(0.205 0 0 / 0.95);
+  --main-glass-bg-soft: oklch(0.205 0 0 / 0.9);
+  --main-glass-bg-card: oklch(0.205 0 0);
+  --main-glass-border: oklch(0.32 0 0);
+  --main-glass-bg-solid: var(--glass-bg-solid);
 }
 .main-site .main-glass-panel,
 .main-site .main-glass-panel-card {
-  background: var(--main-glass-bg-card);
+  background: var(--main-glass-bg-card) !important;
   backdrop-filter: blur(var(--main-glass-blur));
   -webkit-backdrop-filter: blur(var(--main-glass-blur));
   border: 1px solid var(--main-glass-border);
   box-shadow: var(--main-glass-shadow);
   border-radius: var(--main-glass-radius);
+}
+.main-site .main-glass-panel-card.dashboard-section-card {
+  border: none !important;
 }
 @supports not (backdrop-filter: blur(1px)) {
   .main-site .main-glass-panel,
@@ -74,5 +78,32 @@
 @media (prefers-reduced-motion: reduce) {
   .main-site .main-float:hover {
     transform: none;
+  }
+}
+
+/* Dashboard: frosted sidebar and header */
+.main-site .dashboard-glass-scope [data-sidebar="sidebar"] {
+  background: var(--main-glass-bg-card);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border: 1px solid var(--main-glass-border);
+  border-radius: 0 var(--main-glass-radius) var(--main-glass-radius) 0;
+  box-shadow: var(--main-glass-shadow);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .dashboard-glass-scope [data-sidebar="sidebar"] {
+    background: var(--main-glass-bg-solid);
+  }
+}
+.main-site .main-glass-dashboard-header {
+  background: var(--main-glass-bg-card);
+  backdrop-filter: blur(var(--main-glass-blur));
+  -webkit-backdrop-filter: blur(var(--main-glass-blur));
+  border-bottom: 1px solid var(--main-glass-border);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .main-site .main-glass-dashboard-header {
+    background: var(--main-glass-bg-solid);
   }
 }

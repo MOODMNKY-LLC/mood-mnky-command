@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { HeroModelDynamic } from "@/components/hero-model-dynamic";
 
 export default function LandingPage() {
   return (
@@ -10,23 +11,26 @@ export default function LandingPage() {
         style={{ gap: "var(--main-section-gap-sm)" }}
       >
         <div
-          className="flex flex-1 flex-col justify-center"
+          className="flex flex-1 flex-col justify-center order-2 md:order-1"
           style={{ gap: "var(--main-section-gap-sm)" }}
         >
           <h1
             className="font-bold tracking-tight text-foreground"
             style={{ fontSize: "var(--main-hero-title-size)" }}
           >
-            Organizational portal for{" "}
-            <span className="text-primary">MOOD MNKY</span> and partners
+            Your organization. The <span className="text-primary">MNKY</span>{" "}
+            ecosystem. One portal.
           </h1>
           <p
             className="max-w-2xl text-muted-foreground"
             style={{ fontSize: "var(--main-hero-subtitle-size)" }}
           >
-            Discover our integrated ecosystem of personalized fragrance, community wellness, and
-            intelligent technology. Access resources, manage your organization, and connect to the
-            MNKY VERSE.
+            Manage your team, access shared resources, and connect to the tools
+            that power your work. Built for organizations, non-profits, and
+            community efforts.
+          </p>
+          <p className="text-sm text-muted-foreground/90">
+            One login. Full access.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" className="main-btn-glass" asChild>
@@ -37,9 +41,9 @@ export default function LandingPage() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-1 justify-center md:justify-end">
-          <div className="main-glass-panel main-float rounded-2xl p-8">
-            <div className="h-48 w-48 rounded-lg bg-muted/50 md:h-64 md:w-64" aria-hidden />
+        <div className="flex flex-1 justify-center md:justify-end order-1 md:order-2 w-full max-w-[440px] md:max-w-[520px]">
+          <div className="main-glass-panel main-float rounded-2xl p-2 w-full overflow-hidden">
+            <HeroModelDynamic />
           </div>
         </div>
       </section>
@@ -51,21 +55,21 @@ export default function LandingPage() {
           style={{ gap: "var(--main-section-gap)" }}
         >
           <div className="main-glass-panel-card main-float p-6">
-            <h3 className="text-lg font-semibold tracking-tight">MNKY VERSE</h3>
+            <h3 className="text-lg font-semibold tracking-tight">Community & programs</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Web experiential portal—storefront, blog, agents, gamification, and fragrance tools.
+              Shared spaces, events, and programs for your organization and community.
             </p>
           </div>
           <div className="main-glass-panel-card main-float p-6">
-            <h3 className="text-lg font-semibold tracking-tight">The Dojo</h3>
+            <h3 className="text-lg font-semibold tracking-tight">Resources & tools</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Members&apos; private hub—XP, quests, Blending Lab, MNKY CHAT, and preferences.
+              Access workflows, automation, and collaboration tools assigned to your org.
             </p>
           </div>
           <div className="main-glass-panel-card main-float p-6">
-            <h3 className="text-lg font-semibold tracking-tight">MNKY LABZ</h3>
+            <h3 className="text-lg font-semibold tracking-tight">Your organization</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Command center for formulas, oils, glossary, and integrations.
+              One place to manage your team, invites, and shared access.
             </p>
           </div>
         </div>
@@ -75,11 +79,11 @@ export default function LandingPage() {
       <section className="py-16 md:py-24" style={{ marginTop: "var(--main-section-gap)" }}>
         <div className="main-glass-panel main-float mx-auto max-w-[700px] p-8 text-center">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Multi-tenant resource allocation
+            One place. Many tools.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Partner organizations receive access to Flowise, n8n, Nextcloud, Jellyfin, and other
-            microservices—assigned per tenant based on resource allocation.
+            Partner organizations get access to shared apps and services—assigned per
+            tenant. See your resources, manage access, and grow with your community.
           </p>
         </div>
       </section>
