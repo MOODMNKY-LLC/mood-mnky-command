@@ -55,13 +55,17 @@ This project also includes the **Portal** (Next.js back office), the **Docker Co
 
 ---
 
-## Deploying the Portal to Vercel (monorepo)
+## Deploying the Portal to Vercel
 
-The portal lives in `supabase-mt/portal` and depends on workspace packages (e.g. `@mnky/mt-supabase`). For the **mood-mnky-command** Vercel project to build successfully:
+**mood-mnky-command** is the monorepo; it houses several projects (e.g. in `apps/`). The **MT portal** is different: it lives under **supabase-mt/** and has its own Supabase project (this directory), so it is not in `apps/`.
 
-1. **Root Directory:** In [Vercel → Project Settings → General](https://vercel.com/dashboard), set **Root Directory** to `supabase-mt/portal`. (If it stays `.`, Vercel builds from repo root where there is no Next.js app and the build fails.)
+For the **Vercel project that deploys the MT portal** (its own project, linked to the same repo):
+
+1. **Root Directory:** In that project’s [Vercel → Settings → General](https://vercel.com/dashboard), set **Root Directory** to **`supabase-mt/portal`**. (If it stays `.`, Vercel builds from repo root, where there is no Next.js app for the portal, and the build fails.)
 2. **Install/Build:** `portal/vercel.json` sets:
-   - **Install Command:** `cd ../.. && pnpm install` — runs from repo root so workspace dependencies resolve.
+   - **Install Command:** `cd ../.. && pnpm install` — runs from monorepo root so workspace dependencies (e.g. `@mnky/mt-supabase`) resolve.
    - **Build Command:** `pnpm run build` (Next.js build in the portal directory).
 
-After changing Root Directory, trigger a new deployment (push a commit or redeploy from the Vercel dashboard). To deploy from the CLI with the full repo (e.g. for testing), run from **repo root**: `vercel deploy --prod --archive=tgz` (avoids the 15k-file upload limit).
+After setting Root Directory, trigger a new deployment (push a commit or redeploy). To deploy from the CLI with the full repo, run from **monorepo root**: `vercel deploy --prod --archive=tgz` (avoids the 15k-file upload limit); use the project that targets the portal.
+
+**If you see `ERR_PNPM_OUTDATED_LOCKFILE`:** Ensure the latest `pnpm-lock.yaml` is committed at monorepo root and redeploy. The repo root `vercel.json` uses `pnpm install --no-frozen-lockfile` when building from root so install can succeed; the proper fix is still to set Root Directory to **`supabase-mt/portal`** so the correct app is built.
