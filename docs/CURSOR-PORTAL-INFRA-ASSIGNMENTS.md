@@ -104,3 +104,59 @@ Use these when working on the following areas:
 
 - **Rules**: deep-thinking.mdc for multi-tenant routing and redirect strategy.
 - **Agents**: sage-mnky for trade-offs (e.g. path-based vs subdomain, tenant layout structure).
+
+---
+
+## App Factory (Portal V2)
+
+Assignments for the App Factory: customer/project intake, template registry, deployment spec, generator, Coolify deploy, GitHub repo creation, job orchestration.
+
+### Agents
+
+| Agent | App Factory assignment |
+|-------|------------------------|
+| **code-mnky** | Launch Wizard (Server Actions, API routes), deployment spec validation (Zod), generator package, Coolify API integration (create app, deploy, status), GitHub repo creation, job orchestration and status tracking. |
+| **docs** | Template manifest spec, deployment spec JSON schema, BACKOFFICE-COOLIFY.md updates (create/deploy flows), AGENT-TODO.md and env matrix. |
+| **mood-mnky** | Launch Wizard copy, Customers/Projects/Templates UX tone, branding and handoff narrative. |
+| **sage-mnky** | Architecture: customer vs tenant mapping, shared vs dedicated Supabase strategy, when to add Terraform/Ansible to the launch path. |
+| **debugger** | Generator failures, Coolify API errors, GitHub push failures, job state machine bugs. |
+| **verifier** | After each milestone: spec validation, generation output, Coolify deploy flow, health checks. |
+
+### Commands
+
+| Command | App Factory use |
+|---------|-----------------|
+| **/code-review** | PRs that add or change generator, Coolify integration, migrations for app factory tables. |
+| **/security-audit** | Deployment spec handling, secret references, GitHub token and Coolify key usage. |
+| **/update-docs** | When adding env vars (e.g. GITHUB_TOKEN), new API routes, or template manifest format. |
+| **/reflect** | After MVP: prioritization of Phase 2 (Terraform, Ansible, multiple templates). |
+
+### Skills
+
+| Skill | App Factory assignment |
+|-------|------------------------|
+| **backend-development** | API design for Coolify create/deploy, GitHub repo creation, job queue or polling. |
+| **database-design** | customers, projects, template_registry, template_versions, deployment_specs, provisioning_jobs, deployment_targets, project_environments, secret_references, releases; RLS for platform_admin vs tenant-scoped. |
+| **design** / **frontend-design** | Launch Wizard steps, Customers/Projects/Templates lists, Deployment Timeline and Environment View. |
+| **code-documentation** | Template manifest format, deployment spec schema, generator README. |
+| **llm-application-dev** | Optional: AI-assisted intake-to-spec (Phase 3); not MVP. |
+
+### Rules
+
+| Rule | When to use |
+|------|-------------|
+| **deep-thinking.mdc** | Deep dives on customer–tenant model, deployment models (shared vs dedicated), and security (secrets, RLS for new tables). |
+| **create-migration.mdc** | All new app factory tables and indexes. |
+| **create-rls-policies.mdc** | RLS for customers, projects, deployment_specs, provisioning_jobs, template_registry, etc. |
+| **postgres-sql-style-guide.mdc** | All SQL in migrations. |
+| **create-db-functions.mdc** | Any helper functions (e.g. job status transitions, spec validation triggers) if needed. |
+
+### Tools and MCPs
+
+| Tool / MCP | App Factory use |
+|------------|-----------------|
+| **Supabase local MCP** | Inspect and align local schema: list_tables, execute_sql for migrations and RLS verification. |
+| **Supabase plugin** | Production DB state: list_projects, list_tables(project_id), execute_sql. Use SUPABASE_MT_PROJECT_REF as project_id. |
+| **Context7** | Up-to-date docs: resolve-library-id then query-docs for Supabase (SSR, RLS), Next.js (App Router, Server Actions, env vars), Coolify (API reference). |
+| **OpenAI Developer Docs MCP** | When enhancing or debugging the existing AI SQL feature (/api/ai/sql); optional for App Factory MVP. |
+| **Notion** | MOOD MNKY credentials database: store/retrieve GITHUB_TOKEN, Coolify keys; keep AGENT-TODO and .env.local in sync. |
