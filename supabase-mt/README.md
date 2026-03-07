@@ -52,3 +52,16 @@ This project also includes the **Portal** (Next.js back office), the **Docker Co
 **Flow in short:** Partners use the portal to manage app instances (and optionally request a full stack). The stack runs via Docker Compose (locally or on a provisioned VM). Provisioning automates VM creation and stack deploy on Proxmox; the platform admin runs the playbooks and updates subscription status in the portal.
 
 **Agent-actionable todos and env reference:** See [AGENT:TODO](../AGENT-TODO.md) (repo root) for outstanding todos, environment variable matrix, and Notion credentials workflow.
+
+---
+
+## Deploying the Portal to Vercel (monorepo)
+
+The portal lives in `supabase-mt/portal` and depends on workspace packages (e.g. `@mnky/mt-supabase`). For the **mood-mnky-command** Vercel project to build successfully:
+
+1. **Root Directory:** In [Vercel → Project Settings → General](https://vercel.com/dashboard), set **Root Directory** to `supabase-mt/portal`. (If it stays `.`, Vercel builds from repo root where there is no Next.js app and the build fails.)
+2. **Install/Build:** `portal/vercel.json` sets:
+   - **Install Command:** `cd ../.. && pnpm install` — runs from repo root so workspace dependencies resolve.
+   - **Build Command:** `pnpm run build` (Next.js build in the portal directory).
+
+After changing Root Directory, trigger a new deployment (push a commit or redeploy from the Vercel dashboard). To deploy from the CLI with the full repo (e.g. for testing), run from **repo root**: `vercel deploy --prod --archive=tgz` (avoids the 15k-file upload limit).
