@@ -159,15 +159,15 @@ export function SecretsManager({ projectRef }: { projectRef: string }) {
 
       <div>
         <h2 className="font-semibold mb-4 lg:text-lg">Existing secrets</h2>
-        {secrets && secrets.length > 0 ? (
-          secrets.map((secret) => (
+        {Array.isArray(secrets) && secrets.length > 0 ? (
+          secrets.map((secret, index) => (
             <div
-              key={secret.name}
+              key={secret?.name ?? `secret-${index}`}
               className="flex items-center justify-between py-4 border-b last:border-b-0"
             >
               <div>
-                <p className="font-mono text-sm tracking-wider">{secret.name}</p>
-                {secret.updated_at && (
+                <p className="font-mono text-sm tracking-wider">{secret?.name ?? '—'}</p>
+                {secret?.updated_at && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Last updated: {new Date(secret.updated_at).toLocaleString()}
                   </p>
@@ -176,8 +176,8 @@ export function SecretsManager({ projectRef }: { projectRef: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleDeleteSecret(secret.name)}
-                disabled={isDeleting}
+                onClick={() => handleDeleteSecret(secret?.name ?? '')}
+                disabled={isDeleting || !secret?.name}
               >
                 Delete
               </Button>

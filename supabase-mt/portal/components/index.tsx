@@ -46,6 +46,7 @@ import {
   SheetNavigationProvider,
   useSheetNavigation,
 } from '@/contexts/SheetNavigationContext'
+import { BackofficeErrorBoundary } from '@/components/backoffice-error-boundary'
 
 const queryClient = new QueryClient()
 
@@ -261,17 +262,19 @@ export default function SupabaseManagerDialog({
   isMobile: boolean
 }) {
   const content = (
-    <SheetNavigationProvider
-      onStackEmpty={() => {}}
-      initialStack={[
-        {
-          title: 'Database',
-          component: <DatabaseManager projectRef={projectRef} />,
-        },
-      ]}
-    >
-      <DialogView projectRef={projectRef} isMobile={isMobile} />
-    </SheetNavigationProvider>
+    <BackofficeErrorBoundary>
+      <SheetNavigationProvider
+        onStackEmpty={() => {}}
+        initialStack={[
+          {
+            title: 'Database',
+            component: <DatabaseManager projectRef={projectRef} />,
+          },
+        ]}
+      >
+        <DialogView projectRef={projectRef} isMobile={isMobile} />
+      </SheetNavigationProvider>
+    </BackofficeErrorBoundary>
   )
 
   if (!isMobile) {

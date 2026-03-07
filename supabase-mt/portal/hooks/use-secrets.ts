@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { client } from '@/lib/management-api'
 import type { components } from '@/lib/management-api-schema'
 
-// GET Secrets
+// GET Secrets — normalize to array so UI never sees undefined/non-array
 const getSecrets = async (projectRef: string) => {
   const { data, error } = await client.GET('/v1/projects/{ref}/secrets', {
     params: {
@@ -19,14 +19,19 @@ const getSecrets = async (projectRef: string) => {
   if (error) {
     throw error
   }
-
-  return data
+  return Array.isArray(data) ? data : []
 }
 
 export const useGetSecrets = (projectRef: string) => {
   return useQuery({
     queryKey: ['secrets', projectRef],
-    queryFn: () => getSecrets(projectRef),
+    queryFn: async () => {
+      try {
+        return await getSecrets(projectRef)
+      } catch (e) {
+        throw e instanceof Error ? e : new Error(String(e))
+      }
+    },
     enabled: !!projectRef,
     retry: false,
   })
