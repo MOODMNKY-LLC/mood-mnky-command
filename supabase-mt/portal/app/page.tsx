@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { HeroModelDynamic } from "@/components/hero-model-dynamic";
+import { offerings } from "@/lib/copy/offerings";
 
 export default function LandingPage() {
   return (
@@ -75,10 +76,41 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Resource allocation */}
-      <section className="py-16 md:py-24" style={{ marginTop: "var(--main-section-gap)" }}>
+      {/* Offerings: granular + full stack */}
+      <section className="py-16 md:py-24" style={{ marginTop: "var(--main-section-gap)" }} aria-labelledby="offerings-heading">
+        <h2 id="offerings-heading" className="text-2xl font-bold tracking-tight sm:text-3xl text-center mb-10">
+          How we serve you
+        </h2>
+        <p className="max-w-2xl mx-auto text-center text-muted-foreground mb-12">
+          {offerings.main}
+        </p>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 max-w-4xl mx-auto mb-14">
+          <div className="main-glass-panel-card main-float p-6">
+            <h3 className="text-lg font-semibold tracking-tight">Granular app services</h3>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {offerings.granular}
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground/90">
+              n8n · Flowise · MinIO · Nextcloud — each with its own use cases; subscribe per app.
+            </p>
+          </div>
+          <div className="main-glass-panel-card main-float p-6">
+            <h3 className="text-lg font-semibold tracking-tight">Full stack (DevOps / Agent)</h3>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {offerings.fullStack.replace(/\*\*(.*?)\*\*/g, "$1")}
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground/90">
+              We provision and deploy the whole stack on a homelab VM or LXC as a white-label environment.
+            </p>
+            <div className="mt-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard">Go to dashboard</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
         <div className="main-glass-panel main-float mx-auto max-w-[700px] p-8 text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
             One place. Many tools.
           </h2>
           <p className="mt-4 text-muted-foreground">

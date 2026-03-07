@@ -6,7 +6,8 @@ export type TenantItem = { id: string; slug: string; name: string };
 
 export type ActiveTeam =
   | { type: "org"; tenant: TenantItem }
-  | { type: "platform" };
+  | { type: "platform" }
+  | { type: "proxmox" };
 
 export type AppInstancesByTenant = Record<
   string,
@@ -84,6 +85,8 @@ export function DashboardProvider({ initialData, children }: DashboardProviderPr
     try {
       if (team.type === "platform") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ type: "platform" }));
+      } else if (team.type === "proxmox") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ type: "proxmox" }));
       } else {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ type: "org", slug: team.tenant.slug }));
       }

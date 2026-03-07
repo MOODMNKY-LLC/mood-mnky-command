@@ -44,3 +44,9 @@ See [Cursor Subagents](https://cursor.com/docs/context/subagents) for how subage
 - `.cursor/agents/docs.md` — Documentation and Mintlify specialist
 
 Edit the `description` field in each file’s YAML frontmatter to tune when Agent delegates. Keep prompts concise and focused.
+
+---
+
+## Portal and stack infra
+
+For work on the **Portal** (supabase-mt/portal), **Docker Compose stack** (supabase-mt/docker-compose), and **Ansible provisioning** (supabase-mt/provisioning), see [CURSOR-PORTAL-INFRA-ASSIGNMENTS.md](CURSOR-PORTAL-INFRA-ASSIGNMENTS.md) for which agents, commands, skills, and rules to use (e.g. code-mnky for backend, docs for READMEs, verifier after changes).

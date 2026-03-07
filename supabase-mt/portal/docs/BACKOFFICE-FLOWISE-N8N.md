@@ -30,6 +30,10 @@ All Flowise and n8n API calls go through the portal backend:
 - **Platform default in back office**: When env is set, the Admin → App instances table shows “Platform default (env)” rows for Flowise, n8n, and MinIO. Configure opens the config panel with `instanceId=env-flowise`, `instanceId=env-n8n`, or `instanceId=env-minio`. Only platform_admin can use the env default instance; tenant admins only see and manage their tenant’s instances (DB or env-assigned).
 - **Supabase as multitenant layer**: Supabase remains the source of truth for distribution (which tenant uses which instance or the env default) and access control (RLS, platform_admin vs tenant admin). The back office uses Flowise/n8n CRUD APIs via the proxy to manage configuration (chatflows, workflows, etc.) and distribution (create/update/delete instance rows).
 
+## Credentials and Notion
+
+Project secrets (Supabase keys, Flowise/n8n API keys, MinIO and Nextcloud credentials, etc.) are maintained in the **MOOD MNKY credentials database** in Notion. Use the **Notion plugin** to find, store, retrieve, and copy values into `supabase-mt/portal/.env.local` (or the repo root `.env.local` used by the portal) and other env files as needed. When adding or changing env vars for the back office or stack, update Notion and the repo’s **AGENT:TODO** ([AGENT-TODO.md](../../../AGENT-TODO.md) in the repo root), which lists all variables and the credential workflow.
+
 ## Admin UI
 
 ### Instance management (`/admin`)

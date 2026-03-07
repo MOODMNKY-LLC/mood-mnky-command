@@ -36,3 +36,19 @@ To stop MT only: `pnpm supabase-mt:stop` or `supabase stop --workdir supabase-mt
 **Structured onboarding:** [docs/MULTITENANT-ONBOARDING.md](../docs/MULTITENANT-ONBOARDING.md) — step-by-step runbook (start MT, env vars, provision first tenant, link production).
 
 See [docs/ENV-MULTITENANT-SUPABASE.md](../docs/ENV-MULTITENANT-SUPABASE.md) for environment variables and [docs/MULTITENANT-SUPABASE-SCHEMA-CONTRACT.md](../docs/MULTITENANT-SUPABASE-SCHEMA-CONTRACT.md) for the schema contract.
+
+---
+
+## Back office, stack, and provisioning
+
+This project also includes the **Portal** (Next.js back office), the **Docker Compose stack** (Flowise, n8n, Postgres, Redis, MinIO, optional Ollama/Qdrant), and **Ansible + Proxmox provisioning** for full-stack requests. Each has its own README:
+
+| Area | Location | README | Purpose |
+|------|----------|--------|---------|
+| **Portal** | `portal/` | (see portal app docs) | Next.js app: auth, dashboard, app instances (Flowise, n8n, MinIO, Nextcloud), stack subscription requests. |
+| **Docker Compose stack** | `docker-compose/` | [docker-compose/README.md](docker-compose/README.md) | Run Flowise, n8n, Postgres, Redis, MinIO; optional profiles for Ollama and Qdrant. Choose a profile (base, Core, Agent, GPU) and start services. |
+| **Provisioning** | `provisioning/` | [provisioning/README.md](provisioning/README.md) | Ansible playbooks: create a VM on Proxmox, then deploy the Docker Compose stack on that VM. Used when partners request the full MOOD MNKY DevOps/Agent stack from the portal. |
+
+**Flow in short:** Partners use the portal to manage app instances (and optionally request a full stack). The stack runs via Docker Compose (locally or on a provisioned VM). Provisioning automates VM creation and stack deploy on Proxmox; the platform admin runs the playbooks and updates subscription status in the portal.
+
+**Agent-actionable todos and env reference:** See [AGENT:TODO](../AGENT-TODO.md) (repo root) for outstanding todos, environment variable matrix, and Notion credentials workflow.

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, ChevronsUpDown, Plus, Settings } from "lucide-react";
+import { Building2, ChevronsUpDown, Plus, Server, Settings } from "lucide-react";
 import { useDashboardContext } from "@/components/dashboard-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,9 @@ export function TeamSwitcher() {
       ? activeTeam.tenant.name
       : activeTeam?.type === "platform"
         ? "Platform"
-        : "Select context";
+        : activeTeam?.type === "proxmox"
+          ? "Proxmox"
+          : "Select context";
 
   return (
     <DropdownMenu>
@@ -70,6 +72,15 @@ export function TeamSwitcher() {
               <DropdownMenuItem onClick={() => setActiveTeam({ type: "platform" })} className="gap-2">
                 <Settings className="h-4 w-4 shrink-0" />
                 Backoffice
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Infrastructure
+            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setActiveTeam({ type: "proxmox" })} className="gap-2">
+                <Server className="h-4 w-4 shrink-0" />
+                Proxmox
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>

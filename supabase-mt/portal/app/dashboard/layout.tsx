@@ -45,6 +45,13 @@ export default async function DashboardLayout({
 
   const isPlatformAdmin = profile?.platform_role === "platform_admin";
 
+  if (!isPlatformAdmin) {
+    if (tenants.length > 0) {
+      redirect(`/t/${tenants[0].slug}`);
+    }
+    redirect("/t");
+  }
+
   const initialData: DashboardInitialData = {
     user: {
       id: user.id,

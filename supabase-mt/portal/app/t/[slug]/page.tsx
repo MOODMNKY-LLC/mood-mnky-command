@@ -22,21 +22,6 @@ export default async function TenantPage({ params }: Props) {
     );
   }
 
-  const { data: membership } = await supabase
-    .from("tenant_members")
-    .select("role")
-    .eq("tenant_id", tenant.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (!membership) {
-    return (
-      <div className="main-container py-12">
-        <p className="text-muted-foreground">You are not a member of this organization.</p>
-      </div>
-    );
-  }
-
   const flowiseInstance = await getInstanceForTenantOrEnv(tenant.id, "flowise", "default");
   const n8nInstance = await getInstanceForTenantOrEnv(tenant.id, "n8n", "default");
 
@@ -80,9 +65,12 @@ export default async function TenantPage({ params }: Props) {
         )}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Button asChild>
+          <Link href={`/t/${slug}/dashboard`}>Go to dashboard</Link>
+        </Button>
         <Button variant="outline" asChild>
-          <Link href="/dashboard">Back to dashboard</Link>
+          <Link href="/">Back to home</Link>
         </Button>
       </div>
     </div>

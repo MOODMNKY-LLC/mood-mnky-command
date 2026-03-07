@@ -9,6 +9,7 @@ import {
   FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
+  ServerIcon,
   SettingsIcon,
   UsersIcon,
   WorkflowIcon,
@@ -55,6 +56,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       return {
         navMain: [
           { title: "Backoffice", url: "/admin", icon: DatabaseIcon },
+          { title: "Settings", url: "/profile", icon: SettingsIcon },
+        ] as { title: string; url: string; icon: LucideIcon }[],
+        documents: [] as { name: string; url: string; icon: LucideIcon }[],
+        navSecondary: baseSecondary,
+      };
+    }
+
+    if (activeTeam?.type === "proxmox") {
+      return {
+        navMain: [
+          { title: "Proxmox overview", url: "/dashboard/proxmox", icon: ServerIcon },
+          { title: "Cluster", url: "/dashboard/proxmox/cluster", icon: FolderIcon },
+          { title: "Nodes", url: "/dashboard/proxmox/nodes", icon: BarChartIcon },
+          { title: "VMs & LXCs", url: "/dashboard/proxmox/vms", icon: DatabaseIcon },
+          { title: "Storage", url: "/dashboard/proxmox/storage", icon: FolderIcon },
           { title: "Settings", url: "/profile", icon: SettingsIcon },
         ] as { title: string; url: string; icon: LucideIcon }[],
         documents: [] as { name: string; url: string; icon: LucideIcon }[],

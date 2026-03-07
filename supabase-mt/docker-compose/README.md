@@ -1,6 +1,70 @@
 # MOOD MNKY Docker Compose Stack
 
-Complete Docker Compose setup for local development and production deployment of MOOD MNKY with Flowise, n8n, Redis, PostgreSQL, and MinIO (S3-compatible storage).
+Complete Docker Compose setup for the **MOOD MNKY DevOps Stack** (and **Agent Stack** with optional Ollama + Qdrant): Flowise, n8n, Redis, PostgreSQL, MinIO, and profile-based optional services for local AI and vector search.
+
+---
+
+## For new users
+
+**What is this?** A single Docker Compose project that runs the apps behind MOOD MNKY: workflow automation (n8n), AI flows (Flowise), object storage (MinIO), plus optional local AI (Ollama) and vector search (Qdrant). You choose a **profile** so only the services you need start (e.g. base only, or base + Ollama + Qdrant for agents).
+
+**When do I use it?** Use this stack when you want to run these services yourself—on your laptop, a server, or a VM we provision for you via the portal. The MOOD MNKY Portal uses Supabase for auth and multitenancy; this compose is the **backend app layer** (Flowise, n8n, etc.) that the portal connects to.
+
+**Quick path:** Copy `.env.example` to `.env`, edit if needed, then run `docker compose --profile cpu up -d` for the standard setup with local Ollama. See [Quick Start](#quick-start) and [Profiles and packages](#profiles-and-packages) below.
+
+---
+
+## Documentation index
+
+| Section | Use when you want to… |
+|--------|------------------------|
+| [Profiles and packages](#profiles-and-packages) | Choose which services run (base, Core, Agent, GPU). |
+| [What you can build](#what-you-can-build) | See example use cases (agents, RAG, workflows). |
+| [Quick Start](#quick-start) | Get the stack running in a few steps. |
+| [Services](#services) | Understand each service (ports, roles, credentials). |
+| [Supabase Modes](#supabase-modes) | Connect this stack to the Portal (local / cloud / self‑hosted). |
+| [Configuration](#configuration) | Change passwords, ports, and env vars. |
+| [Homelab / standalone](#homelab--standalone-deployment) | Deploy without Supabase Cloud (self‑hosted + tunnels). |
+| [Troubleshooting](#troubleshooting) | Fix startup, ports, or connection issues. |
+| [Provisioning](#provisioning) | Have a VM/LXC created and this stack deployed via Ansible (see `../provisioning/README.md`). |
+
+---
+
+## Profiles and packages
+
+The stack uses Docker Compose **profiles** so you run only what you need. Base services (Postgres, Redis, MinIO, Flowise, n8n) always start; optional services are gated by profile.
+
+| Package | Command | What runs |
+|--------|---------|-----------|
+| **Core** | `docker compose --profile cpu up -d` | Base + Ollama (CPU) |
+| **Agent** | `docker compose --profile agent up -d` | Core + Qdrant + Ollama (CPU) |
+| **Agent GPU (Nvidia)** | `docker compose --profile gpu-nvidia up -d` | Base + Ollama (Nvidia GPU) |
+| **Agent GPU (AMD)** | `docker compose --profile gpu-amd up -d` | Base + Ollama (AMD ROCm) |
+| **Supabase-aware** | Same as Core/Agent with Supabase MT vars in `.env` | Stack that works with the Portal; see [Supabase Modes](#supabase-modes). |
+
+- **Base (no profile):** `docker compose up -d` — Postgres, Redis, MinIO, Flowise, n8n only.
+- **Ollama** (CPU): `ollama-cpu` + one-time `ollama pull llama3.2` when using `--profile cpu` or `--profile agent`.
+- **Qdrant:** vector store on port 6333 when using `--profile agent`.
+- **Supabase-aware:** Not a separate profile; use Core or Agent and set `SUPABASE_MODE`, `NEXT_PUBLIC_SUPABASE_MT_URL`, and keys in `.env` so the stack integrates with the MOOD MNKY Portal.
+
+### Which package should I choose?
+
+| If you want… | Use this package |
+|--------------|------------------|
+| Only Flowise, n8n, Postgres, Redis, MinIO (no local AI) | Base: `docker compose up -d` (no profile). |
+| Same as base plus a local LLM (Ollama) on CPU | **Core**: `--profile cpu`. |
+| Core plus a vector DB for RAG/agents | **Agent**: `--profile agent`. |
+| Local LLM using an Nvidia GPU | **Agent GPU (Nvidia)**: `--profile gpu-nvidia`. |
+| Local LLM using an AMD GPU (ROCm) | **Agent GPU (AMD)**: `--profile gpu-amd`. |
+| This stack to work with the MOOD MNKY Portal | Use Core or Agent and set Supabase-related vars in `.env`; see [Supabase Modes](#supabase-modes). |
+
+## What you can build
+
+- **AI agents** for scheduling, ops, and automation (n8n + Flowise + optional Ollama).
+- **Secure document summarization** and private document analysis (Flowise, optional Qdrant).
+- **Smarter bots and workflows** with local or cloud models (Ollama CPU/GPU or external APIs).
+- **Workflow automation** with triggers, integrations, and AI nodes (n8n).
+- **RAG and retrieval** when using the Agent profile (Qdrant + Ollama).
 
 ## Architecture Overview
 
@@ -70,6 +134,16 @@ Complete Docker Compose setup for local development and production deployment of
 - Uses Redis for queue management
 - Default credentials: admin / admin_password
 - UI available at `http://localhost:5678`
+- When running with `--profile cpu` or `--profile agent`, can use local Ollama via `OLLAMA_HOST` (e.g. `ollama-cpu:11434`)
+
+### Qdrant (Port 6333, profile: agent)
+- Vector store for RAG and agent memory when using `--profile agent`
+- Data persisted in `qdrant_data` volume
+
+### Ollama (Port 11434, profiles: cpu / agent / gpu-nvidia / gpu-amd)
+- Local LLM runtime. CPU: `--profile cpu` or `--profile agent`; GPU: `--profile gpu-nvidia` (Nvidia) or `--profile gpu-amd` (ROCm)
+- One-time init containers pull `llama3.2` when the profile is first used
+- Models stored in `ollama_data` volume
 
 ## Quick Start
 
@@ -98,7 +172,19 @@ For local dev with Supabase MT, optionally run:
 ### 3. Start the Stack
 
 ```bash
+# Base only (no Ollama/Qdrant)
 docker compose up -d
+
+# Core: base + Ollama CPU (recommended for local AI)
+docker compose --profile cpu up -d
+
+# Agent: Core + Qdrant (for RAG / vector search)
+docker compose --profile agent up -d
+
+# GPU (Nvidia or AMD): base + Ollama with GPU
+docker compose --profile gpu-nvidia up -d
+# or
+docker compose --profile gpu-amd up -d
 ```
 
 ### 4. Verify Services
@@ -455,6 +541,14 @@ For issues:
 3. Ensure ports are available: `netstat -tuln`
 4. Review official documentation links above
 5. Check GitHub issues for common problems
+
+## Provisioning (portal + Ansible)
+
+Partners can request the **full MOOD MNKY DevOps or Agent stack** from the portal. A platform admin then uses Ansible to create a VM or LXC on Proxmox and deploy this Docker Compose stack on it. The compose project in this directory is what gets copied to the target host and run with the chosen profile.
+
+- **Portal:** Partners choose a package (Core, Agent, Agent GPU, Supabase-aware) and specs (CPU, RAM, disk). That creates a row in `tenant_stack_subscriptions`.
+- **Ansible:** See [../provisioning/README.md](../provisioning/README.md) for playbooks, env vars, and how to create the VM and run `docker compose --profile <profile> up -d` on the new host.
+- **Prepare for deploy:** Copy or symlink this `docker-compose` directory into `provisioning/files/compose` before running the deploy playbook so Ansible can copy it to the target.
 
 ## License
 

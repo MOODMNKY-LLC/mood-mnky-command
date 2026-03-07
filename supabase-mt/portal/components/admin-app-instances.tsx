@@ -327,7 +327,7 @@ export function AdminAppInstances() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">App instances</CardTitle>
           <CardDescription>
-            Core platform: Flowise, n8n, MinIO (S3), Nextcloud. Base URL and Auth (api key, username/password, etc.) columns inline; Configure for full panels.
+            Granular app services: Flowise, n8n, MinIO (S3), Nextcloud. Base URL and Auth inline; each app can be subscribed to independently or as part of the full stack.
           </CardDescription>
         </CardHeader>
         <CardContent>

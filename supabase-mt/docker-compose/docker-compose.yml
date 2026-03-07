@@ -1,7 +1,27 @@
 version: '3.8'
 
+# MOOD MNKY DevOps / Agent Stack
+# Profiles: cpu (base + Ollama CPU), agent (cpu + Qdrant), gpu-nvidia, gpu-amd.
+# Run: docker compose --profile cpu up -d  |  docker compose --profile agent up -d
+# See README for package mapping and Supabase-aware usage.
+
 # Load .env from this directory (copy from .env.example).
 # For local dev, merge .env.local.example values into .env or run ./scripts/start-local.sh
+
+x-ollama: &service-ollama
+  image: ollama/ollama:latest
+  networks: [mood_mnky_network]
+  restart: unless-stopped
+  ports: ["11434:11434"]
+  volumes: [ollama_data:/root/.ollama]
+
+x-init-ollama: &init-ollama
+  image: ollama/ollama:latest
+  networks: [mood_mnky_network]
+  volumes: [ollama_data:/root/.ollama]
+  entrypoint: /bin/sh
+  command: ["-c", "sleep 5 && ollama pull llama3.2"]
+  restart: "no"
 
 services:
   # PostgreSQL Database (for Flowise and n8n - not Supabase MT)
@@ -232,6 +252,8 @@ services:
       BINARYDATA_S3_FORCE_PATH_STYLE: "true"
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Optional: when running with --profile agent, n8n can use local Ollama
+      OLLAMA_HOST: ${OLLAMA_HOST:-ollama:11434}
     depends_on:
       postgres:
         condition: service_healthy
@@ -260,6 +282,73 @@ services:
         max_attempts: 3
         window: 120s
 
+  # Qdrant vector store (profile: agent)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mood_mnky_qdrant
+    profiles: ["agent"]
+    networks: [mood_mnky_network]
+    restart: unless-stopped
+    ports: ["6333:6333"]
+    volumes: [qdrant_data:/qdrant/storage]
+
+  # Ollama CPU (profiles: cpu, agent)
+  ollama-cpu:
+    <<: *service-ollama
+    container_name: mood_mnky_ollama_cpu
+    profiles: ["cpu", "agent"]
+
+  # Ollama GPU Nvidia (profile: gpu-nvidia)
+  ollama-gpu-nvidia:
+    <<: *service-ollama
+    container_name: mood_mnky_ollama_gpu_nvidia
+    profiles: ["gpu-nvidia"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+
+  # Ollama GPU AMD (profile: gpu-amd)
+  ollama-gpu-amd:
+    image: ollama/ollama:rocm
+    container_name: mood_mnky_ollama_gpu_amd
+    profiles: ["gpu-amd"]
+    networks: [mood_mnky_network]
+    restart: unless-stopped
+    ports: ["11434:11434"]
+    volumes: [ollama_data:/root/.ollama]
+    devices: ["/dev/kfd", "/dev/dri"]
+
+  # One-time Ollama model pull (CPU / agent)
+  ollama-pull-cpu:
+    <<: *init-ollama
+    container_name: mood_mnky_ollama_pull_cpu
+    profiles: ["cpu", "agent"]
+    environment: { OLLAMA_HOST: "ollama-cpu:11434" }
+    depends_on: [ollama-cpu]
+
+  # One-time Ollama model pull (GPU Nvidia)
+  ollama-pull-gpu-nvidia:
+    <<: *init-ollama
+    container_name: mood_mnky_ollama_pull_gpu_nvidia
+    profiles: ["gpu-nvidia"]
+    environment: { OLLAMA_HOST: "http://ollama-gpu-nvidia:11434" }
+    depends_on: [ollama-gpu-nvidia]
+
+  # One-time Ollama model pull (GPU AMD)
+  ollama-pull-gpu-amd:
+    image: ollama/ollama:rocm
+    networks: [mood_mnky_network]
+    container_name: mood_mnky_ollama_pull_gpu_amd
+    profiles: ["gpu-amd"]
+    volumes: [ollama_data:/root/.ollama]
+    entrypoint: /bin/sh
+    environment:
+      OLLAMA_HOST: "ollama-gpu-amd:11434"
+    command: ["-c", "sleep 5 && ollama pull llama3.2"]
+    restart: "no"
+    depends_on: [ollama-gpu-amd]
+
 networks:
   mood_mnky_network:
     driver: bridge
@@ -277,4 +366,8 @@ volumes:
   flowise_data:
     driver: local
   n8n_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  ollama_data:
     driver: local

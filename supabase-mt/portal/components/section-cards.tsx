@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TrendingUpIcon, ExternalLinkIcon } from "lucide-react";
+import { TrendingUpIcon, ExternalLinkIcon, ServerIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,6 +16,7 @@ export type SectionCardsProps = {
   provisionsCount?: number;
   flowiseUrl?: string;
   n8nUrl?: string;
+  showProxmox?: boolean;
 };
 
 export function SectionCards({
@@ -23,6 +24,7 @@ export function SectionCards({
   provisionsCount = 0,
   flowiseUrl,
   n8nUrl,
+  showProxmox = false,
 }: SectionCardsProps) {
   const hasEcosystem = !!(flowiseUrl || n8nUrl);
 
@@ -91,6 +93,25 @@ export function SectionCards({
         </CardFooter>
       </Card>
 
+      {showProxmox && (
+        <Card className="main-glass-panel-card dashboard-section-card main-float rounded-xl border-0 shadow-sm">
+          <CardHeader className="p-3 pb-1">
+            <CardDescription className="text-xs">Infrastructure</CardDescription>
+            <CardTitle className="text-base font-semibold flex items-center gap-1.5">
+              <ServerIcon className="size-4" />
+              Proxmox
+            </CardTitle>
+          </CardHeader>
+          <CardFooter className="p-3 pt-0 flex-wrap gap-1.5">
+            <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+              <Link href="/dashboard/proxmox">
+                Cluster & nodes
+                <ExternalLinkIcon className="ml-0.5 h-2.5 w-2.5" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
       <Card className="main-glass-panel-card dashboard-section-card main-float rounded-xl border-0 shadow-sm">
         <CardHeader className="p-3 pb-1">
           <CardDescription className="text-xs">Activity</CardDescription>

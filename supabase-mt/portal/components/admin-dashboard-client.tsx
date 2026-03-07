@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Settings, LayoutDashboard, Building2, User, Database } from "lucide-react";
+import { Settings, LayoutDashboard, Building2, User, Database, Package, Server } from "lucide-react";
 import SupabaseManagerDialog from "@/components/index";
 import { AdminAppInstances } from "@/components/admin-app-instances";
+import { AdminStackSubscriptions } from "@/components/admin-stack-subscriptions";
 
 const projectRef =
   typeof process !== "undefined" ? process.env.NEXT_PUBLIC_SUPABASE_MT_PROJECT_REF ?? "" : "";
@@ -63,8 +64,58 @@ export function AdminDashboardClient() {
         )}
       </div>
 
-      {/* App instances (Flowise / n8n) */}
-      <AdminAppInstances />
+      {/* Services / Offerings */}
+      <div className="main-glass-panel-card main-float p-6">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          Services & offerings
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Granular app services (per-app configuration) or full MOOD MNKY DevOps/Agent stack provisioning.
+        </p>
+        <ul className="mt-4 flex flex-wrap gap-3">
+          <li>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="#app-instances">
+                Granular app services
+              </Link>
+            </Button>
+          </li>
+          <li>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin#stack-subscriptions">
+                Full stack (DevOps/Agent)
+              </Link>
+            </Button>
+          </li>
+        </ul>
+      </div>
+
+      {/* Infrastructure — Proxmox */}
+      <div className="main-glass-panel-card main-float p-6">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Server className="h-5 w-5" />
+          Infrastructure
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Proxmox cluster and nodes; use with Ansible and provisioning runbooks.
+        </p>
+        <div className="mt-4">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/proxmox">
+              Proxmox dashboard
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* App instances (Flowise / n8n / MinIO / Nextcloud) */}
+      <div id="app-instances">
+        <AdminAppInstances />
+      </div>
+
+      {/* Stack subscription requests (platform admin) */}
+      <AdminStackSubscriptions />
 
       {/* Quick links */}
       <div className="main-glass-panel-card main-float p-6">
