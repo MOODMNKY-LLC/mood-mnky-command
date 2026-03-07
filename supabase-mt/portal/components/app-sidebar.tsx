@@ -9,6 +9,7 @@ import {
   FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
+  RocketIcon,
   ServerIcon,
   SettingsIcon,
   UsersIcon,
@@ -56,6 +57,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       return {
         navMain: [
           { title: "Backoffice", url: "/admin", icon: DatabaseIcon },
+          { title: "App Factory", url: "/dashboard/app-factory", icon: RocketIcon },
+          { title: "Customers", url: "/dashboard/app-factory/customers", icon: UsersIcon },
+          { title: "Projects", url: "/dashboard/app-factory/projects", icon: FolderIcon },
+          { title: "Templates", url: "/dashboard/app-factory/templates", icon: FileTextIcon },
+          { title: "Launch", url: "/dashboard/app-factory/launch", icon: RocketIcon },
           { title: "Settings", url: "/profile", icon: SettingsIcon },
         ] as { title: string; url: string; icon: LucideIcon }[],
         documents: [] as { name: string; url: string; icon: LucideIcon }[],

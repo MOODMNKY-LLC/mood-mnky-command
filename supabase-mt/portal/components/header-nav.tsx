@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { SemanticSearchBar } from "@/components/semantic-search-bar";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { DocsCommandPopover } from "@/components/docs-command-popover";
 
 function getInitials(name: string | null | undefined, email: string | undefined): string {
   if (name?.trim()) {
@@ -83,7 +84,26 @@ export function HeaderNav() {
             aria-label="Toggle theme"
           />
         </div>
-        <nav className="flex items-center gap-4 shrink-0">
+        <nav className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <Link
+            href="/about"
+            className={cn(
+              "hidden sm:inline-flex text-sm font-medium transition-colors hover:text-primary",
+              pathname === "/about" ? "text-foreground" : "text-muted-foreground"
+            )}
+          >
+            About
+          </Link>
+          <Link
+            href="/services"
+            className={cn(
+              "hidden sm:inline-flex text-sm font-medium transition-colors hover:text-primary",
+              pathname === "/services" ? "text-foreground" : "text-muted-foreground"
+            )}
+          >
+            Services
+          </Link>
+          <DocsCommandPopover />
           {user && (
             <>
               <Link

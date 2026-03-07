@@ -26,12 +26,12 @@ export default function LandingPage() {
             className="max-w-2xl text-muted-foreground"
             style={{ fontSize: "var(--main-hero-subtitle-size)" }}
           >
-            Manage your team, access shared resources, and connect to the tools
-            that power your work. Built for organizations, non-profits, and
-            community efforts.
+            Portal v2: manage your team, access shared resources, and—with the App Factory—launch
+            and manage customer and partner apps from one control plane. Built for organizations,
+            partners, and the MNKY ecosystem.
           </p>
           <p className="text-sm text-muted-foreground/90">
-            One login. Full access.
+            One login. Full access. Repeatable deployments.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" className="main-btn-glass" asChild>
@@ -56,21 +56,21 @@ export default function LandingPage() {
           style={{ gap: "var(--main-section-gap)" }}
         >
           <div className="main-glass-panel-card main-float p-6">
-            <h3 className="text-lg font-semibold tracking-tight">Community & programs</h3>
+            <h3 className="text-lg font-semibold tracking-tight">App Factory</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Shared spaces, events, and programs for your organization and community.
+              Launch customer and partner apps from templates; deploy via Coolify; track releases from one control plane.
             </p>
           </div>
           <div className="main-glass-panel-card main-float p-6">
             <h3 className="text-lg font-semibold tracking-tight">Resources & tools</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Access workflows, automation, and collaboration tools assigned to your org.
+              Access workflows, automation, and collaboration tools (Flowise, n8n, MinIO, Nextcloud) assigned to your org.
             </p>
           </div>
           <div className="main-glass-panel-card main-float p-6">
             <h3 className="text-lg font-semibold tracking-tight">Your organization</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              One place to manage your team, invites, and shared access.
+              One place to manage your team, invites, shared access, and full-stack provisioning.
             </p>
           </div>
         </div>
@@ -111,11 +111,12 @@ export default function LandingPage() {
         </div>
         <div className="main-glass-panel main-float mx-auto max-w-[700px] p-8 text-center">
           <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-            One place. Many tools.
+            One place. Many tools. App Factory.
           </h2>
           <p className="mt-4 text-muted-foreground">
             Partner organizations get access to shared apps and services—assigned per
-            tenant. See your resources, manage access, and grow with your community.
+            tenant. Platform operators can launch and manage customer apps from the App Factory.
+            See your resources, manage access, and grow with the MNKY ecosystem.
           </p>
         </div>
       </section>

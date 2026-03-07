@@ -4,6 +4,8 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 
 **Credentials and Notion:** We use the **Notion plugin** to access the **MOOD MNKY credentials database** to find, store, retrieve, and copy needed project secrets to and from `.env.local` and other environment variable files (e.g. `portal/.env.local`, `docker-compose/.env`, provisioning vault or env). When adding or changing env vars, update Notion and this file.
 
+**Portal env file (avoids wrong-file edits):** The canonical env file for the portal is **`supabase-mt/.env.local`** (one level up from `portal/`). When updating it, use the **full path** (e.g. `supabase-mt/.env.local`) or the **Filesystem MCP** so you edit that file explicitly; editing "`.env.local`" from a context inside `portal/` can otherwise target the wrong file and cause credentials to appear unset in the Launch Wizard and backoffice.
+
 ---
 
 ## Outstanding todos
@@ -15,6 +17,8 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 | T3 | Optional: add env validation script for portal (required vars before dev) | portal | P2 | code-mnky |
 | T4 | Optional: add AI gateway to roadmap (reference CHATGPT-MOODMNKY-PORTAL-INFRA.md) | infra | P2 | sage-mnky |
 | T5 | Keep AGENT:TODO.md and READMEs (docker-compose, provisioning, portal) in sync when env or runbooks change | docs | P1 | docs |
+| T6 | Add app factory env vars to Notion credentials DB and AGENT-TODO matrix (GITHUB_TOKEN, confirm COOLIFY_*) | docs / ops | P0 | docs |
+| T7 | Document deployment spec JSON schema and template manifest format (for generator) | docs | P1 | docs — Done: portal/docs/APP-FACTORY-DEPLOYMENT-SPEC.md |
 
 ---
 
@@ -56,14 +60,24 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 | `COOLIFY_URL` | portal | For Coolify integration | .env.local | Local: http://10.0.0.115:8000. Production: https://coolify-hq.moodmnky.com (set in Vercel). |
 | `COOLIFY_API_HOST` | portal | No | .env.local | Production hostname: coolify-hq.moodmnky.com (used if COOLIFY_URL not set in prod). |
 | `COOLIFY_API_KEY` | portal | For Coolify API | .env.local | From Coolify UI → Keys & Tokens → API tokens. Authorization: Bearer \<key\>. |
+| `GITHUB_TOKEN` or `GITHUB_ACCESS_TOKEN` | portal (App Factory) | For MVP repo creation | .env.local, Notion | GitHub PAT with `repo` scope. Create repo per customer app and push generated code. Sourced from Notion Credentials DB. |
+| `APP_FACTORY_TEMPLATE_PATH` | portal (App Factory generator) | No | .env.local | Path to local template directory. If unset, generator uses `template_registry.source_path` (e.g. `infra/templates/nextjs/platforms`) or fallback `temp/platforms`. When set and valid, generated app is a copy of this template (with name/slug/env substitutions) so Coolify gets a full Next.js app with proper build/start scripts. |
+| `APP_FACTORY_COOLIFY_PROJECT_NAME` | portal (App Factory deploy) | No | .env.local | Coolify project name to use when deployment spec does not set coolify_project_uuid (e.g. "MOOD MNKY Portal"). Resolved via Coolify API list projects; if not set, first project is used. |
+| `APP_FACTORY_ROOT_DOMAIN` | portal (App Factory) | Yes for platform URL | .env.local | Root domain (e.g. `moodmnky.com`) for subdomain-per-app. Wizard shows `https://<slug>.<root>`; pipeline sends that domain to Coolify and sets NEXT_PUBLIC_ROOT_DOMAIN / NEXT_PUBLIC_APP_URL on the app so the deployed app does not default to localhost. |
 | Compose vars (POSTGRES_*, MINIO_*, FLOWISE_*, N8N_*, etc.) | docker-compose, provisioning | Per README | docker-compose/.env, target host | See docker-compose/.env.example |
+
+---
+
+## Credentials used (App Factory)
+
+- **GITHUB_TOKEN** (in `supabase-mt/.env.local`): Retrieved from Notion **MOOD MNKY Credentials** database, row **Parent Program: GitHub**, **Use Cases: MOOD MNKY**. Notion page URL: [GitHub](https://www.notion.so/a3751d345645468792f1a1f3e00a4271). Key stored in **Key Code** property. Token was copied on 2026-03-07. **Test:** On Windows, `curl` to `https://api.github.com/user` may fail with `CRYPT_E_NO_REVOCATION_CHECK`; verify token on Linux/CI or in portal when repo creation is implemented.
 
 ---
 
 ## Notion credentials
 
 - **Notion plugin** + **MOOD MNKY credentials database**: use for syncing secrets to:
-  - `portal/.env.local` (or repo root `.env.local` used by portal)
+  - **`supabase-mt/.env.local`** (canonical for portal; use full path or Filesystem MCP when editing)
   - `docker-compose/.env` (for local stack runs)
   - Provisioning: Ansible Vault or env files (never commit)
 - When adding or changing a variable listed in the matrix above, update the credentials database in Notion and keep this file in sync.
