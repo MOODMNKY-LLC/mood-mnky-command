@@ -35,7 +35,7 @@ export default async function AppFactoryTemplatesPage() {
           href="/dashboard/app-factory/launch"
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Launch new project
+          Generate app
         </Link>
       </div>
 
@@ -43,7 +43,7 @@ export default async function AppFactoryTemplatesPage() {
         <CardHeader>
           <CardTitle>Template registry</CardTitle>
           <CardDescription>
-            Templates and versions used in the Launch Wizard. Source path is used by the generator to copy template files.
+            Templates and versions used in the App Generator. Source path is used by the generator to copy template files.
           </CardDescription>
         </CardHeader>
         <CardContent>

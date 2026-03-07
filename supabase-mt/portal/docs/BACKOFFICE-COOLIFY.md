@@ -75,7 +75,7 @@ With a single public IP, multiple Coolify apps on the same server need either **
 - The portal sends `ports_mappings: "<host_port>:3000"` so each app is reachable at `http://<public_ip>:3001`, `http://<public_ip>:3002`, etc.
 - Note: using `ports_mappings` disables some Coolify features (e.g. rolling updates). Prefer domains when possible.
 
-See [Coolify API reference](https://coolify.io/docs/api-reference/api) for the full surface.
+See [Coolify API reference](https://coolify.io/docs/api-reference/api) for the full surface. For **custom subdomains** (why a random subdomain might be used instead of the one from the deployment spec), see [APP-FACTORY-COOLIFY-DOMAINS.md](./APP-FACTORY-COOLIFY-DOMAINS.md) — it links to the official Create (Public) application schema (`domains`, `autogenerate_domain`, `force_domain_override`) and known API issues.
 
 ## TLS and hosts
 

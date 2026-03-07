@@ -62,7 +62,7 @@ export default async function AppFactoryPage() {
           <li className="flex gap-3">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-medium">3</span>
             <div>
-              <span className="font-medium text-foreground">Launch Wizard</span>
+              <span className="font-medium text-foreground">App Generator</span>
               <p className="text-muted-foreground mt-0.5">Enter app name, slug, and options; submit and run the pipeline.</p>
             </div>
           </li>
@@ -129,14 +129,14 @@ export default async function AppFactoryPage() {
           <Link href="/dashboard/app-factory/launch">
             <Card className="main-glass-panel-card main-float h-full transition-all hover:border-primary/30 bg-primary/5 dark:bg-primary/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Launch Wizard</CardTitle>
+                <CardTitle className="text-sm font-medium">App Generator</CardTitle>
                 <RocketIcon className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-semibold text-primary">Start</p>
-                <CardDescription className="mt-1">Guided workflow: customer, template, spec, launch</CardDescription>
+                <CardDescription className="mt-1">Generate and deploy from a template: intake, spec, launch</CardDescription>
                 <p className="mt-2 text-xs text-primary font-medium flex items-center gap-1">
-                  Launch new app <ArrowRightIcon className="h-3 w-3" />
+                  Generate app <ArrowRightIcon className="h-3 w-3" />
                 </p>
               </CardContent>
             </Card>

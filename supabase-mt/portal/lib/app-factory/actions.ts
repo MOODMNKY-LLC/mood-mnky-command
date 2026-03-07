@@ -191,6 +191,21 @@ export async function submitLaunchSpec(input: LaunchSpecInput): Promise<SubmitLa
 
   if (jobError) return { success: false, error: jobError.message };
 
+  const { error: auditError } = await supabase.from("app_factory_audit_log").insert({
+    action: "project_created",
+    project_id,
+    actor_id: user.id,
+    metadata: {
+      name: input.app_name.trim(),
+      slug: input.app_slug.trim(),
+      tenant_id: input.tenant_id,
+      template_id: input.template_id,
+    },
+  });
+  if (auditError) {
+    console.warn("App Factory audit log (project_created) failed:", auditError.message);
+  }
+
   revalidatePath("/dashboard/app-factory");
   revalidatePath("/dashboard/app-factory/launch");
   revalidatePath("/dashboard/app-factory/projects");
@@ -675,11 +690,28 @@ export async function deleteProject(projectId: string): Promise<DeleteProjectRes
 
   const { data: project, error: fetchError } = await supabase
     .from("projects")
-    .select("id, coolify_application_uuid, github_repo_url")
+    .select("id, name, slug, tenant_id, template_id, coolify_application_uuid, github_repo_url")
     .eq("id", projectId)
     .single();
 
   if (fetchError || !project) return { success: false, error: fetchError?.message ?? "Project not found." };
+
+  const { error: auditError } = await supabase.from("app_factory_audit_log").insert({
+    action: "project_deleted",
+    project_id: projectId,
+    actor_id: user.id,
+    metadata: {
+      name: project.name,
+      slug: project.slug,
+      tenant_id: project.tenant_id,
+      template_id: project.template_id,
+      github_repo_url: project.github_repo_url ?? null,
+      coolify_application_uuid: project.coolify_application_uuid ?? null,
+    },
+  });
+  if (auditError) {
+    console.warn("App Factory audit log (project_deleted) failed:", auditError.message);
+  }
 
   const appUuid = project.coolify_application_uuid as string | null;
   if (appUuid?.trim()) {
