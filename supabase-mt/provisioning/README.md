@@ -49,6 +49,8 @@ End-to-end automation: **create** a VM or LXC on Proxmox via the API, then **dep
 
 **Data flow:** Subscription specs (package, CPU, RAM, disk) live in the table `tenant_stack_subscriptions` in Supabase. In v1 you pass these as extra vars or look them up manually; the playbooks do not read from the API yet. After a successful run, you update that row with `vm_id`, `proxmox_node`, and `status = 'running'` (or `failed` on error).
 
+**Deployment options:** Ansible + Proxmox is the primary path for full-stack requests from the portal. [Coolify](https://coolify.io) can be used in parallel: the portal has a Coolify app instance and admin panel (see [portal/docs/BACKOFFICE-COOLIFY.md](../portal/docs/BACKOFFICE-COOLIFY.md)). You can create a Coolify project per tenant or per subscription and deploy the same stack via Coolify on designated servers; optionally store Coolify project/server UUIDs on the subscription for traceability.
+
 ## What you need to install
 
 ### On your machine (Ansible control node)

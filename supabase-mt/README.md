@@ -45,7 +45,7 @@ This project also includes the **Portal** (Next.js back office), the **Docker Co
 
 | Area | Location | README | Purpose |
 |------|----------|--------|---------|
-| **Portal** | `portal/` | (see portal app docs) | Next.js app: auth, dashboard, app instances (Flowise, n8n, MinIO, Nextcloud), stack subscription requests. |
+| **Portal** | `portal/` | (see portal app docs) | Next.js app: auth, dashboard, app instances (Flowise, n8n, MinIO, Nextcloud, Coolify), stack subscription requests. |
 | **Docker Compose stack** | `docker-compose/` | [docker-compose/README.md](docker-compose/README.md) | Run Flowise, n8n, Postgres, Redis, MinIO; optional profiles for Ollama and Qdrant. Choose a profile (base, Core, Agent, GPU) and start services. |
 | **Provisioning** | `provisioning/` | [provisioning/README.md](provisioning/README.md) | Ansible playbooks: create a VM on Proxmox, then deploy the Docker Compose stack on that VM. Used when partners request the full MOOD MNKY DevOps/Agent stack from the portal. |
 

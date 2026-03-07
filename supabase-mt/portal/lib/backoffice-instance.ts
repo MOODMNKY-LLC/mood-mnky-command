@@ -18,9 +18,10 @@ export const ENV_INSTANCE_IDS = {
   n8n: "env-n8n",
   minio: "env-minio",
   nextcloud: "env-nextcloud",
+  coolify: "env-coolify",
 } as const;
 
-export type AppType = "flowise" | "n8n" | "minio" | "nextcloud";
+export type AppType = "flowise" | "n8n" | "minio" | "nextcloud" | "coolify";
 
 /** Read a single env var from supabase-mt/.env.local when process.env doesn't have it (e.g. dev script path differs). */
 function getEnvFromFile(key: string): string | null {
@@ -95,6 +96,20 @@ function getNextcloudAdminUser(): string | null {
   );
 }
 
+function getCoolifyUrl(): string | null {
+  const url =
+    process.env.COOLIFY_URL?.trim() ||
+    getEnvFromFile("COOLIFY_URL")?.trim();
+  if (url) return url;
+  const host = process.env.COOLIFY_API_HOST?.trim() || getEnvFromFile("COOLIFY_API_HOST")?.trim();
+  if (host) return host.startsWith("http") ? host : `https://${host}`;
+  return null;
+}
+
+function getCoolifyApiKey(): string | null {
+  return process.env.COOLIFY_API_KEY?.trim() || getEnvFromFile("COOLIFY_API_KEY") || null;
+}
+
 /**
  * Return the native default instance from env (FLOWISE_URL / N8N_URL / MINIO_ENDPOINT / NEXTCLOUD_URL and API keys).
  * Used when no tenant_app_instances row exists or when back office targets "platform default".
@@ -111,7 +126,9 @@ export function getEnvDefaultInstance(
         ? process.env.N8N_URL?.trim() || getEnvFromFile("N8N_URL")?.trim()
         : appType === "nextcloud"
           ? getNextcloudUrl()
-          : getMinioEndpoint();
+          : appType === "coolify"
+            ? getCoolifyUrl()
+            : getMinioEndpoint();
   const apiKey =
     appType === "flowise"
       ? getFlowiseApiKey()
@@ -119,7 +136,9 @@ export function getEnvDefaultInstance(
         ? getN8nApiKey()
         : appType === "nextcloud"
           ? getNextcloudAdminUser()
-          : getMinioAccessKey();
+          : appType === "coolify"
+            ? getCoolifyApiKey()
+            : getMinioAccessKey();
   if (!url) return null;
   const id =
     appType === "flowise"
@@ -128,7 +147,9 @@ export function getEnvDefaultInstance(
         ? ENV_INSTANCE_IDS.n8n
         : appType === "nextcloud"
           ? ENV_INSTANCE_IDS.nextcloud
-          : ENV_INSTANCE_IDS.minio;
+          : appType === "coolify"
+            ? ENV_INSTANCE_IDS.coolify
+            : ENV_INSTANCE_IDS.minio;
   return {
     id,
     tenant_id: null,
@@ -146,7 +167,8 @@ export function isEnvDefaultInstance(instance: AppInstance): boolean {
     instance.id === ENV_INSTANCE_IDS.flowise ||
     instance.id === ENV_INSTANCE_IDS.n8n ||
     instance.id === ENV_INSTANCE_IDS.minio ||
-    instance.id === ENV_INSTANCE_IDS.nextcloud
+    instance.id === ENV_INSTANCE_IDS.nextcloud ||
+    instance.id === ENV_INSTANCE_IDS.coolify
   );
 }
 
@@ -170,7 +192,7 @@ export async function getInstanceById(
   const appType = data.app_type as AppType;
   const useEnvDefault =
     (baseUrl === null || baseUrl === "") &&
-    (appType === "flowise" || appType === "n8n" || appType === "minio" || appType === "nextcloud");
+    (appType === "flowise" || appType === "n8n" || appType === "minio" || appType === "nextcloud" || appType === "coolify");
   const envInstance = useEnvDefault ? getEnvDefaultInstance(appType) : null;
   return {
     id: data.id,
@@ -214,7 +236,7 @@ export async function getInstanceByTenantAndApp(
   const rowAppType = data.app_type as AppType;
   const useEnvDefault =
     (baseUrl === null || baseUrl === "") &&
-    (rowAppType === "flowise" || rowAppType === "n8n" || rowAppType === "minio" || rowAppType === "nextcloud");
+    (rowAppType === "flowise" || rowAppType === "n8n" || rowAppType === "minio" || rowAppType === "nextcloud" || rowAppType === "coolify");
   const envInstance = useEnvDefault ? getEnvDefaultInstance(rowAppType) : null;
   return {
     id: data.id,

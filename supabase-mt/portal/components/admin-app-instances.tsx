@@ -67,10 +67,12 @@ type EnvDefaults = {
   n8n: boolean;
   minio?: boolean;
   nextcloud?: boolean;
+  coolify?: boolean;
   flowise_url?: string;
   n8n_url?: string;
   minio_url?: string;
   nextcloud_url?: string;
+  coolify_url?: string;
 };
 
 const MASK = "••••••••";
@@ -180,7 +182,7 @@ export function AdminAppInstances() {
   const [filterValue, setFilterValue] = useState("");
   const [form, setForm] = useState({
     tenantId: "",
-    appType: "flowise" as "flowise" | "n8n" | "minio" | "nextcloud",
+    appType: "flowise" as "flowise" | "n8n" | "minio" | "nextcloud" | "coolify",
     name: "default",
     baseUrl: "",
     apiKey: "",
@@ -269,6 +271,7 @@ export function AdminAppInstances() {
   const showEnvN8n = envDefaults?.n8n && matches("Platform", "n8n", "default", envDefaults.n8n_url ?? "");
   const showEnvMinio = envDefaults?.minio && matches("Platform", "minio", "default", envDefaults.minio_url ?? "");
   const showEnvNextcloud = envDefaults?.nextcloud && matches("Platform", "nextcloud", "default", envDefaults.nextcloud_url ?? "");
+  const showEnvCoolify = envDefaults?.coolify && matches("Platform", "coolify", "default", envDefaults.coolify_url ?? "");
 
   const handleAddInstance = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -327,13 +330,13 @@ export function AdminAppInstances() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">App instances</CardTitle>
           <CardDescription>
-            Granular app services: Flowise, n8n, MinIO (S3), Nextcloud. Base URL and Auth inline; each app can be subscribed to independently or as part of the full stack.
+            Granular app services: Flowise, n8n, MinIO (S3), Nextcloud, Coolify. Base URL and Auth inline; each app can be subscribed to independently or as part of the full stack.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : instances.length === 0 && !envDefaults?.flowise && !envDefaults?.n8n && !envDefaults?.minio && !envDefaults?.nextcloud ? (
+          ) : instances.length === 0 && !envDefaults?.flowise && !envDefaults?.n8n && !envDefaults?.minio && !envDefaults?.nextcloud && !envDefaults?.coolify ? (
             <p className="text-sm text-muted-foreground">No instances yet. Add one below.</p>
           ) : (
             <>
@@ -463,6 +466,27 @@ export function AdminAppInstances() {
                     </TableCell>
                   </TableRow>
                 )}
+                {showEnvCoolify && (
+                  <TableRow>
+                    <TableCell>Platform</TableCell>
+                    <TableCell className="capitalize">coolify</TableCell>
+                    <TableCell>default</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground max-w-[200px] truncate" title={envDefaults.coolify_url ?? undefined}>
+                      {envDefaults.coolify_url ?? "—"}
+                    </TableCell>
+                    <TableCell className="align-top">
+                      <InstanceAuthCell instanceId="env-coolify" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/admin/coolify?instanceId=env-coolify">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Configure
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )}
                 {filteredInstances.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>
@@ -490,7 +514,9 @@ export function AdminAppInstances() {
                                   ? `/admin/n8n?instanceId=${row.id}`
                                   : row.app_type === "minio"
                                     ? `/admin/minio?instanceId=${row.id}`
-                                    : `/admin/nextcloud?instanceId=${row.id}`
+                                    : row.app_type === "coolify"
+                                      ? `/admin/coolify?instanceId=${row.id}`
+                                      : `/admin/nextcloud?instanceId=${row.id}`
                             }
                           >
                             <Settings className="mr-2 h-4 w-4" />
@@ -516,12 +542,14 @@ export function AdminAppInstances() {
                 envDefaults?.n8n ||
                 envDefaults?.minio ||
                 envDefaults?.nextcloud ||
+                envDefaults?.coolify ||
                 instances.length > 0
               ) &&
                 !showEnvFlowise &&
                 !showEnvN8n &&
                 !showEnvMinio &&
                 !showEnvNextcloud &&
+                !showEnvCoolify &&
                 filteredInstances.length === 0 && (
                   <p className="text-sm text-muted-foreground mt-2">No instances match the current filters.</p>
                 )}
@@ -539,7 +567,7 @@ export function AdminAppInstances() {
               <DialogHeader>
                 <DialogTitle>Add app instance</DialogTitle>
                 <DialogDescription>
-                  Register a Flowise, n8n, MinIO, or Nextcloud instance for a tenant. Base URL and optional API key are stored securely.
+                  Register a Flowise, n8n, MinIO, Nextcloud, or Coolify instance for a tenant. Base URL and optional API key are stored securely.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleAddInstance}>
@@ -567,7 +595,7 @@ export function AdminAppInstances() {
                     <Label htmlFor="appType">App type</Label>
                     <Select
                       value={form.appType}
-                      onValueChange={(v: "flowise" | "n8n" | "minio" | "nextcloud") =>
+                      onValueChange={(v: "flowise" | "n8n" | "minio" | "nextcloud" | "coolify") =>
                         setForm((f) => ({ ...f, appType: v }))
                       }
                     >
@@ -579,6 +607,7 @@ export function AdminAppInstances() {
                         <SelectItem value="n8n">n8n</SelectItem>
                         <SelectItem value="minio">MinIO (S3)</SelectItem>
                         <SelectItem value="nextcloud">Nextcloud</SelectItem>
+                        <SelectItem value="coolify">Coolify</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -652,7 +681,7 @@ export function AdminAppInstances() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove instance?</AlertDialogTitle>
             <AlertDialogDescription>
-              This only removes the instance from the portal config. It does not delete the Flowise or n8n server.
+              This only removes the instance from the portal config. It does not delete the Flowise, n8n, Coolify, or other server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

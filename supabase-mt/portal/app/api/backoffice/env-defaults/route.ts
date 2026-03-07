@@ -39,6 +39,8 @@ export async function GET() {
   const n8nUrl = env("N8N_URL");
   const minioUrl = env("MINIO_ENDPOINT") || env("S3_ENDPOINT_URL");
   const nextcloudUrl = env("NEXTCLOUD_URL");
+  const coolifyHost = env("COOLIFY_API_HOST");
+  const coolifyUrl = env("COOLIFY_URL") || (coolifyHost ? (coolifyHost.startsWith("http") ? coolifyHost : `https://${coolifyHost}`) : null);
   const flowise = Boolean(flowiseUrl);
   const n8n = Boolean(n8nUrl);
   const minio = Boolean(minioUrl);
@@ -47,14 +49,17 @@ export async function GET() {
       env("NEXTCLOUD_ADMIN_USER") &&
       (env("NEXTCLOUD_ADMIN_PASSWORD") || env("NEXTCLOUD_ADMIN_APP_PASSWORD"))
   );
+  const coolify = Boolean(coolifyUrl && env("COOLIFY_API_KEY"));
   return NextResponse.json({
     flowise,
     n8n,
     minio,
     nextcloud,
+    coolify,
     flowise_url: flowiseUrl ?? undefined,
     n8n_url: n8nUrl ?? undefined,
     minio_url: minioUrl ?? undefined,
     nextcloud_url: nextcloudUrl ?? undefined,
+    coolify_url: coolifyUrl ?? undefined,
   });
 }

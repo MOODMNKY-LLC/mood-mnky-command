@@ -27,7 +27,7 @@ export async function resolveInstance(
   const appTypeParam = url.searchParams.get("appType");
   const name = url.searchParams.get("name") ?? undefined;
   const appType =
-    appTypeParam === "flowise" || appTypeParam === "n8n" || appTypeParam === "minio" || appTypeParam === "nextcloud"
+    appTypeParam === "flowise" || appTypeParam === "n8n" || appTypeParam === "minio" || appTypeParam === "nextcloud" || appTypeParam === "coolify"
       ? appTypeParam
       : null;
 
@@ -36,7 +36,8 @@ export async function resolveInstance(
       instanceId === ENV_INSTANCE_IDS.flowise ||
       instanceId === ENV_INSTANCE_IDS.n8n ||
       instanceId === ENV_INSTANCE_IDS.minio ||
-      instanceId === ENV_INSTANCE_IDS.nextcloud
+      instanceId === ENV_INSTANCE_IDS.nextcloud ||
+      instanceId === ENV_INSTANCE_IDS.coolify
     ) {
       const envAppType =
         instanceId === ENV_INSTANCE_IDS.flowise
@@ -45,7 +46,9 @@ export async function resolveInstance(
             ? "n8n"
             : instanceId === ENV_INSTANCE_IDS.minio
               ? "minio"
-              : "nextcloud";
+              : instanceId === ENV_INSTANCE_IDS.coolify
+                ? "coolify"
+                : "nextcloud";
       return getEnvDefaultInstance(envAppType);
     }
     const fromDb = await getInstanceById(instanceId);
@@ -358,10 +361,90 @@ export async function forwardToNextcloud(
   }
 }
 
+/**
+ * Forward request to Coolify: base_url + /api/v1 + pathSegments, Authorization: Bearer api_key.
+ */
+export async function forwardToCoolify(
+  instance: AppInstance,
+  pathSegments: string[],
+  request: Request
+): Promise<NextResponse> {
+  const baseUrl = (instance.base_url ?? "").replace(/\/$/, "");
+  const path = pathSegments.length ? `/${pathSegments.join("/")}` : "";
+  const targetPath = `/api/v1${path}`;
+  const targetUrl = `${baseUrl}${targetPath}`;
+
+  const url = new URL(request.url);
+  const params = new URLSearchParams();
+  url.searchParams.forEach((value, key) => {
+    if (!["instanceId", "tenantId", "appType", "name"].includes(key)) {
+      params.set(key, value);
+    }
+  });
+  const search = params.toString();
+  const fullTarget = search ? `${targetUrl}?${search}` : targetUrl;
+
+  const headers: HeadersInit = {
+    "Content-Type": request.headers.get("content-type") ?? "application/json",
+  };
+  if (instance.api_key_encrypted) {
+    headers["Authorization"] = `Bearer ${instance.api_key_encrypted}`;
+  }
+
+  const init: RequestInit = {
+    method: request.method,
+    headers,
+  };
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    try {
+      const body = await request.text();
+      if (body) init.body = body;
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    const res = await fetch(fullTarget, init);
+    const text = await res.text();
+    let data: unknown;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+    if (res.status === 401) {
+      const keySent = Boolean(instance.api_key_encrypted);
+      const upstreamMsg =
+        data && typeof data === "object" && "message" in data
+          ? String((data as { message: unknown }).message)
+          : "";
+      const hint = keySent
+        ? "Coolify rejected the API key. Check COOLIFY_API_KEY in supabase-mt/.env.local (Keys & Tokens → API tokens in Coolify)."
+        : "No API key sent. Set COOLIFY_API_KEY in supabase-mt/.env.local and restart.";
+      return NextResponse.json(
+        {
+          message: upstreamMsg ? `${hint} Upstream: ${upstreamMsg}` : hint,
+          keySent,
+          upstream: data,
+        },
+        { status: 502 }
+      );
+    }
+    return NextResponse.json(data, { status: res.status });
+  } catch (err) {
+    console.error("Coolify proxy error:", err);
+    return NextResponse.json(
+      { message: err instanceof Error ? err.message : "Proxy error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function handleBackofficeProxy(
   request: Request,
   pathSegments: string[],
-  appType: "flowise" | "n8n" | "nextcloud"
+  appType: "flowise" | "n8n" | "nextcloud" | "coolify"
 ): Promise<NextResponse> {
   const instance = await resolveInstance(request);
   if (!instance) {
@@ -370,13 +453,16 @@ export async function handleBackofficeProxy(
     const isEnvDefault =
       instanceId === ENV_INSTANCE_IDS.flowise ||
       instanceId === ENV_INSTANCE_IDS.n8n ||
-      instanceId === ENV_INSTANCE_IDS.nextcloud;
+      instanceId === ENV_INSTANCE_IDS.nextcloud ||
+      instanceId === ENV_INSTANCE_IDS.coolify;
     const msg =
       appType === "n8n"
         ? "N8N_URL and N8N_API_KEY"
         : appType === "nextcloud"
           ? "NEXTCLOUD_URL, NEXTCLOUD_ADMIN_USER and NEXTCLOUD_ADMIN_PASSWORD"
-          : "FLOWISE_URL and FLOWISE_API_KEY";
+          : appType === "coolify"
+            ? "COOLIFY_URL (or COOLIFY_API_HOST) and COOLIFY_API_KEY"
+            : "FLOWISE_URL and FLOWISE_API_KEY";
     const message = isEnvDefault
       ? `Env default (${instanceId}) not configured. Set ${msg} in supabase-mt/.env.local and restart.`
       : "Instance not found. Provide instanceId or tenantId+appType (+ optional name).";
@@ -400,6 +486,9 @@ export async function handleBackofficeProxy(
   }
   if (appType === "nextcloud") {
     return forwardToNextcloud(instance, pathSegments, request);
+  }
+  if (appType === "coolify") {
+    return forwardToCoolify(instance, pathSegments, request);
   }
   return forwardToN8n(instance, pathSegments, request);
 }

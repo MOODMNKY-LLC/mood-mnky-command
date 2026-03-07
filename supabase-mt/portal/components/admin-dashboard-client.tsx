@@ -109,7 +109,7 @@ export function AdminDashboardClient() {
         </div>
       </div>
 
-      {/* App instances (Flowise / n8n / MinIO / Nextcloud) */}
+      {/* App instances (Flowise / n8n / MinIO / Nextcloud / Coolify) */}
       <div id="app-instances">
         <AdminAppInstances />
       </div>

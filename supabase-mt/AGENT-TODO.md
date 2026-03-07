@@ -53,6 +53,9 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 | `PROXMOX_NODE` | provisioning | Yes | .env / vault | Node name (e.g. pve) |
 | `PROXMOX_STORAGE` | provisioning | No | .env / vault | Default local-lvm |
 | `PROXMOX_TEMPLATE_VM` | provisioning | Yes | .env / vault | VM template to clone |
+| `COOLIFY_URL` | portal | For Coolify integration | .env.local | Local: http://10.0.0.115:8000. Production: https://coolify-hq.moodmnky.com (set in Vercel). |
+| `COOLIFY_API_HOST` | portal | No | .env.local | Production hostname: coolify-hq.moodmnky.com (used if COOLIFY_URL not set in prod). |
+| `COOLIFY_API_KEY` | portal | For Coolify API | .env.local | From Coolify UI → Keys & Tokens → API tokens. Authorization: Bearer \<key\>. |
 | Compose vars (POSTGRES_*, MINIO_*, FLOWISE_*, N8N_*, etc.) | docker-compose, provisioning | Per README | docker-compose/.env, target host | See docker-compose/.env.example |
 
 ---

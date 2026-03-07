@@ -39,9 +39,11 @@ type SubscriptionRow = {
 export function AdminStackSubscriptions() {
   const [rows, setRows] = useState<SubscriptionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
+    setFetchError(null);
     supabase
       .from("tenant_stack_subscriptions")
       .select("id, tenant_id, package, spec_cpu, spec_ram_mb, spec_disk_gb, proxmox_node, vm_id, lxc_id, status, created_at, tenants(id, name, slug)")
@@ -49,7 +51,19 @@ export function AdminStackSubscriptions() {
       .then(({ data, error }) => {
         setLoading(false);
         if (error) {
-          console.error("tenant_stack_subscriptions", error);
+          const msg =
+            (error as { message?: string }).message ??
+            (typeof error === "object" && "message" in error
+              ? String((error as { message: unknown }).message)
+              : "Failed to load stack subscriptions");
+          const code = (error as { code?: string }).code;
+          console.error(
+            "tenant_stack_subscriptions",
+            msg,
+            code ? `(${code})` : "",
+            { details: (error as { details?: string }).details }
+          );
+          setFetchError(msg);
           return;
         }
         setRows((data ?? []) as SubscriptionRow[]);
@@ -78,6 +92,15 @@ export function AdminStackSubscriptions() {
       <CardContent>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : fetchError ? (
+          <p className="text-sm text-destructive">
+            {fetchError}
+            {fetchError.includes("does not exist") && (
+              <span className="block mt-1 text-muted-foreground font-normal">
+                Run Supabase migrations (e.g. supabase db push or apply migration 20260307000000_tenant_stack_subscriptions).
+              </span>
+            )}
+          </p>
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">No stack subscription requests yet.</p>
         ) : (

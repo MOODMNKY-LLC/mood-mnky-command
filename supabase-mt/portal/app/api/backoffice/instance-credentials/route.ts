@@ -47,6 +47,13 @@ export async function GET(request: Request) {
     });
   }
 
+  if (instance.app_type === "coolify") {
+    return NextResponse.json({
+      base_url: baseUrl,
+      api_key: (instance.api_key_encrypted ?? "").trim() || null,
+    });
+  }
+
   return NextResponse.json({
     base_url: baseUrl,
     api_key: (instance.api_key_encrypted ?? "").trim() || null,
