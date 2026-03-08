@@ -9,16 +9,23 @@ import { generateApp } from "./generator";
 import { createRepoAndPush, deleteGitHubRepo, pushToExistingRepo } from "./github";
 import {
   createCoolifyApplicationAndDeploy,
+  createCoolifyApplicationFromComposeRaw,
   deleteCoolifyApplication,
   getCoolifyApplication,
+  createCoolifyProject,
+  getCoolifyApplicationLogs,
   getCoolifyDeployments,
   getDeploymentByUuid,
   isValidCoolifyDomain,
+  listCoolifyApplicationsByProjectUuid,
+  listCoolifyProjects,
   setCoolifyApplicationEnv,
   triggerCoolifyDeploy,
   updateCoolifyApplication,
   waitForDeploymentCompletion,
 } from "./coolify";
+import { getComposeContentByTemplateKey, syncComposeStackFromSource } from "./compose-stacks";
+import { getDeploymentStepFromStatusAndLogs, type DeploymentStepIndex } from "./deployment-steps";
 import { getTemplateSourcePath } from "./data";
 import { getAppFactoryRootDomain, getCoolifyUrl } from "./env";
 
@@ -314,6 +321,133 @@ export async function runLaunchPipeline(projectId: string): Promise<RunLaunchPip
     outputDir = genResult.outputDir;
     await jobUpdate("code_generation", "success");
 
+    const explicitDomain = spec.app_metadata?.domain?.trim() || null;
+    const rootDomain = getAppFactoryRootDomain();
+    const effectiveDomain =
+      (explicitDomain && isValidCoolifyDomain(explicitDomain))
+        ? explicitDomain
+        : rootDomain
+          ? `${slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")}.${rootDomain}`
+          : null;
+
+    let repoUrl: string | null = null;
+    let commitSha: string | null = null;
+    let tag: string | null = null;
+
+    if (genResult.usedTemplate === "compose") {
+      await jobInsert("repo_push", "success");
+      const composeContent = await getComposeContentByTemplateKey(templateKey ?? "");
+      if (!composeContent?.trim()) {
+        await jobUpdate("code_generation", "failed");
+        return {
+          success: false,
+          error:
+            "Compose stack not found for this template. Sync compose from repo first (Admin → App Factory or run syncComposeStackFromSource for this template).",
+          step: "code_generation",
+        };
+      }
+      if (outputDir) {
+        try {
+          rmSync(outputDir, { recursive: true });
+        } catch {
+          // ignore
+        }
+      }
+      await jobInsert("coolify_deploy", "running");
+      let coolifyProjectUuid = spec.deployment?.coolify_project_uuid ?? null;
+      if (!coolifyProjectUuid && spec.identity?.tenant_id) {
+        const resolved = await getOrCreateCoolifyProjectForTenant(spec.identity.tenant_id);
+        if (resolved.success) coolifyProjectUuid = resolved.coolify_project_uuid;
+      }
+      const coolifyResult = await createCoolifyApplicationFromComposeRaw({
+        docker_compose_raw: composeContent,
+        appName,
+        coolify_project_uuid: coolifyProjectUuid,
+        coolify_server_uuid: spec.deployment?.coolify_server_uuid ?? null,
+        coolify_environment_uuid: spec.deployment?.coolify_environment_uuid ?? null,
+        domain: effectiveDomain,
+        instant_deploy: true,
+      });
+      if (!coolifyResult.success) {
+        await jobUpdate("coolify_deploy", "failed");
+        return {
+          success: false,
+          error: `Coolify: ${coolifyResult.error}`,
+          step: "coolify_deploy",
+        };
+      }
+      repoUrl = null;
+      const projectUpdate: { github_repo_url?: string | null; updated_at: string } = {
+        updated_at: new Date().toISOString(),
+      };
+      await supabase.from("projects").update(projectUpdate).eq("id", projectId);
+
+      if (effectiveDomain) {
+        const rootForEnv = rootDomain ?? "moodmnky.com";
+        const envResult = await setCoolifyApplicationEnv(coolifyResult.applicationUuid, {
+          NEXT_PUBLIC_ROOT_DOMAIN: rootForEnv,
+          NEXT_PUBLIC_APP_URL: `https://${effectiveDomain}`,
+        });
+        if (!envResult.success) {
+          console.warn("Coolify env vars not set:", envResult.error);
+        }
+      }
+
+      const waitResult = await waitForDeploymentCompletion(coolifyResult.applicationUuid, {
+        timeoutMs: 25 * 60 * 1000,
+        pollIntervalMs: 5000,
+        maxWaitForDeploymentStartMs: 120 * 1000,
+      });
+      const deploymentDetail = waitResult.success
+        ? waitResult.deployment
+        : waitResult.deployment
+          ? { ...waitResult.deployment, status: waitResult.deployment.status || "timeout" }
+          : null;
+      const deploymentStatus = deploymentDetail?.status ?? (waitResult.success ? undefined : "timeout");
+      const deploymentUrl = deploymentDetail?.deployment_url ?? null;
+      const deploymentLogs = deploymentDetail?.logs ?? null;
+      const deploymentUuid = deploymentDetail?.deployment_uuid ?? null;
+      const buildSucceeded =
+        deploymentStatus != null &&
+        ["success", "succeeded", "finished"].includes(deploymentStatus.toLowerCase().trim());
+
+      await jobUpdate("coolify_deploy", buildSucceeded ? "success" : deploymentDetail ? "failed" : "success");
+      await supabase
+        .from("projects")
+        .update({
+          status: "generated",
+          coolify_application_uuid: coolifyResult.applicationUuid,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", projectId);
+      await supabase.from("releases").insert({
+        project_id: projectId,
+        environment_name: "production",
+        deployment_spec_id: specRow.id,
+        git_commit_sha: null,
+        git_tag: null,
+        status: buildSucceeded ? "live" : "failed",
+        deployed_at: new Date().toISOString(),
+      });
+      revalidatePath("/dashboard/app-factory");
+      revalidatePath("/dashboard/app-factory/launch");
+      revalidatePath("/dashboard/app-factory/projects");
+      return {
+        success: true,
+        repoUrl: undefined,
+        applicationUuid: coolifyResult.applicationUuid,
+        message: buildSucceeded
+          ? "Compose application created and deploy succeeded."
+          : deploymentDetail
+            ? `Deploy finished with status: ${deploymentStatus}.`
+            : coolifyResult.message,
+        deploymentStatus: deploymentStatus ?? undefined,
+        deploymentUrl: deploymentUrl ?? undefined,
+        deploymentLogs: deploymentLogs ?? undefined,
+        deploymentUuid: deploymentUuid ?? undefined,
+      };
+    }
+
     await jobInsert("repo_push", "running");
     const repoResult = await createRepoAndPush(genResult.outputDir, slug, { description: appName });
     if (outputDir) {
@@ -328,6 +462,9 @@ export async function runLaunchPipeline(projectId: string): Promise<RunLaunchPip
       return { success: false, error: `GitHub: ${repoResult.error}`, step: "repo_push" };
     }
     await jobUpdate("repo_push", "success");
+    repoUrl = repoResult.repoUrl;
+    commitSha = repoResult.commitSha ?? null;
+    tag = repoResult.tag ?? null;
 
     await supabase
       .from("projects")
@@ -335,19 +472,16 @@ export async function runLaunchPipeline(projectId: string): Promise<RunLaunchPip
       .eq("id", projectId);
 
     await jobInsert("coolify_deploy", "running");
-    const explicitDomain = spec.app_metadata?.domain?.trim() || null;
-    const rootDomain = getAppFactoryRootDomain();
-    const effectiveDomain =
-      (explicitDomain && isValidCoolifyDomain(explicitDomain))
-        ? explicitDomain
-        : rootDomain
-          ? `${slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")}.${rootDomain}`
-          : null;
+    let coolifyProjectUuid = spec.deployment?.coolify_project_uuid ?? null;
+    if (!coolifyProjectUuid && spec.identity?.tenant_id) {
+      const resolved = await getOrCreateCoolifyProjectForTenant(spec.identity.tenant_id);
+      if (resolved.success) coolifyProjectUuid = resolved.coolify_project_uuid;
+    }
     const coolifyResult = await createCoolifyApplicationAndDeploy({
       repoUrl: repoResult.repoUrl,
       branch: repoResult.defaultBranch,
       appName,
-      coolify_project_uuid: spec.deployment?.coolify_project_uuid ?? null,
+      coolify_project_uuid: coolifyProjectUuid,
       coolify_server_uuid: spec.deployment?.coolify_server_uuid ?? null,
       coolify_environment_uuid: spec.deployment?.coolify_environment_uuid ?? null,
       domain: effectiveDomain,
@@ -411,8 +545,8 @@ export async function runLaunchPipeline(projectId: string): Promise<RunLaunchPip
       project_id: projectId,
       environment_name: "production",
       deployment_spec_id: specRow.id,
-      git_commit_sha: repoResult.commitSha ?? null,
-      git_tag: repoResult.tag ?? null,
+      git_commit_sha: commitSha,
+      git_tag: tag,
       status: buildSucceeded ? "live" : "failed",
       deployed_at: new Date().toISOString(),
     });
@@ -423,7 +557,7 @@ export async function runLaunchPipeline(projectId: string): Promise<RunLaunchPip
 
     return {
       success: true,
-      repoUrl: repoResult.repoUrl,
+      repoUrl: repoUrl ?? undefined,
       applicationUuid: coolifyResult.applicationUuid,
       message: buildSucceeded
         ? "Application created and build succeeded."
@@ -561,6 +695,132 @@ export async function getCoolifyAppStatus(applicationUuid: string): Promise<Cool
   };
 }
 
+export type GetCoolifyLogsResult =
+  | { success: true; logs: string }
+  | { success: false; error: string };
+
+/**
+ * Fetch Coolify application logs for a project. User must have access to the project (RLS).
+ * Fails if the app is not running (Coolify returns 400).
+ */
+export async function getCoolifyLogsForProject(
+  projectId: string,
+  lines = 300
+): Promise<GetCoolifyLogsResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  const { data: project, error: fetchError } = await supabase
+    .from("projects")
+    .select("id, coolify_application_uuid")
+    .eq("id", projectId)
+    .single();
+
+  if (fetchError || !project) return { success: false, error: fetchError?.message ?? "Project not found." };
+  const appUuid = project.coolify_application_uuid as string | null;
+  if (!appUuid?.trim()) return { success: false, error: "Project has no Coolify application." };
+
+  return getCoolifyApplicationLogs(appUuid, Math.max(1, Math.min(2000, lines)));
+}
+
+/**
+ * Fetch Coolify application logs by application UUID. Platform admin only.
+ * Use for debugging any Coolify app (e.g. compose stack) when you have the UUID from Coolify or --list.
+ */
+export async function getCoolifyLogsByApplicationUuid(
+  applicationUuid: string,
+  lines = 500
+): Promise<GetCoolifyLogsResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  const { data: isAdmin } = await supabase.rpc("is_platform_admin", { p_user_id: user.id });
+  if (!isAdmin) return { success: false, error: "Platform admin only." };
+
+  if (!applicationUuid?.trim()) return { success: false, error: "Application UUID is required." };
+
+  return getCoolifyApplicationLogs(applicationUuid.trim(), Math.max(1, Math.min(2000, lines)));
+}
+
+export type GetOrCreateCoolifyProjectResult =
+  | { success: true; coolify_project_uuid: string }
+  | { success: false; error: string };
+
+/**
+ * Resolve Coolify project UUID for a tenant (namespace for that tenant's apps).
+ * If tenant has coolify_project_uuid, return it. Else list Coolify projects and match by name (tenant name/slug);
+ * if found, save to tenant and return. Else create a new Coolify project, save to tenant, and return.
+ * Caller must have access to the tenant (e.g. tenant admin running deploy).
+ */
+export async function getOrCreateCoolifyProjectForTenant(
+  tenantId: string
+): Promise<GetOrCreateCoolifyProjectResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  const { data: tenant, error: tenantError } = await supabase
+    .from("tenants")
+    .select("id, slug, name, coolify_project_uuid")
+    .eq("id", tenantId)
+    .single();
+
+  if (tenantError || !tenant) {
+    return { success: false, error: tenantError?.message ?? "Tenant not found." };
+  }
+
+  const existing = (tenant as { coolify_project_uuid?: string | null }).coolify_project_uuid;
+  if (existing?.trim()) {
+    return { success: true, coolify_project_uuid: existing.trim() };
+  }
+
+  const listRes = await listCoolifyProjects();
+  if (!listRes.success) return { success: false, error: listRes.error };
+
+  const slug = (tenant as { slug?: string }).slug ?? "";
+  const name = (tenant as { name?: string }).name ?? slug;
+  const nameLower = name.trim().toLowerCase();
+  const slugLower = slug.trim().toLowerCase();
+  const existingProject = listRes.projects.find(
+    (p) =>
+      (p.name ?? "").trim().toLowerCase() === nameLower ||
+      (p.name ?? "").trim().toLowerCase() === slugLower
+  );
+  if (existingProject?.uuid) {
+    const { error: updateErr } = await supabase
+      .from("tenants")
+      .update({
+        coolify_project_uuid: existingProject.uuid,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", tenantId);
+    if (updateErr) {
+      console.warn("Failed to persist Coolify project UUID on tenant:", updateErr.message);
+    }
+    return { success: true, coolify_project_uuid: existingProject.uuid };
+  }
+
+  const createRes = await createCoolifyProject(
+    name.trim() || slug.trim() || `tenant-${tenantId.slice(0, 8)}`,
+    `App Factory namespace for tenant ${slug || tenantId}`
+  );
+  if (!createRes.success) return createRes;
+
+  const { error: updateErr } = await supabase
+    .from("tenants")
+    .update({
+      coolify_project_uuid: createRes.uuid,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", tenantId);
+  if (updateErr) {
+    return { success: false, error: `Coolify project created but failed to save to tenant: ${updateErr.message}` };
+  }
+  return { success: true, coolify_project_uuid: createRes.uuid };
+}
+
 export type CoolifyDeploymentProgressResult =
   | {
       success: true;
@@ -573,12 +833,15 @@ export type CoolifyDeploymentProgressResult =
       createdAt?: string;
       updatedAt?: string;
       coolifyBaseUrl: string | null;
+      /** 0–4 for multi-step progress meter (Queued → Preparing → Building → Deploying → Live). */
+      deploymentStepIndex: DeploymentStepIndex;
+      deploymentStepLabel: string;
     }
   | { success: false; error: string };
 
 /**
  * Get current deployment progress for an application (latest deployment).
- * Use for polling during/after deploy to show status, logs, and final URL.
+ * Poll this to drive a multi-step progress meter; returns status, logs, URL, and inferred step.
  */
 export async function getCoolifyDeploymentProgress(
   applicationUuid: string
@@ -588,6 +851,7 @@ export async function getCoolifyDeploymentProgress(
   if (!listResult.success) return listResult;
   const latest = listResult.deployments[0];
   if (!latest?.uuid) {
+    const step = getDeploymentStepFromStatusAndLogs("pending", null);
     return {
       success: true,
       status: "pending",
@@ -595,11 +859,14 @@ export async function getCoolifyDeploymentProgress(
       logs: null,
       deploymentUuid: null,
       coolifyBaseUrl: coolifyBaseUrl ?? null,
+      deploymentStepIndex: 0,
+      deploymentStepLabel: step.stepLabel,
     };
   }
   const detailResult = await getDeploymentByUuid(latest.uuid);
   if (!detailResult.success) return detailResult;
   const d = detailResult.deployment;
+  const step = getDeploymentStepFromStatusAndLogs(d.status, d.logs ?? null);
   return {
     success: true,
     status: d.status,
@@ -611,6 +878,8 @@ export async function getCoolifyDeploymentProgress(
     createdAt: d.created_at,
     updatedAt: d.updated_at,
     coolifyBaseUrl: coolifyBaseUrl ?? null,
+    deploymentStepIndex: step.stepIndex,
+    deploymentStepLabel: step.stepLabel,
   };
 }
 
@@ -661,6 +930,8 @@ export async function deleteCoolifyDeployment(projectId: string): Promise<Delete
   const deleteResult = await deleteCoolifyApplication(appUuid, {
     delete_configurations: true,
     delete_volumes: true,
+    docker_cleanup: true,
+    delete_connected_networks: true,
   });
   if (!deleteResult.success) return deleteResult;
 
@@ -674,14 +945,34 @@ export async function deleteCoolifyDeployment(projectId: string): Promise<Delete
   return { success: true };
 }
 
+export type SyncComposeStackResult =
+  | { success: true; template_key: string }
+  | { success: false; error: string };
+
+/**
+ * Sync Docker Compose content from the repo into Supabase for a template (e.g. agent-stack).
+ * Reads docker-compose.yml from the template's source_path and upserts compose_stacks.
+ * Platform admin only. Call periodically or from Admin UI to pull updated versions from the repo.
+ */
+export async function syncComposeStack(templateKey: string): Promise<SyncComposeStackResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  const { data: isAdmin } = await supabase.rpc("is_platform_admin", { p_user_id: user.id });
+  if (!isAdmin) return { success: false, error: "Platform admin only." };
+
+  return syncComposeStackFromSource(templateKey);
+}
+
 export type DeleteProjectResult =
   | { success: true; warning?: string }
   | { success: false; error: string };
 
 /**
- * Full teardown: remove Coolify app, delete GitHub repo (best-effort), then delete the project row.
- * GitHub repo deletion is attempted whenever the project has github_repo_url; on failure we still
- * remove the project from our DB and return success with a warning so the app doesn't retain bloat.
+ * Full teardown: remove Coolify app (best-effort), delete GitHub repo (best-effort), then always
+ * delete the project row so the slug is freed for reuse. Coolify/GitHub failures are reported as
+ * warnings; the project is always removed from our DB so "deleted" always means the slug is available.
  */
 export async function deleteProject(projectId: string): Promise<DeleteProjectResult> {
   const supabase = await createClient();
@@ -713,29 +1004,34 @@ export async function deleteProject(projectId: string): Promise<DeleteProjectRes
     console.warn("App Factory audit log (project_deleted) failed:", auditError.message);
   }
 
+  const warnings: string[] = [];
+
   const appUuid = project.coolify_application_uuid as string | null;
   if (appUuid?.trim()) {
     const { deleteCoolifyApplication } = await import("./coolify");
     const delCoolify = await deleteCoolifyApplication(appUuid, {
       delete_configurations: true,
       delete_volumes: true,
+      docker_cleanup: true,
+      delete_connected_networks: true,
     });
-    if (!delCoolify.success) return { success: false, error: `Coolify: ${delCoolify.error}` };
+    if (!delCoolify.success) {
+      warnings.push(`Coolify app could not be removed: ${delCoolify.error}. You may delete it manually in Coolify.`);
+    }
   }
 
-  let warning: string | undefined;
   const repoUrl = project.github_repo_url as string | null;
   if (repoUrl?.trim()) {
     const delRepo = await deleteGitHubRepo(repoUrl);
     if (!delRepo.success) {
-      warning = `GitHub repository could not be removed: ${delRepo.error}. You may delete it manually: ${repoUrl}`;
+      warnings.push(`GitHub repository could not be removed: ${delRepo.error}. You may delete it manually: ${repoUrl}`);
     }
   }
 
   const { error: deleteError } = await supabase.from("projects").delete().eq("id", projectId);
   if (deleteError) return { success: false, error: deleteError.message };
   revalidatePath("/dashboard/app-factory/projects");
-  return warning ? { success: true, warning } : { success: true };
+  return warnings.length ? { success: true, warning: warnings.join(" ") } : { success: true };
 }
 
 export type AppFactoryProjectRow = {
@@ -745,9 +1041,12 @@ export type AppFactoryProjectRow = {
   status: string;
   coolify_application_uuid: string | null;
   created_at: string | null;
+  tenant_id: string | null;
+  tenant_name: string | null;
+  tenant_slug: string | null;
 };
 
-/** List projects for the current user (tenant-scoped via RLS). */
+/** List projects for the current user (tenant-scoped via RLS). Includes tenant for grouping and surfacing services. */
 export async function getAppFactoryProjects(): Promise<
   { success: true; projects: AppFactoryProjectRow[] } | { success: false; error: string }
 > {
@@ -757,17 +1056,76 @@ export async function getAppFactoryProjects(): Promise<
 
   const { data: rows, error } = await supabase
     .from("projects")
-    .select("id, name, slug, status, coolify_application_uuid, created_at")
+    .select("id, name, slug, status, coolify_application_uuid, created_at, tenant_id, tenants(name, slug)")
     .order("created_at", { ascending: false });
 
   if (error) return { success: false, error: error.message };
-  const projects: AppFactoryProjectRow[] = (rows ?? []).map((r) => ({
-    id: r.id,
-    name: r.name ?? "",
-    slug: r.slug ?? "",
-    status: r.status ?? "draft",
-    coolify_application_uuid: r.coolify_application_uuid ?? null,
-    created_at: r.created_at ?? null,
-  }));
+  const projects: AppFactoryProjectRow[] = (rows ?? []).map((r) => {
+    const rawTenant = (r as { tenants?: { name?: string; slug?: string } | { name?: string; slug?: string }[] | null }).tenants;
+    const tenant = Array.isArray(rawTenant) ? rawTenant[0] : rawTenant;
+    return {
+      id: r.id,
+      name: r.name ?? "",
+      slug: r.slug ?? "",
+      status: r.status ?? "draft",
+      coolify_application_uuid: r.coolify_application_uuid ?? null,
+      created_at: r.created_at ?? null,
+      tenant_id: r.tenant_id ?? null,
+      tenant_name: tenant?.name ?? null,
+      tenant_slug: tenant?.slug ?? null,
+    };
+  });
   return { success: true, projects };
+}
+
+export type CoolifyServiceItem = { uuid?: string; name?: string; status?: string };
+
+export type GetCoolifyServicesForTenantResult =
+  | { success: true; services: CoolifyServiceItem[] }
+  | { success: false; error: string };
+
+/**
+ * List Coolify applications (services) deployed in a tenant's Coolify project.
+ * Used to dynamically surface what is deployed in Coolify per org. Each org has one Coolify project;
+ * a project can have many services (applications).
+ */
+export async function getCoolifyServicesForTenant(
+  tenantId: string
+): Promise<GetCoolifyServicesForTenantResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  // Restrict to tenants the user is a member of (RLS on tenant_members).
+  const { data: member } = await supabase
+    .from("tenant_members")
+    .select("tenant_id")
+    .eq("tenant_id", tenantId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!member) return { success: false, error: "Access denied to this tenant." };
+
+  const { data: tenant, error: tenantError } = await supabase
+    .from("tenants")
+    .select("coolify_project_uuid")
+    .eq("id", tenantId)
+    .single();
+
+  if (tenantError || !tenant) {
+    return { success: false, error: tenantError?.message ?? "Tenant not found." };
+  }
+
+  const projectUuid = (tenant as { coolify_project_uuid?: string | null }).coolify_project_uuid;
+  if (!projectUuid?.trim()) {
+    return { success: true, services: [] };
+  }
+
+  const result = await listCoolifyApplicationsByProjectUuid(projectUuid.trim());
+  if (!result.success) return result;
+  const services: CoolifyServiceItem[] = result.applications.map((a) => ({
+    uuid: a.uuid,
+    name: a.name,
+    status: a.status,
+  }));
+  return { success: true, services };
 }

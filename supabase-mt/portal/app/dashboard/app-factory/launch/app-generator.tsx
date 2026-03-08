@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/select";
 import type { CustomerRow, TenantRow, TemplateWithVersions } from "@/lib/app-factory/data";
 import { createCustomer, submitLaunchSpec, runLaunchPipeline, getCoolifyDeploymentProgress } from "@/lib/app-factory/actions";
-import { ExternalLink, CheckCircle2, Loader2 as Loader2Icon, AlertCircle, ArrowLeft } from "lucide-react";
+import { DEPLOYMENT_STEPS, type DeploymentStepIndex } from "@/lib/app-factory/deployment-steps";
+import { ExternalLink, CheckCircle2, Loader2 as Loader2Icon, AlertCircle, ArrowLeft, Circle } from "lucide-react";
 import { TemplateCards } from "./template-cards";
 
-const DEPLOY_POLL_INTERVAL_MS = 10_000;
+const DEPLOY_POLL_INTERVAL_MS = 5_000;
 const SUCCESS_STATUSES = ["success", "succeeded", "finished", "completed"];
 const FAILED_STATUSES = ["failed", "error", "cancelled"];
 
@@ -87,6 +88,8 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
     status: string;
     deploymentUrl: string | null;
     logs: string | null;
+    deploymentStepIndex?: DeploymentStepIndex;
+    deploymentStepLabel?: string | null;
   } | null>(null);
 
   const selectedTemplate = initialData.templates.find((t) => t.id === templateId);
@@ -225,6 +228,8 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
         status: progress.status,
         deploymentUrl: progress.deploymentUrl ?? null,
         logs: progress.logs ?? null,
+        deploymentStepIndex: progress.deploymentStepIndex,
+        deploymentStepLabel: progress.deploymentStepLabel,
       });
       if (isTerminalStatus(progress.status)) {
         setPipelineResult((prev) =>
@@ -328,10 +333,10 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
             </>
           ) : (
             <>
-              {/* Vercel/Coolify-style deployment status strip */}
+              {/* Multi-step deployment progress (Coolify status + logs → steps) */}
               <div
                 className={
-                  "rounded-lg border px-4 py-3 flex flex-wrap items-center gap-3 " +
+                  "rounded-lg border px-4 py-4 " +
                   (isDeploySuccess
                     ? "border-green-500/40 bg-green-500/5 dark:bg-green-500/10"
                     : isDeployFailed
@@ -340,33 +345,120 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
                 }
               >
                 {isDeploySuccess && (
-                  <>
+                  <div className="flex flex-wrap items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500 shrink-0" />
                     <span className="font-medium text-green-800 dark:text-green-200">Live</span>
                     <span className="text-sm text-muted-foreground">Deployment ready.</span>
-                  </>
+                  </div>
                 )}
                 {isDeployBuilding && (
-                  <>
-                    <Loader2Icon className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 animate-spin" />
-                    <span className="font-medium text-amber-800 dark:text-amber-200">Building</span>
-                    {isPolling ? (
-                      <span className="text-sm text-muted-foreground">
-                        Checking deployment status every {DEPLOY_POLL_INTERVAL_MS / 1000}s…
-                      </span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        This may take a few minutes. The page will update when ready.
-                      </span>
-                    )}
-                  </>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                      {DEPLOYMENT_STEPS.map((label, index) => {
+                        const currentStep = liveDeployment?.deploymentStepIndex ?? 0;
+                        const isDone = index < currentStep;
+                        const isCurrent = index === currentStep;
+                        return (
+                          <div
+                            key={label}
+                            className="flex items-center gap-1.5 shrink-0"
+                          >
+                            {index > 0 && (
+                              <div
+                                className={
+                                  "hidden sm:block w-4 sm:w-6 h-0.5 rounded " +
+                                  (isDone ? "bg-green-500/60" : "bg-muted")
+                                }
+                                aria-hidden
+                              />
+                            )}
+                            <div
+                              className={
+                                "flex items-center gap-1.5 rounded-md px-2 py-1 " +
+                                (isCurrent
+                                  ? "bg-amber-500/20 dark:bg-amber-500/15 text-amber-800 dark:text-amber-200"
+                                  : isDone
+                                    ? "text-green-700 dark:text-green-400"
+                                    : "text-muted-foreground")
+                              }
+                            >
+                              {isDone ? (
+                                <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-500" />
+                              ) : isCurrent ? (
+                                <Loader2Icon className="h-4 w-4 shrink-0 animate-spin text-amber-600 dark:text-amber-500" />
+                              ) : (
+                                <Circle className="h-4 w-4 shrink-0 opacity-50" />
+                              )}
+                              <span className="text-sm font-medium">{label}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {isPolling ? (
+                        <>
+                          <span className="font-medium text-foreground">
+                            {liveDeployment?.deploymentStepLabel ?? "Checking…"}
+                          </span>
+                          {" · "}
+                          Checking Coolify every {DEPLOY_POLL_INTERVAL_MS / 1000}s
+                        </>
+                      ) : (
+                        "Deployment started. Steps will update as Coolify reports progress."
+                      )}
+                    </p>
+                  </div>
                 )}
                 {isDeployFailed && (
-                  <>
-                    <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
-                    <span className="font-medium text-destructive">Failed</span>
-                    <span className="text-sm text-muted-foreground">Build or deploy reported an error.</span>
-                  </>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+                      <span className="font-medium text-destructive">Failed</span>
+                      <span className="text-sm text-muted-foreground">
+                        {liveDeployment?.deploymentStepLabel ?? "Build or deploy reported an error."}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 pt-1">
+                      {DEPLOYMENT_STEPS.map((label, index) => {
+                        const currentStep = liveDeployment?.deploymentStepIndex ?? 0;
+                        const isDone = index < currentStep;
+                        const isFailedStep = index === currentStep;
+                        return (
+                          <div key={label} className="flex items-center gap-1.5 shrink-0">
+                            {index > 0 && (
+                              <div
+                                className={
+                                  "hidden sm:block w-6 h-0.5 rounded " +
+                                  (isDone ? "bg-green-500/40" : "bg-muted")
+                                }
+                                aria-hidden
+                              />
+                            )}
+                            <div
+                              className={
+                                "flex items-center gap-1.5 rounded-md px-2 py-1 text-sm " +
+                                (isFailedStep
+                                  ? "bg-destructive/15 text-destructive font-medium"
+                                  : isDone
+                                    ? "text-green-600 dark:text-green-500"
+                                    : "text-muted-foreground")
+                              }
+                            >
+                              {isDone ? (
+                                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                              ) : isFailedStep ? (
+                                <AlertCircle className="h-4 w-4 shrink-0" />
+                              ) : (
+                                <Circle className="h-4 w-4 shrink-0 opacity-50" />
+                              )}
+                              <span>{label}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -382,7 +474,7 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
                   {isDeployBuilding && (
                     <Badge variant="secondary">
                       <Loader2Icon className="h-3.5 w-3 mr-1 animate-spin" />
-                      Building
+                      {liveDeployment?.deploymentStepLabel ?? "Deploying…"}
                     </Badge>
                   )}
                   {isDeployFailed && (
@@ -617,6 +709,9 @@ export function AppGenerator({ credentialsReady, initialData }: Props) {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Apps for this org are grouped in one Coolify project per tenant. A project is created automatically on first deploy.
+              </p>
             </div>
           </div>
 
