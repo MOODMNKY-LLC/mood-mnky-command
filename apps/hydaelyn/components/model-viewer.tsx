@@ -28,6 +28,7 @@ function Model({ url }: { url: string }) {
         }
       }}
     >
+      {/* @ts-expect-error R3F "primitive" not in React 19 JSX.IntrinsicElements; runtime works */}
       <primitive object={cloned} />
     </Center>
   );
@@ -36,8 +37,11 @@ function Model({ url }: { url: string }) {
 function Scene({ url, onError }: { url: string; onError?: () => void }) {
   return (
     <>
+      {/* @ts-expect-error R3F intrinsic */}
       <ambientLight intensity={0.65} />
+      {/* @ts-expect-error R3F intrinsic */}
       <directionalLight position={[4, 6, 4]} intensity={1.2} castShadow />
+      {/* @ts-expect-error R3F intrinsic */}
       <directionalLight position={[-3, 4, -2]} intensity={0.5} />
       <Environment preset="studio" />
       <Suspense

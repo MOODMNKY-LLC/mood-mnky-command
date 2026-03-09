@@ -28,9 +28,13 @@ export interface TextShimmerProps {
   children: string;
   as?: ElementType;
   className?: string;
+  /** Duration in seconds for one full sweep (lower = faster). Default 2. */
   duration?: number;
+  /** Pixels per character for the highlight band width; band = 2 × spread × textLength. Default 2. */
   spread?: number;
-  /** Sweep color for the shimmer band (e.g. "rgba(255,255,255,0.35)" for a visible highlight in both themes). Defaults to var(--color-background). */
+  /** Minimum band width in px so the sweep stays visible on short text. Default 0. */
+  minSpread?: number;
+  /** Sweep color (e.g. "rgba(255,255,255,0.95)" or "white"). Defaults to var(--color-background). */
   sweepColor?: string;
 }
 
@@ -40,6 +44,7 @@ const ShimmerComponent = ({
   className,
   duration = 2,
   spread = 2,
+  minSpread = 0,
   sweepColor,
 }: TextShimmerProps) => {
   const MotionComponent = getMotionComponent(
@@ -47,8 +52,8 @@ const ShimmerComponent = ({
   );
 
   const dynamicSpread = useMemo(
-    () => (children?.length ?? 0) * spread,
-    [children, spread]
+    () => Math.max((children?.length ?? 0) * spread, minSpread),
+    [children, spread, minSpread]
   );
 
   const sweep = sweepColor ?? "var(--color-background)";

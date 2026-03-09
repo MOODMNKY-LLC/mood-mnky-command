@@ -4,6 +4,8 @@
  * API keys are never exposed to the browser.
  */
 
+import { FlowiseClient } from 'flowise-sdk'
+
 export interface FlowiseChatflow {
   id: string
   name: string
@@ -116,9 +118,12 @@ function getFlowiseConfig() {
     )
   }
 
+  const baseUrl = `${hostUrl.replace(/\/$/, '')}/api/v1`
+  const sdkBaseUrl = baseUrl.replace(/\/api\/v1\/?$/, '') || baseUrl
   return {
-    baseUrl: `${hostUrl.replace(/\/$/, '')}/api/v1`,
+    baseUrl,
     apiKey,
+    sdkBaseUrl,
   }
 }
 
@@ -368,6 +373,113 @@ export async function deleteChatMessages(chatflowId: string, params?: { sessionI
 }
 
 // ── Prediction ────────────────────────────────────────────────────────────────
+
+/**
+ * Call Flowise GET /api/v1/chatflows-streaming/:id (with auth).
+ * The SDK uses this to decide if it returns a stream; it does not send the API key.
+ * Use this to see why the SDK might not be streaming.
+ *
+ * Note: Agent flows (especially sequential agents) often report isStreamValid: false
+ * or buffer the full response; chain-style chatflows typically support token streaming.
+ * See Flowise docs (Agentflow V2 vs chain) and GitHub #4014, #4926.
+ */
+export async function getChatflowStreamingStatus(chatflowId: string): Promise<{
+  ok: boolean
+  status: number
+  isStreaming?: boolean
+  body?: unknown
+  error?: string
+}> {
+  const { sdkBaseUrl, apiKey } = getFlowiseConfig()
+  const url = `${sdkBaseUrl}/api/v1/chatflows-streaming/${chatflowId}`
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
+      },
+    })
+    const body = await res.json().catch(() => ({}))
+    const isStreaming = Boolean((body as { isStreaming?: boolean }).isStreaming)
+    return { ok: res.ok, status: res.status, isStreaming, body }
+  } catch (err) {
+    return {
+      ok: false,
+      status: 0,
+      error: err instanceof Error ? err.message : String(err),
+    }
+  }
+}
+
+/** Stream using flowise-sdk; yields one SSE message per token so the client gets true streaming. */
+export async function streamPredictionWithSDK(
+  chatflowId: string,
+  payload: FlowisePredictionPayload,
+): Promise<ReadableStream<Uint8Array>> {
+  const { sdkBaseUrl, apiKey } = getFlowiseConfig()
+  const client = new FlowiseClient({
+    baseUrl: sdkBaseUrl,
+    apiKey,
+  } as { baseUrl: string; apiKey?: string })
+
+  const encoder = new TextEncoder()
+  const prediction = await client.createPrediction({
+    chatflowId,
+    question: payload.question,
+    streaming: true,
+    ...(payload.chatId && { chatId: payload.chatId }),
+    ...(payload.history?.length && {
+      history: payload.history.map((m) => ({
+        message: m.content,
+        type: m.role === 'user' ? ('userMessage' as const) : ('apiMessage' as const),
+      })),
+    }),
+    ...(payload.uploads?.length && { uploads: payload.uploads }),
+  })
+  if (typeof (prediction as { [Symbol.asyncIterator]?: unknown })[Symbol.asyncIterator] !== 'function') {
+    const status = await getChatflowStreamingStatus(chatflowId)
+    console.warn(
+      '[flowise] chatflows-streaming check:',
+      JSON.stringify({
+        chatflowId,
+        status: status.status,
+        ok: status.ok,
+        isStreaming: status.isStreaming,
+        body: status.body,
+        error: status.error,
+      })
+    )
+    throw new Error(
+      status.error
+        ? `Flowise SDK stream check failed: ${status.error}`
+        : status.ok && status.isStreaming === false
+          ? 'Flowise reports isStreaming: false for this chatflow'
+          : !status.ok
+            ? `Flowise chatflows-streaming returned ${status.status}`
+            : 'Flowise SDK did not return a stream (chatflow may not support streaming)'
+    )
+  }
+  const iterable = prediction as AsyncGenerator<{ event?: string; data?: string }>
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        for await (const chunk of iterable) {
+          const event = chunk.event ?? 'token'
+          const data = chunk.data ?? ''
+          const dataStr = typeof data === 'string' ? JSON.stringify(data) : JSON.stringify(data)
+          const line = `event: ${event}\ndata: ${dataStr}\n\n`
+          controller.enqueue(encoder.encode(line))
+        }
+      } catch (err) {
+        controller.error(err)
+      } finally {
+        controller.close()
+      }
+    },
+  })
+}
+
 export async function streamPrediction(
   chatflowId: string,
   payload: FlowisePredictionPayload,
@@ -379,6 +491,7 @@ export async function streamPrediction(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({ ...payload, streaming: true }),
@@ -390,6 +503,21 @@ export async function streamPrediction(
   }
 
   if (!res.body) throw new Error('No response body from Flowise prediction')
+
+  const contentType = res.headers.get('Content-Type') ?? ''
+  if (contentType.includes('application/json')) {
+    const data = (await res.json()) as { text?: string }
+    const text = typeof data?.text === 'string' ? data.text : ''
+    const payloadStr = JSON.stringify({ event: 'token', data: text })
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(`data: ${payloadStr}\n\n`))
+        controller.close()
+      },
+    })
+    return stream
+  }
+
   return res.body
 }
 

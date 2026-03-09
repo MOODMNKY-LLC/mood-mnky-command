@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Menu, PanelLeftClose, EyeOff, Settings, Sparkles, Flame, Hash, FileText } from 'lucide-react'
@@ -221,79 +222,161 @@ export function ChatShell() {
         }),
       })
 
-      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => res.statusText)
+        throw new Error(errBody ? `HTTP ${res.status}: ${errBody.slice(0, 200)}` : `HTTP ${res.status}`)
+      }
+      if (!res.body) throw new Error('No response body')
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let accumulated = ''
       let flowise_chat_id = session.flowise_chat_id
       let rawBuffer = ''
+      let readCount = 0
+      // Flowise SSE format per docs: separate "event: token" and "data: <raw text>" lines (not JSON in data)
+      let currentEvent = ''
+
+      function processSSELine(line: string): void {
+        const trimmed = line.replace(/\r$/, '').trim()
+        if (!trimmed) return
+        if (trimmed.startsWith('event:')) {
+          currentEvent = trimmed.slice(6).trim()
+          return
+        }
+        if (trimmed.startsWith('data:')) {
+          const data = trimmed.slice(5).trim()
+          if (currentEvent === 'token') {
+            if (data) {
+              try {
+                const parsed = JSON.parse(data) as unknown
+                accumulated += typeof parsed === 'string' ? parsed : data
+              } catch {
+                accumulated += data
+              }
+            }
+            return
+          }
+          if (currentEvent === 'metadata' && data && !flowise_chat_id) {
+            try {
+              const meta = JSON.parse(data) as { chatId?: string }
+              if (meta.chatId) flowise_chat_id = meta.chatId
+            } catch {
+              // ignore
+            }
+            return
+          }
+          if (currentEvent === 'end') return
+          // Fallback: some Flowise versions send data as JSON {"event":"token","data":"..."}
+          if (!data || data === '[DONE]') return
+          try {
+            const frame = JSON.parse(data) as Record<string, unknown>
+            const innerEvent = (frame.event as string) ?? ''
+            const innerData = frame.data
+            const tokenStr = frame.token as string | undefined
+            if (innerEvent === 'token' && typeof innerData === 'string' && innerData) {
+              accumulated += innerData
+            } else if (typeof tokenStr === 'string' && tokenStr) {
+              accumulated += tokenStr
+            } else if (innerEvent === 'metadata' && typeof innerData === 'object' && innerData && !flowise_chat_id) {
+              const meta = innerData as { chatId?: string }
+              if (meta.chatId) flowise_chat_id = meta.chatId
+            }
+          } catch {
+            if (currentEvent === 'token') accumulated += data
+            else if (!accumulated) {
+              try {
+                const obj = JSON.parse(data) as { text?: string }
+                if (typeof obj?.text === 'string') accumulated += obj.text
+              } catch {
+                if (data) accumulated += data
+              }
+            } else if (data) accumulated += data
+          }
+        } else if (trimmed && !accumulated) {
+          try {
+            const obj = JSON.parse(trimmed) as { text?: string }
+            if (typeof obj?.text === 'string') accumulated += obj.text
+          } catch {
+            // ignore
+          }
+        }
+      }
 
       while (true) {
         const { done, value } = await reader.read()
+        readCount += 1
+        if (value?.length) rawBuffer += decoder.decode(value, { stream: true })
+        const lines = rawBuffer.split(/\r?\n/)
+        rawBuffer = lines.pop() ?? ''
+
+        for (const line of lines) processSSELine(line)
+
+        if (accumulated) {
+          flushSync(() => {
+            setMessages(prev =>
+              prev.map(m => m.id === assistantId ? { ...m, content: accumulated } : m)
+            )
+          })
+        }
         if (done) break
-        rawBuffer += decoder.decode(value, { stream: true })
-
-        const boundary = rawBuffer.lastIndexOf('\n\n')
-        if (boundary === -1) continue
-
-        const toProcess = rawBuffer.slice(0, boundary + 2)
-        rawBuffer = rawBuffer.slice(boundary + 2)
-
-        // Each SSE line from Flowise looks like:
-        //   data: {"event":"token","data":"Hello"}
-        // The outer SSE event field is always "message"; the real event and content are nested.
-        for (const line of toProcess.split('\n')) {
-          const trimmed = line.trim()
-          if (!trimmed.startsWith('data:')) continue
-          const raw = trimmed.slice(5).trim()
-          if (!raw || raw === '[DONE]') continue
-
-          try {
-            const frame = JSON.parse(raw)
-            const innerEvent = frame.event ?? ''
-            const innerData = frame.data ?? ''
-
-            // Only accumulate text when innerEvent is 'token' and innerData is non-empty
-            if (innerEvent === 'token' && typeof innerData === 'string' && innerData) {
-              accumulated += innerData
-            } else if (innerEvent === 'metadata' && typeof innerData === 'object' && innerData?.chatId && !flowise_chat_id) {
-              flowise_chat_id = innerData.chatId
-            }
-            // 'start' and 'end' events carry no text content
-          } catch {
-            // Not valid JSON frame, skip
-          }
-        }
-
-        setMessages(prev =>
-          prev.map(m => m.id === assistantId ? { ...m, content: accumulated } : m)
-        )
       }
 
-      // Flush any remaining buffer
-      for (const line of rawBuffer.split('\n')) {
-        const trimmed = line.trim()
-        if (!trimmed.startsWith('data:')) continue
-        const raw = trimmed.slice(5).trim()
-        if (!raw || raw === '[DONE]') continue
+      if (rawBuffer.trim()) processSSELine(rawBuffer.trim())
+
+      if (!accumulated && rawBuffer.trim()) {
         try {
-          const frame = JSON.parse(raw)
-          if (frame.event === 'token' && typeof frame.data === 'string' && frame.data) {
-            accumulated += frame.data
-          }
+          const obj = JSON.parse(rawBuffer.trim()) as { text?: string }
+          if (typeof obj?.text === 'string') accumulated = obj.text
         } catch {
-          // Not valid JSON, skip
+          // ignore
         }
       }
 
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === assistantId
-            ? { ...m, isStreaming: false, content: accumulated || '(no response)' }
-            : m
+      const finalContent = accumulated || '(no response)'
+      const useTypewriter = finalContent !== '(no response)' && finalContent.length > 0
+
+      if (useTypewriter) {
+        const msPerTick = 10
+        const charsPerTick = 1
+        let revealIdx = Math.min(charsPerTick, finalContent.length)
+        flushSync(() => {
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === assistantId ? { ...m, content: finalContent.slice(0, revealIdx) } : m
+            )
+          )
+        })
+        const tick = () => {
+          revealIdx = Math.min(revealIdx + charsPerTick, finalContent.length)
+          setMessages(prev =>
+            prev.map(m =>
+              m.id === assistantId ? { ...m, content: finalContent.slice(0, revealIdx) } : m
+            )
+          )
+          if (revealIdx < finalContent.length) {
+            setTimeout(tick, msPerTick)
+          } else {
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === assistantId
+                  ? { ...m, isStreaming: false, content: finalContent }
+                  : m
+              )
+            )
+            setIsStreaming(false)
+          }
+        }
+        setTimeout(tick, msPerTick)
+      } else {
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === assistantId
+              ? { ...m, isStreaming: false, content: finalContent }
+              : m
+          )
         )
-      )
+      }
 
       if (flowise_chat_id && session.flowise_chat_id !== flowise_chat_id) {
         setSessions(prev =>

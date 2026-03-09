@@ -27,17 +27,25 @@ function HeroModelMesh({ url, rotationY }: { url: string; rotationY: number }) {
   })
 
   return (
-    <group ref={ref} scale={1.85}>
-      <primitive object={scene} />
-    </group>
+    <>
+      {/* @ts-expect-error R3F intrinsic */}
+      <group ref={ref} scale={1.85}>
+        {/* @ts-expect-error R3F intrinsic */}
+        <primitive object={scene} />
+      {/* @ts-expect-error R3F intrinsic (closing tag) */}
+      </group>
+    </>
   )
 }
 
 function Scene({ modelUrl, rotationY }: { modelUrl: string; rotationY: number }) {
   return (
     <>
+      {/* @ts-expect-error R3F intrinsic */}
       <ambientLight intensity={0.6} />
+      {/* @ts-expect-error R3F intrinsic */}
       <directionalLight position={[4, 6, 4]} intensity={1.2} />
+      {/* @ts-expect-error R3F intrinsic */}
       <directionalLight position={[-3, 2, -2]} intensity={0.4} />
       <Suspense fallback={null}>
         <Center>

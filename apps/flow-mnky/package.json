@@ -6,7 +6,8 @@
     "dev": "dotenv -e ../../.env.local -e .env.local -e ../../.env -- next dev --port 3015",
     "build": "next build",
     "start": "next start --port 3015",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:flowise-stream": "dotenv -e ../../.env.local -e .env.local -e ../../.env -- pnpm exec tsx scripts/test-flowise-streaming.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.0",
@@ -62,6 +63,7 @@
     "common-tags": "^1.8.2",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.6.0",
+    "flowise-sdk": "^1.0.9",
     "input-otp": "1.4.2",
     "lucide-react": "^0.564.0",
     "media-chrome": "^4.17.2",

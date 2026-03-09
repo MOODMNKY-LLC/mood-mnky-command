@@ -301,9 +301,10 @@ function ChatMessageItem({
               {message.isStreaming && !message.content ? (
                 <Shimmer
                   className="text-sm text-muted-foreground"
-                  duration={2.2}
-                  spread={5}
-                  sweepColor="rgba(255,255,255,0.7)"
+                  duration={0.6}
+                  spread={12}
+                  minSpread={140}
+                  sweepColor="rgba(255,255,255,1)"
                 >
                   Thinking...
                 </Shimmer>

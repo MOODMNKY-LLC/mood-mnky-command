@@ -5,7 +5,7 @@
  *
  * Body: { chatflowId, question, chatId?, history?, uploads? }
  */
-import { streamPrediction, syncPrediction } from '@/lib/flowise/client'
+import { streamPrediction, streamPredictionWithSDK, syncPrediction } from '@/lib/flowise/client'
 import type { FlowisePredictionPayload } from '@/lib/flowise/client'
 
 export const maxDuration = 60
@@ -43,38 +43,20 @@ export async function POST(req: Request) {
 
   try {
     if (streaming) {
-      const stream = await streamPrediction(chatflowId, payload)
-      
-      // Convert stream to SSE format if needed
-      const encoder = new TextEncoder()
-      const wrappedStream = new ReadableStream({
-        async start(controller) {
-          const reader = stream.getReader()
-          try {
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-              
-              // Forward raw bytes from Flowise
-              controller.enqueue(value)
-            }
-            controller.close()
-          } catch (err) {
-            controller.error(err)
-          } finally {
-            reader.releaseLock()
-          }
-        },
-      })
-      
-      return new Response(wrappedStream, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-          'X-Accel-Buffering': 'no',
-        },
-      })
+      const headers = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      }
+      try {
+        const stream = await streamPredictionWithSDK(chatflowId, payload)
+        return new Response(stream, { headers })
+      } catch (sdkErr) {
+        console.warn('[api/chat/run] SDK stream failed, using fetch:', sdkErr instanceof Error ? sdkErr.message : sdkErr)
+        const stream = await streamPrediction(chatflowId, payload)
+        return new Response(stream, { headers })
+      }
     }
 
     const result = await syncPrediction(chatflowId, payload)
