@@ -31,7 +31,10 @@
     "switch-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/switch-mt-dev-owner.ts",
     "restore-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/restore-mt-dev-owner.ts",
     "dev:mt-portal": "pnpm --filter mt-portal dev",
-    "add-mt-overseer": "dotenv -e .env.local -e .env -- tsx scripts/add-mt-overseer.ts"
+    "dev:flow-mnky": "pnpm --filter flow-mnky dev",
+    "add-mt-overseer": "dotenv -e .env.local -e .env -- tsx scripts/add-mt-overseer.ts",
+    "deploy": "vercel deploy --prod --archive=tgz",
+    "deploy:preview": "vercel deploy --archive=tgz"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
@@ -40,5 +43,9 @@
     "mint": "latest",
     "tsx": "^4.19.0",
     "turbo": "latest"
+  },
+  "dependencies": {
+    "@v0-sdk/ai-tools": "^0.3.8",
+    "ai": "^6.0.116"
   }
 }
