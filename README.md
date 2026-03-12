@@ -8,6 +8,8 @@ Bespoke fragrance in the MNKY ecosystem: the Dojo (storefront and community), Bl
 
 ## What This Repo Is
 
+<!-- redeploy -->
+
 This repository is a **monorepo** containing:
 
 - **Next.js app** — One app, three surfaces: **Main** (brand/marketing at `/main`), **The Dojo** (storefront + member hub at `/dojo`), and **MNKY LABZ** (dashboard at `/platform`, `/labz`); served from a single canonical domain (www.moodmnky.com) and deployed on Vercel.
