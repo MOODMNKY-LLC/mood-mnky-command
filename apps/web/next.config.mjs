@@ -1,6 +1,5 @@
 import { spawnSync } from "node:child_process"
 import { randomUUID } from "node:crypto"
-import withSerwistInit from "@serwist/next"
 
 /** @type {import('next').NextConfig} */
 // Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
@@ -113,17 +112,4 @@ const revision =
   spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ||
   randomUUID()
 
-const withSerwist = withSerwistInit({
-  additionalPrecacheEntries: [
-    { url: "/~offline", revision },
-    { url: "/verse", revision },
-    { url: "/dojo", revision },
-    { url: "/main", revision },
-    { url: "/labz", revision },
-    { url: "/platform", revision },
-  ],
-  swSrc: "app/sw.ts",
-  swDest: "public/sw.js",
-})
-
-export default withSerwist(nextConfig)
+export default nextConfig

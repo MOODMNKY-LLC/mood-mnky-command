@@ -43,6 +43,9 @@
   },
   "dependencies": {
     "@v0-sdk/ai-tools": "^0.3.8",
-    "ai": "^6.0.116"
+    "ai": "^6.0.116",
+    "@vercel/oidc": "^3.2.0",
+    "eventsource-parser": "^3.0.6",
+    "zod": "^4.3.6"
   }
 }
