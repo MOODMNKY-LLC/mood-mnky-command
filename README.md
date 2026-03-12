@@ -107,8 +107,9 @@ Further setup (Supabase migrations, MNKY VERSE blog sync, MNKY LABZ): see [docs/
 ### Monorepo deployment (Vercel)
 
 - **Root Directory:** Set to `apps/web` in the Vercel project settings.
-- **Build Command:** From repo root, e.g. `cd ../.. && pnpm install && pnpm turbo build --filter=web` (or let Vercel detect Turborepo when `turbo.json` exists at root; if Root Directory is `apps/web`, run install and build from repo root in the build command).
-- **Environment variables:** Configure in Vercel as before; list any build-affecting vars in root `turbo.json` `globalEnv` so Turbo cache keys are correct.
+- **Install:** Use `pnpm install --no-frozen-lockfile` (no `cd ../..`) so pnpm runs from `apps/web` and creates correct workspace symlinks (e.g. `@mnky/mt-supabase`). See `apps/web/vercel.json`.
+- **Build Command:** `cd ../.. && pnpm exec turbo run build --filter=web` (or let Vercel detect Turborepo).
+- **Environment variables:** Configure in Vercel; list build-affecting vars in root `turbo.json` `globalPassThroughEnv`.
 
 ---
 
