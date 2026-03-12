@@ -88,7 +88,9 @@
     "TRUENAS_API_KEY",
     "FFLOGS_CLIENT_ID",
     "FFLOGS_CLIENT_SECRET",
-    "FFLOGS_OAUTH_REDIRECT_URI"
+    "FFLOGS_OAUTH_REDIRECT_URI",
+    "XIVAPI_BASE_URL",
+    "XIVAPI_API_KEY"
   ],
   "tasks": {
     "build": {
