@@ -1,0 +1,207 @@
+---
+title: 'Authentication API'
+description: 'API reference for authentication and authorization'
+---
+
+# Authentication API
+
+The Authentication API allows you to manage user authentication, generate access tokens, and handle authorization for the MOOD MNKY platform.
+
+## Authentication Methods
+
+We support the following authentication methods:
+
+### API Keys
+
+API keys are used for server-to-server communication and provide access to non-user-specific endpoints.
+
+#### Obtaining an API Key
+
+API keys can be generated in the [Developer Dashboard](https://dashboard.moodmnky.co/developers/api-keys).
+
+#### Using API Keys
+
+Include your API key in the `X-API-Key` header for all API requests:
+
+```bash
+curl -X GET "https://api.moodmnky.co/v1/products" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+### JWT Authentication
+
+JWT (JSON Web Token) authentication is used for user-specific operations and maintains session state.
+
+#### Obtaining a JWT Token
+
+```bash
+curl -X POST "https://api.moodmnky.co/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+```
+
+Success Response:
+
+```json
+{
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expires_in": 3600
+  }
+}
+```
+
+#### Using JWT Tokens
+
+Include the JWT token in the `Authorization` header for authenticated requests:
+
+```bash
+curl -X GET "https://api.moodmnky.co/v1/user/profile" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+#### Refreshing Tokens
+
+When an access token expires, use the refresh token to obtain a new one:
+
+```bash
+curl -X POST "https://api.moodmnky.co/v1/auth/refresh" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }'
+```
+
+### OAuth 2.0
+
+We support OAuth 2.0 for third-party integrations, allowing users to grant limited access to their MOOD MNKY accounts.
+
+See the [OAuth Integration Guide](/guides/development/oauth-integration) for implementation details.
+
+## Endpoints
+
+### Login
+
+<ParamField path="auth/login" method="POST">
+  Authenticates a user and returns access and refresh tokens.
+</ParamField>
+
+**Request Body:**
+
+<ResponseField name="email" type="string" required>
+  The user's email address
+</ResponseField>
+
+<ResponseField name="password" type="string" required>
+  The user's password
+</ResponseField>
+
+**Response:**
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="access_token" type="string">
+      JWT access token
+    </ResponseField>
+    <ResponseField name="refresh_token" type="string">
+      JWT refresh token
+    </ResponseField>
+    <ResponseField name="expires_in" type="number">
+      Token expiration time in seconds
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Refresh Token
+
+<ParamField path="auth/refresh" method="POST">
+  Refreshes an expired access token.
+</ParamField>
+
+**Request Body:**
+
+<ResponseField name="refresh_token" type="string" required>
+  Valid refresh token
+</ResponseField>
+
+**Response:**
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="access_token" type="string">
+      New JWT access token
+    </ResponseField>
+    <ResponseField name="refresh_token" type="string">
+      New JWT refresh token
+    </ResponseField>
+    <ResponseField name="expires_in" type="number">
+      Token expiration time in seconds
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Logout
+
+<ParamField path="auth/logout" method="POST">
+  Invalidates the current access and refresh tokens.
+</ParamField>
+
+**Headers:**
+
+<ResponseField name="Authorization" type="string" required>
+  Bearer token
+</ResponseField>
+
+**Response:**
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="message" type="string">
+      Confirmation message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Password Reset Request
+
+<ParamField path="auth/password-reset" method="POST">
+  Initiates a password reset process.
+</ParamField>
+
+**Request Body:**
+
+<ResponseField name="email" type="string" required>
+  The user's email address
+</ResponseField>
+
+**Response:**
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="message" type="string">
+      Confirmation message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| `invalid_credentials` | The provided credentials are incorrect |
+| `account_locked` | The account has been locked due to too many failed attempts |
+| `invalid_token` | The provided token is invalid or expired |
+| `insufficient_permissions` | The authenticated user lacks the required permissions |
+| `rate_limited` | Too many requests from this IP/user |
+
+## Best Practices
+
+- Store tokens securely and never expose them in client-side code
+- Implement token refresh logic to handle expiring tokens
+- Use HTTPS for all API requests
+- Implement proper error handling for authentication failures
+- Validate tokens on the server-side for secure operations

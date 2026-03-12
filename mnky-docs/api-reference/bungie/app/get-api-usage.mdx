@@ -1,0 +1,252 @@
+---
+title: 'Get API Usage'
+api: 'GET https://www.bungie.net/Platform/App/ApiUsage/{applicationId}/'
+description: "Returns details about an application's API usage for a time frame."
+---
+
+# Get API Usage
+
+This endpoint returns detailed statistics about an application's API usage patterns. It provides information on requests made, throttling applied, and usage by endpoint for a specific application.
+
+## Authentication
+
+This endpoint requires:
+- A valid Bungie.net API key
+- OAuth 2.0 authentication with an account that is an Application Developer for the application being queried
+
+<RequestExample>
+```bash
+curl -X GET "https://www.bungie.net/Platform/App/ApiUsage/12345/" \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Authorization: Bearer your-oauth-token"
+```
+</RequestExample>
+
+## Path Parameters
+
+<ParamField path="applicationId" type="integer" required>
+  The application ID for which to return API usage statistics
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="start" type="string" format="date-time">
+  The start time for the requested time period (ISO-8601 format)
+</ParamField>
+
+<ParamField query="end" type="string" format="date-time">
+  The end time for the requested time period (ISO-8601 format)
+</ParamField>
+
+## Response
+
+<ResponseField name="Response" type="object">
+  API usage data for the application
+  
+  <Expandable title="Properties">
+    <ResponseField name="apiUsage" type="array">
+      List of usage data by time period
+      
+      <Expandable title="Items">
+        <ResponseField name="applicationId" type="integer">
+          The application ID
+        </ResponseField>
+        
+        <ResponseField name="apiCalls" type="array">
+          List of API calls made during the time period
+          
+          <Expandable title="Items">
+            <ResponseField name="apiPath" type="string">
+              The API path that was called
+            </ResponseField>
+            
+            <ResponseField name="count" type="integer">
+              Number of times this path was called
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="throttledRequests" type="integer">
+          Number of requests that were throttled during the time period
+        </ResponseField>
+        
+        <ResponseField name="totalRequests" type="integer">
+          Total number of requests made during the time period
+        </ResponseField>
+        
+        <ResponseField name="startTime" type="string" format="date-time">
+          Start time for this time period
+        </ResponseField>
+        
+        <ResponseField name="endTime" type="string" format="date-time">
+          End time for this time period
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ErrorCode" type="integer">
+  Error code (1 for success)
+</ResponseField>
+
+<ResponseField name="ThrottleSeconds" type="integer">
+  Number of seconds to wait before making another request (for rate limiting)
+</ResponseField>
+
+<ResponseField name="ErrorStatus" type="string">
+  Status message (e.g., "Success")
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Additional information
+</ResponseField>
+
+<ResponseField name="MessageData" type="object">
+  Additional message data (typically empty)
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "Response": {
+    "apiUsage": [
+      {
+        "applicationId": 12345,
+        "apiCalls": [
+          {
+            "apiPath": "/Destiny2/Manifest/",
+            "count": 243
+          },
+          {
+            "apiPath": "/User/GetMembershipsForCurrentUser/",
+            "count": 186
+          },
+          {
+            "apiPath": "/Destiny2/{membershipType}/Profile/{destinyMembershipId}/",
+            "count": 129
+          }
+        ],
+        "throttledRequests": 5,
+        "totalRequests": 558,
+        "startTime": "2023-10-01T00:00:00Z",
+        "endTime": "2023-10-15T00:00:00Z"
+      }
+    ]
+  },
+  "ErrorCode": 1,
+  "ThrottleSeconds": 0,
+  "ErrorStatus": "Success",
+  "Message": "Ok",
+  "MessageData": {}
+}
+```
+</ResponseExample>
+
+## Usage in MOOD MNKY
+
+The API Usage endpoint is an important tool in the MOOD MNKY ecosystem for:
+
+1. Monitoring application performance and usage patterns
+2. Optimizing API usage to avoid throttling
+3. Tracking popular endpoints and features
+4. Identifying potential issues with specific API calls
+5. Ensuring compliance with Bungie API usage guidelines
+
+### Integration Example
+
+```javascript
+// Example of monitoring API usage in a MOOD MNKY application
+async function getApplicationApiUsage(applicationId, startDate, endDate) {
+  // Format dates as ISO strings if they're Date objects
+  const start = startDate instanceof Date ? startDate.toISOString() : startDate;
+  const end = endDate instanceof Date ? endDate.toISOString() : endDate;
+  
+  // Construct query parameters
+  const params = new URLSearchParams();
+  if (start) params.append('start', start);
+  if (end) params.append('end', end);
+  
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  
+  // Make the request
+  const response = await fetch(
+    `https://www.bungie.net/Platform/App/ApiUsage/${applicationId}/${queryString}`, 
+    {
+      headers: {
+        'X-API-Key': process.env.BUNGIE_API_KEY,
+        'Authorization': `Bearer ${process.env.OAUTH_TOKEN}`
+      }
+    }
+  );
+  
+  const data = await response.json();
+  
+  if (data.ErrorCode === 1) {
+    return data.Response;
+  } else {
+    throw new Error(`Failed to get API usage: ${data.Message}`);
+  }
+}
+
+// Example usage tracking function
+async function generateApiUsageReport() {
+  const applicationId = process.env.APPLICATION_ID;
+  const today = new Date();
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+  
+  try {
+    const usageData = await getApplicationApiUsage(applicationId, oneMonthAgo, today);
+    
+    // Calculate total requests across all periods
+    const totalRequests = usageData.apiUsage.reduce((sum, period) => sum + period.totalRequests, 0);
+    
+    // Find most used endpoints
+    const endpointUsage = {};
+    usageData.apiUsage.forEach(period => {
+      period.apiCalls.forEach(call => {
+        if (!endpointUsage[call.apiPath]) endpointUsage[call.apiPath] = 0;
+        endpointUsage[call.apiPath] += call.count;
+      });
+    });
+    
+    // Sort endpoints by usage
+    const sortedEndpoints = Object.entries(endpointUsage)
+      .sort((a, b) => b[1] - a[1])
+      .map(([endpoint, count]) => ({ endpoint, count }));
+    
+    // Calculate throttling percentage
+    const totalThrottled = usageData.apiUsage.reduce((sum, period) => sum + period.throttledRequests, 0);
+    const throttlePercentage = (totalThrottled / totalRequests) * 100;
+    
+    return {
+      applicationId,
+      period: {
+        start: oneMonthAgo.toISOString(),
+        end: today.toISOString()
+      },
+      totalRequests,
+      totalThrottled,
+      throttlePercentage,
+      topEndpoints: sortedEndpoints.slice(0, 5)
+    };
+  } catch (error) {
+    console.error('Error generating API usage report:', error);
+    throw error;
+  }
+}
+```
+
+## Common Issues
+
+- **Authentication Requirements**: This endpoint requires OAuth authentication with an account that has application developer permissions.
+- **Data Timeframes**: The API might limit how far back you can request data or the granularity of data over long periods.
+- **Rate Limiting**: This endpoint itself is subject to Bungie's rate limiting like all other API calls.
+- **Permission Denials**: You must be registered as an application developer for the specified applicationId.
+- **Data Formatting**: Be careful with date format specifications in the query parameters.
+
+## Related Endpoints
+
+- [Get Bungie Applications](/api-reference/bungie/app/get-bungie-applications) - Lists Bungie applications available to the current user
+- [Get Application API Authorization](/api-reference/bungie/app/get-api-authorization) - Gets API access authorization information 

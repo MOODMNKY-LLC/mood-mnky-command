@@ -1,0 +1,140 @@
+{% comment %}
+  MNKY VERSE - Issue Teaser block
+  Links to manga/issues in the app. Set app_base_url to mood-mnky-command (e.g. https://mnky-command.moodmnky.com).
+  Optional: set current_issue_slug to show a "Current issue" link (e.g. first published issue slug after Publish to Shopify).
+  For metaobject-based current issue, use Shopify metaobjects (mnky_issue) in a section that references a metaobject.
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign path = block.settings.verse_issues_path | default: '/verse/issues'
+  assign full_url = app_url | append: path
+  assign current_slug = block.settings.current_issue_slug | default: '' | strip
+  assign show_current = false
+  if current_slug != '' and current_slug != blank and app_url != '' and app_url != blank
+    assign show_current = true
+  endif
+  assign is_valid = false
+  if app_url != '' and app_url != blank
+    assign is_valid = true
+  endif
+-%}
+<div
+  class="mood-mnky-app-block mood-mnky-verse-issue-teaser"
+  {{ block.shopify_attributes }}
+>
+  {%- if block.settings.heading != blank -%}
+    <h3 class="mood-mnky-block-heading">{{ block.settings.heading | escape }}</h3>
+  {%- endif -%}
+  {%- if block.settings.subheading != blank -%}
+    <p class="mood-mnky-block-subheading">{{ block.settings.subheading | escape }}</p>
+  {%- endif -%}
+  {%- if show_current -%}
+    <a
+      href="{{ app_url }}/verse/issues/{{ current_slug }}"
+      class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+      aria-label="{{ block.settings.current_issue_aria_label | default: 'Read current issue' | escape }}"
+    >
+      {{ block.settings.current_issue_label | default: 'Current issue' | escape }}
+    </a>
+  {%- endif -%}
+  {%- if block.settings.cta_label != blank -%}
+    {%- if is_valid -%}
+      <a
+        href="{{ full_url }}"
+        class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+        {% if block.settings.cta_aria_label != blank %}aria-label="{{ block.settings.cta_aria_label | escape }}"{% endif %}
+      >
+        {{ block.settings.cta_label | escape }}
+      </a>
+    {%- else -%}
+      <span
+        class="button button--disabled"
+        role="button"
+        aria-disabled="true"
+        aria-label="Configure App base URL in block settings"
+      >
+        {{ block.settings.cta_label | escape }}
+      </span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "MNKY VERSE Issue Teaser",
+  "target": "section",
+  "stylesheet": "app-blocks.css",
+  "enabled_on": {
+    "templates": ["index", "collection", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command (e.g. https://mnky-command.moodmnky.com). Required for link to work.",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "text",
+      "id": "verse_issues_path",
+      "label": "Verse issues path",
+      "default": "/verse/issues"
+    },
+    {
+      "type": "text",
+      "id": "current_issue_slug",
+      "label": "Current issue slug",
+      "info": "Optional. When set, shows a 'Current issue' button linking to this issue (e.g. slug from Backoffice after Publish to Shopify)."
+    },
+    {
+      "type": "text",
+      "id": "current_issue_label",
+      "label": "Current issue button label",
+      "default": "Current issue"
+    },
+    {
+      "type": "text",
+      "id": "current_issue_aria_label",
+      "label": "Current issue button accessibility label"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Manga issues"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Read collection stories and earn XP in the MNKY VERSE."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "View issues"
+    },
+    {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "Button accessibility label"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

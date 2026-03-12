@@ -1,0 +1,179 @@
+---
+title: 'Agent System Changelog'
+description: 'Release history and planned enhancements for the MOOD MNKY agent ecosystem'
+---
+
+# Agent System Changelog
+
+This document tracks the evolution of the MOOD MNKY agent system, including released updates and planned enhancements.
+
+## Latest Release
+
+### v1.2.0 (April 2023)
+
+<Changelog>
+  <Changelog.Release version="1.2.0" date="2023-04-15">
+    <Changelog.Added>
+      Advanced memory system with multi-level architecture
+    </Changelog.Added>
+    <Changelog.Added>
+      Enhanced user profiling system with behavior-based personalization
+    </Changelog.Added>
+    <Changelog.Added>
+      New orchestration layer for improved agent handoffs
+    </Changelog.Added>
+    <Changelog.Improved>
+      Knowledge retrieval accuracy increased by 27%
+    </Changelog.Improved>
+    <Changelog.Improved>
+      Response latency reduced by 35%
+    </Changelog.Improved>
+    <Changelog.Fixed>
+      Context retention issues during long conversations
+    </Changelog.Fixed>
+  </Changelog.Release>
+</Changelog>
+
+#### Highlights
+
+- **Enhanced Memory Architecture**: Implemented a three-tier memory system (short-term, working, and long-term) to improve contextual awareness and relationship building.
+- **Advanced User Profiling**: Added implicit preference tracking to complement explicit preferences, creating more accurate personalization.
+- **Streamlined Agent Handoffs**: New orchestration protocols allow for smoother transitions between agents while preserving context.
+
+## Previous Releases
+
+### v1.1.0 (February 2023)
+
+<Changelog>
+  <Changelog.Release version="1.1.0" date="2023-02-20">
+    <Changelog.Added>
+      SAGE MNKY Agent integration
+    </Changelog.Added>
+    <Changelog.Added>
+      Knowledge base content expansion
+    </Changelog.Added>
+    <Changelog.Added>
+      Dojo platform integration
+    </Changelog.Added>
+    <Changelog.Improved>
+      Agent response personalization
+    </Changelog.Improved>
+    <Changelog.Improved>
+      Vector search capabilities
+    </Changelog.Improved>
+    <Changelog.Fixed>
+      Inconsistent agent voice issues
+    </Changelog.Fixed>
+  </Changelog.Release>
+</Changelog>
+
+#### Highlights
+
+- **SAGE MNKY Agent**: Introduced the learning and community-focused agent to the ecosystem, completing the core agent trio.
+- **Expanded Knowledge**: Added comprehensive content on fragrance composition, wellness practices, and learning methodologies.
+- **Dojo Integration**: Connected agents to the Dojo learning platform for enhanced educational experiences.
+
+### v1.0.1 (December 2022)
+
+<Changelog>
+  <Changelog.Release version="1.0.1" date="2022-12-10">
+    <Changelog.Fixed>
+      Authentication issues with Shopify integration
+    </Changelog.Fixed>
+    <Changelog.Fixed>
+      Vector database query timeouts
+    </Changelog.Fixed>
+    <Changelog.Fixed>
+      Response formatting issues on mobile devices
+    </Changelog.Fixed>
+  </Changelog.Release>
+</Changelog>
+
+### v1.0.0 (November 2022)
+
+<Changelog>
+  <Changelog.Release version="1.0.0" date="2022-11-15">
+    <Changelog.Added>
+      Initial release of MOOD MNKY Agent
+    </Changelog.Added>
+    <Changelog.Added>
+      CODE MNKY Agent for technical support
+    </Changelog.Added>
+    <Changelog.Added>
+      Knowledge base with core product information
+    </Changelog.Added>
+    <Changelog.Added>
+      Basic user personalization
+    </Changelog.Added>
+    <Changelog.Added>
+      Shopify integration for product recommendations
+    </Changelog.Added>
+  </Changelog.Release>
+</Changelog>
+
+#### Highlights
+
+- **Initial Agent Launch**: Released the first two agents in the ecosystem: MOOD MNKY and CODE MNKY.
+- **Knowledge Foundation**: Established the vector database system for agent knowledge management.
+- **E-commerce Connection**: Integrated with Shopify to enable product awareness and recommendations.
+
+## Upcoming Releases
+
+### v1.3.0 (Planned for July 2023)
+
+<CardGroup cols={2}>
+  <Card title="Emotional Intelligence" icon="face-smile">
+    Enhanced sentiment analysis for more empathetic interactions
+  </Card>
+  <Card title="Multi-modal Responses" icon="photo-film">
+    Support for rich media responses including images and interactive elements
+  </Card>
+  <Card title="Advanced Analytics" icon="chart-line">
+    Improved interaction tracking and performance metrics
+  </Card>
+  <Card title="Community Integration" icon="users">
+    Deeper integration with community features and user-generated content
+  </Card>
+</CardGroup>
+
+### Future Roadmap
+
+<Steps>
+  <Step title="Q3 2023: Enhanced Personalization">
+    Develop more sophisticated adaptation algorithms based on user behavior patterns and explicit preferences
+  </Step>
+  <Step title="Q4 2023: Voice Interface">
+    Add voice interaction capabilities for select platforms
+  </Step>
+  <Step title="Q1 2024: Collaborative Creation">
+    Enable multi-user sessions with agent assistance for collaborative product creation
+  </Step>
+  <Step title="Q2 2024: Predictive Assistance">
+    Implement proactive suggestions based on user patterns and lifecycle stage
+  </Step>
+</Steps>
+
+## Deprecation Notices
+
+<Warning>
+The legacy agent interface (v0.9) will be deprecated on August 1, 2023. All integrations should migrate to the v1.0+ API by that date. See the [migration guide](/agents/migration-guide) for assistance.
+</Warning>
+
+## Breaking Changes
+
+<AccordionGroup>
+  <Accordion title="v1.0 to v1.1">
+    - Changed authentication mechanism from API keys to JWT tokens
+    - Modified response format to include metadata section
+    - Updated user context structure in request payloads
+  </Accordion>
+  <Accordion title="v1.1 to v1.2">
+    - Memory API endpoints restructured to accommodate multi-tier architecture
+    - New required fields in user profile objects
+    - Performance optimization requiring additional cache configuration
+  </Accordion>
+</AccordionGroup>
+
+<Info>
+Have feedback on our agent system or suggestions for future enhancements? Please submit your ideas through the [developer portal](https://developers.moodmnky.com/feedback).
+</Info> 

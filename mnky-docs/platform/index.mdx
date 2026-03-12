@@ -1,0 +1,53 @@
+---
+title: 'Platform & Services'
+description: 'Documentation for the MOOD MNKY digital platform and services'
+---
+
+# MOOD MNKY Platform & Services
+
+The MOOD MNKY platform integrates various digital experiences and services to create a cohesive ecosystem for personalized self-care and wellness.
+
+## Core Platform Components
+
+### [Dojo Platform](/platform/dojo)
+
+The Dojo Platform serves as a personalized "life OS" that provides tailored learning and development environments for MOOD MNKY members.
+
+### [E-commerce Integration](/platform/e-commerce)
+
+Our headless Shopify implementation powers the custom product creation and purchasing experience.
+
+### [Personalization System](/platform/personalization)
+
+Learn about our AI-driven personalization capabilities that tailor experiences to individual preferences.
+
+### [Token Economy](/platform/token-economy)
+
+Documentation on our engagement-based token system that rewards participation and enables premium experiences.
+
+## Platform Architecture
+
+The MOOD MNKY platform connects multiple systems into a seamless experience:
+
+```
+                  ┌───────────────┐
+                  │  Shopify API   │
+                  └───────┬───────┘
+                          │
+                          ▼
+┌──────────────┐    ┌───────────────┐    ┌───────────────┐
+│ Web Platform │◄───┤ E-commerce   │───►│ Agent System  │
+│ (Next.js)    │    │ API Layer     │    │               │
+└──────────────┘    └───────────────┘    └───────────────┘
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │   Supabase    │
+                  │  (Extended    │
+                  │    Data)      │
+                  └───────────────┘
+```
+
+## Integration Points
+
+The platform provides various integration points for developers to extend and enhance the MOOD MNKY ecosystem. See our [Integration Guide](/reference/integration/overview) for more information.

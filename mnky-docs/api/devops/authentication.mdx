@@ -1,0 +1,343 @@
+---
+title: 'API Authentication Guide'
+description: 'How to authenticate with MOOD MNKY API services'
+---
+
+# API Authentication Guide
+
+This guide provides comprehensive information on authentication methods for MOOD MNKY API services, including obtaining API keys, implementing authentication, and security best practices.
+
+## Authentication Overview
+
+MOOD MNKY API services use API key-based authentication to secure access to resources. All API requests must include a valid API key to authenticate the request.
+
+Different services in our ecosystem may have specific authentication requirements, but the core principles remain consistent across all services.
+
+## API Key Types
+
+We offer two types of API keys:
+
+| Key Type | Purpose | Rate Limits | Environment |
+|----------|---------|------------|------------|
+| Development Keys | For local testing and development | Higher limits | Local development |
+| Production Keys | For production applications | Standard limits | Production |
+
+Each key has a unique prefix to identify its type:
+
+- Development keys: `DEV_API_`
+- Production keys: `PROD_API_`
+
+## Obtaining API Keys
+
+### Developer Portal
+
+The primary method to obtain API keys is through the MOOD MNKY Developer Portal:
+
+1. Visit [developer.moodmnky.com](https://developer.moodmnky.com)
+2. Sign in or create a developer account
+3. Navigate to "API Keys" section
+4. Click "Create New API Key"
+5. Select the type of key (Development or Production)
+6. Choose the services you need access to
+7. Set any additional access controls
+8. Generate the key
+
+### Key Security
+
+When you first generate an API key, it will be displayed only once. Make sure to:
+
+- Store it securely
+- Never commit it to version control
+- Use environment variables or secure key management systems
+- Restrict access to those who need it
+
+## Authentication Implementation
+
+### Standard API Key Authentication
+
+Most MOOD MNKY services use a standard API key header format:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+Example implementation in different languages:
+
+#### TypeScript/JavaScript
+```typescript
+// Using fetch
+async function fetchData(endpoint) {
+  const response = await fetch(`https://api.moodmnky.com${endpoint}`, {
+    headers: {
+      'Authorization': `Bearer ${process.env.MOOD_MNKY_API_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+}
+
+// Using axios
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: 'https://api.moodmnky.com',
+  headers: {
+    'Authorization': `Bearer ${process.env.MOOD_MNKY_API_KEY}`,
+    'Content-Type': 'application/json'
+  }
+});
+```
+
+#### Python
+```python
+import requests
+import os
+
+def fetch_data(endpoint):
+    api_key = os.environ.get('MOOD_MNKY_API_KEY')
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.get(f'https://api.moodmnky.com{endpoint}', headers=headers)
+    return response.json()
+```
+
+### Service-Specific Authentication
+
+Some services may have unique authentication requirements:
+
+#### Ollama API
+Ollama uses standard API key authentication:
+
+```bash
+curl -X POST https://ollama.moodmnky.com/api/chat \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama2", "messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+#### Flowise API
+Flowise requires the API key in a custom header:
+
+```bash
+curl -X POST https://flowise.moodmnky.com/api/v1/prediction/flow \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How do I use Flowise?"}'
+```
+
+#### Langchain API
+Langchain requires the API key in the standard authorization header:
+
+```bash
+curl -X POST https://langchain.moodmnky.com/api/documents/load \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"source": "url", "url": "https://example.com/document.pdf"}'
+```
+
+#### n8n API
+n8n uses a custom `X-N8N-API-KEY` header:
+
+```bash
+curl -X GET https://mnky-mind-n8n.moodmnky.com/api/v1/workflows \
+  -H "X-N8N-API-KEY: YOUR_API_KEY"
+```
+
+## Permission Management
+
+### Role-Based Access Control
+
+API keys are associated with specific permission roles that determine what actions they can perform:
+
+| Role | Description | Permissions |
+|------|-------------|------------|
+| Reader | Read-only access | GET operations |
+| Writer | Read and write access | GET, POST, PUT operations |
+| Admin | Full access | All operations including DELETE |
+| Custom | Tailored permissions | Configurable |
+
+### Managing Permissions
+
+To modify permissions for an existing API key:
+
+1. Log in to the Developer Portal
+2. Navigate to "API Keys"
+3. Select the key you want to modify
+4. Click "Edit Permissions"
+5. Update the role or specific permissions
+6. Save the changes
+
+## Security Best Practices
+
+### API Key Protection
+
+1. **Use Environment Variables**: Store API keys in environment variables, not in code.
+   
+   ```bash
+   # .env file
+   MOOD_MNKY_API_KEY=YOUR_API_KEY
+   ```
+
+2. **Implement Key Rotation**: Regularly rotate your API keys (recommended every 90 days).
+
+3. **Restrict Key Scope**: Request only the permissions your application needs.
+
+4. **Use HTTPS**: Always make API requests over HTTPS.
+
+5. **Implement IP Restrictions**: Restrict API access to specific IP addresses when possible.
+
+### Key Rotation Implementation
+
+Here's how to implement key rotation with minimal downtime:
+
+```typescript
+// Key rotation example
+class ApiKeyManager {
+  private primaryKey: string;
+  private secondaryKey: string;
+  
+  constructor() {
+    this.primaryKey = process.env.PRIMARY_API_KEY || '';
+    this.secondaryKey = process.env.SECONDARY_API_KEY || '';
+  }
+  
+  getActiveKey(): string {
+    return this.primaryKey || this.secondaryKey;
+  }
+  
+  async rotateKeys(): Promise<void> {
+    // Generate new key from Developer Portal
+    const newKey = await requestNewApiKey();
+    
+    // Update secondary key first
+    this.secondaryKey = newKey;
+    
+    // Test secondary key
+    const isValid = await testApiKey(this.secondaryKey);
+    
+    if (isValid) {
+      // Swap primary with secondary
+      const oldPrimary = this.primaryKey;
+      this.primaryKey = this.secondaryKey;
+      this.secondaryKey = oldPrimary;
+      
+      // Optionally revoke old key
+      await revokeApiKey(oldPrimary);
+    }
+  }
+}
+```
+
+## Monitoring and Auditing
+
+### Usage Tracking
+
+Monitor your API key usage through the Developer Portal:
+
+1. Log in to the Developer Portal
+2. Navigate to "API Usage"
+3. View metrics by:
+   - Key
+   - Service
+   - Endpoint
+   - Time period
+
+### Audit Logging
+
+Implement audit logging in your application:
+
+```typescript
+function logApiCall(
+  endpoint: string, 
+  method: string, 
+  statusCode: number, 
+  responseTime: number
+): void {
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    endpoint,
+    method,
+    statusCode,
+    responseTime,
+    apiKeyId: getKeyIdentifier(process.env.MOOD_MNKY_API_KEY || ''),
+  };
+  
+  // Log to your monitoring system
+  logger.info('API Call', logEntry);
+}
+
+// Extract key identifier without exposing full key
+function getKeyIdentifier(apiKey: string): string {
+  // Only use the key prefix and first few chars
+  return apiKey.substring(0, 8) + '...';
+}
+```
+
+## Troubleshooting
+
+### Common Authentication Errors
+
+| Status Code | Error | Description | Solution |
+|-------------|-------|-------------|----------|
+| 401 | Unauthorized | Missing or invalid API key | Check your API key is correctly included in the request |
+| 403 | Forbidden | Valid key but insufficient permissions | Request additional permissions or use a different key |
+| 429 | Too Many Requests | Rate limit exceeded | Implement retries with exponential backoff |
+
+### Debugging Authentication Issues
+
+If you're experiencing authentication problems:
+
+1. **Check Key Validity**: Ensure your key hasn't expired or been revoked
+2. **Verify Headers**: Confirm the correct header format is being used
+3. **Check Permissions**: Verify your key has permissions for the operation
+4. **Monitor Rate Limits**: Check if you've exceeded your rate limits
+5. **Test in Playground**: Use the API playground in our documentation to test authentication
+
+## Rate Limiting
+
+API keys are subject to rate limits:
+
+| Key Type | Default Rate Limit |
+|----------|-------------------|
+| Development | 5,000 requests per day |
+| Production | 50,000 requests per day |
+
+Rate limit information is included in response headers:
+
+```
+X-RateLimit-Limit: 5000
+X-RateLimit-Remaining: 4995
+X-RateLimit-Reset: 1618884000
+```
+
+For more information, see our [Rate Limiting Guide](/api/devops/rate-limiting).
+
+## FAQ
+
+### Can I use the same API key for development and production?
+No, you should use separate keys for each environment.
+
+### What happens if my API key is compromised?
+Immediately revoke the key in the Developer Portal and generate a new one.
+
+### Can I have multiple API keys?
+Yes, we recommend using different keys for different applications or services.
+
+### How do I request a higher rate limit?
+Contact our support team with details about your use case.
+
+### Do API keys expire?
+By default, production keys expire after one year, while development keys expire after 90 days.
+
+## Support Resources
+
+- [Developer Portal](https://developer.moodmnky.com)
+- [API Status Dashboard](https://status.moodmnky.com)
+- [Rate Limiting Guide](/api/devops/rate-limiting)
+- [OpenAPI Specifications](/api/devops/openapi-generation)
+- [Swagger UI Guide](/api/devops/swagger-ui-guide)
+
+For additional support, contact [api-support@moodmnky.com](mailto:api-support@moodmnky.com) or join our [Developer Community](https://community.moodmnky.com/developers). 

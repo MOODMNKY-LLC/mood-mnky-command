@@ -1,0 +1,18 @@
+# Optional override: use MinIO AIStor (recommended for AI workloads).
+# Requires a free license: https://min.io/download → AIStor Free → get license, save as minio.license here.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.aistor.yml up -d
+# See README "MinIO vs AIStor" section.
+
+services:
+  minio:
+    image: quay.io/minio/aistor/minio:latest
+    command: server /mnt/data --console-address ":9001" --license /minio.license
+    volumes:
+      - minio_data:/mnt/data
+      - ./minio.license:/minio.license:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

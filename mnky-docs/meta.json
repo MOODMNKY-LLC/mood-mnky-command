@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "og:title": "MNKY MIND - MOOD MNKY Documentation",
+    "og:description": "Comprehensive documentation for the MOOD MNKY ecosystem, including brand guidelines, technology stack, platform services, and developer resources.",
+    "og:image": "https://moodmnky.co/og-image.png",
+    "twitter:card": "summary_large_image",
+    "twitter:site": "@moodmnky",
+    "twitter:title": "MNKY MIND Documentation",
+    "twitter:description": "Explore the complete documentation for MOOD MNKY's digital ecosystem and services.",
+    "twitter:image": "https://moodmnky.co/twitter-image.png",
+    "keywords": [
+      "MOOD MNKY",
+      "documentation",
+      "brand",
+      "technology",
+      "fragrance",
+      "wellness",
+      "platform",
+      "AI",
+      "development",
+      "Dojo"
+    ],
+    "og:type": "website",
+    "og:locale": "en_US",
+    "robots": "index, follow"
+  },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-XXXXXXXXXX"
+    }
+  },
+  "feedback": {
+    "thumbs": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
+  "versions": [
+    {
+      "name": "v1.0",
+      "url": "https://docs.moodmnky.co/v1.0"
+    },
+    {
+      "name": "Latest",
+      "url": "https://docs.moodmnky.co"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+---
+# Deploy MOOD MNKY Docker Compose stack on a target host.
+# Run: ansible-playbook playbooks/deploy_stack.yml -i "192.168.1.20," -e "compose_profile=agent" -e "ansible_user=debian"
+# Copy docker-compose/ (and .env) to provisioning/files/compose before running, or set compose_source.
+
+- name: Deploy MOOD MNKY stack on target host
+  hosts: all
+  vars:
+    compose_profile: "agent"
+    compose_source: "{{ playbook_dir }}/../files/compose"
+  tasks:
+
+    - name: Install Docker (apt)
+      ansible.builtin.include_tasks: tasks/install_docker.yml
+      when: ansible_os_family == "Debian"
+
+    - name: Copy compose project to target
+      ansible.builtin.copy:
+        src: "{{ compose_source }}/"
+        dest: "/opt/mood-mnky-stack"
+        mode: "0755"
+
+    - name: Ensure .env exists on target (template or copy)
+      ansible.builtin.copy:
+        dest: "/opt/mood-mnky-stack/.env"
+        content: "# Add your .env from docker-compose/.env.example and fill values"
+        force: false
+      when: false  # Set to true and replace with a template if you generate .env from vault
+
+    - name: Start stack with profile
+      community.docker.docker_compose_v2:
+        project_src: /opt/mood-mnky-stack
+        profiles:
+          - "{{ compose_profile }}"
+        state: present
+      register: compose_up
+
+    - name: Report stack status
+      ansible.builtin.debug:
+        msg: "Stack started with profile {{ compose_profile }}. Check with: docker compose --profile {{ compose_profile }} ps"

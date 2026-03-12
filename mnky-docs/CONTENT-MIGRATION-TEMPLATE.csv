@@ -1,0 +1,57 @@
+Old Path,New Path,Status,Notes
+brand-overview/mission-vision.mdx,brand/vision/mission-vision.mdx,Pending,Update links to design docs
+brand-overview/brand-bible.mdx,brand/vision/brand-bible.mdx,Pending,Keep all content intact
+brand-overview/team-lore.mdx,brand/vision/team-lore.mdx,Pending,No changes needed
+brand-overview/design-guidelines.mdx,brand/design/design-guidelines.mdx,Pending,Move image assets
+brand-overview/ecosystem-roadmap.mdx,brand/strategy/ecosystem-roadmap.mdx,Pending,Update links
+brand-overview/origin-story.mdx,brand/strategy/origin-story.mdx,Pending,No changes needed
+brand-overview/customer-experience.mdx,brand/strategy/customer-experience.mdx,Pending,Update platform links
+technology-stack/overview.mdx,reference/architecture/overview.mdx,Pending,Update directory references
+technology-stack/supabase.mdx,reference/data-models/supabase.mdx,Pending,Update API references
+technology-stack/frontend-technologies.mdx,reference/architecture/frontend.mdx,Pending,Update component links
+technology-stack/ai-integration.mdx,reference/architecture/ai-integration.mdx,Pending,Update agent links
+technology-stack/mono-repo-structure.mdx,reference/architecture/mono-repo-structure.mdx,Pending,No changes needed
+technology-stack/deployment.mdx,reference/architecture/deployment.mdx,Pending,Update links to workflows
+technology-stack/security.mdx,reference/security/overview.mdx,Pending,Expand with authentication details
+platform-services/dojo-overview.mdx,platform/dojo/overview.mdx,Pending,No changes needed
+platform-services/dojo-features.mdx,platform/dojo/features.mdx,Pending,Update screenshots
+platform-services/dojo-roadmap.mdx,platform/dojo/roadmap.mdx,Pending,Update timeline
+platform-services/mood-tracking.mdx,platform/personalization/mood-tracking.mdx,Pending,Update integration references
+platform-services/virtual-consulting.mdx,platform/personalization/virtual-consulting.mdx,Pending,Update agent references
+platform-services/content-delivery.mdx,platform/personalization/content-delivery.mdx,Pending,No changes needed
+platform-services/reward-system.mdx,platform/token-economy/overview.mdx,Pending,Expand with more details
+platform-services/community-features.mdx,platform/personalization/community-features.mdx,Pending,Update references
+platform-services/ai-agents.mdx,agents/index.mdx,Pending,Revise to be a proper index
+platform-services/memory-systems.mdx,agents/infrastructure/memory-systems.mdx,Pending,Update technical details
+platform-services/integration-points.mdx,reference/integration/overview.mdx,Pending,Update API references
+product-catalog/fragrances.mdx,brand/products/fragrances.mdx,Pending,Update product images
+product-catalog/candles.mdx,brand/products/candles.mdx,Pending,Update product listings
+product-catalog/bath-body.mdx,brand/products/bath-body.mdx,Pending,No changes needed
+product-catalog/ai-agents.mdx,brand/products/ai-agents.mdx,Pending,Update capabilities section
+product-catalog/digital-services.mdx,brand/products/digital-services.mdx,Pending,Update pricing tables
+product-catalog/subscriptions.mdx,brand/products/subscriptions.mdx,Pending,Update tier information
+product-catalog/creation-process.mdx,brand/products/creation-process.mdx,Pending,Update workflow diagrams
+product-catalog/quality-standards.mdx,brand/products/quality-standards.mdx,Pending,No changes needed
+product-catalog/sustainability.mdx,brand/products/sustainability.mdx,Pending,Update initiative information
+developer-resources/introduction.mdx,guides/getting-started/introduction.mdx,Pending,Update path references
+developer-resources/environment-setup.mdx,guides/getting-started/environment-setup.mdx,Pending,Update prerequisites
+developer-resources/contribution-guidelines.mdx,guides/getting-started/contribution-guidelines.mdx,Pending,Update PR template references
+developer-resources/mintlify-components.mdx,guides/development/mintlify-components.mdx,Pending,Update component examples
+developer-resources/documentation-guide.mdx,guides/development/documentation-guide.mdx,Pending,Update structure section
+developer-resources/testing-strategy.mdx,guides/development/testing.mdx,Pending,Expand unit testing section
+developer-resources/deployment.mdx,guides/development/deployment.mdx,Pending,Update CI/CD references
+developer-resources/coding-standards.mdx,guides/development/code-standards.mdx,Pending,Update linting rules
+developer-resources/api-overview.mdx,api/index.mdx,Pending,Update to work as index page
+developer-resources/supabase-api.mdx,api/core/supabase.mdx,Pending,Update endpoint references
+developer-resources/authentication.mdx,api/core/authentication.mdx,Pending,Update JWT examples
+developer-resources/storage.mdx,api/core/storage.mdx,Pending,Update bucket references
+developer-resources/javascript-sdk.mdx,guides/development/javascript-sdk.mdx,Pending,Update import examples
+developer-resources/ai-integration-sdk.mdx,guides/development/ai-integration-sdk.mdx,Pending,Update agent references
+roadmap-planning/overview.mdx,brand/strategy/roadmap-overview.mdx,Pending,Update with latest priorities
+roadmap-planning/short-term-goals.mdx,brand/strategy/short-term-goals.mdx,Pending,Update timeline
+roadmap-planning/long-term-vision.mdx,brand/strategy/long-term-vision.mdx,Pending,No changes needed
+roadmap-planning/technology-roadmap.mdx,reference/architecture/roadmap.mdx,Pending,Update tech stack references
+roadmap-planning/platform-development.mdx,platform/dojo/roadmap.mdx,Pending,Consolidate with existing roadmap
+roadmap-planning/product-expansion.mdx,brand/products/roadmap.mdx,Pending,Update product launches
+api-reference/introduction.mdx,api/introduction.mdx,Completed,No changes needed
+api-reference/openapi.json,api/reference/openapi.json,Pending,No changes needed

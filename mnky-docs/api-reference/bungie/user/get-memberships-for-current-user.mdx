@@ -1,0 +1,419 @@
+---
+title: 'Get Memberships for Current User'
+api: 'GET https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/'
+description: 'Returns a list of accounts associated with the authenticated user across all platforms where they play Destiny 2.'
+---
+
+# Get Memberships for Current User
+
+This endpoint returns a list of all membership profiles linked to the currently authenticated OAuth user. The response includes accounts across all platforms where the user has played Destiny 2.
+
+## Authentication
+
+This endpoint requires:
+- A valid Bungie.net API key
+- OAuth 2.0 authentication with the `ReadBasicUserProfile` scope
+
+<RequestExample>
+```bash
+curl -X GET "https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/" \
+  -H "X-API-Key: your-api-key-here" \
+  -H "Authorization: Bearer your-oauth-token"
+```
+
+```javascript
+const fetchMemberships = async (accessToken) => {
+  const response = await fetch(
+    'https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/',
+    {
+      headers: {
+        'X-API-Key': 'your-api-key-here',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    }
+  );
+  
+  return await response.json();
+};
+```
+</RequestExample>
+
+## Response
+
+<ResponseField name="Response" type="object">
+  User membership data
+  
+  <Expandable title="Properties">
+    <ResponseField name="destinyMemberships" type="array">
+      List of Destiny membership profiles
+      
+      <Expandable title="Items">
+        <ResponseField name="membershipId" type="string">
+          Membership ID as they user is known in the Destiny ecosystem
+        </ResponseField>
+        
+        <ResponseField name="membershipType" type="integer">
+          Type of account (e.g., 1 = Xbox, 2 = PSN, 3 = Steam, etc.)
+        </ResponseField>
+        
+        <ResponseField name="displayName" type="string">
+          Display name for this membership profile
+        </ResponseField>
+        
+        <ResponseField name="bungieGlobalDisplayName" type="string">
+          Bungie global display name, now used in all activities
+        </ResponseField>
+        
+        <ResponseField name="bungieGlobalDisplayNameCode" type="integer">
+          The 4-digit code appended to the global display name
+        </ResponseField>
+        
+        <ResponseField name="crossSaveOverride" type="integer">
+          If the user is cross-saved, this is the type of the profile that is being overridden by the primary
+        </ResponseField>
+        
+        <ResponseField name="applicableMembershipTypes" type="array">
+          List of platforms on which this account has played Destiny 2
+          
+          <Expandable title="Items">
+            <ResponseField name="" type="integer">
+              Membership type values (e.g., 1 = Xbox, 2 = PSN, 3 = Steam, etc.)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="isPublic" type="boolean">
+          If true, this account is visible to other players for matchmaking purposes
+        </ResponseField>
+        
+        <ResponseField name="lastSeenDisplayName" type="string">
+          The display name last used by this membership
+        </ResponseField>
+        
+        <ResponseField name="lastSeenDisplayNameType" type="integer">
+          The platform on which the display name was last used
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="primaryMembershipId" type="string">
+      Primary membership ID if the user has cross save enabled
+    </ResponseField>
+    
+    <ResponseField name="bungieNetUser" type="object">
+      Information about the authenticated Bungie.net account
+      
+      <Expandable title="Properties">
+        <ResponseField name="membershipId" type="string">
+          Bungie.net membership ID
+        </ResponseField>
+        
+        <ResponseField name="uniqueName" type="string">
+          Unique name for this user
+        </ResponseField>
+        
+        <ResponseField name="displayName" type="string">
+          Display name
+        </ResponseField>
+        
+        <ResponseField name="profilePicture" type="integer">
+          Profile picture identifier
+        </ResponseField>
+        
+        <ResponseField name="profileTheme" type="integer">
+          Profile theme
+        </ResponseField>
+        
+        <ResponseField name="userTitle" type="integer">
+          User title (e.g., moderator, staff)
+        </ResponseField>
+        
+        <ResponseField name="successMessageFlags" type="string">
+          Success message flags for this user
+        </ResponseField>
+        
+        <ResponseField name="isDeleted" type="boolean">
+          Whether the account has been deleted
+        </ResponseField>
+        
+        <ResponseField name="about" type="string">
+          User's "About Me" text
+        </ResponseField>
+        
+        <ResponseField name="firstAccess" type="string" format="date-time">
+          First access time
+        </ResponseField>
+        
+        <ResponseField name="lastUpdate" type="string" format="date-time">
+          Last update time
+        </ResponseField>
+        
+        <ResponseField name="context" type="object">
+          User context data
+          
+          <Expandable title="Properties">
+            <ResponseField name="isFollowing" type="boolean">
+              Whether the requesting user is following this user
+            </ResponseField>
+            
+            <ResponseField name="ignoreStatus" type="object">
+              Ignore status information
+              
+              <Expandable title="Properties">
+                <ResponseField name="isIgnored" type="boolean">
+                  Whether the requesting user has ignored this user
+                </ResponseField>
+                
+                <ResponseField name="ignoreFlags" type="integer">
+                  Ignore flags, a bitmask
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        
+        <ResponseField name="psnDisplayName" type="string">
+          PSN display name, if there is one
+        </ResponseField>
+        
+        <ResponseField name="xboxDisplayName" type="string">
+          Xbox Live display name, if there is one
+        </ResponseField>
+        
+        <ResponseField name="blizzardDisplayName" type="string">
+          Blizzard display name, if there is one
+        </ResponseField>
+        
+        <ResponseField name="steamDisplayName" type="string">
+          Steam display name, if there is one
+        </ResponseField>
+        
+        <ResponseField name="stadiaDisplayName" type="string">
+          Stadia display name, if there is one
+        </ResponseField>
+        
+        <ResponseField name="twitchDisplayName" type="string">
+          Twitch display name, if linked
+        </ResponseField>
+        
+        <ResponseField name="cachedBungieGlobalDisplayName" type="string">
+          Cached Bungie global display name
+        </ResponseField>
+        
+        <ResponseField name="cachedBungieGlobalDisplayNameCode" type="integer">
+          Cached Bungie global display name code
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ErrorCode" type="integer">
+  Error code (1 for success)
+</ResponseField>
+
+<ResponseField name="ThrottleSeconds" type="integer">
+  Number of seconds to wait before making another request (for rate limiting)
+</ResponseField>
+
+<ResponseField name="ErrorStatus" type="string">
+  Status message (e.g., "Success")
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Additional information
+</ResponseField>
+
+<ResponseField name="MessageData" type="object">
+  Additional message data (typically empty)
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "Response": {
+    "destinyMemberships": [
+      {
+        "membershipId": "4611686018429783292",
+        "membershipType": 3,
+        "displayName": "Guardian",
+        "bungieGlobalDisplayName": "Guardian",
+        "bungieGlobalDisplayNameCode": 1234,
+        "crossSaveOverride": 3,
+        "applicableMembershipTypes": [1, 2, 3],
+        "isPublic": true,
+        "lastSeenDisplayName": "Guardian",
+        "lastSeenDisplayNameType": 3
+      },
+      {
+        "membershipId": "4611686018430215343",
+        "membershipType": 2,
+        "displayName": "Guardian-PSN",
+        "bungieGlobalDisplayName": "Guardian",
+        "bungieGlobalDisplayNameCode": 1234,
+        "crossSaveOverride": 3,
+        "applicableMembershipTypes": [2],
+        "isPublic": true,
+        "lastSeenDisplayName": "Guardian-PSN",
+        "lastSeenDisplayNameType": 2
+      }
+    ],
+    "primaryMembershipId": "4611686018429783292",
+    "bungieNetUser": {
+      "membershipId": "12345678901234567",
+      "uniqueName": "BungieUser12345",
+      "displayName": "Guardian",
+      "profilePicture": 70698,
+      "profileTheme": 61,
+      "userTitle": 0,
+      "successMessageFlags": "0",
+      "isDeleted": false,
+      "about": "I love Destiny!",
+      "firstAccess": "2014-09-08T05:00:00Z",
+      "lastUpdate": "2023-09-22T14:32:16Z",
+      "context": {
+        "isFollowing": false,
+        "ignoreStatus": {
+          "isIgnored": false,
+          "ignoreFlags": 0
+        }
+      },
+      "psnDisplayName": "Guardian-PSN",
+      "xboxDisplayName": null,
+      "steamDisplayName": "Guardian",
+      "stadiaDisplayName": null,
+      "twitchDisplayName": "GuardianTTV",
+      "cachedBungieGlobalDisplayName": "Guardian",
+      "cachedBungieGlobalDisplayNameCode": 1234
+    }
+  },
+  "ErrorCode": 1,
+  "ThrottleSeconds": 0,
+  "ErrorStatus": "Success",
+  "Message": "Ok",
+  "MessageData": {}
+}
+```
+</ResponseExample>
+
+## Usage in MOOD MNKY
+
+This endpoint is vital in the MOOD MNKY ecosystem for:
+
+1. **User Authentication Flow** - When a user signs in with OAuth, this endpoint helps identify all linked platforms
+2. **Cross-platform Profile Management** - Allows users to manage inventories across different gaming platforms
+3. **Platform Selection** - Enables MOOD MNKY to provide platform selection when interacting with Destiny items
+4. **Cross-save Detection** - Helps detect and manage cross-save status for the user
+5. **Display Name Resolution** - Gets the proper display names to show across the interface
+
+### Integration Example
+
+```javascript
+// Example of handling multi-platform profiles in MOOD MNKY
+async function initializeUserProfiles(accessToken) {
+  try {
+    // Fetch all memberships for the authenticated user
+    const membershipsResponse = await fetch(
+      'https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/',
+      {
+        headers: {
+          'X-API-Key': process.env.BUNGIE_API_KEY,
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    );
+    
+    const data = await membershipsResponse.json();
+    
+    if (data.ErrorCode !== 1) {
+      throw new Error(`Failed to get memberships: ${data.Message}`);
+    }
+    
+    // Extract the memberships from the response
+    const { destinyMemberships, primaryMembershipId, bungieNetUser } = data.Response;
+    
+    // Handle cross-save situation
+    let activeMembership = null;
+    
+    if (primaryMembershipId) {
+      // If cross-save is enabled, find the primary membership
+      activeMembership = destinyMemberships.find(
+        membership => membership.membershipId === primaryMembershipId
+      );
+    }
+    
+    // If no active membership is found (or cross-save is not enabled),
+    // let the user choose from available platforms
+    if (!activeMembership && destinyMemberships.length > 0) {
+      // For this example, just use the first membership
+      activeMembership = destinyMemberships[0];
+    }
+    
+    // Store user profile information for later use
+    return {
+      bungieNetUser,
+      destinyMemberships,
+      primaryMembership: activeMembership,
+      hasCrossSave: !!primaryMembershipId,
+      selectedMembershipType: activeMembership ? activeMembership.membershipType : null,
+      selectedMembershipId: activeMembership ? activeMembership.membershipId : null,
+      displayName: bungieNetUser.cachedBungieGlobalDisplayName,
+      displayNameCode: bungieNetUser.cachedBungieGlobalDisplayNameCode
+    };
+  } catch (error) {
+    console.error('Error initializing user profiles:', error);
+    throw error;
+  }
+}
+
+// Example component usage
+function PlatformSelector({ userProfiles, onSelectPlatform }) {
+  // Map platform types to readable names and icons
+  const platformInfo = {
+    1: { name: 'Xbox', icon: 'xbox-icon.png' },
+    2: { name: 'PlayStation', icon: 'playstation-icon.png' },
+    3: { name: 'Steam', icon: 'steam-icon.png' },
+    4: { name: 'Blizzard', icon: 'blizzard-icon.png' },
+    5: { name: 'Stadia', icon: 'stadia-icon.png' },
+    6: { name: 'Epic', icon: 'epic-icon.png' }
+  };
+
+  return (
+    <div className="platform-selector">
+      <h3>Select Platform</h3>
+      <div className="platform-list">
+        {userProfiles.destinyMemberships.map(membership => (
+          <div 
+            key={membership.membershipId}
+            className={`platform-item ${membership.membershipId === userProfiles.primaryMembership?.membershipId ? 'active' : ''}`}
+            onClick={() => onSelectPlatform(membership)}
+          >
+            <img 
+              src={platformInfo[membership.membershipType]?.icon} 
+              alt={platformInfo[membership.membershipType]?.name} 
+            />
+            <span>{membership.displayName}</span>
+            {membership.crossSaveOverride > 0 && membership.membershipId === userProfiles.primaryMembership?.membershipId && (
+              <span className="cross-save-badge">Primary</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## Common Issues
+
+- **Token Authentication**: This endpoint requires a valid OAuth token with appropriate scopes.
+- **Cross-save Complexity**: For users with cross-save enabled, ensure you use the `primaryMembershipId` to identify their active profile.
+- **Multiple Accounts**: A user may have multiple accounts on the same platform in rare cases. The `bungieGlobalDisplayName` and `bungieGlobalDisplayNameCode` fields help identify the unique user.
+- **Platform Migration**: Users who have migrated between platforms may have multiple membership entries.
+- **Privacy Settings**: Some membership information may be limited by user privacy settings.
+
+## Related Endpoints
+
+- [Get Destiny 2 Profile](/api-reference/bungie/destiny2/get-profile) - Get detailed profile information using the membership details
+- [Get Membership Data by ID](/api-reference/bungie/user/get-membership-data-by-id) - Get membership data for a specific user ID
+- [Get Membership From Bungie Name](/api-reference/bungie/destiny2/get-membership-from-bungie-name) - Search for memberships by Bungie name 

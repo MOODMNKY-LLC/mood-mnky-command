@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hydaelyn ACT Ingest</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 1rem 1.25rem;
+      background: rgba(0, 0, 0, 0.85);
+      color: #e0e0e0;
+      font-size: 0.875rem;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    * { box-sizing: border-box; }
+    .header {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .main {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .main.ok { color: #4ade80; }
+    .main.sending { color: #fbbf24; }
+    .main.error { color: #f87171; }
+    .main.awaiting { color: #e0e0e0; }
+    .sub { color: #888; font-size: 0.8125rem; margin-bottom: 0.75rem; }
+    .hint {
+      color: #666;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin-top: 0.75rem;
+      max-width: 360px;
+    }
+    .hint strong { color: #888; }
+    #token-hint { margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="header">Hydaelyn ACT Ingest</div>
+  <div id="status" class="main">Awaiting encounter data…</div>
+  <div id="sub" class="sub">N/A</div>
+  <div id="token-hint" class="hint" style="display: none;">Add <code>?token=YOUR_OVERLAY_TOKEN</code> to the URL. Get the token from the Hydaelyn dashboard.</div>
+  <div id="ws-hint" class="hint">Using in OBS or a browser? Add <code>&amp;OVERLAY_WS=ws://127.0.0.1:10501/ws</code> to this URL and start <strong>WSServer</strong> in OverlayPlugin (Plugins → OverlayPlugin WSServer → Start).</div>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get("token") || (window.HYDAELYN_OVERLAY_TOKEN || "").trim();
+      var hasWs = params.has("OVERLAY_WS") || params.has("HOST_PORT");
+      document.getElementById("token-hint").style.display = token ? "none" : "block";
+      if (token && !hasWs) document.getElementById("ws-hint").style.display = "block";
+      else document.getElementById("ws-hint").style.display = "none";
+    })();
+  </script>
+  <!-- Use ngld's common.min.js for best compatibility with ngld OverlayPlugin (used by Ember and many users). Original: overlayplugin.github.io/OverlayPlugin/assets/shared/common.min.js -->
+  <script src="https://ngld.github.io/OverlayPlugin/assets/shared/common.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

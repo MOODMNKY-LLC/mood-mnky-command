@@ -1,0 +1,90 @@
+---
+title: 'REST API Reference'
+description: 'Complete API documentation for MOOD MNKY platform services'
+---
+
+# REST API Reference
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/api.svg"
+  alt="API Documentation"
+/>
+
+## Overview
+
+The MOOD MNKY REST API provides programmatic access to our platform services, enabling developers to build integrations, custom experiences, and third-party applications.
+
+<Note>
+  This is a placeholder document. Detailed API documentation will be added in future updates.
+</Note>
+
+## Authentication
+
+All API requests require authentication using API keys or OAuth tokens. Authentication details will be provided in the full documentation.
+
+## Endpoints
+
+<Tabs>
+  <Tab title="User API">
+    ### User Management
+    Endpoints for managing user accounts, profiles, and preferences.
+    
+    **Base URL**: `https://api.moodmnky.co/v1/users`
+    
+    | Endpoint | Method | Description |
+    |----------|--------|-------------|
+    | `/` | GET | List users |
+    | `/:id` | GET | Get user details |
+    | `/` | POST | Create user |
+    | `/:id` | PUT | Update user |
+    | `/:id` | DELETE | Delete user |
+  </Tab>
+  <Tab title="Products API">
+    ### Product Catalog
+    Endpoints for accessing product information and inventory.
+    
+    **Base URL**: `https://api.moodmnky.co/v1/products`
+    
+    | Endpoint | Method | Description |
+    |----------|--------|-------------|
+    | `/` | GET | List products |
+    | `/:id` | GET | Get product details |
+    | `/categories` | GET | List product categories |
+    | `/search` | GET | Search products |
+  </Tab>
+  <Tab title="Orders API">
+    ### Order Management
+    Endpoints for creating and managing orders.
+    
+    **Base URL**: `https://api.moodmnky.co/v1/orders`
+    
+    | Endpoint | Method | Description |
+    |----------|--------|-------------|
+    | `/` | GET | List orders |
+    | `/:id` | GET | Get order details |
+    | `/` | POST | Create order |
+    | `/:id/status` | PUT | Update order status |
+    | `/:id/cancel` | POST | Cancel order |
+  </Tab>
+</Tabs>
+
+## Rate Limits
+
+API requests are subject to rate limiting to ensure fair usage and system stability. Details on rate limits will be provided in the full documentation.
+
+## Coming Soon
+
+This documentation is under development and will include:
+
+- Complete endpoint references
+- Request and response examples
+- Error codes and handling
+- Webhooks
+- SDKs and client libraries
+- Authentication details
+- Pagination
+- Filtering and sorting
+- Examples in multiple programming languages
+
+Check back soon for updates!

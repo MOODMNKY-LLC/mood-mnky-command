@@ -1,0 +1,24 @@
+# =============================================================================
+# Homelab override example
+# =============================================================================
+# Copy to docker-compose.override.yml and set your tunnel hostnames.
+# In .env set:
+#   SUPABASE_MODE=self_hosted
+#   NEXT_PUBLIC_SUPABASE_MT_URL=https://supabase.yourdomain.com
+# Then: docker compose up -d (this override is loaded automatically)
+# =============================================================================
+
+version: '3.8'
+
+services:
+  n8n:
+    environment:
+      # Replace with your public n8n URL (e.g. Cloudflare Tunnel)
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://n8n.yourdomain.com/
+      N8N_HOST: 0.0.0.0
+
+  flowise:
+    environment:
+      # Optional: set if Flowise needs a public base URL for callbacks
+      # FLOWISE_PUBLIC_URL: https://flowise.yourdomain.com

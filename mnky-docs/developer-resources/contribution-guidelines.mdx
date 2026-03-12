@@ -1,0 +1,433 @@
+---
+title: 'Contribution Guidelines'
+description: 'Guidelines for contributing to the MOOD MNKY codebase and documentation'
+---
+
+# Contribution Guidelines
+
+Thank you for your interest in contributing to the MOOD MNKY ecosystem! This document outlines the process, standards, and best practices for contributing to our projects.
+
+## Code of Conduct
+
+All contributors are expected to adhere to our Code of Conduct, which promotes a respectful, inclusive, and collaborative environment. Key principles include:
+
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community and users
+- Showing empathy towards other community members
+
+## Getting Started
+
+### Repository Structure
+
+Our mono repo structure organizes code and resources into several main directories:
+
+```
+mood-mnky/
+├── apps/               # Frontend and backend applications
+│   ├── api/            # Backend API services
+│   ├── web/            # Main web application
+│   └── mobile/         # Mobile application 
+├── packages/           # Shared packages and libraries
+│   ├── ui/             # Shared UI components
+│   ├── utils/          # Utility functions
+│   └── api-client/     # API client libraries
+├── services/           # Microservices
+│   ├── auth/           # Authentication service
+│   ├── fragrance/      # Fragrance recommendation service
+│   └── analytics/      # Analytics service
+├── docs/               # Documentation (MNKY MIND)
+└── tools/              # Development and build tools
+```
+
+### Setting Up Your Development Environment
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/mood-mnky/mood-mnky.git
+   cd mood-mnky
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**:
+   Copy the example environment file and update with your local configuration:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+## Development Workflow
+
+### 1. Creating a New Feature
+
+<Steps>
+  <Step title="Create a new branch">
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+    Branch naming conventions:
+    - `feature/` - For new features
+    - `fix/` - For bug fixes
+    - `docs/` - For documentation updates
+    - `refactor/` - For code refactoring
+    - `test/` - For adding tests
+  </Step>
+  <Step title="Develop your feature">
+    Write your code following our code style guidelines.
+  </Step>
+  <Step title="Write tests">
+    Add appropriate unit and integration tests for your feature.
+  </Step>
+  <Step title="Run local tests">
+    ```bash
+    npm run test
+    npm run lint
+    ```
+    Make sure all tests pass and there are no linting errors.
+  </Step>
+  <Step title="Commit your changes">
+    Follow our commit message convention (see below).
+  </Step>
+</Steps>
+
+### 2. Submitting a Pull Request
+
+<Steps>
+  <Step title="Push your branch">
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+  </Step>
+  <Step title="Create a pull request">
+    Go to our GitHub repository and create a pull request with the following information:
+    - Clear title describing the change
+    - Detailed description explaining what, why, and how
+    - Reference to related issues
+    - Screenshots or videos for UI changes
+  </Step>
+  <Step title="Code review">
+    A team member will review your code. Address any feedback or requests for changes.
+  </Step>
+  <Step title="Automated checks">
+    Wait for automated tests, builds, and linting to complete successfully.
+  </Step>
+  <Step title="Merge">
+    Once approved and all checks pass, your PR will be merged into the main branch.
+  </Step>
+</Steps>
+
+## Coding Standards
+
+### TypeScript Style Guide
+
+We follow a consistent TypeScript style across all projects:
+
+<CodeGroup>
+```typescript Component Example
+import { useState, useEffect } from 'react'
+import type { User } from '@/types'
+import { fetchUserData } from '@/lib/api'
+
+interface UserProfileProps {
+  userId: string
+  showDetails?: boolean
+}
+
+export function UserProfile({ userId, showDetails = false }: UserProfileProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [hasError, setHasError] = useState<boolean>(false)
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        setIsLoading(true)
+        const userData = await fetchUserData(userId)
+        setUser(userData)
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+        setHasError(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUser()
+  }, [userId])
+
+  if (isLoading) return <div>Loading...</div>
+  if (hasError) return <div>Error loading user profile</div>
+  if (!user) return null
+
+  return (
+    <div className="user-profile">
+      <h2>{user.name}</h2>
+      {showDetails && (
+        <div className="user-details">
+          <p>Email: {user.email}</p>
+          <p>Member since: {new Date(user.createdAt).toLocaleDateString()}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+```typescript API Service Example
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+
+export async function fetchProducts(category?: string, limit = 10) {
+  let query = supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  
+  if (category) {
+    query = query.eq('category', category)
+  }
+  
+  const { data, error } = await query
+  
+  if (error) {
+    console.error('Error fetching products:', error)
+    throw new Error('Failed to fetch products')
+  }
+  
+  return data
+}
+```
+</CodeGroup>
+
+### Key Principles
+
+1. **Type Safety**: Always use proper TypeScript types and interfaces
+2. **Function Components**: Use function components with hooks instead of class components
+3. **Named Exports**: Prefer named exports over default exports
+4. **Descriptive Naming**: Use clear, descriptive names for variables, functions, and components
+5. **State Management**: Use appropriate state management based on complexity
+6. **Error Handling**: Implement comprehensive error handling
+7. **Async/Await**: Use async/await for asynchronous operations
+8. **Comments**: Add comments for complex logic, but aim for self-documenting code
+
+## Commit Message Convention
+
+We follow a modified version of the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation changes
+- `style`: Changes that don't affect code functionality (whitespace, formatting, etc.)
+- `refactor`: Code changes that neither fix bugs nor add features
+- `perf`: Performance improvements
+- `test`: Adding or modifying tests
+- `chore`: Changes to build process, tools, etc.
+
+### Example Commit Messages
+
+```
+feat(auth): add social login options for Google and Apple
+
+Implements OAuth2 authentication flow for Google and Apple accounts.
+Includes:
+- New OAuth providers configuration
+- UI components for social login buttons
+- Integration tests
+
+Closes #123
+```
+
+```
+fix(api): correct error handling in product search endpoint
+
+Properly handle and format errors when search parameters are invalid.
+
+Fixes #456
+```
+
+## Testing Guidelines
+
+We use a combination of testing tools:
+
+- **Jest**: For unit and integration tests
+- **React Testing Library**: For component tests
+- **Cypress**: For end-to-end tests
+
+### Testing Requirements
+
+1. **Unit Tests**: Required for all utility functions and custom hooks
+2. **Component Tests**: Required for all UI components
+3. **Integration Tests**: Required for complex features and workflows
+4. **End-to-End Tests**: Required for critical user journeys
+
+<CodeGroup>
+```typescript Unit Test Example
+// utils/formatters.test.ts
+import { formatCurrency, formatDate, truncateText } from './formatters'
+
+describe('formatCurrency', () => {
+  it('formats USD correctly', () => {
+    expect(formatCurrency(1234.56, 'USD')).toBe('$1,234.56')
+  })
+  
+  it('handles zero values', () => {
+    expect(formatCurrency(0, 'USD')).toBe('$0.00')
+  })
+})
+
+describe('truncateText', () => {
+  it('truncates text longer than maxLength', () => {
+    expect(truncateText('Hello world', 5)).toBe('Hello...')
+  })
+  
+  it('does not truncate text shorter than maxLength', () => {
+    expect(truncateText('Hello', 10)).toBe('Hello')
+  })
+})
+```
+
+```typescript Component Test Example
+// components/Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { Button } from './Button'
+
+describe('Button component', () => {
+  it('renders correctly with default props', () => {
+    render(<Button>Click me</Button>)
+    
+    const button = screen.getByRole('button', { name: /click me/i })
+    expect(button).toBeInTheDocument()
+    expect(button).not.toBeDisabled()
+    expect(button).toHaveClass('btn-primary')
+  })
+  
+  it('calls onClick handler when clicked', () => {
+    const handleClick = jest.fn()
+    render(<Button onClick={handleClick}>Click me</Button>)
+    
+    fireEvent.click(screen.getByRole('button'))
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+  
+  it('renders disabled button when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>)
+    
+    expect(screen.getByRole('button')).toBeDisabled()
+  })
+})
+```
+</CodeGroup>
+
+## Documentation
+
+### Code Documentation
+
+- Use JSDoc comments for functions, classes, and interfaces
+- Document parameters, return values, and thrown exceptions
+- Include examples for complex functions
+
+```typescript
+/**
+ * Generates a personalized fragrance recommendation based on user preferences.
+ * 
+ * @param userId - The ID of the user to generate recommendations for
+ * @param options - Configuration options for the recommendation algorithm
+ * @param options.limit - Maximum number of recommendations to return (default: 5)
+ * @param options.includeDetails - Whether to include detailed fragrance information (default: false)
+ * @returns Promise resolving to an array of recommended fragrance objects
+ * @throws {AuthError} If the user is not authenticated
+ * @throws {ApiError} If there's an error fetching user preferences or fragrance data
+ * 
+ * @example
+ * ```ts
+ * // Get basic recommendations
+ * const recommendations = await getFragranceRecommendations('user123')
+ * 
+ * // Get detailed recommendations with limit
+ * const detailedRecs = await getFragranceRecommendations('user123', { 
+ *   limit: 3, 
+ *   includeDetails: true 
+ * })
+ * ```
+ */
+export async function getFragranceRecommendations(
+  userId: string,
+  options: RecommendationOptions = {}
+): Promise<FragranceRecommendation[]> {
+  // Implementation
+}
+```
+
+### Product Documentation
+
+For changes to user-facing features:
+
+1. Update relevant documentation in the `/docs` directory
+2. Add or update examples and usage instructions
+3. Include screenshots or videos for UI changes
+
+## Review Process
+
+All contributions go through our review process:
+
+1. **Automated Checks**: Linting, type checking, and tests
+2. **Code Review**: Review by at least one team member
+3. **UX Review**: For UI changes
+4. **Security Review**: For authentication, data handling, or API changes
+5. **Performance Review**: For changes that might impact performance
+
+## Continuous Integration and Deployment
+
+Our CI/CD pipeline includes:
+
+1. **Build Verification**: Ensures the project builds successfully
+2. **Automated Tests**: Runs unit, integration, and e2e tests
+3. **Linting and Type Checking**: Enforces code style and type safety
+4. **Preview Deployments**: Creates temporary deployment for PR review
+5. **Production Deployment**: Automated deployment to production after merge
+
+## Getting Help
+
+If you need assistance at any point in the contribution process:
+
+- **Developer Discord**: Join our developer channel for real-time help
+- **GitHub Discussions**: Post questions or suggestions
+- **Issues**: Review existing issues or create a new one
+- **Documentation**: Consult our comprehensive documentation
+
+## Recognition
+
+We value all contributions and recognize contributors in several ways:
+
+- Contributors are listed in our GitHub repository
+- Significant contributions are highlighted in release notes
+- Regular contributors may be invited to join the core team
+
+---
+
+Thank you for contributing to MOOD MNKY! Your efforts help us build better products and experiences for our users. 

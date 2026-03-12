@@ -1,0 +1,484 @@
+---
+title: 'Memory Systems Database'
+description: 'Documentation for the memory architecture that enables MOOD MNKY agents to retain and recall information'
+---
+
+# Memory Systems Database
+
+The Memory Systems Database defines how MOOD MNKY agents store, retain, and recall information across interactions. It provides the architecture for context retention, personalization, and continuous learning that enables agents to deliver coherent, personalized experiences.
+
+## Purpose and Role
+
+<Info>
+The Memory Systems Database defines "how" agents remember, enabling them to maintain context, recall past interactions, and deliver personalized experiences.
+</Info>
+
+This database documents:
+- Memory types and their specific purposes
+- Storage mechanisms and durations
+- Retrieval processes and priorities
+- Memory consolidation workflows
+- Privacy and data retention policies
+- Memory optimization and efficiency
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "memory_id": "string",
+      "agent_id": "string",
+      "user_id": "string",
+      "memory_type": "string",
+      "content": "string",
+      "metadata": "object",
+      "created_at": "timestamp",
+      "expires_at": "timestamp",
+      "importance": "number",
+      "access_count": "number",
+      "last_accessed": "timestamp",
+      "tags": "array",
+      "related_memories": "array",
+      "embedding": "vector"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "memory_id": "mem_78f920a",
+      "agent_id": "mood_mnky_001",
+      "user_id": "usr_425b3c",
+      "memory_type": "long_term",
+      "content": "User prefers lavender and bergamot scents but dislikes rose. Has mentioned sensitive skin several times.",
+      "metadata": {
+        "context": "product recommendation",
+        "sentiment": "preference",
+        "confidence": 0.87
+      },
+      "created_at": "2024-02-15T09:22:00Z",
+      "expires_at": null,
+      "importance": 0.8,
+      "access_count": 6,
+      "last_accessed": "2024-05-10T14:30:00Z",
+      "tags": ["preferences", "sensitivities", "fragrance"],
+      "related_memories": ["mem_32e154b", "mem_91c023d"],
+      "embedding": [0.032, -0.155, 0.023, ...]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="memory_id">
+    A unique identifier for the memory item.
+  </Accordion>
+  <Accordion title="agent_id">
+    The ID of the agent that owns this memory.
+  </Accordion>
+  <Accordion title="user_id">
+    The ID of the user this memory relates to, if applicable.
+  </Accordion>
+  <Accordion title="memory_type">
+    The category of memory (short_term, working, long_term).
+  </Accordion>
+  <Accordion title="content">
+    The actual information stored in the memory.
+  </Accordion>
+  <Accordion title="metadata">
+    Additional contextual information about the memory.
+  </Accordion>
+  <Accordion title="created_at">
+    When the memory was first created.
+  </Accordion>
+  <Accordion title="expires_at">
+    When the memory should expire, if applicable.
+  </Accordion>
+  <Accordion title="importance">
+    A value from 0-1 indicating the memory's importance.
+  </Accordion>
+  <Accordion title="access_count">
+    How many times this memory has been accessed.
+  </Accordion>
+  <Accordion title="last_accessed">
+    When the memory was last retrieved.
+  </Accordion>
+  <Accordion title="tags">
+    Keywords for categorization and retrieval.
+  </Accordion>
+  <Accordion title="related_memories">
+    IDs of memories that are related to this one.
+  </Accordion>
+  <Accordion title="embedding">
+    Vector representation for semantic search.
+  </Accordion>
+</AccordionGroup>
+
+## Memory Types
+
+The MOOD MNKY memory system employs a cognitive-inspired architecture with three distinct memory types:
+
+<CardGroup cols={3}>
+  <Card title="Short-term Memory" icon="bolt">
+    - Current conversation context
+    - Recent exchanges (last 10-20 messages)
+    - Active session information
+    - Temporary preferences
+    - Immediate task context
+    - Short duration (minutes to hours)
+  </Card>
+  <Card title="Working Memory" icon="brain">
+    - Active topics and goals
+    - Current user needs
+    - Contextual knowledge
+    - Intermediate reasoning
+    - Task-specific information
+    - Medium duration (hours to days)
+  </Card>
+  <Card title="Long-term Memory" icon="database">
+    - User preferences and profile
+    - Historical interactions
+    - Recurring patterns
+    - Persistent knowledge
+    - Relationship context
+    - Extended duration (months to years)
+  </Card>
+</CardGroup>
+
+## Memory Operations
+
+### Memory Creation and Storage
+
+```python
+from agents import Agent, Tool, Runner
+from memory_system import MemorySystem
+
+# Initialize memory system
+memory = MemorySystem()
+
+# Define memory creation tool
+def store_memory(content: str, memory_type: str, importance: float = 0.5, 
+                 tags: list = None, user_id: str = None) -> dict:
+    """Store information in the agent's memory."""
+    return memory.create(
+        content=content,
+        memory_type=memory_type,
+        importance=importance,
+        tags=tags or [],
+        user_id=user_id
+    )
+
+# Create tool for the agent
+memory_tool = Tool(
+    name="store_memory",
+    description="Store important information in memory",
+    function=store_memory
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant. Remember important information about users.",
+    tools=[memory_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "I have sensitive skin and prefer fragrance-free products")
+```
+
+### Memory Retrieval
+
+```python
+from agents import Agent, Tool, Runner
+from memory_system import MemorySystem
+
+# Initialize memory system
+memory = MemorySystem()
+
+# Define memory retrieval tool
+def retrieve_memories(query: str, memory_type: str = None, 
+                      limit: int = 5, user_id: str = None) -> list:
+    """Retrieve relevant memories based on the query."""
+    return memory.search(
+        query=query,
+        memory_type=memory_type,
+        limit=limit,
+        user_id=user_id
+    )
+
+# Create tool for the agent
+retrieval_tool = Tool(
+    name="retrieve_memories",
+    description="Recall relevant information from memory",
+    function=retrieve_memories
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant. Use your memory to provide personalized assistance.",
+    tools=[retrieval_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "What products would you recommend for me?")
+```
+
+## Integration with OpenAI Agents SDK
+
+### Memory-Aware Agent Creation
+
+```python
+from agents import Agent, Runner
+from memory_system import MemorySystem
+
+# Initialize memory system
+memory = MemorySystem()
+
+async def create_memory_aware_agent(user_id: str) -> Agent:
+    # Retrieve relevant memories for the user
+    user_memories = memory.get_user_summary(user_id)
+    
+    # Create agent with memory-infused instructions
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions=f"""You are MOOD MNKY, the brand assistant.
+        
+        What you know about this user:
+        {user_memories}
+        
+        Use this information to provide personalized assistance."""
+    )
+    
+    return agent
+
+# Create and run agent for a specific user
+agent = await create_memory_aware_agent("usr_425b3c")
+runner = Runner()
+result = await runner.run(agent, "Can you recommend something new for me to try?")
+```
+
+### Memory MCP Server Integration
+
+```python
+from agents import Agent, Runner
+from agents.mcp.server import MCPServerSse, MCPServerSseParams
+
+# Set up MCP server for memory system
+async with MCPServerSse(
+    params=MCPServerSseParams(
+        url="http://localhost:3000/memory-mcp",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    ),
+    name="memory_mcp",
+    cache_tools_list=True
+) as memory_server:
+    
+    # Create agent with memory MCP server
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions="You are MOOD MNKY, the brand assistant. Use your memory to provide personalized assistance.",
+        mcp_servers=[memory_server]
+    )
+    
+    # Run the agent
+    runner = Runner()
+    result = await runner.run(agent, "What was that candle I liked last time?")
+```
+
+## Memory Processes
+
+<CardGroup cols={2}>
+  <Card title="Encoding" icon="pencil">
+    The process of creating new memories from interactions, observations, and explicit information. Includes relevance assessment, metadata tagging, and importance scoring.
+  </Card>
+  <Card title="Storage" icon="hard-drive">
+    The organization and persistence of memories across different systems based on memory type, including vector databases for semantic retrieval and optimized storage strategies.
+  </Card>
+  <Card title="Retrieval" icon="magnifying-glass">
+    The process of accessing relevant memories based on context, query, or task needs, using semantic search, recency weighting, and importance factors.
+  </Card>
+  <Card title="Consolidation" icon="arrows-to-circle">
+    The workflow that transfers information between memory types, summarizes recurring patterns, and optimizes long-term storage for effective recall.
+  </Card>
+  <Card title="Forgetting" icon="eraser">
+    The controlled expiration of low-value or outdated memories to maintain system efficiency and comply with privacy requirements.
+  </Card>
+  <Card title="Reflection" icon="rotate">
+    The process of analyzing, connecting, and deriving insights from existing memories to improve future interactions and predictions.
+  </Card>
+</CardGroup>
+
+## Memory Storage Architecture
+
+The MOOD MNKY memory system uses differentiated storage based on memory type requirements:
+
+<Tabs>
+  <Tab title="Short-term Memory">
+    ```
+    ┌─────────────────────┐
+    │      Redis Cache    │
+    ├─────────────────────┤
+    │ - In-memory storage │
+    │ - Fast access       │
+    │ - TTL expiration    │
+    │ - Session scoped    │
+    └─────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Working Memory">
+    ```
+    ┌─────────────────────┐
+    │  MongoDB Collection │
+    ├─────────────────────┤
+    │ - Document-based    │
+    │ - Flexible schema   │
+    │ - Medium retention  │
+    │ - Query capability  │
+    └─────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Long-term Memory">
+    ```
+    ┌─────────────────────┐   ┌─────────────────────┐
+    │  PostgreSQL Tables  │   │    Pinecone Index   │
+    ├─────────────────────┤   ├─────────────────────┤
+    │ - Structured data   │   │ - Vector embeddings │
+    │ - Relationship data │   │ - Semantic search   │
+    │ - ACID compliance   │   │ - Similarity query  │
+    │ - Advanced querying │   │ - Metadata filtering│
+    └─────────────────────┘   └─────────────────────┘
+    ```
+  </Tab>
+</Tabs>
+
+## Retrieval Mechanisms
+
+The memory system employs multiple retrieval strategies:
+
+### Context-based Search
+
+```python
+def retrieve_by_context(context_type: str, user_id: str) -> list:
+    """Retrieve memories relevant to a specific context."""
+    return memory.search(
+        filters={
+            "metadata.context": context_type,
+            "user_id": user_id
+        },
+        sort_by="importance",
+        limit=10
+    )
+
+product_memories = retrieve_by_context("product_recommendation", "usr_425b3c")
+```
+
+### Semantic Similarity
+
+```python
+def retrieve_similar(query: str, user_id: str) -> list:
+    """Find memories semantically similar to the query."""
+    # Generate embedding for query
+    query_embedding = generate_embedding(query)
+    
+    return memory.vector_search(
+        vector=query_embedding,
+        user_id=user_id,
+        limit=5
+    )
+
+similar_memories = retrieve_similar("What scents help with sleep?", "usr_425b3c")
+```
+
+### Recency-based Access
+
+```python
+def retrieve_recent(memory_type: str, user_id: str, days: int = 7) -> list:
+    """Retrieve recent memories of a specific type."""
+    cutoff_date = datetime.now() - timedelta(days=days)
+    
+    return memory.search(
+        filters={
+            "memory_type": memory_type,
+            "user_id": user_id,
+            "created_at": {"$gte": cutoff_date}
+        },
+        sort_by="created_at",
+        sort_order="desc",
+        limit=20
+    )
+
+recent_interactions = retrieve_recent("short_term", "usr_425b3c", 3)
+```
+
+## Privacy and Data Management
+
+<CardGroup cols={2}>
+  <Card title="Retention Policies" icon="clock">
+    - Short-term: 24 hours to 7 days
+    - Working memory: 30-90 days
+    - Long-term: 1-2 years with consent
+    - Automated expiration enforcement
+    - Policy-based retention exceptions
+  </Card>
+  <Card title="Explicit Forgetting" icon="trash">
+    - User-initiated memory deletion
+    - Right to be forgotten implementation
+    - Cascade deletion across memory types
+    - Audit trail of deletion requests
+    - Verification of complete removal
+  </Card>
+  <Card title="Data Minimization" icon="filter-circle-xmark">
+    - Relevance filtering during encoding
+    - Abstraction of personal details
+    - Targeted anonymization techniques
+    - PII detection and special handling
+    - Regular minimization reviews
+  </Card>
+  <Card title="Access Controls" icon="lock">
+    - Agent-specific memory isolation
+    - Role-based memory access
+    - Cross-agent memory sharing rules
+    - Consent-based memory utilization
+    - Audit logging of memory access
+  </Card>
+</CardGroup>
+
+## Best Practices for Memory Management
+
+### Memory Design Principles
+
+- **Purpose-driven Storage**: Store only information with clear future utility
+- **Structured Abstraction**: Standardize how similar types of information are stored
+- **Context Enrichment**: Include relevant metadata to improve retrieval accuracy
+- **Privacy by Design**: Apply minimization and consent principles from the start
+- **Retrieval Optimization**: Design memory formats that facilitate efficient recall
+
+### Implementation Guidelines
+
+- **Memory Types Alignment**: Use appropriate memory type for information's lifespan and importance
+- **Storage Technology Selection**: Match storage technology to memory characteristics
+- **Embedding Strategy**: Create consistent, high-quality embeddings for semantic search
+- **Consolidation Automation**: Implement regular processes to optimize memory organization
+- **Performance Monitoring**: Track and optimize memory operation performance
+
+### Testing and Validation
+
+- **Memory Recall Testing**: Validate retrieval effectiveness and accuracy
+- **Load Testing**: Ensure system performance with large memory volumes
+- **Privacy Compliance**: Verify adherence to data protection requirements
+- **Forgetting Verification**: Confirm complete data removal when required
+- **Cross-session Persistence**: Verify appropriate memory retention between sessions
+
+## Additional Resources
+
+- [Memory Systems Architecture](/agents/infrastructure/memory-system)
+- [RAG Patterns for Agent Memory](/agents/capabilities/rag)
+- [Data Privacy Compliance](/operations/data-governance)
+- [Vector Database Implementation](/technology-stack/vector-search)
+- [Memory Consolidation Algorithms](/agents/capabilities/memory-optimization)

@@ -1,0 +1,14 @@
+/* MNKY AGENTS (Flowise) – minimal MOOD MNKY theme
+   Primary accent only; deep theming limited per plan. */
+
+:root {
+  --mnky-primary: hsl(215, 19%, 35%);
+  --mnky-primary-foreground: hsl(210, 20%, 98%);
+}
+
+/* Chat send / primary actions */
+button[type="submit"],
+.primary-button {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+}

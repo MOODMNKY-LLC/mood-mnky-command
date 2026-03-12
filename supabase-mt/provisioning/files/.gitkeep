@@ -1,0 +1,3 @@
+# Copy or symlink docker-compose/ here as 'compose' before running deploy_stack.yml:
+#   cp -r ../../docker-compose compose
+#   ln -s ../../docker-compose compose

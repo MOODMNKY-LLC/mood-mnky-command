@@ -1,0 +1,354 @@
+---
+title: 'Platform Services: Integration Points'
+description: 'How the MNKY VERSE platform connects with external systems and services'
+---
+
+# Integration Points
+
+<Frame caption="The MNKY VERSE Integration Architecture">
+  <img src="/images/integration-architecture.png" alt="Integration Architecture" className="rounded-lg shadow-lg my-4" />
+</Frame>
+
+The MNKY VERSE platform provides a comprehensive set of integration points, allowing seamless connections with external systems, services, and data sources. These integration capabilities enable extended functionality, data sharing, and ecosystem expansion.
+
+## Core Integration Types
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
+  <div className="p-6 border rounded-lg shadow-md bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
+    <div className="flex justify-center mb-4">
+      <div className="p-3 bg-amber-200 dark:bg-amber-700 rounded-full">
+        <span className="text-3xl">🔌</span>
+      </div>
+    </div>
+    <h3 className="text-xl font-semibold text-amber-600 text-center">API Integrations</h3>
+    <p className="mt-2 text-center">RESTful and GraphQL APIs for programmatic access to platform services and data.</p>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+    <div className="flex justify-center mb-4">
+      <div className="p-3 bg-blue-200 dark:bg-blue-700 rounded-full">
+        <span className="text-3xl">📡</span>
+      </div>
+    </div>
+    <h3 className="text-xl font-semibold text-blue-600 text-center">Event Streaming</h3>
+    <p className="mt-2 text-center">Real-time event streams that enable reactive integrations and data synchronization.</p>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+    <div className="flex justify-center mb-4">
+      <div className="p-3 bg-green-200 dark:bg-green-700 rounded-full">
+        <span className="text-3xl">🔄</span>
+      </div>
+    </div>
+    <h3 className="text-xl font-semibold text-green-600 text-center">Webhook System</h3>
+    <p className="mt-2 text-center">Configurable webhooks that trigger on specific events and send data to external endpoints.</p>
+  </div>
+</div>
+
+## Platform Integration Points
+
+<Tabs>
+  <Tab title="E-commerce Integration">
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="md:w-1/3">
+        <div className="bg-purple-100 dark:bg-purple-900/40 p-6 rounded-lg flex items-center justify-center h-full">
+          <img src="/images/shopify-integration.png" alt="Shopify Integration" className="max-w-full h-auto" />
+        </div>
+      </div>
+      <div className="md:w-2/3">
+        <h4 className="text-lg font-semibold text-purple-700 mb-2">Shopify Integration</h4>
+        <p className="mb-4">A comprehensive integration with Shopify powers our e-commerce capabilities, enabling seamless product management, order processing, and customer data synchronization.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h5 className="font-medium text-purple-600">Key Features</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Product catalog synchronization</li>
+              <li>Order management integration</li>
+              <li>Customer profile unification</li>
+              <li>Custom product creation</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-medium text-purple-600">Available APIs</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Product API</li>
+              <li>Order API</li>
+              <li>Customer API</li>
+              <li>Custom Fragrance API</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Tab>
+  <Tab title="Content Integration">
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="md:w-1/3">
+        <div className="bg-blue-100 dark:bg-blue-900/40 p-6 rounded-lg flex items-center justify-center h-full">
+          <img src="/images/notion-integration.png" alt="Notion Integration" className="max-w-full h-auto" />
+        </div>
+      </div>
+      <div className="md:w-2/3">
+        <h4 className="text-lg font-semibold text-blue-700 mb-2">Notion Integration</h4>
+        <p className="mb-4">Our Notion integration enables seamless content management, documentation, and knowledge base synchronization across the platform.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h5 className="font-medium text-blue-600">Key Features</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Knowledge base synchronization</li>
+              <li>Documentation publishing</li>
+              <li>Content management workflow</li>
+              <li>Collaborative editing</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-medium text-blue-600">Available APIs</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Content API</li>
+              <li>Documentation API</li>
+              <li>Knowledge API</li>
+              <li>Media Asset API</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Tab>
+  <Tab title="Development Integration">
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="md:w-1/3">
+        <div className="bg-green-100 dark:bg-green-900/40 p-6 rounded-lg flex items-center justify-center h-full">
+          <img src="/images/github-integration.png" alt="GitHub Integration" className="max-w-full h-auto" />
+        </div>
+      </div>
+      <div className="md:w-2/3">
+        <h4 className="text-lg font-semibold text-green-700 mb-2">GitHub Integration</h4>
+        <p className="mb-4">Our GitHub integration streamlines development workflows, code management, and deployment processes throughout the platform.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h5 className="font-medium text-green-600">Key Features</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Repository synchronization</li>
+              <li>Issue and PR management</li>
+              <li>CI/CD pipeline integration</li>
+              <li>Documentation automation</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-medium text-green-600">Available APIs</h5>
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Repository API</li>
+              <li>Issue API</li>
+              <li>PR API</li>
+              <li>Deployment API</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Tab>
+</Tabs>
+
+## API Gateway
+
+<div className="p-6 border border-amber-200 dark:border-amber-800 rounded-lg bg-amber-50 dark:bg-amber-900/20 my-8">
+  <h3 className="text-xl font-semibold text-amber-800 dark:text-amber-300 mb-4">API Gateway Architecture</h3>
+  
+  <div className="flex flex-col md:flex-row gap-8">
+    <div className="md:w-1/2">
+      <p className="mb-4">The MNKY VERSE API Gateway provides a unified entry point for all API requests, with features for authentication, rate limiting, logging, and routing.</p>
+      
+      <h4 className="font-medium text-amber-700 dark:text-amber-400 mt-4 mb-2">Key Capabilities</h4>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>Authentication and authorization</li>
+        <li>Rate limiting and throttling</li>
+        <li>Request/response transformation</li>
+        <li>Logging and monitoring</li>
+        <li>Service discovery</li>
+        <li>Caching</li>
+        <li>API versioning</li>
+      </ul>
+    </div>
+    
+    <div className="md:w-1/2">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <pre className="text-xs overflow-x-auto"><code>{`// Example API Gateway Request
+fetch('https://api.mnkyverse.com/v1/products', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer {token}',
+    'Content-Type': 'application/json',
+    'x-api-key': '{api_key}'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error(error));`}</code></pre>
+      </div>
+      
+      <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <span className="mr-2">📘</span>
+        <span>See <a href="/api-reference" className="text-blue-600 dark:text-blue-400 hover:underline">API Reference</a> for complete documentation</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+## Event-Driven Architecture
+
+<CardGroup cols={2}>
+  <Card title="Event Types" icon="bolt">
+    Core event categories in the platform
+    - User events (login, registration, preferences)
+    - Order events (created, updated, fulfilled)
+    - Product events (created, updated, inventory)
+    - Content events (published, updated, archived)
+    - System events (alerts, notifications, status)
+  </Card>
+  <Card title="Event Delivery" icon="paper-plane">
+    How events are distributed
+    - Real-time WebSocket streams
+    - Message queues for asynchronous processing
+    - Event batching for high-volume scenarios
+    - Retry mechanisms for reliability
+    - Dead letter queues for failed events
+  </Card>
+  <Card title="Subscription Management" icon="bell">
+    Controlling event subscriptions
+    - Topic-based subscriptions
+    - Filtered subscriptions
+    - Temporary subscriptions
+    - Batch size configuration
+    - Delivery preference management
+  </Card>
+  <Card title="Integration Patterns" icon="puzzle-piece">
+    Common event integration patterns
+    - Event sourcing
+    - CQRS (Command Query Responsibility Segregation)
+    - Saga pattern for distributed transactions
+    - Event replay capabilities
+    - Outbox pattern for guaranteed delivery
+  </Card>
+</CardGroup>
+
+## Webhook System
+
+<AccordionGroup>
+  <Accordion title="Webhook Configuration">
+    How to set up and manage webhooks
+    - Webhook creation and registration
+    - Event type selection
+    - Endpoint URL configuration
+    - Authentication settings
+    - Format selection (JSON, XML)
+    - Failure handling preferences
+  </Accordion>
+  <Accordion title="Event Types">
+    Available events for webhook triggers
+    - User events (registration, login, profile update)
+    - Order events (creation, status change, fulfillment)
+    - Product events (creation, update, inventory change)
+    - Content events (publication, update, archival)
+    - System events (alerts, status changes)
+  </Accordion>
+  <Accordion title="Security Considerations">
+    Securing webhook integrations
+    - Secret key validation
+    - Payload signing
+    - IP whitelisting
+    - Rate limiting
+    - Timeout settings
+    - Error handling
+  </Accordion>
+  <Accordion title="Testing and Debugging">
+    Tools for webhook development
+    - Webhook tester interface
+    - Event simulation
+    - Delivery logs
+    - Debugging tools
+    - Payload inspection
+    - Retry capabilities
+  </Accordion>
+</AccordionGroup>
+
+## Third-Party Integrations
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 my-8">
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/stripe.png" alt="Stripe" className="h-12 mb-2" />
+    <span className="text-sm text-center">Payment Processing</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/sendgrid.png" alt="SendGrid" className="h-12 mb-2" />
+    <span className="text-sm text-center">Email Service</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/shippo.png" alt="Shippo" className="h-12 mb-2" />
+    <span className="text-sm text-center">Shipping</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/n8n.png" alt="n8n" className="h-12 mb-2" />
+    <span className="text-sm text-center">Workflow Automation</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/supabase.png" alt="Supabase" className="h-12 mb-2" />
+    <span className="text-sm text-center">Database</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/vercel.png" alt="Vercel" className="h-12 mb-2" />
+    <span className="text-sm text-center">Deployment</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/openai.png" alt="OpenAI" className="h-12 mb-2" />
+    <span className="text-sm text-center">AI Services</span>
+  </div>
+  <div className="p-4 border rounded-lg flex flex-col items-center">
+    <img src="/images/integrations/google.png" alt="Google" className="h-12 mb-2" />
+    <span className="text-sm text-center">Analytics</span>
+  </div>
+</div>
+
+## Implementation Guidelines
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+  <div className="p-6 border rounded-lg">
+    <h3 className="text-lg font-semibold mb-3">For Platform Consumers</h3>
+    <ul className="list-disc pl-5 space-y-2">
+      <li>Review API documentation before implementation</li>
+      <li>Use appropriate authentication methods for your use case</li>
+      <li>Implement proper error handling for resilience</li>
+      <li>Consider rate limits in high-volume scenarios</li>
+      <li>Test webhooks thoroughly before production use</li>
+      <li>Monitor integration health in production</li>
+    </ul>
+  </div>
+  
+  <div className="p-6 border rounded-lg">
+    <h3 className="text-lg font-semibold mb-3">For Platform Contributors</h3>
+    <ul className="list-disc pl-5 space-y-2">
+      <li>Follow API design guidelines for consistency</li>
+      <li>Provide comprehensive documentation</li>
+      <li>Include examples for common use cases</li>
+      <li>Support versioning for breaking changes</li>
+      <li>Implement robust error handling</li>
+      <li>Add appropriate logging for supportability</li>
+    </ul>
+  </div>
+</div>
+
+## Related Documentation
+
+For more detailed information about integrations, please refer to:
+
+<CardGroup cols={3}>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Complete API documentation
+  </Card>
+  <Card title="Authentication" icon="lock" href="/platform-services/authentication">
+    Authentication and authorization guides
+  </Card>
+  <Card title="Developer Guide" icon="book-code" href="/developer-guide">
+    Implementation guidelines and best practices
+  </Card>
+</CardGroup>

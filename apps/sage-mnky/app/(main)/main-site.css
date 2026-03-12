@@ -1,0 +1,40 @@
+.main-site {
+  --main-page-width: 1600px;
+  --main-spacing-sections: 32px;
+  --main-hero-title-size: clamp(2.25rem, 5vw, 3rem);
+  --main-hero-subtitle-size: 1.125rem;
+  --main-hero-min-height: 60vh;
+  --main-section-gap: 7rem;
+  --main-section-gap-sm: 5rem;
+  --main-gray-50: 0 0% 98%;
+  --main-gray-100: 0 0% 96.1%;
+  --main-gray-200: 0 0% 89.8%;
+  --main-gray-300: 0 0% 83.1%;
+  --main-gray-400: 0 0% 63.9%;
+  --main-gray-500: 0 0% 45.1%;
+  --main-gray-600: 0 0% 37.1%;
+  --main-gray-700: 0 0% 25.5%;
+  --main-gray-800: 0 0% 14.9%;
+  --main-gray-900: 0 0% 9%;
+  --main-gray-950: 0 0% 3.9%;
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+@media (min-width: 768px) {
+  .main-site {
+    --main-hero-title-size: clamp(2.5rem, 5vw, 3.5rem);
+    --main-hero-subtitle-size: 1.25rem;
+  }
+}
+.main-site .main-container {
+  max-width: var(--main-page-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 768px) {
+  .main-site .main-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}

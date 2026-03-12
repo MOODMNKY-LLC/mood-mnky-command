@@ -1,0 +1,31 @@
+{
+  "description": "FFLogs/Cactbot-aligned zone and encounter IDs. Refresh from FFLogs worldData.zones when new tiers release. category: savage | ultimates | trials | raids | dungeons for sidebar and duty filtering.",
+  "zones": [
+    {
+      "id": 54,
+      "name": "Anabaseios",
+      "expansion": "Endwalker",
+      "category": "savage",
+      "encounters": [
+        { "id": 88, "name": "Anabaseios First Circle (Savage)", "order": 1 },
+        { "id": 89, "name": "Anabaseios Second Circle (Savage)", "order": 2 },
+        { "id": 90, "name": "Anabaseios Third Circle (Savage)", "order": 3 },
+        { "id": 91, "name": "Anabaseios Fourth Circle (Savage)", "order": 4 },
+        { "id": 92, "name": "Anabaseios Fifth Circle (Savage)", "order": 5 }
+      ]
+    },
+    {
+      "id": 53,
+      "name": "Abyssos",
+      "expansion": "Endwalker",
+      "category": "savage",
+      "encounters": [
+        { "id": 78, "name": "Abyssos: The Fourth Circle (Savage)", "order": 1 },
+        { "id": 79, "name": "Abyssos: The Fifth Circle (Savage)", "order": 2 },
+        { "id": 80, "name": "Abyssos: The Sixth Circle (Savage)", "order": 3 },
+        { "id": 81, "name": "Abyssos: The Seventh Circle (Savage)", "order": 4 },
+        { "id": 82, "name": "Abyssos: The Eighth Circle (Savage)", "order": 5 }
+      ]
+    }
+  ]
+}

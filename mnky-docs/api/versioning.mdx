@@ -1,0 +1,146 @@
+---
+title: 'API Versioning'
+description: 'Understanding MOOD MNKY API versioning strategy and compatibility'
+---
+
+# API Versioning
+
+This page explains how MOOD MNKY handles API versioning, ensuring backward compatibility while allowing for evolution and improvement of our services.
+
+## Versioning Strategy
+
+We use a combination of URL path versioning and semantic versioning principles:
+
+### URL Path Versioning
+
+All API endpoints include a version in the URL path:
+
+```
+https://api.moodmnky.com/v1/resources
+```
+
+This approach ensures that:
+- Clients can explicitly select which API version to use
+- Different API versions can coexist during transition periods
+- Breaking changes can be introduced without disrupting existing integrations
+
+### Semantic Versioning
+
+Our API versions follow semantic versioning principles:
+
+- **Major versions** (v1, v2, v3): May include breaking changes that require client updates
+- **Minor versions**: Add new features in a backward-compatible manner
+- **Patch versions**: Fix bugs without changing functionality
+
+While the URL only shows the major version, minor and patch versions are tracked internally and documented in the changelog.
+
+## Version Lifecycle
+
+Each API version goes through a defined lifecycle:
+
+### Active Development
+
+New features and non-breaking changes are regularly added.
+
+### Stable
+
+The API is feature-complete and receives only bug fixes and security updates.
+
+### Deprecated
+
+The API is marked for eventual removal. We recommend migrating to newer versions.
+- Deprecated versions continue to function for at least 12 months after deprecation notice
+- Deprecation warnings are included in API responses
+- Migration guides are provided
+
+### Sunset
+
+The API version is no longer available. All clients must use newer versions.
+
+## Current API Versions
+
+| API | Current Version | Status | Introduced | Planned Deprecation |
+|-----|----------------|--------|------------|---------------------|
+| Core API | v1 | Stable | 2022-08-15 | Not scheduled |
+| E-commerce API | v1 | Active | 2023-01-10 | Not scheduled |
+| Ollama API | v1 | Active | 2023-06-20 | Not scheduled |
+| Flowise API | v1 | Active | 2023-04-15 | Not scheduled |
+| Langchain API | v1 | Active | 2023-05-01 | Not scheduled |
+| n8n API | v1 | Active | 2023-03-10 | Not scheduled |
+
+## Version Headers
+
+In addition to URL versioning, some APIs support specifying a more specific version via headers:
+
+```
+API-Version: 2023-08-01
+```
+
+This allows for finer-grained version control without changing the URL structure.
+
+## Breaking vs. Non-Breaking Changes
+
+### Breaking Changes (Major Versions)
+
+Breaking changes include:
+- Removing or renaming endpoints
+- Removing or renaming required request parameters
+- Changing the structure of response objects
+- Changing the semantics of existing functionality
+
+These changes only occur in new major versions.
+
+### Non-Breaking Changes (Minor/Patch Versions)
+
+Non-breaking changes include:
+- Adding new endpoints
+- Adding optional request parameters
+- Adding new fields to response objects
+- Bug fixes that don't change behavior
+
+These changes may occur within the same major version.
+
+## Handling API Changes
+
+### As an API Consumer
+
+Best practices for consuming our APIs:
+
+1. **Specify the API version explicitly** in your integrations
+2. **Check the API changelog regularly** for updates
+3. **Test against new versions** before upgrading production systems
+4. **Plan for migration** well before deprecation deadlines
+5. **Use feature detection** rather than version checking when possible
+
+### Version Migration
+
+When migrating between major versions:
+
+1. Review the migration guide for the new version
+2. Update your client code to handle any changes
+3. Test thoroughly in non-production environments
+4. Deploy updates before the old version is sunset
+
+## Notification of Changes
+
+We communicate API changes through multiple channels:
+
+- **Changelog**: Detailed listing of all changes
+- **Developer Newsletter**: Monthly summary of API updates
+- **Deprecation Notices**: In API responses when using deprecated features
+- **Developer Portal**: Announcements and migration guides
+- **Direct Communication**: For significant changes affecting major integrations
+
+## Version Support Policy
+
+- Each major version is supported for a minimum of 24 months after release
+- Deprecated versions receive security updates but no new features
+- At least 12 months notice is provided before sunsetting a version
+
+## Feedback and Questions
+
+If you have questions about API versioning or migration:
+
+- Contact [developer support](mailto:dev-support@moodmnky.com)
+- Join our [Discord community](https://discord.gg/moodmnky) for peer assistance
+- Check the [migration guides](/api/migrations) for detailed instructions 

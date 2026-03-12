@@ -1,0 +1,36 @@
+/* Hydaelyn miniparse overlay - Eorzea-inspired HUD */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; -webkit-font-smoothing: antialiased; }
+
+.hydaelyn-miniparse {
+  --bg: rgba(12, 14, 22, 0.92);
+  --border: rgba(100, 148, 200, 0.35);
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --accent: #7dd3fc;
+  --accent-strong: #38bdf8;
+  --row-alt: rgba(30, 41, 59, 0.5);
+  min-width: 280px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.encounter-header { font-family: "Cinzel Decorative", serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.encounter-title { color: var(--text); margin-bottom: 2px; }
+.encounter-meta { font-size: 11px; color: var(--text-dim); }
+.encounter-meta .dps { color: var(--accent-strong); font-weight: 500; }
+
+#combatantTable { width: 100%; border-collapse: collapse; font-size: 11px; }
+#combatantTable thead th { text-align: left; padding: 4px 6px 6px; font-weight: 500; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+#combatantTable thead th.num { text-align: right; }
+#combatantTable tbody td { padding: 3px 6px; border-bottom: 1px solid rgba(100, 148, 200, 0.08); }
+#combatantTable tbody tr:nth-child(even) { background: var(--row-alt); }
+#combatantTable tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+#combatantTable tbody tr.dead td { color: #f87171; opacity: 0.85; }
+.empty-state { padding: 16px; text-align: center; color: var(--text-dim); font-size: 11px; }

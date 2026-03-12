@@ -1,0 +1,170 @@
+---
+title: "ESLint Config Package"
+description: "Shared ESLint configurations for code consistency"
+icon: "code"
+---
+
+# ESLint Config Package (@repo/eslint-config)
+
+The ESLint Config package provides shared linting configurations that ensure code consistency and quality across all MOOD MNKY applications and packages.
+
+## Overview
+
+`@repo/eslint-config` standardizes code style, catches common errors, and enforces best practices across the monorepo. This package ensures that all code follows the same quality standards regardless of which application or package it's written in.
+
+### Key Features
+
+- **Consistent Rules**: Same linting rules across all projects
+- **TypeScript Support**: Full TypeScript and React support
+- **Next.js Optimized**: Rules optimized for Next.js applications
+- **Extensible**: Easy to extend with project-specific rules
+
+## Installation
+
+The package is automatically available as a workspace dependency:
+
+```json
+{
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*"
+  }
+}
+```
+
+## Usage
+
+### Basic Configuration
+
+Extend the shared config in your `eslint.config.js`:
+
+```javascript
+import baseConfig from '@repo/eslint-config';
+
+export default [
+  ...baseConfig,
+  // Add project-specific rules here
+];
+```
+
+### Next.js Applications
+
+For Next.js apps, use the Next.js-specific config:
+
+```javascript
+import nextConfig from '@repo/eslint-config/next';
+
+export default [
+  ...nextConfig,
+];
+```
+
+## Configuration Options
+
+### Base Config
+
+Standard configuration for all projects:
+
+- TypeScript rules
+- Import/export rules
+- Code quality rules
+- Best practices
+
+### Next.js Config
+
+Extended configuration for Next.js apps:
+
+- Next.js-specific rules
+- React hooks rules
+- JSX rules
+- App Router optimizations
+
+## Common Rules
+
+### TypeScript Rules
+
+- Strict type checking
+- No `any` types
+- Proper type imports
+- Type safety enforcement
+
+### Import Rules
+
+- Consistent import ordering
+- No unused imports
+- Proper import grouping
+- Absolute import support
+
+### Code Quality
+
+- No console.log in production
+- Consistent naming conventions
+- Proper error handling
+- Code complexity limits
+
+## Customization
+
+### Extending Rules
+
+```javascript
+import baseConfig from '@repo/eslint-config';
+
+export default [
+  ...baseConfig,
+  {
+    rules: {
+      // Override specific rules
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+];
+```
+
+### Disabling Rules
+
+```javascript
+// Disable for specific file
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Disable for specific line
+const data: any = {}; // eslint-disable-line
+```
+
+## Integration
+
+### VS Code
+
+Configure VS Code to use ESLint:
+
+```json
+{
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
+}
+```
+
+### Pre-commit Hooks
+
+Use with Husky for pre-commit linting:
+
+```json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}
+```
+
+## Related Resources
+
+- [Coding Standards](/developer-resources/coding-standards) - Code style guide
+- [TypeScript Config](/packages/typescript-config) - TypeScript configuration
+- [Contribution Guidelines](/developer-resources/contribution-guidelines) - Development workflow
+
+
+

@@ -1,0 +1,75 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 0
+      }
+    },
+    "167618410124e66bf7": {
+      "type": "apps",
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "010cdeea-78a7-479f-86c9-acb8da3003f2": {
+      "type": "image-with-text",
+      "blocks": {
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-0": {
+          "type": "heading",
+          "settings": {
+            "heading": "MOOD MATCH: Custom Fragrance Service",
+            "heading_size": "h1"
+          }
+        },
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-1": {
+          "type": "text",
+          "settings": {
+            "text": "<p>With our MOOD MATCH custom fragrance service, you're in the driver's seat. Say goodbye to pre-poured candles and hello to the world of bespoke scents. Our candle experts will work with you to create a custom fragrance that's truly one-of-a-kind, based on your unique preferences. We don't just stop at one note, we use our MOOD WHEEL to guide the process and pair your preferred \"base\" note with several other complementary fragrances to create the perfect blend.</p><p>Our candle crafters then go to work, tinkering and tweaking until the balance and blend are just right, and if you're not completely satisfied, we'll re-work it until you are. We even offer wax-melt samples of revisions, so you can be sure you're getting exactly what you want before purchasing a larger vessel.</p><p>Once you've found your perfect scent, we'll log it in our company catalog under a name of your choosing so that you can re-purchase it anytime. And the best part? Customer-crafted blends that make it into our catalog are available to all customers, so you can be part of our candle-making community and share your unique scent with others.</p><p>But that's not all - if your custom blend is requested by another customer, you'll become eligible for additional perks, including discounts, gift cards, and loyalty points. We believe that our customers are our greatest asset, and we want to celebrate you by building our brand together.</p><p>At MOOD MNKY, we put the power of scent creation in your hands. Come create your own fragrance and help us build a truly unique and collaborative candle-making experience.</p>",
+            "text_style": "subtitle"
+          }
+        },
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-2": {
+          "type": "button",
+          "settings": {
+            "button_label": "What we’re about…",
+            "button_link": "shopify://pages/who-we-are"
+          }
+        }
+      },
+      "block_order": [
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-0",
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-1",
+        "template--17939850658066__010cdeea-78a7-479f-86c9-acb8da3003f2-1676689472469d3ba2-2"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/MiniMood.png",
+        "height": "adapt",
+        "desktop_image_width": "small",
+        "layout": "text_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "accent-2",
+        "mobile_content_alignment": "center",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    }
+  },
+  "order": [
+    "main",
+    "167618410124e66bf7",
+    "010cdeea-78a7-479f-86c9-acb8da3003f2"
+  ]
+}

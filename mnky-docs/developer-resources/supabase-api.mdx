@@ -1,0 +1,402 @@
+---
+title: 'Supabase API Reference'
+description: 'Comprehensive documentation for the MOOD MNKY Supabase APIs'
+---
+
+# Supabase API Reference
+
+This documentation provides comprehensive details on using the MOOD MNKY Supabase APIs for accessing data across our platform.
+
+## Authentication
+
+<CodeGroup>
+```typescript TypeScript
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'https://db.moodmnky.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Sign in with email and password
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'example@moodmnky.co',
+  password: 'example-password',
+})
+```
+
+```javascript JavaScript
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'https://db.moodmnky.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Sign in with email and password
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'example@moodmnky.co',
+  password: 'example-password',
+})
+```
+</CodeGroup>
+
+## User Profiles API
+
+### Get User Profile
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', user.id)
+  .single()
+```
+</RequestExample>
+
+<ResponseExample>
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "username": "mnky_lover",
+  "full_name": "MOOD MNKY Fan",
+  "avatar_url": "https://example.com/avatar.png",
+  "website": "https://example.com",
+  "created_at": "2023-01-01T12:00:00.000Z",
+  "member_tier": "premium",
+  "member_since": "2023-01-01T12:00:00.000Z"
+}
+```
+</ResponseExample>
+
+### Update User Profile
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('profiles')
+  .update({ 
+    full_name: 'Updated Name',
+    avatar_url: 'https://example.com/new-avatar.png'
+  })
+  .eq('id', user.id)
+```
+</RequestExample>
+
+## Products API
+
+### Get All Products
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('products')
+  .select('*')
+  .order('created_at', { ascending: false })
+```
+</RequestExample>
+
+### Get Product by ID
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('products')
+  .select(`
+    *,
+    product_images (*)
+  `)
+  .eq('id', productId)
+  .single()
+```
+</RequestExample>
+
+### Filter Products
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('product_type', 'candle')
+  .lt('price', 50)
+  .eq('is_active', true)
+```
+</RequestExample>
+
+## Fragrances API
+
+### Get All Fragrances
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('fragrances')
+  .select('*')
+```
+</RequestExample>
+
+### Get Custom Fragrances for User
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('custom_fragrances')
+  .select(`
+    *,
+    profiles (username),
+    fragrances (name, fragrance_family)
+  `)
+  .eq('creator_id', userId)
+```
+</RequestExample>
+
+### Create Custom Fragrance
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('custom_fragrances')
+  .insert([
+    { 
+      name: 'My Custom Scent',
+      creator_id: userId,
+      base_fragrance_id: baseFragranceId,
+      description: 'A warm and spicy blend with hints of vanilla',
+      story: 'Inspired by winter evenings by the fireplace',
+      is_public: false,
+      custom_notes: ['vanilla', 'cinnamon', 'amber'],
+      modification_instructions: 'Add extra vanilla to base'
+    }
+  ])
+  .select()
+```
+</RequestExample>
+
+## Content API
+
+### Get Public Content
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('content')
+  .select(`
+    *,
+    profiles (username),
+    content_category_mapping (
+      content_categories (name, slug)
+    )
+  `)
+  .eq('visibility', 'public')
+  .order('published_at', { ascending: false })
+```
+</RequestExample>
+
+### Get Member-Only Content
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('content')
+  .select(`
+    *,
+    profiles (username),
+    content_category_mapping (
+      content_categories (name, slug)
+    )
+  `)
+  .in('visibility', ['public', 'members'])
+  .lte('required_tier', userTier)
+  .order('published_at', { ascending: false })
+```
+</RequestExample>
+
+## AI Agents API
+
+### Get Available AI Agents
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('ai_agents')
+  .select('*')
+  .or(`is_public.eq.true, minimum_tier.lte.${userTier}`)
+```
+</RequestExample>
+
+### Get Agent Customizations
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('member_agent_customizations')
+  .select(`
+    *,
+    ai_agents (*)
+  `)
+  .eq('member_id', userId)
+```
+</RequestExample>
+
+### Store Conversation History
+
+<RequestExample>
+```typescript
+const { data, error } = await supabase
+  .from('conversation_history')
+  .insert([
+    { 
+      member_id: userId,
+      agent_id: agentId,
+      message: 'Hello, how can I help you today?',
+      is_from_user: false,
+      conversation_id: conversationId,
+      context: { 
+        previous_intents: ['greeting'],
+        current_topic: 'general'
+      }
+    }
+  ])
+```
+</RequestExample>
+
+## Real-time Subscriptions
+
+### Subscribe to Conversation Updates
+
+<CodeGroup>
+```typescript TypeScript
+const subscription = supabase
+  .channel('custom-channel')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'conversation_history',
+      filter: `conversation_id=eq.${conversationId}`
+    },
+    (payload) => {
+      console.log('New message received!', payload)
+      // Update UI with new message
+    }
+  )
+  .subscribe()
+```
+
+```javascript JavaScript
+const subscription = supabase
+  .channel('custom-channel')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'conversation_history',
+      filter: `conversation_id=eq.${conversationId}`
+    },
+    (payload) => {
+      console.log('New message received!', payload)
+      // Update UI with new message
+    }
+  )
+  .subscribe()
+```
+</CodeGroup>
+
+## Storage API
+
+### Upload File
+
+<CodeGroup>
+```typescript TypeScript
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .upload('public/product-123.jpg', file, {
+    cacheControl: '3600',
+    upsert: false
+  })
+```
+
+```javascript JavaScript
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .upload('public/product-123.jpg', file, {
+    cacheControl: '3600',
+    upsert: false
+  })
+```
+</CodeGroup>
+
+### Get Public URL
+
+<CodeGroup>
+```typescript TypeScript
+const { data } = supabase.storage
+  .from('product-images')
+  .getPublicUrl('public/product-123.jpg')
+```
+
+```javascript JavaScript
+const { data } = supabase.storage
+  .from('product-images')
+  .getPublicUrl('public/product-123.jpg')
+```
+</CodeGroup>
+
+## Error Handling
+
+When working with the Supabase API, always implement proper error handling:
+
+<CodeGroup>
+```typescript TypeScript
+try {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    
+  if (error) {
+    console.error('Error fetching products:', error)
+    throw error
+  }
+  
+  return data
+} catch (err) {
+  console.error('Unexpected error:', err)
+  // Implement fallback or error reporting
+}
+```
+
+```javascript JavaScript
+try {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    
+  if (error) {
+    console.error('Error fetching products:', error)
+    throw error
+  }
+  
+  return data
+} catch (err) {
+  console.error('Unexpected error:', err)
+  // Implement fallback or error reporting
+}
+```
+</CodeGroup>
+
+## Rate Limits and Performance
+
+- Implement client-side caching for frequently accessed data
+- Use the most specific queries possible to minimize data transfer
+- Respect Supabase rate limits and implement backoff strategies
+- For large datasets, use pagination with the `range` function
+
+<Warning>
+  Never expose your Supabase service role key in client-side code. Use the anon key for client applications and secure any sensitive operations behind server endpoints.
+</Warning>
+
+---
+
+For detailed information about our Supabase implementation, database schema, and best practices, see the [Supabase Integration](/technology-stack/supabase) documentation. 

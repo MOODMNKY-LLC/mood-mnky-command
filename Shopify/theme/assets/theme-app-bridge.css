@@ -1,0 +1,87 @@
+/**
+ * Theme App Bridge — dark-mode first; aligns with root app.
+ * Monochromatic grayscale; modern lofi gentleman quarterly vibe.
+ */
+:root {
+  /* Verse tokens (dark-first) */
+  --verse-bg: #0a0a0a;
+  --verse-text: #fafafa;
+  --verse-text-muted: #a3a3a3;
+  --verse-button: #404040;
+  --verse-button-text: #fafafa;
+
+  /* App-aligned radius */
+  --radius: 0.375rem;
+}
+
+/* Light mode: verse tokens when theme switcher is "light" */
+body[data-theme="light"] {
+  --verse-bg: #fafafa;
+  --verse-text: #171717;
+  --verse-text-muted: #525252;
+  --verse-button: #404040;
+  --verse-button-text: #fafafa;
+}
+
+/* Light mode: override theme color scheme variables so sections render light */
+body[data-theme="light"],
+body[data-theme="light"] .color-background-1,
+body[data-theme="light"] .color-background-2,
+body[data-theme="light"] .color-inverse,
+body[data-theme="light"] .color-accent-1,
+body[data-theme="light"] .color-accent-2 {
+  --color-background: 250, 250, 250;
+  --color-foreground: 23, 23, 23;
+  --gradient-background: #fafafa;
+  --color-background-contrast: 229, 229, 229;
+  --color-shadow: 23, 23, 23;
+  --color-button: 64, 64, 64;
+  --color-button-text: 250, 250, 250;
+  --color-secondary-button: 250, 250, 250;
+  --color-secondary-button-text: 23, 23, 23;
+  --color-link: 23, 23, 23;
+  --color-badge-foreground: 23, 23, 23;
+  --color-badge-background: 250, 250, 250;
+  --color-badge-border: 23, 23, 23;
+}
+
+/* Lofi editorial: heading letter-spacing and readable content width */
+.title,
+.title-wrapper .title,
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: 0.02em;
+}
+
+.collection__description,
+.rte,
+.text-body {
+  max-width: 65ch;
+}
+
+/* Header icon spacing and grouping (utility vs cart) */
+.header__icons {
+  gap: 1.25rem;
+}
+
+.header__icons-group--utility {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__icons-group--cart {
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(var(--color-foreground), 0.12);
+}
+
+/* Theme switcher: single button, only one icon visible at a time */
+.theme-toggle [hidden] {
+  display: none !important;
+}
+
+.theme-toggle .theme-toggle__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

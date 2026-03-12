@@ -1,0 +1,96 @@
+---
+title: "Applications Overview"
+description: "Guide to the mood-mnky-command app and its three experiences: MNKY VERSE, The Dojo, and MNKY LABZ"
+icon: "window"
+---
+
+# Applications Overview
+
+The **mood-mnky-command** monorepo contains a single Next.js application that serves three experiences: **MNKY VERSE** (storefront), **The Dojo** (private hub), and **MNKY LABZ** (admin dashboard). The Shopify theme and app extension complement the app.
+
+<Info>
+See [Monorepo Structure](/technology-stack/mono-repo-structure) for the full directory layout. All three experiences share `apps/web/` and deploy as one Vercel project.
+</Info>
+
+## Application Architecture
+
+<CardGroup cols={2}>
+  <Card title="MNKY VERSE" icon="sparkles" href="/applications/mnky-verse">
+    Web experiential portal: storefront, blog, agents, gamification
+  </Card>
+  <Card title="The Dojo" icon="book-open" href="/platform-services/dojo-overview">
+    Members' private hub: XP, quests, Blending Lab, MNKY CHAT
+  </Card>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard: formulas, oils, Shopify, Notion, CODE MNKY
+  </Card>
+  <Card title="Shopify Theme" icon="shopping-bag" href="/developer-resources/theme-customization">
+    Liquid theme and app extension
+  </Card>
+</CardGroup>
+
+## Application Comparison
+
+| Experience | Purpose | Routes | Primary Users |
+|------------|---------|--------|---------------|
+| **MNKY VERSE** | Web portal | `/verse/*` | End users, customers |
+| **The Dojo** | Private hub | `/dojo/*` | Authenticated members |
+| **MNKY LABZ** | Admin dashboard | `/`, `/formulas`, `/store/*`, etc. | Operations, product, dev |
+
+## Single App, Multiple Experiences
+
+All three experiences live in `apps/web/`:
+
+```
+apps/web/app/
+├── (storefront)/verse/   # MNKY VERSE
+├── dojo/                 # The Dojo
+└── (dashboard)/          # MNKY LABZ
+```
+
+- **MNKY VERSE**: Public storefront, blog, agents, gamification
+- **The Dojo**: Auth-required; XP, quests, Blending Lab, chat
+- **MNKY LABZ**: Auth-required; formulas, fragrance oils, Shopify Admin, Notion sync, CODE MNKY
+
+## Other Applications (Reference)
+
+The following applications may exist in separate repositories or as future additions:
+
+| Application | Status | Purpose |
+|-------------|--------|---------|
+| **TRVLR Sync** | Optional/deprecated | Bungie.net/Destiny 2 sync |
+| **Shopify App** | Integrated | Shopify Admin API usage is in LABZ |
+| **MNKY Agents Demo** | Optional | Python FastAPI agent demo |
+
+## Getting Started
+
+### For New Developers
+
+1. **Understand the Ecosystem**: Start with the [Introduction](/introduction) (Three Pillars)
+2. **Set Up Environment**: Follow [Environment Setup](/developer-resources/environment-setup)
+3. **Run the app**: `pnpm dev` from repo root
+4. **Explore**: MNKY VERSE at `/verse`, Dojo at `/dojo`, LABZ at `/`
+
+### Local Development
+
+```bash
+# Start development server (runs apps/web)
+pnpm dev
+
+# Build
+pnpm build
+```
+
+App runs at `http://localhost:3000`. MNKY VERSE: `/verse`; Dojo: `/dojo`; LABZ: `/`.
+
+### Deployment
+
+- **Vercel**: Root directory set to `apps/web`; Turborepo build from repo root
+- **Environment variables**: Supabase, Shopify, optional Notion/OpenAI
+
+## Related Resources
+
+- [MNKY VERSE Application](/applications/mnky-verse) - Technical details
+- [Monorepo Structure](/technology-stack/mono-repo-structure) - Directory layout
+- [Technology Foundation](/technology-stack/tech-foundation) - Stack overview
+- [Development Guides](/developer-resources/environment-setup) - Setup and workflows

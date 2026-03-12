@@ -1,0 +1,581 @@
+---
+title: 'n8n Workflow Management'
+description: 'Building and managing workflows in the MOOD MNKY n8n integration'
+---
+
+# n8n Workflow Management
+
+This documentation covers the workflow management capabilities within the MOOD MNKY n8n integration, including workflow design patterns, best practices, and common use cases.
+
+## Workflow Concepts
+
+### What is a Workflow?
+
+In n8n, a workflow is a series of connected nodes that represent a business process or automation task. Each workflow consists of:
+
+- **Trigger Node**: Defines how the workflow starts (schedule, webhook, event, etc.)
+- **Processing Nodes**: Transform, filter, or process data
+- **Action Nodes**: Perform operations with external systems
+- **Control Flow Nodes**: Manage the execution path
+- **Connections**: Define how data flows between nodes
+
+### Workflow Lifecycle
+
+Workflows in the MOOD MNKY ecosystem go through the following lifecycle:
+
+1. **Development**: Creation and testing in a development environment
+2. **Review**: Workflow review by relevant stakeholders
+3. **Deployment**: Activation in production environment
+4. **Monitoring**: Ongoing monitoring and error handling
+5. **Maintenance**: Updates and improvements as needed
+6. **Archiving**: Deactivation when no longer needed
+
+## Core MOOD MNKY Workflows
+
+The MOOD MNKY n8n integration includes several core workflows that support key business functions:
+
+### User Onboarding Workflow
+
+This workflow handles the user registration and onboarding process:
+
+```
+Webhook (New User Registration)
+  ↓
+Fetch User Profile
+  ↓
+Create Supabase Record
+  ↓
+Synchronize with Shopify
+  ↓
+Send Welcome Email
+  ↓
+Initialize User Preferences
+```
+
+**Key Features**:
+- Real-time processing of new registrations
+- Seamless integration between platform and e-commerce
+- Personalized welcome communications
+- Error handling for failed registrations
+
+### Data Synchronization Workflow
+
+This workflow ensures data consistency across all systems:
+
+```
+Schedule (Hourly)
+  ↓
+Fetch Shopify Orders
+  ↓
+IF (New Orders)
+  ↓
+Update Supabase Database
+  ↓
+Enrich Customer Profiles
+  ↓
+Trigger Notification Workflow
+```
+
+**Key Features**:
+- Scheduled synchronization with configurable intervals
+- Conditional processing to optimize resources
+- Comprehensive error handling and retry mechanisms
+- Audit logging for all synchronization events
+
+### Notification System Workflow
+
+This workflow manages user notifications across channels:
+
+```
+Webhook (Notification Trigger)
+  ↓
+Load User Preferences
+  ↓
+Switch (Notification Type)
+  ├→ Email Branch
+  │   ↓
+  │   Format Email Content
+  │   ↓
+  │   Send via SendGrid
+  │
+  ├→ SMS Branch
+  │   ↓
+  │   Format SMS Content
+  │   ↓
+  │   Send via Twilio
+  │
+  └→ In-App Branch
+      ↓
+      Format In-App Message
+      ↓
+      Store in Supabase
+```
+
+**Key Features**:
+- Channel-specific message formatting
+- User preference-based delivery
+- Delivery status tracking
+- Throttling to prevent notification fatigue
+
+### Content Processing Workflow
+
+This workflow handles content ingestion and processing:
+
+```
+Webhook (New Content)
+  ↓
+Validate Content Structure
+  ↓
+Process Images (Resize/Optimize)
+  ↓
+Generate Metadata
+  ↓
+Store in Supabase
+  ↓
+Index for Search
+  ↓
+Publish Status Update
+```
+
+**Key Features**:
+- Content validation against schema
+- Automatic image processing and optimization
+- Metadata extraction and enrichment
+- Search indexing integration
+
+## Building Workflows
+
+### Workflow Design Principles
+
+When creating workflows in the MOOD MNKY n8n integration, follow these design principles:
+
+1. **Single Responsibility**: Each workflow should have a clear, focused purpose
+2. **Modularity**: Break complex processes into smaller, reusable workflows
+3. **Error Handling**: Include comprehensive error handling at each critical step
+4. **Idempotency**: Design workflows to be safely retriggerable without side effects
+5. **Observability**: Include logging and monitoring touchpoints
+6. **Documentation**: Document workflow purpose, inputs, outputs, and dependencies
+
+### Node Selection Guidelines
+
+For consistent workflow development, follow these node selection guidelines:
+
+| Function | Recommended Nodes | Alternative Nodes |
+|----------|-------------------|-------------------|
+| Triggers | Webhook, Schedule, Supabase Trigger | Cron, Manual Trigger |
+| API Calls | HTTP Request, Supabase | API, GraphQL |
+| Data Transformation | Set, Function, Map | Edit Fields, Split In Batches |
+| Conditional Logic | IF, Switch | Conditional, Function |
+| Loops | Loop Over Items | Recursive Workflow |
+| Error Handling | Error Trigger, Try/Catch | IF, Function |
+
+### Custom Function Nodes
+
+For complex operations, use JavaScript function nodes with these patterns:
+
+```javascript
+// Input validation pattern
+const inputData = items[0].json;
+if (!inputData.requiredField) {
+  throw new Error('Missing required field');
+}
+
+// Data transformation pattern
+return items.map(item => {
+  const data = item.json;
+  return {
+    json: {
+      ...data,
+      transformedField: data.originalField.toUpperCase(),
+      timestamp: new Date().toISOString()
+    }
+  };
+});
+
+// Error handling pattern
+try {
+  // Your code here
+} catch (error) {
+  console.log('Error in function node:', error);
+  return {
+    json: {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }
+  };
+}
+```
+
+## Workflow Management Best Practices
+
+### Naming Conventions
+
+Use consistent naming for workflows and nodes:
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Workflows | `[System]_[Function]_[Action]` | `Shopify_Orders_Sync` |
+| Trigger Nodes | `[Source]_[Event]_Trigger` | `Supabase_NewUser_Trigger` |
+| Process Nodes | `[Action]_[Object]` | `Filter_ActiveUsers` |
+| Function Nodes | `[Function]_[Purpose]` | `Format_CustomerData` |
+
+### Version Control and Deployment
+
+The MOOD MNKY n8n integration follows these version control practices:
+
+1. **Workflow Export**: Export workflows as JSON for version control
+2. **Git Integration**: Store workflow definitions in the monorepo
+3. **Review Process**: Use pull requests for workflow changes
+4. **Deployment Stages**: Deploy to development, testing, then production
+5. **Rollback Plan**: Maintain previous versions for quick rollback
+
+Sample workflow export command:
+
+```bash
+curl "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/export?ids=123,456" \
+  -H "X-N8N-API-KEY: your_api_key" \
+  > workflows-export.json
+```
+
+Sample workflow import command:
+
+```bash
+curl -X POST "https://mnky-mind-n8n.moodmnky.com/api/v1/workflows/import" \
+  -H "X-N8N-API-KEY: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d @workflows-export.json
+```
+
+### Error Handling Strategy
+
+Implement comprehensive error handling with this strategy:
+
+1. **Input Validation**: Validate inputs at the beginning of workflows
+2. **Try/Catch Patterns**: Use for critical operations
+3. **Error Workflows**: Trigger dedicated error-handling workflows
+4. **Retry Mechanisms**: Configure automatic retries for transient failures
+5. **Error Notifications**: Alert appropriate personnel based on error severity
+6. **Logging**: Maintain detailed error logs for troubleshooting
+
+Example error handling workflow structure:
+
+```
+Error Trigger
+  ↓
+Determine Error Type
+  ↓
+Switch (Error Type)
+  ├→ Transient Error
+  │   ↓
+  │   Schedule Retry
+  │
+  ├→ Data Error
+  │   ↓
+  │   Log Details
+  │   ↓
+  │   Notify Data Team
+  │
+  └→ Critical Error
+      ↓
+      Log Details
+      ↓
+      Notify Development Team
+      ↓
+      Create Issue in GitHub
+```
+
+## Workflow Testing and Monitoring
+
+### Testing Workflows
+
+Follow these testing practices for n8n workflows:
+
+1. **Component Testing**: Test individual nodes with sample data
+2. **Integration Testing**: Test complete workflows with realistic data
+3. **Error Testing**: Deliberately introduce errors to test handling
+4. **Performance Testing**: Test with expected volume and frequency
+5. **Regression Testing**: Re-test after changes to ensure stability
+
+### Monitoring and Maintenance
+
+Implement these monitoring practices:
+
+1. **Execution Logs**: Review workflow execution logs regularly
+2. **Performance Metrics**: Monitor execution time and resource usage
+3. **Error Rate Tracking**: Track and investigate error patterns
+4. **Usage Analytics**: Monitor trigger frequency and data volume
+5. **Regular Reviews**: Scheduled reviews of workflow performance
+
+## Integration with MOOD MNKY Services
+
+### Connection with Ollama API
+
+Workflows can integrate with the Ollama API for AI-assisted processes:
+
+```
+HTTP Request (Ollama API)
+  ↓
+Function (Format Prompt)
+  ↓
+HTTP Request (POST /api/chat)
+  ↓
+Function (Process Response)
+```
+
+**Example Function Node for Ollama Integration**:
+
+```javascript
+// Format data for Ollama API
+const inputData = items[0].json;
+
+return {
+  json: {
+    model: "llama2",
+    messages: [
+      {
+        role: "system",
+        content: "You are a helpful assistant for MOOD MNKY customers."
+      },
+      {
+        role: "user",
+        content: inputData.userQuery
+      }
+    ],
+    options: {
+      temperature: 0.7
+    }
+  }
+};
+```
+
+### Connection with Flowise API
+
+Workflows can trigger Flowise chatflows for complex AI interactions:
+
+```
+HTTP Request (Flowise API)
+  ↓
+Function (Prepare Input)
+  ↓
+HTTP Request (POST /api/v1/prediction/{chatflowId})
+  ↓
+Function (Process Chatflow Response)
+```
+
+### Connection with Langchain API
+
+Workflows can leverage Langchain for document processing:
+
+```
+HTTP Request (Langchain API)
+  ↓
+Function (Prepare Document)
+  ↓
+HTTP Request (POST /api/documents/process)
+  ↓
+IF (Success)
+  ├→ Store Document Vectors
+  └→ Handle Error
+```
+
+### Connection with Supabase
+
+Workflows frequently interact with Supabase for data storage:
+
+```
+Supabase Node
+  ↓
+Function (Transform Data)
+  ↓
+Supabase Node (Update/Insert)
+```
+
+## Common Workflow Examples
+
+### Customer Journey Workflow
+
+```typescript
+// Function node to process customer journey data
+const inputData = items[0].json;
+const customerId = inputData.customerId;
+const eventType = inputData.eventType;
+
+// Get current customer journey stage
+const journeyStage = await getCustomerJourneyStage(customerId);
+
+// Map events to journey advancement logic
+const journeyMap = {
+  'account_created': { nextStage: 'onboarding', points: 10 },
+  'profile_completed': { nextStage: 'discovery', points: 20 },
+  'first_purchase': { nextStage: 'active', points: 50 },
+  'repeat_purchase': { nextStage: 'loyal', points: 30 },
+  'feedback_provided': { nextStage: null, points: 15 }
+};
+
+// Process the event
+const eventConfig = journeyMap[eventType] || { nextStage: null, points: 0 };
+let nextStage = journeyStage;
+
+if (eventConfig.nextStage) {
+  nextStage = eventConfig.nextStage;
+}
+
+// Return the updated customer data
+return {
+  json: {
+    customerId,
+    previousStage: journeyStage,
+    currentStage: nextStage,
+    pointsEarned: eventConfig.points,
+    timestamp: new Date().toISOString(),
+    eventType
+  }
+};
+```
+
+### Inventory Management Workflow
+
+```typescript
+// Function node to check inventory levels and generate alerts
+const products = items.map(item => item.json);
+const lowStockThreshold = 10;
+const lowStockAlerts = [];
+
+// Process inventory data
+products.forEach(product => {
+  if (product.quantity <= lowStockThreshold) {
+    lowStockAlerts.push({
+      productId: product.id,
+      productName: product.name,
+      currentStock: product.quantity,
+      threshold: lowStockThreshold,
+      restockAmount: product.reorderQuantity || 50,
+      supplier: product.supplier
+    });
+  }
+});
+
+// Generate appropriate output based on alerts
+if (lowStockAlerts.length > 0) {
+  return {
+    json: {
+      hasLowStock: true,
+      alertCount: lowStockAlerts.length,
+      alerts: lowStockAlerts,
+      timestamp: new Date().toISOString()
+    }
+  };
+} else {
+  return {
+    json: {
+      hasLowStock: false,
+      timestamp: new Date().toISOString()
+    }
+  };
+}
+```
+
+### Content Moderation Workflow
+
+```typescript
+// Function node to determine if content needs moderation
+const content = items[0].json;
+const moderationNeeded = false;
+
+// Check for moderation flags
+const moderationFlags = [];
+
+// Check for prohibited words
+const prohibitedWords = ['badword1', 'badword2', 'badword3'];
+const contentText = content.text.toLowerCase();
+
+prohibitedWords.forEach(word => {
+  if (contentText.includes(word)) {
+    moderationFlags.push({
+      type: 'prohibited_word',
+      word: word,
+      context: getWordContext(contentText, word)
+    });
+    moderationNeeded = true;
+  }
+});
+
+// Check other moderation criteria
+if (content.links && content.links.length > 10) {
+  moderationFlags.push({
+    type: 'excessive_links',
+    count: content.links.length
+  });
+  moderationNeeded = true;
+}
+
+// Return moderation decision
+return {
+  json: {
+    contentId: content.id,
+    moderationNeeded,
+    moderationFlags,
+    contentType: content.type,
+    timestamp: new Date().toISOString(),
+    automaticAction: moderationNeeded ? 'flag_for_review' : 'approve'
+  }
+};
+
+// Helper function to get context around a word
+function getWordContext(text, word) {
+  const wordIndex = text.indexOf(word);
+  const start = Math.max(0, wordIndex - 20);
+  const end = Math.min(text.length, wordIndex + word.length + 20);
+  return text.substring(start, end);
+}
+```
+
+## Troubleshooting
+
+### Common Workflow Issues
+
+| Issue | Possible Causes | Solutions |
+|-------|----------------|-----------|
+| Workflow not triggering | Webhook URL incorrect, Schedule issues, Credentials expired | Verify webhook URL, Check schedule settings, Update credentials |
+| Data transformation errors | Invalid input data, JavaScript errors | Validate input data, Check function node syntax |
+| API connection failures | Network issues, Authentication problems | Check network status, Verify credentials, Test API directly |
+| Performance issues | Large data volumes, Resource constraints | Implement pagination, Optimize function nodes, Add execution limits |
+| Circular references | Workflows calling each other in a loop | Redesign workflow dependencies, Add circuit breakers |
+
+### Debugging Tools
+
+The n8n integration provides several debugging tools:
+
+1. **Execution Log**: Review detailed execution history
+2. **Node Debug**: Use debug mode to inspect input/output of each node
+3. **Run Manual Execution**: Test workflows with sample data
+4. **Console Logs**: Add console.log() statements in function nodes
+
+Example debug function node:
+
+```javascript
+// Debug node to inspect data
+const inputData = items[0].json;
+
+console.log('DEBUG - Input data:', JSON.stringify(inputData, null, 2));
+
+// Add debug information to the payload
+return {
+  json: {
+    ...inputData,
+    _debug: {
+      timestamp: new Date().toISOString(),
+      itemCount: items.length,
+      dataSample: JSON.stringify(inputData).substring(0, 100)
+    }
+  }
+};
+```
+
+## Further Resources
+
+- [n8n Integration Overview](/api/devops/n8n)
+- [n8n API Endpoints](/api/devops/n8n/endpoints)
+- [n8n Monitoring](/api/devops/n8n/monitoring)
+- [n8n Official Documentation](https://docs.n8n.io/) 

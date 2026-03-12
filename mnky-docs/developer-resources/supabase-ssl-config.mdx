@@ -1,0 +1,199 @@
+---
+title: "Supabase SSL Configuration"
+description: "Setting up SSL for secure database connections in development and production"
+---
+
+# Supabase SSL Configuration
+
+## Overview
+
+This guide covers how to configure SSL connections to Supabase databases in the MOOD MNKY ecosystem. Secure connections are essential for protecting sensitive data and are required for production environments.
+
+## SSL Certificate Management
+
+### Certificate Storage
+
+SSL certificates for Supabase are stored in the repository at:
+
+```
+infra/certs/supabase/
+```
+
+This location is included in `.gitignore` to prevent accidental commit of actual certificate files. The directory structure is maintained in git, but certificate files (`.crt`, `.key`, `.pem`) must be distributed through secure channels.
+
+### Production Certificate Setup
+
+1. Download the SSL certificate from your Supabase dashboard:
+   - Navigate to Project Settings > Database
+   - Under "SSL Connection", click "Download CA Certificate"
+
+2. Save the certificate to `infra/certs/supabase/production.crt`
+
+3. Update your production environment variables to reference the certificate:
+   ```
+   SUPABASE_DB_SSL_CERT_PATH=./infra/certs/supabase/production.crt
+   ```
+
+4. You can use the provided script to update your `.env.production` file:
+   ```bash
+   pnpm run env:setup-prod
+   ```
+
+## Client Configuration
+
+### TypeScript Client Configuration
+
+The shared Supabase client in `packages/supabase-client` should be configured to use SSL in production environments. The client automatically detects the environment and configures SSL appropriately.
+
+```typescript
+// Example from packages/supabase-client/src/index.ts
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+
+const isProd = process.env.NODE_ENV === 'production';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+let sslConfig = {};
+
+// Configure SSL for production
+if (isProd && process.env.SUPABASE_DB_SSL_CERT_PATH) {
+  try {
+    const certPath = path.resolve(process.env.SUPABASE_DB_SSL_CERT_PATH);
+    const ssl = {
+      ca: fs.readFileSync(certPath).toString(),
+    };
+    sslConfig = { ssl };
+    console.log('Supabase SSL configuration loaded successfully');
+  } catch (error) {
+    console.error('Failed to load Supabase SSL certificate:', error);
+  }
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  db: {
+    ...sslConfig,
+  },
+});
+```
+
+### Environment-Specific Configuration
+
+Different environments may have different SSL requirements:
+
+1. **Development**: Local development typically doesn't require SSL
+2. **Staging**: May use the same certificate as production or a separate one
+3. **Production**: Always requires SSL with valid certificates
+
+### Verifying SSL Connection
+
+To verify that SSL is correctly configured, you can check the connection status:
+
+```typescript
+async function checkConnection() {
+  try {
+    const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
+    if (error) throw error;
+    console.log('Connection successful:', data);
+    return true;
+  } catch (error) {
+    console.error('Connection failed:', error);
+    return false;
+  }
+}
+```
+
+## SSL Configuration on Supabase
+
+### Enforcing SSL Connections
+
+In the Supabase dashboard:
+
+1. Navigate to Project Settings > Database
+2. Enable "Enforce SSL Connection"
+3. Check "Reject non-SSL connections to your database"
+
+This configuration ensures that all connections to your database require SSL, enhancing security.
+
+### Database URL with SSL Parameters
+
+When connecting directly to the Postgres database (not through the Supabase client), use a connection string with SSL parameters:
+
+```
+postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres?sslmode=require&sslcert=[PATH-TO-CERT]
+```
+
+## Deployment Configuration
+
+### Vercel Deployment
+
+For Vercel deployments:
+
+1. Add the SSL certificate as an environment variable or secret:
+   - Convert the certificate to a base64 string:
+     ```bash
+     base64 -i ./infra/certs/supabase/production.crt
+     ```
+   - Add the base64 content as `SUPABASE_SSL_CERT_BASE64` in Vercel environment variables
+
+2. Modify the client to use the base64 certificate:
+   ```typescript
+   if (process.env.SUPABASE_SSL_CERT_BASE64) {
+     const certBuffer = Buffer.from(process.env.SUPABASE_SSL_CERT_BASE64, 'base64');
+     sslConfig = {
+       ssl: {
+         ca: certBuffer.toString(),
+       },
+     };
+   }
+   ```
+
+### Docker Deployment
+
+For Docker deployments:
+
+1. Include the certificate in your Docker image or mount it as a volume
+2. Configure the container environment to point to the certificate location
+
+Example Dockerfile snippet:
+```dockerfile
+# Copy SSL certificates
+COPY ./infra/certs/supabase/production.crt /app/certs/supabase/production.crt
+
+# Set environment variable
+ENV SUPABASE_DB_SSL_CERT_PATH=/app/certs/supabase/production.crt
+```
+
+## Certificate Rotation
+
+SSL certificates typically have an expiration date. To rotate certificates:
+
+1. Download the new certificate from Supabase
+2. Replace the existing certificate file
+3. Deploy the updated certificate to all environments
+4. Verify connections work correctly with the new certificate
+
+## Troubleshooting
+
+### Common SSL Connection Issues
+
+1. **Certificate not found**: Verify the path in `SUPABASE_DB_SSL_CERT_PATH` is correct
+2. **Invalid certificate**: Ensure you're using the correct certificate for your environment
+3. **SSL mode conflicts**: Check that the connection string uses the correct SSL mode
+
+### Testing SSL Connection
+
+To test the SSL connection from the command line:
+
+```bash
+psql "postgres://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres?sslmode=verify-full&sslrootcert=./infra/certs/supabase/production.crt"
+```
+
+A successful connection confirms your SSL configuration is working.
+
+## Further Resources
+
+- [Supabase SSL Documentation](https://supabase.com/docs/guides/database/connecting-to-postgres#connection-pooling-with-ssl)
+- [PostgreSQL SSL Documentation](https://www.postgresql.org/docs/current/ssl-tcp.html)
+- [Node.js PostgreSQL SSL Configuration](https://node-postgres.com/features/ssl)

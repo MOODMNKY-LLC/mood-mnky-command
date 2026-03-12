@@ -1,0 +1,193 @@
+---
+title: 'Get Destiny 2 Manifest'
+api: 'GET https://www.bungie.net/Platform/Destiny2/Manifest/'
+description: 'Returns the current version of the Destiny 2 manifest.'
+---
+
+# Get Destiny 2 Manifest
+
+The Destiny 2 Manifest contains reference data for all static items, activities, locations, and other game elements. This endpoint returns the current version of the manifest and URLs to download the various components.
+
+## Authentication
+
+This endpoint requires an API key but does not require OAuth authentication.
+
+<RequestExample>
+```bash
+curl -X GET "https://www.bungie.net/Platform/Destiny2/Manifest/" \
+  -H "X-API-Key: your-api-key-here"
+```
+</RequestExample>
+
+## Response
+
+<ResponseField name="Response" type="object">
+  Contains the manifest data
+  
+  <Expandable title="Properties">
+    <ResponseField name="version" type="string">
+      Current version of the manifest
+    </ResponseField>
+    
+    <ResponseField name="mobileAssetContentPath" type="string">
+      Base path for mobile assets
+    </ResponseField>
+    
+    <ResponseField name="mobileGearAssetDataBases" type="array">
+      Array of gear asset database information
+      
+      <Expandable title="Item Properties">
+        <ResponseField name="version" type="integer">
+          Version number
+        </ResponseField>
+        
+        <ResponseField name="path" type="string">
+          Path to the gear database
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="mobileWorldContentPaths" type="object">
+      Paths to world content databases for different languages
+      
+      <Expandable title="Properties">
+        <ResponseField name="en" type="string">
+          Path to English content
+        </ResponseField>
+        <ResponseField name="fr" type="string">
+          Path to French content
+        </ResponseField>
+        <ResponseField name="es" type="string">
+          Path to Spanish content
+        </ResponseField>
+        <ResponseField name="de" type="string">
+          Path to German content
+        </ResponseField>
+        <ResponseField name="it" type="string">
+          Path to Italian content
+        </ResponseField>
+        <ResponseField name="ja" type="string">
+          Path to Japanese content
+        </ResponseField>
+        <ResponseField name="pt-br" type="string">
+          Path to Brazilian Portuguese content
+        </ResponseField>
+        <ResponseField name="es-mx" type="string">
+          Path to Mexican Spanish content
+        </ResponseField>
+        <ResponseField name="ru" type="string">
+          Path to Russian content
+        </ResponseField>
+        <ResponseField name="pl" type="string">
+          Path to Polish content
+        </ResponseField>
+        <ResponseField name="ko" type="string">
+          Path to Korean content
+        </ResponseField>
+        <ResponseField name="zh-cht" type="string">
+          Path to Traditional Chinese content
+        </ResponseField>
+        <ResponseField name="zh-chs" type="string">
+          Path to Simplified Chinese content
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ErrorCode" type="integer">
+  Error code (1 for success)
+</ResponseField>
+
+<ResponseField name="ThrottleSeconds" type="integer">
+  Number of seconds to wait before making another request (for rate limiting)
+</ResponseField>
+
+<ResponseField name="ErrorStatus" type="string">
+  Status message (e.g., "Success")
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Additional information
+</ResponseField>
+
+<ResponseField name="MessageData" type="object">
+  Additional message data (typically empty)
+</ResponseField>
+
+<ResponseExample>
+```json
+{
+  "Response": {
+    "version": "123456.78.90.101.1234",
+    "mobileAssetContentPath": "/content/assets/",
+    "mobileGearAssetDataBases": [
+      {
+        "version": 1,
+        "path": "/gear/gear.db"
+      }
+    ],
+    "mobileWorldContentPaths": {
+      "en": "/content/language/english/world.db",
+      "fr": "/content/language/french/world.db",
+      "es": "/content/language/spanish/world.db",
+      "de": "/content/language/german/world.db",
+      "it": "/content/language/italian/world.db",
+      "ja": "/content/language/japanese/world.db",
+      "pt-br": "/content/language/portuguese/world.db",
+      "es-mx": "/content/language/spanish_mx/world.db",
+      "ru": "/content/language/russian/world.db",
+      "pl": "/content/language/polish/world.db",
+      "ko": "/content/language/korean/world.db",
+      "zh-cht": "/content/language/chinese_traditional/world.db",
+      "zh-chs": "/content/language/chinese_simplified/world.db"
+    }
+  },
+  "ErrorCode": 1,
+  "ThrottleSeconds": 0,
+  "ErrorStatus": "Success",
+  "Message": "Ok",
+  "MessageData": {}
+}
+```
+</ResponseExample>
+
+## Usage in MOOD MNKY
+
+Within the MOOD MNKY ecosystem, this endpoint is used to:
+
+1. Keep game data up-to-date across all applications
+2. Download localized content for multi-language support
+3. Reference game items, activities, and other entities by hash ID
+4. Access game images and other assets through the content paths
+
+### Integration Example
+
+```javascript
+// Example of fetching the manifest in a MOOD MNKY application
+async function getDestinyManifest() {
+  const response = await fetch('https://www.bungie.net/Platform/Destiny2/Manifest/', {
+    headers: {
+      'X-API-Key': process.env.BUNGIE_API_KEY
+    }
+  });
+  
+  const data = await response.json();
+  
+  if (data.ErrorCode === 1) {
+    return data.Response;
+  } else {
+    throw new Error(`Failed to get manifest: ${data.Message}`);
+  }
+}
+```
+
+## Common Issues
+
+- **Rate Limiting**: Bungie enforces rate limits on API calls. If you encounter `ThrottleSeconds > 0`, wait the specified time before making another request.
+- **API Key**: Ensure your API key is valid and has not expired.
+- **Manifest Size**: The manifest database files can be large. Implement proper caching to avoid downloading them frequently.
+
+## Related Endpoints
+
+- [Get Profile](/api-reference/bungie/destiny2/get-profile) - Access player data using manifest definitions 

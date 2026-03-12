@@ -1,0 +1,124 @@
+---
+title: "Technology Foundation"
+description: "The technical infrastructure powering MNKY VERSE, The Dojo, and MNKY LABZ—Next.js, Supabase, Shopify, Vercel"
+icon: "code"
+---
+
+<img 
+  className="w-24 h-24 rounded-full float-right ml-4 mb-4"
+  src="/images/code-mnky-2d.png"
+  alt="CODE MNKY Agent"
+/>
+
+# Technology Foundation
+
+The MOOD MNKY ecosystem is powered by a modern, unified technology stack. A single Next.js application hosts **MNKY VERSE** (storefront), **The Dojo** (private hub), and **MNKY LABZ** (admin dashboard), deployed on Vercel with Supabase and Shopify integrations.
+
+<Note>
+**Foundation Tagline**: "Developer-centric infrastructure that powers our universe."
+</Note>
+
+For design tokens, palettes, and section mapping see [Design System](/technology-stack/design-system). For route and layout architecture (Main, MNKY DOJO, LABZ) see [Systems Architecture](/technology-stack/systems-architecture).
+
+<img 
+  className="my-8 rounded-lg shadow-lg" 
+  src="/images/code-mnky-3d.png" 
+  alt="Technical Infrastructure"
+  width="100%"
+/>
+
+## Technology Stack
+
+### Frontend
+
+- **Framework**: Next.js 14+ (App Router)
+- **UI**: React, TypeScript, shadcn/ui, Tailwind CSS
+- **E-commerce**: Hydrogen React (`@shopify/hydrogen-react`) for Storefront API—not Remix Hydrogen
+
+### Backend & Data
+
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Realtime**: Supabase Realtime
+- **Storage**: Supabase Storage
+
+### Integrations
+
+- **Shopify**: Storefront API (catalog, cart, checkout); Admin API (LABZ store management)
+- **Notion**: Sync for fragrance oils, formulas, glossary, blog posts
+- **Flowise**: AI orchestration and chatbots
+- **OpenAI**: GPT models for CODE MNKY and agents
+- **ElevenLabs**: Voice synthesis (optional)
+
+### Infrastructure
+
+- **Hosting**: Vercel (Next.js)
+- **Database**: Supabase (hosted PostgreSQL)
+- **Theme**: Liquid theme in `Shopify/theme/`; app extension in `extensions/mood-mnky-theme/`
+
+## Architecture Overview
+
+```
+mood-mnky-command/
+├── apps/web/          # Single Next.js app
+│   ├── (storefront)/  # MNKY VERSE routes
+│   ├── dojo/          # The Dojo routes
+│   └── (dashboard)/   # MNKY LABZ routes
+├── Shopify/theme/     # Liquid theme
+├── extensions/        # Theme app extension
+└── supabase/          # Migrations, Edge Functions
+```
+
+## MNKY LABZ as Backstage
+
+**MNKY LABZ** is the operational face of the technology foundation. It provides:
+
+- Formulas, fragrance oils, glossary management
+- Shopify Admin integration
+- Notion sync
+- CODE MNKY assistant (tools for formulas, oils, glossary)
+- Platform tools (SQL editor, Flowise, funnels)
+- Verse backoffice (manga, XP, UGC)
+
+See [MNKY LABZ](/platform-services/labz-overview) for details.
+
+## API Ecosystem
+
+- **Storefront API**: Products, collections, cart (MNKY VERSE)
+- **Shopify Admin API**: Products, orders, customers (LABZ)
+- **Supabase**: Auth, database, storage, realtime
+- **Internal APIs**: `/api/verse/*`, `/api/labz/*`, `/api/xp/*`, `/api/quests/*`, etc.
+
+## Developer Experience
+
+- **Documentation**: Mintlify (this site)
+- **Monorepo**: mood-mnky-command (Next.js app, Shopify theme, extensions, Supabase)
+- **Local development**: `pnpm dev` from repo root
+- **Deployment**: Vercel with Turborepo
+
+<Frame caption="The MNKY VERSE Technical Architecture">
+  <img src="/images/mnky-trio-bg.png" alt="MNKY VERSE Technical Architecture" />
+</Frame>
+
+## Integration with Other Domains
+
+- **With MNKY VERSE**: Powers storefront, blog, gamification, agents
+- **With The Dojo**: Auth, profiles, XP, quests, Blending Lab data
+- **With MNKY LABZ**: Full operational toolset
+
+---
+
+<CardGroup cols={2}>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard and command center
+  </Card>
+  <Card title="Developer Resources" icon="code" href="/developer-resources/introduction">
+    Get started with development
+  </Card>
+  <Card title="Mono-repo Structure" icon="folder-tree" href="/technology-stack/mono-repo-structure">
+    Repository organization
+  </Card>
+  <Card title="API Hub" icon="book-open-cover" href="/api/index">
+    API documentation
+  </Card>
+</CardGroup>

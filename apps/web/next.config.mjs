@@ -1,0 +1,129 @@
+import { spawnSync } from "node:child_process"
+import { randomUUID } from "node:crypto"
+import withSerwistInit from "@serwist/next"
+
+/** @type {import('next').NextConfig} */
+// Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
+const nextConfig = {
+  transpilePackages: ["@mnky/mt-supabase"],
+  serverExternalPackages: ["openid"],
+  async redirects() {
+    return [
+      { source: "/labz", destination: "/platform", permanent: true },
+      { source: "/verse", destination: "/dojo", permanent: true },
+      { source: "/verse/community", destination: "/dojo/community", permanent: true },
+      { source: "/verse/chat", destination: "/dojo/chat", permanent: true },
+      { source: "/verse/:path*", destination: "/dojo/:path*", permanent: true },
+      // Member hub under /dojo/me (Option B): only redirect member-only routes
+      { source: "/dojo/profile", destination: "/dojo/me/profile", permanent: true },
+      { source: "/dojo/profile/:path*", destination: "/dojo/me/profile/:path*", permanent: true },
+      { source: "/dojo/crafting", destination: "/dojo/me/crafting", permanent: true },
+      { source: "/dojo/crafting/:path*", destination: "/dojo/me/crafting/:path*", permanent: true },
+      { source: "/dojo/preferences", destination: "/dojo/me/preferences", permanent: true },
+      { source: "/dojo/flowise", destination: "/dojo/me/flowise", permanent: true },
+      { source: "/dojo/flowise/:path*", destination: "/dojo/me/flowise/:path*", permanent: true },
+    ]
+  },
+  async headers() {
+    return [
+      {
+        source: "/verse/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
+      {
+        source: "/dojo/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
+      {
+        source: "/main/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://*.myshopify.com https://*.moodmnky.com https://moodmnky.com",
+          },
+        ],
+      },
+    ]
+  },
+  webpack: (config) => {
+    config.resolve.fallback = { ...config.resolve.fallback, "react-native-fs": false }
+    return config
+  },
+  experimental: {
+    proxyClientMaxBodySize: "60mb",
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: false,
+    loader: "custom",
+    loaderFile: "./lib/supabase-image-loader.ts",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/render/image/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.shopify.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.myshopify.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.us-west-2.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.notion.so",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.notion.site",
+        pathname: "/**",
+      },
+    ],
+  },
+}
+
+const revision =
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() ||
+  randomUUID()
+
+const withSerwist = withSerwistInit({
+  additionalPrecacheEntries: [
+    { url: "/~offline", revision },
+    { url: "/verse", revision },
+    { url: "/dojo", revision },
+    { url: "/main", revision },
+    { url: "/labz", revision },
+    { url: "/platform", revision },
+  ],
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+})
+
+export default withSerwist(nextConfig)

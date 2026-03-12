@@ -1,0 +1,66 @@
+---
+title: "Navigation and MNKY DOJO"
+description: "Navigation surfaces, cross-links, streamlining, and Verse to MNKY DOJO consolidation (Option B)"
+icon: "compass"
+---
+
+# Navigation and MNKY DOJO
+
+This document summarizes the navigation architecture, streamlining recommendations, and the consolidation of the storefront and member hub under **MNKY DOJO**. The canonical UX report in the repo is `docs/NAVIGATION-UX-REPORT.md`. After **Option B**, the storefront lives at `/dojo` and the member hub at `/dojo/me`; `/verse` redirects to `/dojo`.
+
+## Navigation Surfaces
+
+| Surface | Location | Purpose |
+|--------|----------|---------|
+| Main nav | Top of `/main` | Brand logo, Collections, About, Design, Services, Media, Loyalty, Community, theme toggles, auth. Includes a "Dojo" link to the storefront. |
+| Dojo header | Top of `/dojo` (storefront) | MOOD MNKY + MNKY DOJO; Home, Explore, Blog, Agents, Shop, Rewards, Dojo (member), Cart; XP, user menu, theme. |
+| Dojo sidebar | Left of `/dojo/me` | Context switcher (Home / Crafting / Chat); "MOOD MNKY (Home)", "Dojo Home", Home, MNKY CHAT, Profile, Preferences; community links. |
+| LABZ sidebar | Left of dashboard | Context switcher (Lab, Store, Verse, Platform, AI Tools); "MNKY DOJO" in ecosystem; footer: Docs, Home→`/main`, Sign out. |
+| Main dock | Bottom on `/main` | Single icon: Talk to MOOD MNKY (when voice enabled). |
+| Verse/Dojo dock | Bottom on `/dojo` | Chat, Dojo (member), Home (MOOD MNKY), LABZ (admin) or Explore; persona/voice, Shop, Cart. |
+| LABZ dock | Bottom on dashboard | Single icon: CODE MNKY chat. |
+| Auth layout | Auth pages | "Home" → `/main`. |
+
+## Cross-Links (Target State After Option B)
+
+| From | To Main | To Dojo (storefront + member) | To LABZ |
+|------|---------|-------------------------------|--------|
+| Main | — | Nav "Dojo" → `/dojo`; user menu: Dojo, Profile → `/dojo/me` | Admin: "Lab" → `/platform` |
+| Dojo (storefront) | Header "MOOD MNKY" → `/main` | Header "MNKY DOJO", Home, Explore, etc.; "Dojo" → `/dojo/me` | Admin: "Lab" → `/` |
+| Dojo (member) | Sidebar "MOOD MNKY (Home)" → `/main` | Sidebar "Dojo Home" → `/dojo`; Home, Chat, Profile → `/dojo/me/*` | — |
+| LABZ | Header "Home", footer "Home" → `/main` | Context "Dojo" / ecosystem "MNKY DOJO" → `/dojo` | — |
+
+One clear mental model: **Main** = brand, **LABZ** = back office, **MNKY DOJO** = storefront + member hub. Navigation between them is explicit and consistent.
+
+## Streamlining Recommendations (Implemented)
+
+- **Main nav:** A top-level "Dojo" link points to `/dojo` so users can reach the storefront from the brand site without relying only on hero or footer CTAs.
+- **Dock labels:** The Dojo dock uses "Home (MOOD MNKY)" for `/main`, "Dojo" for the storefront, and "LABZ" for the dashboard when the user is an admin.
+- **LABZ:** The sidebar context and ecosystem links use the label "MNKY DOJO" and link to `/dojo`, so admins can jump to the public dojo in one click.
+- **Dojo sidebar:** "Back to VERSE" was replaced with "Dojo Home" (or "Back to Dojo") pointing to `/dojo`; community links use "MNKY DOJO" naming (e.g. "MNKY DOJO Blog", "Quests & XP", "Manga & Issues").
+
+## Rebrand: Verse → MNKY DOJO
+
+- **MOOD MNKY** (`/main`) — Brand and landing (unchanged).
+- **MNKY LABZ** — Back office (unchanged).
+- **MNKY DOJO** — Single name for the storefront and member hub:
+  - **Public Dojo:** shop, explore, blog, agents, rewards, quests, community at `/dojo` and `/dojo/*` (e.g. `/dojo/products`, `/dojo/blog`).
+  - **Private Dojo:** profile, chat, crafting, preferences at `/dojo/me` and `/dojo/me/*`.
+
+### Option B Route Strategy (Implemented)
+
+- **Paths:** Storefront at `/dojo` and `/dojo/*`; member hub at `/dojo/me` and `/dojo/me/*`.
+- **Redirects:** `/verse` → `/dojo`, `/verse/*` → `/dojo/*`; `/dojo/profile` → `/dojo/me/profile`, and similar for other member-only routes.
+- **Internal links:** All customer-facing links and labels use "MNKY DOJO" and `/dojo` (or `/dojo/me`) as appropriate.
+- **External references:** Auth callbacks and env (e.g. `NEXT_PUBLIC_VERSE_APP_URL`) point to the same app base; the storefront is served under `/dojo`.
+
+### Config Touchpoints
+
+| Area | File(s) |
+|------|---------|
+| Main nav | `components/main/main-nav.tsx` |
+| Dojo header / footer / dock | `components/verse/verse-header.tsx`, `verse-footer.tsx`, `verse-admin-dock.tsx` |
+| Dojo sidebar | `lib/dojo-sidebar-config.tsx` |
+| LABZ sidebar | `lib/sidebar-config.tsx`, `lib/labz-sidebar-context.ts` |
+
+Design tokens and CSS for the Dojo storefront remain under the "Dojo" palette in the design system; no new tokens are required for the rebrand. See [Design System](/technology-stack/design-system) and [Systems Architecture](/technology-stack/systems-architecture) for tokens and route/layout details.

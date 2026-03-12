@@ -1,0 +1,177 @@
+---
+title: "MNKY VERSE Application"
+description: "Technical documentation for the MNKY VERSE storefront—Next.js, Hydrogen React, Shopify Storefront API, and Supabase"
+icon: "sparkles"
+---
+
+# MNKY VERSE Application
+
+MNKY VERSE is the web experiential portal within the **mood-mnky-command** monorepo. It is not a separate application—it lives inside the single Next.js app at `apps/web/` under the storefront route group.
+
+<Info>
+All MNKY VERSE routes are served from `apps/web/app/(storefront)/verse/`. The same app also hosts **The Dojo** (`/dojo`) and **MNKY LABZ** (`/` dashboard). Deployment is a single Vercel project.
+</Info>
+
+## Architecture
+
+### Directory Structure
+
+```
+apps/web/
+├── app/
+│   ├── (storefront)/
+│   │   └── verse/           # MNKY VERSE routes
+│   │       ├── page.tsx     # /verse
+│   │       ├── layout.tsx
+│   │       ├── blog/        # /verse/blog
+│   │       ├── agents/      # /verse/agents
+│   │       ├── products/    # /verse/products
+│   │       ├── collections/ # /verse/collections
+│   │       ├── shop/        # /verse/shop
+│   │       ├── cart/        # /verse/cart
+│   │       ├── chat/        # /verse/chat
+│   │       ├── profile/     # /verse/profile
+│   │       ├── quests/      # /verse/quests
+│   │       ├── issues/      # /verse/issues (manga)
+│   │       ├── ugc/         # /verse/ugc
+│   │       ├── community/   # /verse/community
+│   │       ├── music/       # /verse/music
+│   │       ├── fragrance-wheel/
+│   │       ├── fragrance-oils/
+│   │       ├── formulas/
+│   │       ├── glossary/
+│   │       └── blending-guide/
+│   ├── dojo/                # The Dojo (private)
+│   └── (dashboard)/         # MNKY LABZ
+├── components/
+│   └── verse/               # Verse-specific components
+├── lib/
+│   └── shopify/             # Storefront client, queries
+└── public/
+```
+
+### Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 14+ (App Router), React, TypeScript |
+| **UI** | shadcn/ui, Tailwind CSS |
+| **E-commerce** | Hydrogen React (`@shopify/hydrogen-react`), Storefront API |
+| **Backend** | Supabase (Auth, PostgreSQL, Realtime, Storage) |
+| **Deployment** | Vercel |
+
+<Warning>
+This is **not** a Remix Hydrogen app. We use Shopify's "bring your own stack" path with Hydrogen React. No `create-hydrogen` or migration to full Hydrogen (Remix) is required. No Oxygen.
+</Warning>
+
+## Shopify Integration
+
+### Storefront API
+
+- **Client**: `lib/shopify/storefront-client.ts` — `createStorefrontClient` from `@shopify/hydrogen-react`
+- **Queries**: `lib/shopify/storefront-queries.ts` — products, collections, cart operations
+- **API version**: 2026-01
+- **Credentials**: Storefront API tokens from Shopify Admin → Hydrogen or Headless channel
+
+### Providers
+
+Verse pages use `VerseProviders` (`components/verse/verse-providers.tsx`) wrapping `ShopifyProvider` and `CartProvider` for cart state and checkout.
+
+### App Proxy (Theme ↔ Verse)
+
+The Shopify Liquid theme can call the MNKY VERSE backend via the **App Proxy**. Requests to `https://{shop}.myshopify.com/apps/mnky/*` are proxied to the app.
+
+| Route | Purpose |
+|-------|---------|
+| `GET /apps/mnky/session` | Short-lived JWT for theme JS to call Verse APIs |
+| `GET /apps/mnky/api/issues` | List published manga issues |
+| `GET /apps/mnky/api/quests` | List active quests |
+
+Theme blocks (e.g. **MNKY VERSE Issue Teaser** in `extensions/mood-mnky-theme/blocks/mnky-verse-issue-teaser.liquid`) use App Proxy to fetch issues and quests. See [MNKY-VERSE-APP-PROXY-SETUP.md](../../docs/MNKY-VERSE-APP-PROXY-SETUP.md) and [Shopify Store](/applications/shopify-store).
+
+### Theme Integration and Cross-Linking
+
+The Shopify theme and MNKY VERSE share navigation and CTAs:
+
+- **Theme → Verse**: Header/main-menu links to Blending Lab, Dojo, Explore, Blog, Agents, Community; app blocks use **App base URL** (`NEXT_PUBLIC_APP_URL`) for CTAs
+- **Verse → Theme**: Verse footer and product pages link back to the Shopify store for checkout and collections
+- **Featured blog**: Theme featured-blog section has "View all in the MNKY VERSE" linking to `/verse/blog`
+
+Configure **App base URL** in Theme Editor for each app block and section. See [SHOPIFY-APP-URL-CONFIG.md](../../docs/SHOPIFY-APP-URL-CONFIG.md).
+
+### Customer Account API (Login with Shopify)
+
+MNKY VERSE supports **Authenticate with Shopify** (OAuth 2.0 PKCE) so customers can link their Shopify account for perks and order history.
+
+- **Flow**: User signs in (Supabase) → `GET /api/customer-account-api/auth` → Shopify OAuth → callback → tokens stored in Supabase
+- **Env**: `PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID`, `NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_APP_URL`, `SHOP_ID`
+- **Redirect URLs**: Add `https://mnky-command.moodmnky.com/api/customer-account-api/callback` in Shopify Admin → Allowed redirect URLs
+
+See [SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md](../../docs/SHOPIFY-CUSTOMER-ACCOUNT-API-WALKTHROUGH.md).
+
+## Supabase Integration
+
+MNKY VERSE uses Supabase for:
+
+- **Verse blog**: `verse_blog_posts` (synced from Notion)
+- **Profiles**: `profiles` (extends Supabase Auth)
+- **Gamification**: `xp_state`, `xp_ledger`, `quests`, `quest_progress`
+- **Agent profiles**: `agent_profiles`
+- **Chat**: `chat_sessions`, `chat_messages`, `storefront_chat_sessions`
+- **Music**: `verse_music_playlist`
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (LTS) and pnpm
+- Shopify CLI (for theme/extension work)
+- Supabase project
+
+### Setup
+
+1. **Clone and install**:
+
+   ```bash
+   git clone <repo-url>
+   cd mood-mnky-command
+   pnpm install
+   ```
+
+2. **Configure environment** (see `.env.example`):
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Shopify Storefront API keys (`NEXT_PUBLIC_STORE_DOMAIN`, `NEXT_PUBLIC_STOREFRONT_API_TOKEN`)
+   - Optional: Notion, OpenAI, ElevenLabs for blog sync and agents
+
+3. **Run development server**:
+
+   ```bash
+   pnpm dev
+   ```
+
+   App runs at `http://localhost:3000`. MNKY VERSE routes: `/verse`, `/verse/blog`, `/verse/shop`, etc.
+
+### Vercel Deployment
+
+- **Root directory**: Set to `apps/web` in Vercel project settings
+- **Build**: Turborepo build from repo root; `pnpm turbo build --filter=web`
+- **Environment variables**: Configure in Vercel dashboard
+
+## API Routes
+
+Verse-specific API routes under `apps/web/app/api/verse/`:
+
+- `GET /api/verse/blog` — Blog posts
+- `GET /api/verse/chat` — Chat messages
+- `GET /api/verse/agents` — Agent profiles
+- `GET /api/verse/profile` — User profile
+- `GET /api/verse/music` — Music tracks
+- `POST /api/verse/upload-attachment` — File uploads
+
+## Related Resources
+
+- [MNKY VERSE Experience](/brand-overview/mood-experience) — Product/UX overview
+- [The Dojo](/platform-services/dojo-overview) — Private member hub
+- [MNKY LABZ](/platform-services/labz-overview) — Admin dashboard
+- [Technology Stack](/technology-stack/tech-foundation) — Stack overview
+- [API Hub](/api/index) — API documentation

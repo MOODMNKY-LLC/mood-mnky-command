@@ -1,0 +1,8 @@
+# Environment variables (API keys)
+.env
+.env.local
+.env.*.local
+
+# Cursor
+.cursor/mcp.json.tmp
+.cursor/mcp.json.backup

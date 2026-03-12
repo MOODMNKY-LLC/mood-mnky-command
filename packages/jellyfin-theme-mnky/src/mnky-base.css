@@ -1,0 +1,50 @@
+/* Base: background, shell, header, sidebar */
+
+.backgroundContainer {
+  background-color: var(--mnky-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.mainBackdrop {
+  background: linear-gradient(180deg, transparent 0%, var(--mnky-bg) 100%);
+}
+
+.dashboard-app-shell {
+  background: var(--mnky-glass-bg);
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border: 1px solid var(--mnky-glass-border);
+  box-shadow: var(--mnky-glass-shadow);
+  border-radius: var(--mnky-glass-radius);
+  color: var(--mnky-text);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-app-shell {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+.dashboard-header,
+.headerTop {
+  background: var(--mnky-glass-bg-nav);
+  backdrop-filter: blur(var(--mnky-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur));
+  border-bottom: 1px solid var(--mnky-glass-border-nav);
+  color: var(--mnky-text);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-header,
+  .headerTop {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+.sidebarContent,
+.paperList {
+  background: var(--mnky-bg-soft);
+  color: var(--mnky-text);
+}

@@ -1,0 +1,48 @@
+---
+title: "MNKY Discord Bots"
+description: "MOOD MNKY, SAGE MNKY, and CODE MNKY Discord agent bots — architecture, Compose, and slash commands"
+icon: "discord"
+---
+
+# MNKY Discord Agent Bots
+
+The MNKY Discord bots extend the three agents (MOOD MNKY, SAGE MNKY, CODE MNKY) into Discord with slash commands, event ingestion for gamification, and agent replies via the web app.
+
+## Architecture
+
+- **Location:** `services/discord-bots/` in the monorepo
+- **Stack:** Redis + three Node.js bots (Discord.js), built and run via Docker Compose
+- **Orchestration:** Bots call the web app for profile resolution (`GET /api/discord/profile-by-discord-id`), event ingestion (`POST /api/discord/events`), and agent replies (`POST /api/discord/agent-reply`). Auth: `MOODMNKY_API_KEY` (Bearer)
+
+## Slash commands
+
+| Bot | Commands |
+|-----|----------|
+| **MOOD MNKY** | `/mood` (query), `/scent` (fragrance), `/blend` (theme), `/verse` (link to MNKY VERSE) |
+| **SAGE MNKY** | `/sage` (question), `/reflect` (topic), `/learn` (topic), `/dojo` (link to Dojo) |
+| **CODE MNKY** | `/code` (question), `/deploy` (context), `/pr` (topic), `/lab` (link to MNKY LABZ) |
+
+Commands are registered automatically when each bot starts.
+
+## Docker Compose
+
+From `services/discord-bots/`:
+
+```bash
+docker compose up -d
+```
+
+Services: `redis`, `mood-mnky-bot`, `sage-mnky-bot`, `code-mnky-bot`. Set env via `.env` (copy from `.env.example`). See repo [services/discord-bots/README.md](https://github.com/mood-mnky/mood-mnky-command/blob/main/services/discord-bots/README.md) for quick start.
+
+## Environment variables
+
+Required: bot tokens (`MOOD_MNKY_DISCORD_BOT_TOKEN`, `SAGE_MNKY_DISCORD_BOT_TOKEN`, `CODE_MNKY_DISCORD_BOT_TOKEN`), `MOODMNKY_API_KEY`, `VERSE_APP_URL`, `REDIS_URL`. Tokens come from Notion Credentials; create three Discord applications in the [Discord Developer Portal](https://discord.com/developers/applications).
+
+## Gamification
+
+When a user with a linked Discord account (Verse → Link Discord) uses a slash command, the bot sends a `message` event to the web app. Events flow to `discord_event_ledger` and trigger quest evaluation and XP.
+
+## Related
+
+- [Docker Setup](/developer-resources/docker-setup) — MNKY Discord Bots Stack subsection
+- Repo: [docs/DISCORD-BOTS-SETUP.md](https://github.com/mood-mnky/mood-mnky-command/blob/main/docs/DISCORD-BOTS-SETUP.md) — Full setup (Notion, Discord apps, env, Compose)

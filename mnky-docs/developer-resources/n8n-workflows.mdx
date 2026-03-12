@@ -1,0 +1,244 @@
+---
+title: "n8n Workflow Management"
+description: "Guide to creating and managing n8n workflows in the MOOD MNKY ecosystem"
+icon: "workflow"
+---
+
+# n8n Workflow Management
+
+n8n is used for workflow automation in the MOOD MNKY ecosystem. This guide covers workflow creation, management, and best practices.
+
+## Overview
+
+n8n provides visual workflow automation for:
+- **Data Synchronization**: Sync data between systems (Shopify, Notion, Supabase)
+- **User Onboarding**: Automate user registration and welcome processes
+- **Notifications**: Multi-channel notification delivery
+- **Content Processing**: Automated content ingestion and processing
+
+## Getting Started
+
+### Local Development Setup
+
+1. **Start n8n service**:
+   ```bash
+   cd infra/docker-compose/n8n
+   docker-compose up -d
+   ```
+
+2. **Access n8n UI**: [http://localhost:5678](http://localhost:5678)
+
+3. **Login**: Use credentials from `.env` file
+
+### Configuration
+
+Configure n8n via environment variables:
+
+```env
+# Authentication
+N8N_BASIC_AUTH_USER=admin
+N8N_BASIC_AUTH_PASSWORD=your-password
+
+# AI Integration
+N8N_AI_OPENAI_API_KEY=your-openai-key
+
+# SMTP
+N8N_SMTP_HOST=smtp.example.com
+N8N_SMTP_PORT=587
+N8N_SMTP_USER=your-user
+N8N_SMTP_PASS=your-password
+
+# Webhooks
+WEBHOOK_URL=http://localhost:5678
+```
+
+## Core Workflows
+
+### User Onboarding Workflow
+
+Automates user registration and onboarding:
+
+```
+Webhook (New User Registration)
+  ↓
+Fetch User Profile
+  ↓
+Create Supabase Record
+  ↓
+Synchronize with Shopify
+  ↓
+Send Welcome Email
+  ↓
+Initialize User Preferences
+```
+
+**Key Features**:
+- Real-time processing
+- Multi-system integration
+- Personalized communications
+- Error handling
+
+### Data Synchronization Workflow
+
+Keeps data consistent across systems:
+
+```
+Schedule (Hourly)
+  ↓
+Fetch Shopify Orders
+  ↓
+IF (New Orders)
+  ↓
+Update Supabase Database
+  ↓
+Enrich Customer Profiles
+  ↓
+Trigger Notification Workflow
+```
+
+**Key Features**:
+- Scheduled execution
+- Conditional processing
+- Error handling and retries
+- Audit logging
+
+### Notification System Workflow
+
+Manages multi-channel notifications:
+
+```
+Webhook (Notification Trigger)
+  ↓
+Load User Preferences
+  ↓
+Switch (Notification Type)
+  ├→ Email Branch
+  ├→ SMS Branch
+  └→ In-App Branch
+```
+
+**Key Features**:
+- Channel-specific formatting
+- User preference-based delivery
+- Delivery status tracking
+- Throttling
+
+## Workflow Design Principles
+
+### Best Practices
+
+1. **Single Responsibility**: Each workflow should have one clear purpose
+2. **Modularity**: Break complex processes into smaller workflows
+3. **Error Handling**: Include error handling at critical steps
+4. **Logging**: Log important events for debugging
+5. **Testing**: Test workflows in development before production
+
+### Workflow Structure
+
+```
+Trigger Node
+  ↓
+Validation Node
+  ↓
+Processing Nodes
+  ↓
+Action Nodes
+  ↓
+Error Handling Node
+```
+
+## Creating Workflows
+
+### Step-by-Step Guide
+
+1. **Create New Workflow**: Click "New Workflow" in n8n UI
+2. **Add Trigger**: Choose trigger type (webhook, schedule, manual)
+3. **Add Nodes**: Add processing and action nodes
+4. **Connect Nodes**: Connect nodes to define flow
+5. **Configure Nodes**: Set node parameters and credentials
+6. **Test Workflow**: Execute workflow manually to test
+7. **Activate Workflow**: Activate for automatic execution
+
+### Common Node Types
+
+- **HTTP Request**: Make API calls
+- **Supabase**: Database operations
+- **Shopify**: E-commerce operations
+- **Notion**: Content management
+- **Email**: Send emails via SMTP
+- **Code**: Custom JavaScript/Python code
+- **IF**: Conditional logic
+- **Switch**: Multi-branch routing
+
+## Workflow Management
+
+### Version Control
+
+- **Export Workflows**: Export workflows as JSON for version control
+- **Import Workflows**: Import workflows from JSON files
+- **Backup**: Regularly backup workflow configurations
+
+### Monitoring
+
+- **Execution History**: Review workflow execution history
+- **Error Logs**: Monitor error logs for failed executions
+- **Performance Metrics**: Track execution time and resource usage
+
+### Maintenance
+
+- **Regular Updates**: Keep n8n updated to latest version
+- **Credential Rotation**: Rotate API credentials regularly
+- **Workflow Optimization**: Optimize workflows for performance
+
+## API Integration
+
+### n8n API
+
+Use n8n API for programmatic workflow management:
+
+```bash
+# List workflows
+curl -X GET http://localhost:5678/api/v1/workflows \
+  -u admin:password
+
+# Execute workflow
+curl -X POST http://localhost:5678/api/v1/workflows/{id}/execute \
+  -u admin:password \
+  -H "Content-Type: application/json" \
+  -d '{"data": {}}'
+```
+
+See [n8n API Documentation](/api/devops/n8n/endpoints) for full API reference.
+
+## Troubleshooting
+
+### Common Issues
+
+#### Workflow Not Executing
+- **Issue**: Workflow not triggering automatically
+- **Solution**: Verify workflow is activated. Check trigger configuration.
+
+#### API Errors
+- **Issue**: API calls failing
+- **Solution**: Verify API credentials. Check rate limits. Review API logs.
+
+#### Data Format Errors
+- **Issue**: Data format mismatch between nodes
+- **Solution**: Use "Set" node to transform data. Check data types.
+
+### Debugging Tips
+
+1. **Use Manual Execution**: Test workflows manually first
+2. **Check Node Output**: Review output of each node
+3. **Enable Debug Mode**: Enable debug logging for detailed information
+4. **Review Execution History**: Check execution history for errors
+
+## Related Resources
+
+- [Docker Setup](/developer-resources/docker-setup) - Container setup guide
+- [n8n API Documentation](/api/devops/n8n/endpoints) - API reference
+- [n8n Workflows API](/api/devops/n8n/workflows) - Workflow management API
+- [Supabase Integration](/technology-stack/supabase) - Database integration
+
+
+

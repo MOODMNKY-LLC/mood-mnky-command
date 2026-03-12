@@ -1,0 +1,322 @@
+---
+title: 'Theme Customization'
+description: 'How to customize the MOOD MNKY documentation theme and styling'
+---
+
+# Theme Customization
+
+This guide explains how to customize the MOOD MNKY documentation theme while maintaining compatibility with Mintlify's requirements.
+
+## Current Theme Configuration
+
+Our documentation uses a monochromatic black and white theme with agent-specific accent colors:
+
+- Primary colors: Black, white, and gray tones
+- Agent colors:
+  - MOOD MNKY: Amber/gold (#FCD34D)
+  - CODE MNKY: Blue (#93C5FD)
+  - SAGE MNKY: Green (#86EFAC)
+- Typography: RocGroteskWide, RocGrotesk, Helvetica, and HelveticaRounded font families
+
+## Mintlify Configuration
+
+The theme is configured in `docs.json` with these key settings:
+
+```json
+{
+  "colors": {
+    "primary": "#000000",
+    "light": "#F5F5F5",
+    "dark": "#333333"
+  },
+  "fonts": {
+    "family": "Helvetica, sans-serif",
+    "weight": 400
+  },
+  "css": [
+    "/styles.css"
+  ]
+}
+```
+
+<Note>
+**Important Limitations**
+
+Mintlify has specific requirements for theme configuration:
+
+1. Only the properties shown above are supported in the colors object
+2. Font configuration is limited to family and weight
+3. Custom font files must be loaded via CSS
+4. Only woff and woff2 font formats are officially supported
+</Note>
+
+## Custom CSS Styling
+
+We use a custom CSS file (`styles.css`) for additional styling beyond what Mintlify's configuration allows:
+
+```css
+/* Agent-specific color variables */
+:root {
+  /* MOOD MNKY colors - amber */
+  --mood-mnky-light: #FCD34D;
+  --mood-mnky-medium: #F59E0B;
+  --mood-mnky-dark: #92400E;
+  
+  /* CODE MNKY colors - blue */
+  --code-mnky-light: #93C5FD;
+  --code-mnky-medium: #3B82F6;
+  --code-mnky-dark: #1E40AF;
+  
+  /* SAGE MNKY colors - green */
+  --sage-mnky-light: #86EFAC;
+  --sage-mnky-medium: #22C55E;
+  --sage-mnky-dark: #15803D;
+}
+```
+
+## Typography System
+
+The MOOD MNKY application uses a comprehensive typography system that combines brand identity with readability:
+
+### Font Families
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <div>
+    <h4 className="font-medium mb-2">Brand Fonts</h4>
+    <ul className="text-sm space-y-3">
+      <li>
+        <p className="font-bold" style={{ fontFamily: "sans-serif" }}>RocGroteskWide</p>
+        <p className="text-xs text-gray-500">Bold, distinctive typeface for headings, titles, and brand elements</p>
+      </li>
+      <li>
+        <p className="font-medium" style={{ fontFamily: "sans-serif" }}>RocGrotesk</p>
+        <p className="text-xs text-gray-500">More condensed version with better readability for UI elements and text that maintains brand identity</p>
+      </li>
+    </ul>
+  </div>
+  
+  <div>
+    <h4 className="font-medium mb-2">Functional Fonts</h4>
+    <ul className="text-sm space-y-3">
+      <li>
+        <p className="font-normal" style={{ fontFamily: "Helvetica, sans-serif" }}>Helvetica</p>
+        <p className="text-xs text-gray-500">Clean, neutral typeface for body text and general content</p>
+      </li>
+      <li>
+        <p className="font-bold" style={{ fontFamily: "Helvetica, sans-serif" }}>HelveticaRounded</p>
+        <p className="text-xs text-gray-500">Friendlier variant with rounded terminals for UI elements like buttons</p>
+      </li>
+    </ul>
+  </div>
+</div>
+
+### Tailwind Font Utilities
+
+The application uses Tailwind CSS for styling with custom font family utilities:
+
+```tsx
+// Excerpt from tailwind.config.ts
+fontFamily: {
+  sans: ['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  display: ['RocGroteskWide', 'sans-serif'],
+  heading: ['RocGroteskWide', 'sans-serif'],
+  brand: ['RocGroteskWide', 'sans-serif'],
+  body: ['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  grotesk: ['RocGrotesk', 'sans-serif'],
+  rounded: ['HelveticaRounded', 'Helvetica', 'sans-serif'],
+}
+```
+
+### Font Hierarchy and Usage
+
+<div className="overflow-x-auto">
+  <table className="min-w-full divide-y divide-gray-200">
+    <thead>
+      <tr>
+        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Element</th>
+        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Font Class</th>
+        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Font Family</th>
+        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Use Case</th>
+      </tr>
+    </thead>
+    <tbody className="divide-y divide-gray-200">
+      <tr>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">H1-H3</td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm"><code>font-heading</code></td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">RocGroteskWide</td>
+        <td className="px-3 py-2 text-sm">Major headings, page titles, section headers</td>
+      </tr>
+      <tr>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">H4-H6</td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm"><code>font-grotesk</code></td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">RocGrotesk</td>
+        <td className="px-3 py-2 text-sm">Subheadings, card titles, form section headers</td>
+      </tr>
+      <tr>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">Body Text</td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm"><code>font-body</code></td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">Helvetica</td>
+        <td className="px-3 py-2 text-sm">Paragraphs, lists, general content</td>
+      </tr>
+      <tr>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">UI Elements</td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm"><code>font-rounded</code></td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">HelveticaRounded</td>
+        <td className="px-3 py-2 text-sm">Buttons, important action items, calls to action</td>
+      </tr>
+      <tr>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">Brand Elements</td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm"><code>font-brand</code></td>
+        <td className="px-3 py-2 whitespace-nowrap text-sm">RocGroteskWide</td>
+        <td className="px-3 py-2 text-sm">Logo treatments, feature callouts, brand statements</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Authentication Pages Typography
+
+The authentication pages (sign-in, sign-up) demonstrate best practices for typography implementation:
+
+- **Page Headers**: `font-heading` with `tracking-wide` for brand-consistent headings
+- **Card Titles**: `font-heading` to maintain brand identity in component headers
+- **Card Descriptions**: `font-grotesk text-sm` for better readability in smaller text while maintaining brand feel
+- **Form Labels**: `font-grotesk font-medium` for clear, legible labels
+- **Buttons**: `font-rounded` for action items with a friendly, approachable feel
+- **Links**: `font-grotesk` with `font-medium` for emphasized interactive elements
+- **Legal Text**: `font-grotesk` for better readability at small sizes
+
+<CodeGroup>
+```tsx Sign-In Page Example
+<h2 className="text-2xl font-bold mb-6 text-center font-heading tracking-wide">
+  Welcome Back
+</h2>
+<Card className="w-full shadow-lg border-mnky-gray-700">
+  <CardHeader className="pb-3">
+    <CardTitle className="font-heading tracking-wide">Sign in</CardTitle>
+    <CardDescription className="font-grotesk text-sm">
+      Enter your email and password to access your account
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {/* Form elements */}
+    <Label htmlFor="email" className="font-grotesk font-medium">Email</Label>
+    <Input className="border-input/80" />
+    
+    <SubmitButton className="bg-mood-light text-black font-rounded">
+      Sign in
+    </SubmitButton>
+  </CardContent>
+  <CardFooter>
+    <p className="text-sm text-muted-foreground font-body">
+      Don't have an account?{" "}
+      <Link className="text-primary font-medium font-grotesk" href="/sign-up">
+        Sign up
+      </Link>
+    </p>
+  </CardFooter>
+</Card>
+```
+</CodeGroup>
+
+## Using Agent-Specific Styling
+
+Each agent has its own color scheme that can be applied to content using CSS classes:
+
+<CodeGroup>
+```jsx MOOD MNKY (Amber)
+<div className="mood-mnky-section">
+  <h2>MOOD MNKY Features</h2>
+  <img 
+    src="/images/mood-mnky-avatar.png" 
+    className="agent-avatar mood-mnky-avatar" 
+  />
+  <div className="mood-mnky-card">
+    Specialized content here
+  </div>
+</div>
+```
+
+```jsx CODE MNKY (Blue)
+<div className="code-mnky-section">
+  <h2>CODE MNKY Features</h2>
+  <img 
+    src="/images/code-mnky-avatar.png" 
+    className="agent-avatar code-mnky-avatar" 
+  />
+  <div className="code-mnky-card">
+    Specialized content here
+  </div>
+</div>
+```
+
+```jsx SAGE MNKY (Green)
+<div className="sage-mnky-section">
+  <h2>SAGE MNKY Features</h2>
+  <img 
+    src="/images/sage-mnky-avatar.png" 
+    className="agent-avatar sage-mnky-avatar" 
+  />
+  <div className="sage-mnky-card">
+    Specialized content here
+  </div>
+</div>
+```
+</CodeGroup>
+
+## Available CSS Classes
+
+| Class | Purpose |
+|-------|---------|
+| `mood-mnky-section` | Container for MOOD MNKY content with amber headings |
+| `mood-mnky-card` | Content card with amber left border |
+| `mood-mnky-border` | Element with amber border |
+| `mood-mnky-avatar` | Avatar image with amber border |
+| `code-mnky-section` | Container for CODE MNKY content with blue headings |
+| `code-mnky-card` | Content card with blue left border |
+| `code-mnky-border` | Element with blue border |
+| `code-mnky-avatar` | Avatar image with blue border |
+| `sage-mnky-section` | Container for SAGE MNKY content with green headings |
+| `sage-mnky-card` | Content card with green left border |
+| `sage-mnky-border` | Element with green border |
+| `sage-mnky-avatar` | Avatar image with green border |
+
+## Modifying the Theme
+
+If you need to update the theme, follow these guidelines:
+
+1. **Mintlify Configuration**: Edit only supported properties in `docs.json`
+2. **Custom Styling**: Make other changes in `styles.css`
+3. **Testing**: Use `mintlify dev` to test locally before deploying
+
+<Warning>
+Always validate your `docs.json` changes before deploying. Use `mintlify dev` to catch configuration errors.
+</Warning>
+
+## Troubleshooting
+
+### Common Errors
+
+#### Invalid Configuration Properties
+
+```
+#.colors: Unrecognized key(s) in object: 'background', 'anchors'
+```
+
+**Solution**: Remove unsupported properties from the colors object in `docs.json`.
+
+#### Font Format Issues
+
+```
+#.fonts.heading.format: Invalid enum value. Expected 'woff' | 'woff2', received 'opentype'
+```
+
+**Solution**: Use the simplified font configuration in `docs.json` and handle detailed font loading in `styles.css`.
+
+#### Path Issues
+
+```
+#.fonts.heading.source: Invalid url
+```
+
+**Solution**: Font loading via URL should be handled in CSS, not in the Mintlify configuration.

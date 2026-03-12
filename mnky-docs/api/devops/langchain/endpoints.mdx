@@ -1,0 +1,448 @@
+# Langchain Service API Endpoints
+
+This document provides detailed information about all available endpoints in the MOOD MNKY Langchain service.
+
+## Base URL
+
+All endpoints are relative to: `https://langchain.moodmnky.com`
+
+## Authentication
+
+All endpoints require authentication using an API key in the header:
+
+```bash
+Authorization: Bearer <your_api_key>
+```
+
+## Available Endpoints
+
+### Chain Management
+
+#### List Chains
+
+Retrieves all available chains.
+
+- **Endpoint**: `GET /api/v1/chains`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "chains": [
+    {
+      "id": "chain-123",
+      "name": "Document QA Chain",
+      "description": "Question answering on documents",
+      "type": "qa_chain",
+      "created_at": "2024-03-20T10:00:00Z",
+      "updated_at": "2024-03-20T11:00:00Z"
+    }
+  ]
+}
+```
+
+#### Get Chain
+
+Retrieves a specific chain by ID.
+
+- **Endpoint**: `GET /api/v1/chains/{id}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "id": "chain-123",
+  "name": "Document QA Chain",
+  "description": "Question answering on documents",
+  "type": "qa_chain",
+  "config": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 500
+  },
+  "created_at": "2024-03-20T10:00:00Z",
+  "updated_at": "2024-03-20T11:00:00Z"
+}
+```
+
+#### Create Chain
+
+Creates a new chain.
+
+- **Endpoint**: `POST /api/v1/chains`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "name": "New QA Chain",
+  "description": "Enhanced question answering chain",
+  "type": "qa_chain",
+  "config": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 500
+  }
+}
+```
+
+Example Response:
+```json
+{
+  "id": "chain-124",
+  "name": "New QA Chain",
+  "description": "Enhanced question answering chain",
+  "type": "qa_chain",
+  "created_at": "2024-03-20T12:00:00Z",
+  "updated_at": "2024-03-20T12:00:00Z"
+}
+```
+
+### Chain Execution
+
+#### Run Chain
+
+Executes a specific chain.
+
+- **Endpoint**: `POST /api/v1/chains/{chainId}/run`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "input": {
+    "question": "What is the capital of France?",
+    "context": "France is a country in Western Europe. Its capital is Paris, which is known as the City of Light."
+  },
+  "config": {
+    "temperature": 0.8,
+    "stream": false
+  }
+}
+```
+
+Example Response:
+```json
+{
+  "id": "run-123",
+  "chainId": "chain-123",
+  "input": {
+    "question": "What is the capital of France?"
+  },
+  "output": {
+    "answer": "The capital of France is Paris.",
+    "confidence": 0.98
+  },
+  "created_at": "2024-03-20T12:05:00Z",
+  "executionTime": 1.5
+}
+```
+
+#### Stream Chain Execution
+
+Executes a chain with streaming response.
+
+- **Endpoint**: `POST /api/v1/chains/{chainId}/stream`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "input": {
+    "question": "Explain quantum computing",
+    "max_length": 1000
+  },
+  "config": {
+    "temperature": 0.7
+  }
+}
+```
+
+Example Response (Streaming):
+```json
+{
+  "type": "token",
+  "content": "Quantum computing",
+  "done": false
+}
+// ... more streaming responses ...
+{
+  "type": "token",
+  "content": ".",
+  "done": true
+}
+```
+
+### Memory Management
+
+#### Get Memory
+
+Retrieves memory for a specific chain.
+
+- **Endpoint**: `GET /api/v1/chains/{chainId}/memory`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "chainId": "chain-123",
+  "memories": [
+    {
+      "id": "mem-1",
+      "type": "conversation",
+      "content": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is quantum computing?"
+          },
+          {
+            "role": "assistant",
+            "content": "Quantum computing is..."
+          }
+        ]
+      },
+      "created_at": "2024-03-20T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Clear Memory
+
+Clears memory for a specific chain.
+
+- **Endpoint**: `DELETE /api/v1/chains/{chainId}/memory`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "status": "success",
+  "message": "Memory cleared successfully",
+  "chainId": "chain-123",
+  "timestamp": "2024-03-20T12:00:00Z"
+}
+```
+
+### Document Management
+
+#### Upload Document
+
+Uploads a document for processing.
+
+- **Endpoint**: `POST /api/v1/documents`
+- **Authentication**: Required
+- **Request Format**: Multipart Form Data
+
+Example Request:
+```bash
+curl -X POST https://langchain.moodmnky.com/api/v1/documents \
+  -H "Authorization: Bearer <your_api_key>" \
+  -F "file=@document.pdf" \
+  -F "metadata={\"title\":\"Important Document\",\"tags\":[\"research\",\"quantum\"]}"
+```
+
+Example Response:
+```json
+{
+  "id": "doc-123",
+  "filename": "document.pdf",
+  "metadata": {
+    "title": "Important Document",
+    "tags": ["research", "quantum"]
+  },
+  "status": "processing",
+  "created_at": "2024-03-20T12:00:00Z"
+}
+```
+
+#### Get Document Status
+
+Retrieves the processing status of a document.
+
+- **Endpoint**: `GET /api/v1/documents/{documentId}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "id": "doc-123",
+  "filename": "document.pdf",
+  "status": "completed",
+  "metadata": {
+    "title": "Important Document",
+    "tags": ["research", "quantum"],
+    "pageCount": 15,
+    "wordCount": 5000
+  },
+  "created_at": "2024-03-20T12:00:00Z",
+  "completed_at": "2024-03-20T12:02:00Z"
+}
+```
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+```json
+{
+  "error": "Invalid request parameters",
+  "details": "Missing required field: input"
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "error": "Authentication failed",
+  "details": "Invalid or missing API key"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "Resource not found",
+  "details": "Chain with ID 'chain-999' not found"
+}
+```
+
+### 429 Too Many Requests
+```json
+{
+  "error": "Rate limit exceeded",
+  "details": "Please try again in 60 seconds"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "error": "Internal server error",
+  "details": "An unexpected error occurred"
+}
+```
+
+## Rate Limiting
+
+The Langchain service implements rate limiting based on the following tiers:
+
+- **Basic**: 50 requests per hour
+- **Standard**: 500 requests per hour
+- **Premium**: 5000 requests per hour
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 500
+X-RateLimit-Remaining: 485
+X-RateLimit-Reset: 1623456789
+```
+
+## Best Practices
+
+1. **Chain Design**
+   - Keep chains focused and modular
+   - Implement proper error handling
+   - Use appropriate memory types
+   - Test chains thoroughly before deployment
+   - Document chain behavior and requirements
+
+2. **Performance Optimization**
+   - Use streaming for long-running operations
+   - Implement client-side caching
+   - Optimize document processing
+   - Monitor resource usage
+   - Use appropriate batch sizes
+
+3. **Error Handling**
+   - Implement proper fallbacks
+   - Handle timeouts gracefully
+   - Log errors for debugging
+   - Provide meaningful error messages
+   - Monitor error rates
+
+## Code Examples
+
+### Python Example
+```python
+import requests
+
+API_URL = "https://langchain.moodmnky.com"
+API_KEY = "your_api_key"
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# Run a chain
+response = requests.post(
+    f"{API_URL}/api/v1/chains/chain-123/run",
+    headers=headers,
+    json={
+        "input": {
+            "question": "What is quantum computing?",
+            "context": "Quantum computing is a type of computation..."
+        },
+        "config": {
+            "temperature": 0.7
+        }
+    }
+)
+
+print(response.json())
+```
+
+### JavaScript Example
+```javascript
+const API_URL = "https://langchain.moodmnky.com";
+const API_KEY = "your_api_key";
+
+async function streamChain() {
+  const response = await fetch(
+    `${API_URL}/api/v1/chains/chain-123/stream`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        input: {
+          question: "Explain quantum computing",
+          max_length: 1000
+        },
+        config: {
+          temperature: 0.7
+        }
+      })
+    }
+  );
+
+  const reader = response.body.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    console.log(new TextDecoder().decode(value));
+  }
+}
+```
+
+## Support
+
+For API support and updates:
+
+- **Status Page**: [status.moodmnky.com](https://status.moodmnky.com)
+- **Developer Community**: [community.moodmnky.com](https://community.moodmnky.com)
+- **API Updates**: Subscribe to our [API changelog](https://docs.moodmnky.com/changelog)
+- **Security**: Report security issues to [security@moodmnky.com](mailto:security@moodmnky.com) 

@@ -1,0 +1,294 @@
+---
+title: 'Products API'
+description: 'API reference for managing and retrieving product information'
+---
+
+# Products API
+
+The Products API provides endpoints for retrieving product information, managing the product catalog, and handling product-related operations in the MOOD MNKY e-commerce system.
+
+## Endpoints
+
+### Get All Products
+
+```
+GET /api/products
+```
+
+Retrieves a paginated list of products with optional filtering.
+
+#### Query Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| page | integer | No | Page number (default: 1) |
+| limit | integer | No | Items per page (default: 20, max: 100) |
+| category | string | No | Filter by product category |
+| search | string | No | Search term for product name/description |
+| sort | string | No | Sort field (e.g., 'price', 'name', 'created_at') |
+| order | string | No | Sort order ('asc' or 'desc', default: 'asc') |
+
+#### Response
+
+```json
+{
+  "products": [
+    {
+      "id": "prod_123456",
+      "name": "Serenity Candle",
+      "description": "A calming blend of lavender and chamomile",
+      "price": 24.99,
+      "images": [
+        {
+          "url": "https://example.com/images/candle1.jpg",
+          "alt": "Serenity Candle product image"
+        }
+      ],
+      "category": "candles",
+      "inStock": true,
+      "variants": [
+        {
+          "id": "var_789012",
+          "name": "Small",
+          "price": 24.99,
+          "sku": "SER-CAN-S"
+        },
+        {
+          "id": "var_789013",
+          "name": "Large",
+          "price": 34.99,
+          "sku": "SER-CAN-L"
+        }
+      ],
+      "createdAt": "2023-01-10T09:00:00Z",
+      "updatedAt": "2023-03-15T14:30:00Z"
+    },
+    // Additional products...
+  ],
+  "pagination": {
+    "total": 48,
+    "pages": 3,
+    "page": 1,
+    "limit": 20
+  }
+}
+```
+
+### Get Product
+
+```
+GET /api/products/{productId}
+```
+
+Retrieves detailed information for a specific product.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| productId | string | Yes | The unique identifier of the product |
+
+#### Response
+
+```json
+{
+  "id": "prod_123456",
+  "name": "Serenity Candle",
+  "description": "A calming blend of lavender and chamomile",
+  "detailedDescription": "Our Serenity Candle combines the soothing properties of lavender and chamomile to create a peaceful atmosphere in any space. Hand-poured with 100% soy wax and featuring a cotton wick for a clean burn.",
+  "price": 24.99,
+  "images": [
+    {
+      "url": "https://example.com/images/candle1.jpg",
+      "alt": "Serenity Candle product image"
+    },
+    {
+      "url": "https://example.com/images/candle1-detail.jpg",
+      "alt": "Serenity Candle detail image"
+    }
+  ],
+  "category": "candles",
+  "tags": ["relaxation", "sleep", "aromatherapy"],
+  "ingredients": ["Soy wax", "Essential oils", "Cotton wick"],
+  "specifications": {
+    "weight": "8 oz",
+    "dimensions": "3 x 3 x 4 inches",
+    "burnTime": "40 hours"
+  },
+  "inStock": true,
+  "inventory": 45,
+  "variants": [
+    {
+      "id": "var_789012",
+      "name": "Small",
+      "price": 24.99,
+      "sku": "SER-CAN-S",
+      "inventory": 25
+    },
+    {
+      "id": "var_789013",
+      "name": "Large",
+      "price": 34.99,
+      "sku": "SER-CAN-L",
+      "inventory": 20
+    }
+  ],
+  "relatedProducts": ["prod_234567", "prod_345678"],
+  "createdAt": "2023-01-10T09:00:00Z",
+  "updatedAt": "2023-03-15T14:30:00Z"
+}
+```
+
+### Create Product (Admin)
+
+```
+POST /api/admin/products
+```
+
+Creates a new product in the catalog.
+
+#### Request Body
+
+```json
+{
+  "name": "Energize Bath Bomb",
+  "description": "Revitalizing citrus bath bomb",
+  "detailedDescription": "Transform your bath with invigorating citrus scents...",
+  "price": 12.99,
+  "category": "bath",
+  "tags": ["energizing", "morning", "citrus"],
+  "ingredients": ["Sodium bicarbonate", "Citric acid", "Essential oils"],
+  "specifications": {
+    "weight": "5.5 oz",
+    "dimensions": "2.5 inch diameter"
+  },
+  "inventory": 100,
+  "variants": [
+    {
+      "name": "Single",
+      "price": 12.99,
+      "sku": "ENE-BB-S",
+      "inventory": 75
+    },
+    {
+      "name": "3-Pack",
+      "price": 34.99,
+      "sku": "ENE-BB-3P",
+      "inventory": 25
+    }
+  ]
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "prod_567890",
+  "name": "Energize Bath Bomb",
+  "description": "Revitalizing citrus bath bomb",
+  "price": 12.99,
+  // ... other fields from the request
+  "inStock": true,
+  "variants": [
+    {
+      "id": "var_901234",
+      "name": "Single",
+      "price": 12.99,
+      "sku": "ENE-BB-S",
+      "inventory": 75
+    },
+    {
+      "id": "var_901235",
+      "name": "3-Pack",
+      "price": 34.99,
+      "sku": "ENE-BB-3P",
+      "inventory": 25
+    }
+  ],
+  "createdAt": "2023-04-16T11:00:00Z",
+  "updatedAt": "2023-04-16T11:00:00Z"
+}
+```
+
+### Update Product (Admin)
+
+```
+PATCH /api/admin/products/{productId}
+```
+
+Updates an existing product.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| productId | string | Yes | The unique identifier of the product |
+
+#### Request Body
+
+```json
+{
+  "price": 14.99,
+  "inventory": 85,
+  "tags": ["energizing", "morning", "citrus", "self-care"]
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "prod_567890",
+  "name": "Energize Bath Bomb",
+  "description": "Revitalizing citrus bath bomb",
+  "price": 14.99,
+  // ... other unchanged fields
+  "tags": ["energizing", "morning", "citrus", "self-care"],
+  "inventory": 85,
+  "updatedAt": "2023-04-16T14:20:00Z"
+}
+```
+
+### Delete Product (Admin)
+
+```
+DELETE /api/admin/products/{productId}
+```
+
+Removes a product from the catalog.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| productId | string | Yes | The unique identifier of the product |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Product successfully deleted",
+  "id": "prod_567890"
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Product does not exist |
+| 409 | Conflict - SKU already exists |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Use pagination for listing large product catalogs
+- Implement caching for frequently accessed products
+- Include detailed error information when creating/updating products
+- For product images, use the full URL from the CDN
+- Use the admin endpoints only in secure, authenticated contexts 

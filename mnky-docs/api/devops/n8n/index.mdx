@@ -1,0 +1,135 @@
+---
+title: 'n8n Integration'
+description: 'Comprehensive guide to the n8n automation service in the MOOD MNKY ecosystem'
+---
+
+# n8n Integration
+
+This documentation provides a comprehensive guide to the n8n automation service within the MOOD MNKY ecosystem. n8n serves as the central workflow automation platform, connecting various services and enabling complex automation workflows.
+
+## Overview
+
+n8n (pronounced n-eight-n) is a workflow automation tool that enables you to connect different services and automate tasks with a visual, no-code/low-code approach. Within the MOOD MNKY ecosystem, n8n handles:
+
+- Data synchronization between services
+- Event-based workflows
+- Scheduled tasks and maintenance
+- Integration between internal and external systems
+- Custom API endpoint creation via webhooks
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                        n8n Server                         │
+│                                                           │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────────┐  │
+│  │  Workflows  │   │   Webhooks  │   │  Credentials    │  │
+│  └─────────────┘   └─────────────┘   └─────────────────┘  │
+└───────────────────────────────────────────────────────────┘
+            ▲               ▲                 ▲
+            │               │                 │
+            ▼               ▼                 ▼
+┌──────────────────────────────────────────────────────────┐
+│                  MOOD MNKY Ecosystem                     │
+│                                                          │
+│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   │
+│  │ Ollama  │   │ Flowise │   │Langchain│   │ Shopify │   │
+│  └─────────┘   └─────────┘   └─────────┘   └─────────┘   │
+│                                                          │
+│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   │
+│  │ Notion  │   │ GitHub  │   │ Supabase│   │  Email  │   │
+│  └─────────┘   └─────────┘   └─────────┘   └─────────┘   │
+└──────────────────────────────────────────────────────────┘
+```
+
+## Key Features
+
+### Visual Workflow Management
+
+n8n provides a visual workflow editor that allows you to:
+
+- Create workflows with a drag-and-drop interface
+- Configure nodes for different services and actions
+- Set up conditional logic and branching
+- Test workflows in real-time
+- Monitor execution status and results
+
+### API Integration
+
+n8n connects with various APIs in the MOOD MNKY ecosystem:
+
+- **Internal Services**: Ollama, Flowise, Langchain, Supabase
+- **External Services**: Shopify, Notion, GitHub, email services
+- **Custom HTTP Requests**: For services without dedicated nodes
+
+### Webhook Endpoints
+
+n8n creates webhook endpoints that can be triggered by external systems:
+
+- Event-based workflow triggers
+- Custom API endpoint creation
+- Integration points for third-party services
+- Real-time data processing
+
+## Core Workflows
+
+The MOOD MNKY ecosystem utilizes n8n for several critical workflows:
+
+### User Onboarding Automation
+
+- Account creation across multiple systems
+- Welcome email sequences
+- Initial preferences setup
+- Data synchronization between platforms
+
+### Data Synchronization
+
+- Product data sync between Shopify and internal systems
+- Customer data unification
+- Content synchronization from Notion to documentation
+- Order and inventory management
+
+### Notification System
+
+- Email notifications for order status
+- Internal alerts for system events
+- Customer engagement messages
+- Team notifications for workflow completions
+
+### Content Processing
+
+- Documentation updates from Notion to Mintlify
+- Media asset processing and optimization
+- Scheduled content publishing
+- Content distribution across platforms
+
+## Getting Started
+
+### Access Requirements
+
+To work with n8n in the MOOD MNKY ecosystem, you'll need:
+
+- **Access Credentials**: Contact the development team for n8n access
+- **Environment Setup**: See the [local setup guide](/api/devops/environments/local-setup)
+- **Authentication**: API keys for connected services
+
+### Accessing n8n
+
+- **Production Environment**: [https://mnky-mind-n8n.moodmnky.com](https://mnky-mind-n8n.moodmnky.com)
+- **Development Environment**: [http://localhost:5678](http://localhost:5678)
+
+Authentication is required using your MOOD MNKY developer credentials.
+
+## Additional Documentation
+
+Explore these sections for more detailed information:
+
+- [Key Endpoints](/api/devops/n8n/endpoints): API endpoints and webhook URLs
+- [Core Workflows](/api/devops/n8n/workflows): Documentation of standard workflows
+- [Monitoring & Logging](/api/devops/n8n/monitoring): How to monitor n8n performance
+
+## Support & Resources
+
+- [Official n8n Documentation](https://docs.n8n.io/)
+- [n8n Workflow Examples](https://n8n.io/workflows)
+- [n8n Community Forum](https://community.n8n.io/)
+- [Internal Support](mailto:support@moodmnky.com) 

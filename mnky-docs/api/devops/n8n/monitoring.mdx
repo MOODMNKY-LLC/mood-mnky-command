@@ -1,0 +1,738 @@
+---
+title: 'n8n Monitoring & Logging'
+description: 'Monitor, troubleshoot, and analyze workflow execution in the MOOD MNKY n8n service'
+---
+
+# n8n Monitoring & Logging
+
+This guide covers the monitoring and logging capabilities available for the MOOD MNKY n8n integration, including how to track workflow execution, troubleshoot issues, and optimize performance.
+
+## Monitoring Dashboard
+
+The n8n instance includes a built-in monitoring dashboard that provides real-time insights into workflow execution and system performance.
+
+### Accessing the Dashboard
+
+- **Production:** [https://mnky-mind-n8n.moodmnky.com/dashboard](https://mnky-mind-n8n.moodmnky.com/dashboard)
+- **Development:** [http://localhost:5678/dashboard](http://localhost:5678/dashboard)
+
+You'll need to authenticate with administrator credentials to access the monitoring capabilities.
+
+### Dashboard Components
+
+The monitoring dashboard includes the following key components:
+
+- **Workflow Overview:** Summary of all workflows with status indicators
+- **Execution History:** Recent execution attempts with status and duration
+- **System Resources:** CPU, memory, and disk usage metrics
+- **Queue Status:** Active and pending executions in the processing queue
+- **Error Summary:** Overview of recent errors and exceptions
+
+## Execution Monitoring
+
+### Viewing Execution History
+
+To view the execution history of a specific workflow:
+
+1. Navigate to the Workflows page
+2. Select the workflow you want to monitor
+3. Click on the "Executions" tab
+4. View the list of past executions with their status and duration
+
+The execution list includes the following information:
+
+- **ID:** Unique identifier for the execution
+- **Status:** Success, Error, Running, or Waiting
+- **Started:** Timestamp when execution began
+- **Duration:** Total execution time
+- **Mode:** Manual, Webhook, or Scheduled
+
+### Execution Details
+
+Clicking on an execution ID shows detailed information about that specific run:
+
+```
+Execution ID: abc123def456
+Status: Success
+Started: 2024-04-02T15:30:45Z
+Finished: 2024-04-02T15:31:12Z
+Duration: 27s
+Triggered By: Webhook
+```
+
+The execution details page includes:
+
+- **Node Execution:** Step-by-step execution of each node
+- **Input/Output Data:** Data received and produced by each node
+- **Errors:** Detailed error messages for failed nodes
+- **Execution Path:** Visual representation of the data flow through the workflow
+
+## API-Based Monitoring
+
+### Retrieving Execution Data
+
+You can monitor workflow executions programmatically using the API:
+
+```typescript
+import axios from 'axios';
+
+// Configuration
+const baseUrl = 'https://mnky-mind-n8n.moodmnky.com/api/v1';
+const apiKey = 'your_api_key';
+
+// Get executions for a specific workflow
+async function getWorkflowExecutions(workflowId: string, limit = 20) {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/workflows/${workflowId}/executions?limit=${limit}`,
+      {
+        headers: {
+          'X-N8N-API-KEY': apiKey
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error retrieving executions:', error);
+    throw error;
+  }
+}
+
+// Get detailed information about a specific execution
+async function getExecutionDetails(executionId: string) {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/executions/${executionId}`,
+      {
+        headers: {
+          'X-N8N-API-KEY': apiKey
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error retrieving execution details:', error);
+    throw error;
+  }
+}
+```
+
+### Monitoring Active Executions
+
+To get currently running workflows:
+
+```typescript
+async function getActiveExecutions() {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/executions/active`,
+      {
+        headers: {
+          'X-N8N-API-KEY': apiKey
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error retrieving active executions:', error);
+    throw error;
+  }
+}
+```
+
+## Logging System
+
+### Log Levels
+
+The n8n service uses the following log levels:
+
+| Level | Description | Example |
+|-------|-------------|---------|
+| ERROR | Critical issues that require immediate attention | Workflow failures, authentication errors |
+| WARN | Potential issues that don't cause immediate failures | API rate limiting, slow execution |
+| INFO | General operational information | Workflow activations, system status changes |
+| DEBUG | Detailed information for troubleshooting | Data processing details, node execution |
+| VERBOSE | Highly detailed execution information | Internal state changes, data transformations |
+
+### Accessing Logs
+
+#### Web Interface
+
+Logs can be accessed directly from the n8n interface:
+
+1. Navigate to Settings > Log
+2. Set the desired log level using the dropdown
+3. View real-time log entries as they occur
+
+#### Container Logs
+
+If running in Docker (production environment):
+
+```bash
+# View logs for the n8n container
+docker logs n8n-container
+
+# Follow logs in real-time
+docker logs -f n8n-container
+
+# View only the most recent logs
+docker logs --tail=100 n8n-container
+```
+
+#### Log Files
+
+Direct file access (development environment):
+
+```bash
+# View log file
+cat ~/.n8n/logs/n8n.log
+
+# Monitor log file in real-time
+tail -f ~/.n8n/logs/n8n.log
+
+# Filter logs for specific content
+grep "ERROR" ~/.n8n/logs/n8n.log
+```
+
+### Customizing Logging
+
+The logging configuration can be adjusted using environment variables:
+
+```
+# Set log level
+N8N_LOG_LEVEL=debug
+
+# Enable log rotation
+N8N_LOG_ROTATE=true
+N8N_LOG_ROTATE_MAX_KEPT_FILES=10
+N8N_LOG_ROTATE_MAX_SIZE=10m
+
+# Output format (options: pretty, json)
+N8N_LOG_OUTPUT=json
+```
+
+## Performance Monitoring
+
+### Key Metrics
+
+Monitor these metrics to ensure optimal performance:
+
+1. **Execution Time:** Time taken for workflows to complete
+2. **Queue Length:** Number of pending workflow executions
+3. **Error Rate:** Percentage of workflow executions that fail
+4. **Resource Usage:** CPU, memory, and network consumption
+5. **API Request Rate:** Number of API calls to external services
+
+### Performance Dashboard
+
+The performance section of the dashboard provides these metrics:
+
+```
+System Performance Summary:
+┌─────────────────┬────────────┬────────────┐
+│ Metric          │ Current    │ 24h Avg    │
+├─────────────────┼────────────┼────────────┤
+│ CPU Usage       │ 35%        │ 28%        │
+│ Memory Usage    │ 1.2GB      │ 0.9GB      │
+│ Active Workers  │ 3          │ 2          │
+│ Queue Length    │ 5          │ 2          │
+│ Execution Rate  │ 12/min     │ 8/min      │
+│ Error Rate      │ 2%         │ 3%         │
+└─────────────────┴────────────┴────────────┘
+```
+
+### Identifying Performance Bottlenecks
+
+Common techniques to identify performance issues:
+
+1. **Execution Timeline Analysis:** Review the time spent in each node
+2. **Resource Usage Correlation:** Match slow executions with resource spikes
+3. **External Service Monitoring:** Track API response times for dependencies
+4. **Data Volume Assessment:** Check if performance issues correlate with data size
+
+## Error Tracking and Alerts
+
+### Setting Up Error Notifications
+
+Configure notifications for workflow failures:
+
+1. Navigate to Settings > Workflows
+2. Configure a workflow to handle errors
+3. Select notification channels:
+   - Email notifications
+   - Slack messages
+   - Custom webhook endpoints
+   - SMS (via third-party services)
+
+Example workflow configuration for error notifications:
+
+```json
+{
+  "settings": {
+    "errorWorkflow": "123456",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": true,
+    "timezone": "UTC"
+  }
+}
+```
+
+### Error Analysis Dashboard
+
+The error analysis section provides aggregated error information:
+
+```
+Error Summary (Last 24 Hours):
+- Total Errors: 15
+- Most Common Error: "API Rate Limit Exceeded" (7 occurrences)
+- Most Problematic Workflow: "Customer Data Sync" (5 errors)
+- Most Problematic Node: "HTTP Request" (9 errors)
+```
+
+### Creating a Dedicated Error Handling Workflow
+
+Example of an error handling workflow with notifications:
+
+```typescript
+// Function node to process workflow error
+const errorData = items[0].json.workflow;
+
+// Format error message
+const errorMessage = `
+Workflow Error Alert:
+- Workflow: ${errorData.name} (ID: ${errorData.id})
+- Error: ${items[0].json.execution.error.message}
+- Time: ${new Date().toISOString()}
+- Execution ID: ${items[0].json.execution.id}
+`;
+
+// Determine severity
+let severity = 'medium';
+if (errorData.name.includes('Critical') || 
+    items[0].json.execution.error.message.includes('Database')) {
+  severity = 'high';
+} else if (errorData.name.includes('Test')) {
+  severity = 'low';
+}
+
+return {
+  json: {
+    errorMessage,
+    severity,
+    workflow: errorData,
+    execution: items[0].json.execution,
+    timestamp: new Date().toISOString()
+  }
+};
+```
+
+## Integration with External Monitoring
+
+### Prometheus Integration
+
+n8n can expose metrics in Prometheus format for integration with Prometheus monitoring:
+
+1. Enable the Prometheus endpoint by setting:
+   ```
+   N8N_METRICS=true
+   ```
+
+2. Access metrics at:
+   ```
+   https://mnky-mind-n8n.moodmnky.com/metrics
+   ```
+
+3. Configure Prometheus to scrape this endpoint:
+   ```yaml
+   scrape_configs:
+     - job_name: 'n8n'
+       scrape_interval: 30s
+       metrics_path: /metrics
+       static_configs:
+         - targets: ['mnky-mind-n8n.moodmnky.com']
+   ```
+
+### Grafana Dashboards
+
+Pre-built Grafana dashboards are available for visualizing n8n metrics:
+
+1. Import the n8n dashboard template from the MOOD MNKY infrastructure repository
+2. Connect your Grafana instance to the Prometheus data source
+3. Access comprehensive visualizations including:
+   - Workflow execution heat maps
+   - Error rate trends
+   - Resource usage graphs
+   - API call volume metrics
+
+### ELK Stack Integration
+
+For advanced log analysis, n8n logs can be forwarded to the ELK stack:
+
+1. Configure n8n to output JSON-formatted logs:
+   ```
+   N8N_LOG_OUTPUT=json
+   ```
+
+2. Use Filebeat to ship logs to Elasticsearch:
+   ```yaml
+   filebeat.inputs:
+   - type: log
+     enabled: true
+     paths:
+       - /var/log/n8n/*.log
+     json.keys_under_root: true
+     json.add_error_key: true
+
+   output.elasticsearch:
+     hosts: ["elasticsearch:9200"]
+     index: "n8n-logs-%{+yyyy.MM.dd}"
+   ```
+
+3. Create Kibana dashboards for log visualization and analysis
+
+## Audit Logging
+
+### Audit Log Configuration
+
+Enable comprehensive audit logging to track all system changes:
+
+```
+N8N_AUDIT_LOG_ENABLED=true
+N8N_AUDIT_LOG_FILE=/var/log/n8n/audit.log
+```
+
+### Tracked Events
+
+The audit log captures these events:
+
+- **User Actions:** Login, logout, failed authentication attempts
+- **Workflow Changes:** Creation, modification, deletion, activation
+- **Credential Updates:** Creation, modification, deletion
+- **Execution Actions:** Manual executions, stopping executions
+- **System Settings:** Configuration changes, user management
+
+### Audit Log Format
+
+Each audit log entry follows this format:
+
+```json
+{
+  "timestamp": "2024-04-02T12:34:56.789Z",
+  "action": "workflow.update",
+  "userId": "user123",
+  "userEmail": "user@example.com",
+  "ipAddress": "192.168.1.100",
+  "targetType": "workflow",
+  "targetId": "workflow456",
+  "details": {
+    "previousName": "Data Sync",
+    "newName": "Customer Data Sync",
+    "otherChanges": ["nodes", "connections"]
+  }
+}
+```
+
+## Best Practices for Monitoring
+
+### Monitoring Strategy
+
+Implement these monitoring practices for optimal n8n operations:
+
+1. **Set Up Multi-level Monitoring:**
+   - System-level monitoring (CPU, memory, disk)
+   - Application-level monitoring (queue length, execution count)
+   - Workflow-level monitoring (success rate, execution time)
+   - Node-level monitoring (error rates, performance)
+
+2. **Establish Baselines:**
+   - Document normal performance patterns
+   - Set thresholds for alerting based on deviations
+   - Create seasonal baselines for workflows with periodic patterns
+
+3. **Implement Proactive Monitoring:**
+   - Create test workflows that run periodically to check system health
+   - Monitor dependencies and external services
+   - Set up early warning alerts for potential issues
+
+### Performance Optimization
+
+Follow these recommendations to maintain optimal performance:
+
+1. **Regular Maintenance:**
+   - Prune execution history data regularly
+   - Archive inactive workflows
+   - Remove unused credentials
+   - Update to the latest n8n version
+
+2. **Resource Management:**
+   - Schedule resource-intensive workflows during off-peak hours
+   - Set concurrency limits appropriate for your infrastructure
+   - Implement backoff strategies for external API calls
+   - Use batching for large data sets
+
+3. **Workflow Optimization:**
+   - Limit data returned by HTTP requests
+   - Use IF nodes to skip unnecessary processing
+   - Implement pagination for large data sets
+   - Use appropriate error handling and retry strategies
+
+## Troubleshooting Guide
+
+### Common Issues and Solutions
+
+| Issue | Symptoms | Resolution |
+|-------|----------|------------|
+| Webhook Not Triggering | Webhook calls don't start workflow execution | Check webhook URL, verify workflow is active, check network access |
+| Workflow Stuck | Execution shows as "running" for extended periods | Check for infinite loops, external service availability, increase timeout settings |
+| High Memory Usage | System performance degradation, OOM errors | Reduce batch sizes, optimize data handling, increase memory allocation |
+| Database Connection Issues | Database operation errors, workflow failures | Verify connection credentials, check database server status, implement retry logic |
+| Rate Limiting | API error responses, incomplete data processing | Implement backoff strategies, distribute requests, use bulk operations where possible |
+
+### Advanced Debugging
+
+When standard monitoring doesn't identify the issue:
+
+1. **Verbose Logging:**
+   ```
+   N8N_LOG_LEVEL=verbose
+   ```
+
+2. **Node-specific Debugging:**
+   Add a Function node with detailed logging:
+   ```javascript
+   // Debug node
+   console.log('DEBUG - Node Input:', JSON.stringify(items, null, 2));
+   
+   // Add additional data inspection
+   items.forEach((item, index) => {
+     console.log(`Item ${index} keys:`, Object.keys(item.json));
+     console.log(`Item ${index} data types:`, 
+       Object.entries(item.json).reduce((types, [key, value]) => {
+         types[key] = typeof value;
+         return types;
+       }, {})
+     );
+   });
+   
+   return items;
+   ```
+
+3. **Isolating Components:**
+   - Create a simplified test workflow with only the problematic nodes
+   - Execute with controlled test data
+   - Add intermediary "snapshot" nodes to capture data state
+
+### Emergency Response
+
+For critical production issues:
+
+1. **Immediate Actions:**
+   - Stop affected workflows to prevent cascading failures
+   - Check for resource exhaustion (CPU, memory, disk)
+   - Review recent changes or updates that might have caused the issue
+
+2. **Communication Protocol:**
+   - Notify the development team through the established channels
+   - Update status page or monitoring dashboard
+   - Prepare user communication if service impact is expected
+
+3. **Recovery Steps:**
+   - Implement temporary workarounds if available
+   - Restore from known good configuration if applicable
+   - Enable additional logging for root cause analysis
+   - Document the incident for future prevention
+
+## Health Checks
+
+### Built-in Health Endpoints
+
+n8n provides health check endpoints for monitoring:
+
+- **Basic Health Check:** `GET /healthz`
+  ```bash
+  curl -X GET "https://mnky-mind-n8n.moodmnky.com/healthz"
+  ```
+  Response: `{"status":"ok"}` if the service is running
+
+- **Detailed Health Check:** `GET /health`
+  ```bash
+  curl -X GET "https://mnky-mind-n8n.moodmnky.com/health" \
+    -H "X-N8N-API-KEY: your_api_key"
+  ```
+  Response includes detailed system status:
+  ```json
+  {
+    "status": "ok",
+    "version": "1.0.0",
+    "dbConnectionOk": true,
+    "memoryUsage": {
+      "rss": "150MB",
+      "heapUsed": "80MB"
+    },
+    "uptime": "5d 12h 30m",
+    "activeWorkflows": 15,
+    "activeExecutions": 3
+  }
+  ```
+
+### Custom Health Check Workflow
+
+Creating a comprehensive health check workflow:
+
+```
+Schedule (Every 5 minutes)
+  ↓
+Check Database Connection
+  ↓
+Check External API Access
+  ↓
+Check Disk Space
+  ↓
+Check Memory Usage
+  ↓
+Check Active Executions
+  ↓
+IF (Any Checks Failed)
+  ↓
+Send Alert
+```
+
+## Monitoring Dashboard Setup
+
+### Setting Up a Custom Dashboard
+
+For organizations requiring a custom monitoring solution:
+
+1. **Data Collection:**
+   - Use the n8n API to collect execution data
+   - Set up log forwarding to your monitoring system
+   - Implement custom health check workflows
+
+2. **Visualization Options:**
+   - Grafana dashboards with Prometheus data source
+   - Custom web dashboard using the n8n API
+   - Integration with existing monitoring solutions
+
+3. **Example Metrics to Track:**
+   - Overall workflow execution success rate
+   - Average execution time by workflow
+   - Error frequency by node type
+   - Resource usage correlation with workflow load
+   - External service dependency health
+
+### Sample Dashboard Implementation
+
+```typescript
+// TypeScript example of custom dashboard data collection
+import axios from 'axios';
+import * as fs from 'fs';
+
+interface WorkflowStats {
+  id: string;
+  name: string;
+  activeStatus: boolean;
+  executionCount: number;
+  successRate: number;
+  averageExecutionTime: number;
+  lastExecution: string;
+  errorRate: number;
+}
+
+async function collectDashboardData() {
+  const baseUrl = 'https://mnky-mind-n8n.moodmnky.com/api/v1';
+  const apiKey = 'your_api_key';
+  
+  try {
+    // Get all workflows
+    const workflowsResponse = await axios.get(
+      `${baseUrl}/workflows`,
+      {
+        headers: {
+          'X-N8N-API-KEY': apiKey
+        }
+      }
+    );
+    
+    const workflows = workflowsResponse.data.data;
+    const workflowStats: WorkflowStats[] = [];
+    
+    // Collect stats for each workflow
+    for (const workflow of workflows) {
+      // Get recent executions
+      const executionsResponse = await axios.get(
+        `${baseUrl}/workflows/${workflow.id}/executions?limit=100`,
+        {
+          headers: {
+            'X-N8N-API-KEY': apiKey
+          }
+        }
+      );
+      
+      const executions = executionsResponse.data.data;
+      
+      // Calculate statistics
+      const executionCount = executions.length;
+      const successfulExecutions = executions.filter(e => e.status === 'success').length;
+      const successRate = executionCount > 0 ? (successfulExecutions / executionCount) * 100 : 0;
+      
+      const executionTimes = executions.map(e => new Date(e.finished).getTime() - new Date(e.started).getTime());
+      const averageExecutionTime = executionTimes.length > 0 
+        ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length 
+        : 0;
+      
+      const lastExecution = executions.length > 0 ? executions[0].finished : 'Never';
+      
+      workflowStats.push({
+        id: workflow.id,
+        name: workflow.name,
+        activeStatus: workflow.active,
+        executionCount,
+        successRate,
+        averageExecutionTime,
+        lastExecution,
+        errorRate: 100 - successRate
+      });
+    }
+    
+    // Get system health
+    const healthResponse = await axios.get(
+      `${baseUrl}/health`,
+      {
+        headers: {
+          'X-N8N-API-KEY': apiKey
+        }
+      }
+    );
+    
+    const healthData = healthResponse.data;
+    
+    // Combine all data for dashboard
+    const dashboardData = {
+      timestamp: new Date().toISOString(),
+      systemHealth: healthData,
+      workflowStats: workflowStats
+    };
+    
+    // Save to file or send to dashboard service
+    fs.writeFileSync('dashboard-data.json', JSON.stringify(dashboardData, null, 2));
+    
+    return dashboardData;
+  } catch (error) {
+    console.error('Error collecting dashboard data:', error);
+    throw error;
+  }
+}
+```
+
+## Further Resources
+
+- [n8n Integration Overview](/api/devops/n8n)
+- [n8n API Endpoints](/api/devops/n8n/endpoints) 
+- [n8n Workflow Management](/api/devops/n8n/workflows)
+- [n8n Official Documentation - Monitoring](https://docs.n8n.io/hosting/monitoring/)
+- [Prometheus Documentation](https://prometheus.io/docs/introduction/overview/)
+- [Grafana Documentation](https://grafana.com/docs/) 

@@ -1,0 +1,555 @@
+---
+title: 'User Profiles Database'
+description: 'Documentation for managing user preferences and data for personalized agent interactions'
+---
+
+# User Profiles Database
+
+The User Profiles Database defines how MOOD MNKY agents store, access, and utilize information about users to deliver personalized experiences. It provides a structured approach for maintaining user preferences, behavior patterns, and interaction history in a privacy-respecting manner.
+
+## Purpose and Role
+
+<Info>
+The User Profiles Database defines "who" agents interact with, enabling them to tailor their responses, recommendations, and behaviors to individual users.
+</Info>
+
+This database documents:
+- User preference information
+- Demographic and psychographic data
+- Interaction history and patterns
+- Product preferences and purchase history
+- Privacy settings and consent records
+- Personalization parameters and vectors
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "user_id": "string",
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "basic_info": "object",
+      "preferences": "object",
+      "product_affinities": "object",
+      "interaction_patterns": "object",
+      "privacy_settings": "object",
+      "segments": "array",
+      "personalization_vectors": "object",
+      "connected_accounts": "array",
+      "status": "string"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "user_id": "usr_425b3c",
+      "created_at": "2023-11-05T08:12:00Z",
+      "updated_at": "2024-05-12T15:30:00Z",
+      "basic_info": {
+        "name": "Alex Chen",
+        "email": "alex@example.com",
+        "timezone": "America/Los_Angeles",
+        "joined_from": "website"
+      },
+      "preferences": {
+        "scent": {
+          "liked": ["lavender", "bergamot", "sandalwood"],
+          "disliked": ["rose", "patchouli"],
+          "sensitivity": "medium"
+        },
+        "products": {
+          "preferred_types": ["candles", "diffusers"],
+          "packaging": "eco-friendly",
+          "price_sensitivity": "medium"
+        },
+        "communication": {
+          "frequency": "weekly",
+          "channels": ["email", "app"],
+          "tone": "casual"
+        }
+      },
+      "product_affinities": {
+        "categories": {
+          "sleep": 0.87,
+          "focus": 0.65,
+          "relax": 0.92
+        },
+        "collections": {
+          "zen_garden": 0.78,
+          "night_bloom": 0.23,
+          "citrus_grove": 0.55
+        }
+      },
+      "interaction_patterns": {
+        "platform_usage": {
+          "web": 0.75,
+          "mobile": 0.25,
+          "typical_times": ["evening", "weekend"]
+        },
+        "agent_interactions": {
+          "frequency": "weekly",
+          "avg_session_length": 4.2,
+          "common_queries": ["product_recommendations", "order_status"]
+        }
+      },
+      "privacy_settings": {
+        "data_retention": "standard",
+        "personalization_level": "full",
+        "marketing_consent": true,
+        "data_sharing": false,
+        "last_consent_update": "2024-01-15T10:20:00Z"
+      },
+      "segments": ["wellness_enthusiast", "eco_conscious", "sleep_focused"],
+      "personalization_vectors": {
+        "product_embedding": [0.23, 0.45, -0.12, ...],
+        "content_embedding": [0.56, -0.32, 0.78, ...],
+        "tone_embedding": [0.12, 0.67, -0.45, ...]
+      },
+      "connected_accounts": [
+        {
+          "platform": "shopify",
+          "account_id": "shop_usr_785429",
+          "connected_at": "2023-11-06T09:30:00Z",
+          "status": "active"
+        }
+      ],
+      "status": "active"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="user_id">
+    A unique identifier for the user.
+  </Accordion>
+  <Accordion title="created_at">
+    When the user profile was first created.
+  </Accordion>
+  <Accordion title="updated_at">
+    When the user profile was last modified.
+  </Accordion>
+  <Accordion title="basic_info">
+    Essential user information like name, email, and timezone.
+  </Accordion>
+  <Accordion title="preferences">
+    User-specified preferences across various domains.
+  </Accordion>
+  <Accordion title="product_affinities">
+    Computed affinities for product categories and collections.
+  </Accordion>
+  <Accordion title="interaction_patterns">
+    Observed patterns in user behavior and interaction.
+  </Accordion>
+  <Accordion title="privacy_settings">
+    User-controlled privacy and data usage preferences.
+  </Accordion>
+  <Accordion title="segments">
+    User segments or personas for targeted experiences.
+  </Accordion>
+  <Accordion title="personalization_vectors">
+    Vector representations of user preferences for similarity matching.
+  </Accordion>
+  <Accordion title="connected_accounts">
+    External accounts linked to this user profile.
+  </Accordion>
+  <Accordion title="status">
+    Current status of the user account.
+  </Accordion>
+</AccordionGroup>
+
+## Profile Components
+
+The MOOD MNKY user profile system consists of several interconnected components:
+
+<CardGroup cols={2}>
+  <Card title="Explicit Preferences" icon="sliders">
+    Directly stated user preferences, collected through:
+    - Initial onboarding questionnaires
+    - Preference settings in account
+    - Direct feedback on recommendations
+    - Feature opt-ins and settings
+    - Survey responses
+  </Card>
+  <Card title="Behavioral Insights" icon="chart-line">
+    Observed patterns derived from user activity:
+    - Product browsing and purchase history
+    - Content engagement patterns
+    - Search query analysis
+    - Feature usage frequency
+    - Time and duration patterns
+  </Card>
+  <Card title="Preference Vectors" icon="arrow-trend-up">
+    Computed embeddings that represent user preferences for:
+    - Product affinity matching
+    - Content recommendation
+    - Tone and style preferences
+    - Similar user clustering
+    - Cold-start inference
+  </Card>
+  <Card title="Segmentation" icon="object-group">
+    Groupings that place users in meaningful categories:
+    - Lifestyle segments
+    - Purchase behavior clusters
+    - Engagement level categories
+    - Value alignment groups
+    - Product affinity segments
+  </Card>
+</CardGroup>
+
+## Integration with OpenAI Agents SDK
+
+### User Profile Access
+
+```python
+from agents import Agent, Tool, Runner
+from user_profile import UserProfileSystem
+
+# Initialize profile system
+profiles = UserProfileSystem()
+
+# Define profile access tool
+def get_user_preferences(user_id: str, preference_type: str = None) -> dict:
+    """Retrieve user preferences of a specific type."""
+    return profiles.get_preferences(
+        user_id=user_id,
+        preference_type=preference_type
+    )
+
+# Create tool for the agent
+profile_tool = Tool(
+    name="get_user_preferences",
+    description="Retrieve information about user preferences",
+    function=get_user_preferences
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant. Use profile information to personalize recommendations.",
+    tools=[profile_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "What products would you recommend for me?")
+```
+
+### Profile-Aware Instructions
+
+```python
+from agents import Agent, Runner
+from user_profile import UserProfileSystem
+
+# Initialize profile system
+profiles = UserProfileSystem()
+
+async def create_profile_aware_agent(user_id: str) -> Agent:
+    # Retrieve user profile summary
+    profile_summary = profiles.get_summary(user_id)
+    
+    # Create agent with profile-infused instructions
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions=f"""You are MOOD MNKY, the brand assistant.
+        
+        User profile information:
+        {profile_summary}
+        
+        Use this information to provide personalized assistance.
+        
+        Important preferences to consider:
+        - Scent preferences: {profile_summary.get('preferences', {}).get('scent', {})}
+        - Product preferences: {profile_summary.get('preferences', {}).get('products', {})}
+        - Communication style: {profile_summary.get('preferences', {}).get('communication', {}).get('tone', 'neutral')}
+        
+        Ensure your tone and recommendations align with these preferences."""
+    )
+    
+    return agent
+
+# Create and run agent for a specific user
+agent = await create_profile_aware_agent("usr_425b3c")
+runner = Runner()
+result = await runner.run(agent, "I'm looking for something to help me relax")
+```
+
+### Profile MCP Server Integration
+
+```python
+from agents import Agent, Runner
+from agents.mcp.server import MCPServerSse, MCPServerSseParams
+
+# Set up MCP server for user profiles
+async with MCPServerSse(
+    params=MCPServerSseParams(
+        url="http://localhost:3000/profile-mcp",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    ),
+    name="profile_mcp",
+    cache_tools_list=True
+) as profile_server:
+    
+    # Create agent with profile MCP server
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions="You are MOOD MNKY, the brand assistant. Use profile information to personalize recommendations.",
+        mcp_servers=[profile_server]
+    )
+    
+    # Run the agent
+    runner = Runner()
+    result = await runner.run(agent, "What scents would I like?")
+```
+
+## Privacy and Consent Architecture
+
+The User Profiles Database implements a comprehensive privacy and consent framework:
+
+<Tabs>
+  <Tab title="Consent Management">
+    ```
+    ┌────────────────────────────┐
+    │      Consent Registry      │
+    ├────────────────────────────┤
+    │ - Consent records          │
+    │ - Timestamp tracking       │
+    │ - Versioned policies       │
+    │ - Granular permissions     │
+    │ - Audit trail              │
+    └────────────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Data Minimization">
+    ```
+    ┌────────────────────────────┐
+    │    Minimization Engine     │
+    ├────────────────────────────┤
+    │ - PII detection            │
+    │ - Automatic redaction      │
+    │ - Anonymization rules      │
+    │ - Purpose limitation       │
+    │ - Retention enforcement    │
+    └────────────────────────────┘
+    ```
+  </Tab>
+  <Tab title="Access Controls">
+    ```
+    ┌────────────────────────────┐
+    │    Access Control Layer    │
+    ├────────────────────────────┤
+    │ - Purpose-based access     │
+    │ - Agent-specific rules     │
+    │ - Session validation       │
+    │ - Attribute-level control  │
+    │ - Logging and monitoring   │
+    └────────────────────────────┘
+    ```
+  </Tab>
+</Tabs>
+
+## Preference Collection and Update
+
+### Initial Collection
+
+```python
+from agents import Agent, Tool, Runner
+from user_profile import UserProfileSystem
+
+# Initialize profile system
+profiles = UserProfileSystem()
+
+# Define preference update tool
+def update_user_preferences(user_id: str, preference_type: str, 
+                             preferences: dict) -> dict:
+    """Update user preferences of a specific type."""
+    return profiles.update_preferences(
+        user_id=user_id,
+        preference_type=preference_type,
+        preferences=preferences
+    )
+
+# Create tool for the agent
+update_tool = Tool(
+    name="update_user_preferences",
+    description="Update information about user preferences",
+    function=update_user_preferences
+)
+
+# Create onboarding agent with the tool
+onboarding_agent = Agent(
+    name="MOOD MNKY",
+    instructions="""You are MOOD MNKY, the brand assistant. 
+    Guide new users through setting up their preferences.
+    Ask about scent preferences, product types, and sensitivity.
+    Update their profile with the information collected.""",
+    tools=[update_tool]
+)
+
+# Run the onboarding agent
+runner = Runner()
+result = await runner.run(onboarding_agent, "I'm new here, can you help me get started?")
+```
+
+### Preference Learning
+
+```python
+from agents import Agent, Tool, Runner
+from user_profile import UserProfileSystem
+
+# Initialize profile system
+profiles = UserProfileSystem()
+
+# Define preference learning tool
+def infer_preference(user_id: str, interaction: str, 
+                     confidence: float) -> dict:
+    """Infer a user preference from an interaction."""
+    return profiles.infer_preference(
+        user_id=user_id,
+        interaction=interaction,
+        confidence=confidence
+    )
+
+# Create tool for the agent
+learning_tool = Tool(
+    name="infer_preference",
+    description="Infer user preferences from interactions",
+    function=infer_preference
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="""You are MOOD MNKY, the brand assistant.
+    During conversations, identify stated preferences and update the user profile.
+    Look for mentions of likes, dislikes, sensitivities, and goals.""",
+    tools=[learning_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "I really enjoy lavender scents, but citrus gives me a headache.")
+```
+
+## Personalization Vectors
+
+The system uses vector embeddings to represent different aspects of user preferences:
+
+<CardGroup cols={2}>
+  <Card title="Product Vectors" icon="box">
+    Represent product preferences in embedding space to enable similarity-based recommendations and affinity matching.
+  </Card>
+  <Card title="Content Vectors" icon="file-lines">
+    Capture content consumption patterns and preferences for personalizing education materials and marketing messages.
+  </Card>
+  <Card title="Communication Vectors" icon="comments">
+    Model preferred communication styles, tone, detail level, and formality for adapting agent interactions.
+  </Card>
+  <Card title="Experience Vectors" icon="star">
+    Encode overall experience preferences like design aesthetics, complexity level, and engagement patterns.
+  </Card>
+</CardGroup>
+
+### Vector Creation
+
+```python
+from agents import Agent, Tool, Runner
+from user_profile import UserProfileSystem
+import numpy as np
+
+# Initialize profile system
+profiles = UserProfileSystem()
+
+# Define vector update tool
+def update_preference_vector(user_id: str, vector_type: str, 
+                              vector_data: list) -> dict:
+    """Update a user's preference vector."""
+    return profiles.update_vector(
+        user_id=user_id,
+        vector_type=vector_type,
+        vector_data=vector_data
+    )
+
+# Create tool for the agent
+vector_tool = Tool(
+    name="update_preference_vector",
+    description="Update a user's preference vector representation",
+    function=update_preference_vector
+)
+
+# Function to generate embedding
+def generate_product_embedding(preferences: dict) -> list:
+    """Convert product preferences to vector representation."""
+    # In a real system, this would use a machine learning model
+    # This is a simplified example
+    embedding = np.random.normal(size=128).tolist()
+    return embedding
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="""You are MOOD MNKY, the brand assistant.
+    Analyze user interactions to update their preference vectors.""",
+    tools=[vector_tool]
+)
+
+# Example of updating vectors
+preferences = {
+    "scent": ["lavender", "bergamot"],
+    "product_types": ["candles", "diffusers"],
+    "occasions": ["relaxation", "sleep"]
+}
+embedding = generate_product_embedding(preferences)
+await vector_tool.function(
+    user_id="usr_425b3c",
+    vector_type="product",
+    vector_data=embedding
+)
+```
+
+## Best Practices for User Profile Management
+
+### Privacy and Ethics
+
+- **Transparent Collection**: Clearly communicate what data is collected and why
+- **Minimization Principle**: Collect only what's necessary for personalization
+- **Control Mechanisms**: Provide user-accessible controls for preferences and data
+- **Sensitivity Awareness**: Apply special handling for sensitive preference data
+- **Right to be Forgotten**: Implement comprehensive data deletion capabilities
+
+### Profile Quality
+
+- **Confidence Scoring**: Track confidence levels for inferred preferences
+- **Verification Loops**: Confirm inferred preferences through interaction
+- **Recency Weighting**: Give higher weight to more recent preference signals
+- **Contradiction Resolution**: Implement strategies for handling conflicting preferences
+- **Profile Health Metrics**: Monitor completeness and consistency of profiles
+
+### Implementation Strategies
+
+- **Progressive Profiling**: Build profiles gradually through natural interactions
+- **Multi-source Integration**: Combine explicit, implicit, and inferred data
+- **Vector Maintenance**: Regularly update and re-compute personalization vectors
+- **Segmentation Automation**: Dynamically assign and update user segments
+- **Cross-validation**: Compare signals across different interaction channels
+
+### Personalization Delivery
+
+- **Appropriate Adaptation**: Match personalization level to user expectations
+- **Transparency**: Make personalization visible when appropriate
+- **Overrides**: Allow users to easily override personalized settings
+- **A/B Testing**: Continuously evaluate personalization effectiveness
+- **Fallback Mechanisms**: Handle new users and sparse profiles gracefully
+
+## Additional Resources
+
+- [User Profiling System](/agents/infrastructure/user-profiling)
+- [Personalization Strategy](/platform-services/personalization)
+- [Privacy Framework](/operations/privacy)
+- [Vector Embeddings Guide](/technology-stack/vector-search)
+- [Personalization Metrics](/analytics/personalization-effectiveness)

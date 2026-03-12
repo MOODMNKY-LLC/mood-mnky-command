@@ -1,0 +1,148 @@
+---
+title: "Blender MCP"
+description: "Connect Cursor or Claude to Blender via the Model Context Protocol for prompt-assisted 3D modeling and scene control"
+icon: "cube"
+---
+
+# Blender MCP
+
+Blender MCP connects Blender to Cursor (or Claude) through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). It allows you to control Blender from your IDE: create and modify 3D objects, materials, and scenes using natural language or structured commands. The integration consists of a **Blender addon** (socket server inside Blender) and an **MCP server** (run by Cursor or Claude Desktop) that talks to the addon.
+
+<Info>
+Blender MCP is a third-party integration and is not made by Blender. Use it at your own risk. The official project is [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp) on GitHub.
+</Info>
+
+## Prerequisites
+
+- **Blender 3.0 or newer**
+- **Python 3.10 or newer** (for the MCP server; Blender ships its own Python)
+- **uv** — The Blender MCP server is run with `uvx blender-mcp`. You must install [uv](https://docs.astral.sh/uv/) before adding the MCP to Cursor.
+
+### Installing uv
+
+**Windows (PowerShell):**
+
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Then add uv to your user PATH. For example, add `%USERPROFILE%\.local\bin` (or the path shown by the installer) to your user Path environment variable. You may need to restart Cursor after changing PATH.
+
+**macOS:**
+
+```bash
+brew install uv
+```
+
+Other platforms: see [Install uv](https://docs.astral.sh/uv/getting-started/installation/) on the Astral docs.
+
+<Warning>
+Do not proceed with adding the Blender MCP server to Cursor until uv is installed and available in your terminal (e.g. `uvx --version`).
+</Warning>
+
+## Installing the Blender Addon
+
+1. Download the `addon.py` file from the [blender-mcp repository](https://github.com/ahujasid/blender-mcp) (e.g. from the root of the repo).
+2. Open Blender.
+3. Go to **Edit > Preferences > Add-ons**.
+4. Click **Install...** and select the downloaded `addon.py`.
+5. Enable the addon by checking the box next to **Interface: Blender MCP**.
+
+The addon starts a socket server inside Blender that the MCP server (started by Cursor) will connect to.
+
+## Cursor Integration
+
+Add the Blender MCP server to your Cursor MCP configuration so Cursor can talk to Blender.
+
+### Windows
+
+In `.cursor/mcp.json` (project or global), add a server entry using `cmd` and `uvx`:
+
+```json
+{
+  "mcpServers": {
+    "blender": {
+      "command": "cmd",
+      "args": ["/c", "uvx", "blender-mcp"]
+    }
+  }
+}
+```
+
+### macOS / Linux
+
+Use `uvx` directly:
+
+```json
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": ["blender-mcp"]
+    }
+  }
+}
+```
+
+After saving, restart Cursor or reload MCP servers so the new server is picked up. You do not need to run `uvx blender-mcp` manually in a terminal; Cursor starts it when needed.
+
+### Optional: Environment Variables
+
+You can pass environment variables to the Blender MCP server for remote or custom setups:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `BLENDER_HOST` | Host address for the Blender socket server | `localhost` |
+| `BLENDER_PORT` | Port number for the Blender socket server | `9876` |
+| `DISABLE_TELEMETRY` | Set to `true` to disable anonymous telemetry | — |
+
+Example (Windows, in `mcp.json`):
+
+```json
+"blender": {
+  "command": "cmd",
+  "args": ["/c", "uvx", "blender-mcp"],
+  "env": {
+    "BLENDER_PORT": "9876",
+    "DISABLE_TELEMETRY": "true"
+  }
+}
+```
+
+## Usage
+
+1. **Start Blender** and open a project (or leave the default scene).
+2. In Blender, open the **3D View** sidebar (press **N** if it is not visible).
+3. Find the **BlenderMCP** tab in the sidebar.
+4. Optionally enable **Poly Haven** if you want to use Poly Haven assets from the API.
+5. Click **Connect to Claude** (or equivalent) so the addon’s socket server is listening.
+6. In Cursor, ensure the Blender MCP server is enabled. You should see Blender MCP tools available (e.g. in the MCP tools panel or when asking the AI to control Blender).
+7. Run only one MCP client at a time: use either Cursor or Claude Desktop with Blender MCP, not both simultaneously.
+
+<Tip>
+The first command after connecting may sometimes fail; try again. If connection errors persist, restart both Blender (and the addon connection) and Cursor.
+</Tip>
+
+### Example Capabilities
+
+- Get scene and object information.
+- Create, delete, and modify shapes and objects.
+- Apply or create materials and colors.
+- Execute Python code inside Blender.
+- Use Poly Haven for models, textures, and HDRIs (if enabled).
+- Generate 3D models via supported integrations (e.g. **Hyper3D Rodin**, **Tencent Hunyuan3D**, when configured).
+
+### Hunyuan 3D (Tencent) integration
+
+Blender MCP can generate 3D models with [Tencent Hunyuan3D](https://github.com/Tencent/Hunyuan3D-2) (text-to-3D and image-to-3D) by calling a **local Hunyuan3D API server**. You must run that server yourself; Blender MCP then sends prompts to it and can import the resulting mesh into Blender. For full download, install, and run steps (Python, PyTorch, CUDA, models, `api_server.py`), see [Tencent Hunyuan 3D Local Setup](/developer-resources/hunyuan3d-setup).
+
+## Troubleshooting
+
+| Issue | Suggestion |
+|-------|------------|
+| **Connection errors** | Ensure the Blender addon is running and "Connect to Claude" (or equivalent) is active. Ensure only one MCP client (Cursor or Claude Desktop) is using Blender MCP. Restart Blender and Cursor. |
+| **Timeout errors** | Simplify requests or break them into smaller steps. |
+| **uv or uvx not found** | Install uv and add it to your PATH; restart Cursor after changing PATH. |
+| **Poly Haven behavior** | Poly Haven integration can be flaky; disable it in the addon if you do not need it. |
+
+For more details, telemetry options, and limitations (e.g. running arbitrary Python in Blender), see the official [Blender MCP README](https://github.com/ahujasid/blender-mcp). Always save your work before using tools that modify the scene.

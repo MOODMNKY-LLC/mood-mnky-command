@@ -1,0 +1,71 @@
+# Multi-Tenant Supabase: run migrations and RLS isolation check.
+# Requires secrets: SUPABASE_MT_ACCESS_TOKEN (or SUPABASE_MT_SERVICE_ROLE_KEY), SUPABASE_MT_PROJECT_REF,
+# and for the isolation script: NEXT_PUBLIC_SUPABASE_MT_URL, SUPABASE_MT_SERVICE_ROLE_KEY, NEXT_PUBLIC_SUPABASE_MT_ANON_KEY.
+
+name: Supabase MT Migrate and Test
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "supabase-mt/**"
+      - "scripts/verify-mt-rls-isolation.ts"
+      - ".github/workflows/supabase-mt-migrate-and-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-and-test:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_MT_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_MT_URL }}
+      NEXT_PUBLIC_SUPABASE_MT_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_MT_ANON_KEY }}
+      SUPABASE_MT_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_MT_SERVICE_ROLE_KEY }}
+      SUPABASE_MT_PROJECT_REF: ${{ secrets.SUPABASE_MT_PROJECT_REF }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link MT project and push migrations
+        id: migrate
+        working-directory: supabase-mt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_MT_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_MT_PROJECT_REF" ]; then
+            echo "Skipping migration (SUPABASE_MT_ACCESS_TOKEN or SUPABASE_MT_PROJECT_REF not set)"
+            echo "skipped=true" >> $GITHUB_OUTPUT
+          else
+            supabase link --project-ref "$SUPABASE_MT_PROJECT_REF" || true
+            supabase db push --include-all || { echo "db push failed"; exit 1; }
+            echo "skipped=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run RLS isolation verification
+        if: env.NEXT_PUBLIC_SUPABASE_MT_URL != '' && env.SUPABASE_MT_SERVICE_ROLE_KEY != '' && env.NEXT_PUBLIC_SUPABASE_MT_ANON_KEY != ''
+        run: pnpm exec tsx scripts/verify-mt-rls-isolation.ts
+        env:
+          NEXT_PUBLIC_SUPABASE_MT_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_MT_URL }}
+          NEXT_PUBLIC_SUPABASE_MT_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_MT_ANON_KEY }}
+          SUPABASE_MT_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_MT_SERVICE_ROLE_KEY }}

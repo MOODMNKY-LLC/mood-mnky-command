@@ -1,0 +1,13 @@
+-- Baseline placeholder (history alignment)
+--
+-- Production has migration version 20260217053420 recorded as `seed_agent_profiles`,
+-- but this repository originally introduced the seed at:
+--   - 20260217160000_seed_agent_profiles.sql
+--
+-- To allow `supabase db push` to reconcile local ↔ production migration history,
+-- we keep this file as a no-op placeholder with the production version number.
+--
+-- NOTE: The canonical seed DML for `public.agent_profiles` in this repo is
+-- `20260217160000_seed_agent_profiles.sql`.
+
+-- no-op

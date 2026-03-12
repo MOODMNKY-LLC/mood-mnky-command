@@ -1,0 +1,357 @@
+---
+title: 'Knowledge Base Database'
+description: 'Documentation for managing information sources for MOOD MNKY agents'
+---
+
+# Knowledge Base Database
+
+The Knowledge Base Database defines how information sources are structured and managed for MOOD MNKY agents. It provides a standardized approach for organizing, retrieving, and updating the knowledge that powers agent interactions.
+
+## Purpose and Role
+
+<Info>
+The Knowledge Base Database defines "what" agents know, ensuring they have access to accurate, relevant, and up-to-date information.
+</Info>
+
+This database documents:
+- Information sources and their characteristics
+- Categorization and tagging of knowledge
+- Retrieval mechanisms and access patterns
+- Update and maintenance processes
+- Knowledge relationships and dependencies
+- Validation and verification procedures
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "knowledge_id": "string",
+      "title": "string",
+      "description": "string",
+      "content_type": "string",
+      "source": "string",
+      "tags": "array",
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "status": "string",
+      "access_level": "string",
+      "related_knowledge": "array",
+      "vector_embedding": "boolean",
+      "embedding_model": "string",
+      "retrieval_priority": "number"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "knowledge_id": "kb_001",
+      "title": "Fragrance Notes and Classifications",
+      "description": "Comprehensive guide to fragrance notes, families, and classification systems",
+      "content_type": "document",
+      "source": "internal/fragrance-guide.md",
+      "tags": ["fragrance", "product", "education"],
+      "created_at": "2023-09-15T10:30:00Z",
+      "updated_at": "2024-03-22T14:45:00Z",
+      "status": "active",
+      "access_level": "public",
+      "related_knowledge": ["kb_005", "kb_023"],
+      "vector_embedding": true,
+      "embedding_model": "text-embedding-3-small",
+      "retrieval_priority": 0.8
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="knowledge_id">
+    A unique identifier for the knowledge item.
+  </Accordion>
+  <Accordion title="title">
+    The name of the knowledge item in human-readable form.
+  </Accordion>
+  <Accordion title="description">
+    A detailed description of what the knowledge contains.
+  </Accordion>
+  <Accordion title="content_type">
+    The type of content (document, FAQ, product data, etc.).
+  </Accordion>
+  <Accordion title="source">
+    The location or origin of the knowledge.
+  </Accordion>
+  <Accordion title="tags">
+    Keywords for categorization and discovery.
+  </Accordion>
+  <Accordion title="created_at">
+    When the knowledge item was first added.
+  </Accordion>
+  <Accordion title="updated_at">
+    When the knowledge item was last modified.
+  </Accordion>
+  <Accordion title="status">
+    Current status (active, deprecated, draft, etc.).
+  </Accordion>
+  <Accordion title="access_level">
+    Visibility and access restrictions.
+  </Accordion>
+  <Accordion title="related_knowledge">
+    Array of knowledge_ids that are related to this item.
+  </Accordion>
+  <Accordion title="vector_embedding">
+    Whether the content has vector embeddings for semantic search.
+  </Accordion>
+  <Accordion title="embedding_model">
+    The model used to generate vector embeddings.
+  </Accordion>
+  <Accordion title="retrieval_priority">
+    A value from 0-1 indicating retrieval priority when multiple items match.
+  </Accordion>
+</AccordionGroup>
+
+## Knowledge Types
+
+The MOOD MNKY knowledge base supports various types of information:
+
+<CardGroup cols={2}>
+  <Card title="Product Information" icon="box-open">
+    - Product catalogs and specifications
+    - Fragrance notes and compositions
+    - Usage instructions and care guidelines
+    - Product compatibility and combinations
+    - Seasonal offerings and limited editions
+  </Card>
+  <Card title="Brand Knowledge" icon="building">
+    - Brand values and mission
+    - Brand voice and tone guidelines
+    - Brand history and milestones
+    - Visual identity standards
+    - Messaging frameworks
+  </Card>
+  <Card title="Support Content" icon="life-ring">
+    - Frequently asked questions
+    - Troubleshooting guides
+    - Return and exchange policies
+    - Shipping information
+    - Care and maintenance instructions
+  </Card>
+  <Card title="Educational Resources" icon="book">
+    - Fragrance education materials
+    - Self-care guides and tutorials
+    - Wellness principles and practices
+    - Ingredient information and benefits
+    - Historical and cultural context
+  </Card>
+</CardGroup>
+
+## Retrieval Mechanisms
+
+### Vector Search Implementation
+
+```python
+from agents import Agent, Tool, Runner
+import numpy as np
+from pinecone import Pinecone
+
+# Initialize vector database
+pc = Pinecone(api_key="YOUR_API_KEY")
+index = pc.Index("mood-mnky-knowledge")
+
+# Define vector search tool
+def search_knowledge_base(query: str, limit: int = 5) -> list:
+    """Search the knowledge base for relevant information."""
+    # Generate embedding for the query
+    embedding = generate_embedding(query)
+    
+    # Search in vector database
+    results = index.query(
+        vector=embedding,
+        top_k=limit,
+        include_metadata=True
+    )
+    
+    return [item["metadata"] for item in results["matches"]]
+
+# Create tool for the agent
+knowledge_tool = Tool(
+    name="search_knowledge_base",
+    description="Search for information in the MOOD MNKY knowledge base",
+    function=search_knowledge_base
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant. Help customers with product information.",
+    tools=[knowledge_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "Tell me about your lavender-based products")
+```
+
+### MCP Server for Knowledge Retrieval
+
+```python
+from agents import Agent, Runner
+from agents.mcp.server import MCPServerStdio, MCPServerStdioParams
+
+# Set up MCP server for knowledge base
+async with MCPServerStdio(
+    params=MCPServerStdioParams(
+        command="node",
+        args=["./mcp-servers/knowledge-server.js"]
+    ),
+    name="knowledge_mcp",
+    cache_tools_list=True
+) as knowledge_server:
+    
+    # Create agent with MCP server
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions="You are MOOD MNKY, the brand assistant. Help customers with product information.",
+        mcp_servers=[knowledge_server]
+    )
+    
+    # Run the agent
+    runner = Runner()
+    result = await runner.run(agent, "What ingredients are in your sleep mist?")
+```
+
+## Integration with OpenAI Agents SDK
+
+The Knowledge Base Database integrates with the OpenAI Agents SDK in several ways:
+
+### As Agent Instructions
+
+```python
+from agents import Agent, Runner
+
+# Query knowledge base for agent instructions
+instructions = get_agent_instructions("mood_mnky_001")
+
+# Create agent with knowledge-infused instructions
+agent = Agent(
+    name="MOOD MNKY",
+    instructions=instructions,
+)
+
+runner = Runner()
+result = await runner.run(agent, "Tell me about your brand values")
+```
+
+### As Tool Data Source
+
+```python
+from agents import Agent, Tool, Runner
+from knowledge_base import KnowledgeBase
+
+# Initialize knowledge base
+kb = KnowledgeBase()
+
+# Define knowledge lookup tool
+def lookup_knowledge(topic: str) -> str:
+    """Look up information on a specific topic."""
+    return kb.get_knowledge_by_topic(topic)
+
+# Create tool for the agent
+knowledge_tool = Tool(
+    name="lookup_knowledge",
+    description="Look up information about MOOD MNKY products, policies, or brand",
+    function=lookup_knowledge
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant.",
+    tools=[knowledge_tool]
+)
+```
+
+### As Dynamic Context
+
+```python
+from agents import Agent, Runner
+from knowledge_base import KnowledgeBase
+
+# Initialize knowledge base
+kb = KnowledgeBase()
+
+async def run_with_dynamic_context(query: str) -> dict:
+    # Retrieve relevant knowledge based on the query
+    relevant_knowledge = kb.retrieve_relevant(query)
+    
+    # Create agent with dynamic context
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions=f"""You are MOOD MNKY, the brand assistant. 
+        Use the following information to answer questions:
+        
+        {relevant_knowledge}
+        
+        Always base your answers on the provided information."""
+    )
+    
+    # Run the agent
+    runner = Runner()
+    return await runner.run(agent, query)
+
+result = await run_with_dynamic_context("What's your return policy?")
+```
+
+## Retrieval Strategies
+
+<CardGroup cols={2}>
+  <Card title="Semantic Search" icon="magnifying-glass">
+    Vector embeddings enable semantic similarity searches beyond keyword matching, finding contextually relevant information even when terminology differs.
+  </Card>
+  <Card title="Hybrid Search" icon="layer-group">
+    Combines vector search with traditional keyword matching for optimal results, balancing semantic understanding with exact match precision.
+  </Card>
+  <Card title="Filtered Retrieval" icon="filter">
+    Applies metadata filters by content type, tags, or status to narrow searches and improve relevance for specific query domains.
+  </Card>
+  <Card title="Chunked Retrieval" icon="puzzle-piece">
+    Breaks large documents into smaller chunks with their own embeddings, enabling more precise retrieval of specific information.
+  </Card>
+</CardGroup>
+
+## Best Practices for Knowledge Management
+
+### Content Organization
+
+- **Atomic Knowledge Units**: Design knowledge entries to be self-contained and focused
+- **Clear Hierarchy**: Establish relationships between knowledge items
+- **Consistent Tagging**: Develop and maintain a consistent taxonomy
+- **Metadata Enrichment**: Include comprehensive metadata for better retrieval
+- **Content Validation**: Implement review processes for accuracy
+
+### Vector Database Management
+
+- **Optimal Chunk Size**: Find the right balance for chunking documents (typically 256-1024 tokens)
+- **Regular Reindexing**: Update embeddings when models improve
+- **Embedding Consistency**: Use the same embedding model across the knowledge base
+- **Query-Document Alignment**: Align embedding processes for queries and documents
+- **Dimension Optimization**: Choose appropriate vector dimensions for your use case
+
+### Knowledge Lifecycle
+
+- **Freshness Monitoring**: Track content age and relevance
+- **Update Triggers**: Define events that necessitate knowledge updates
+- **Version Control**: Maintain history of knowledge changes
+- **Deprecation Process**: Properly handle outdated information
+- **Knowledge Gaps Analysis**: Regularly identify missing information
+
+## Additional Resources
+
+- [OpenAI Text Embedding Models](https://platform.openai.com/docs/guides/embeddings)
+- [Retrieval Augmented Generation Guide](/agents/capabilities/rag)
+- [Vector Database Implementation](/technology-stack/vector-search)
+- [Knowledge Management Workflows](/platform-services/content-management)
+- [Content Governance Framework](/operations/content-governance)

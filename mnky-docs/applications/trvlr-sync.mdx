@@ -1,0 +1,231 @@
+---
+title: "TRVLR Sync"
+description: "Bungie.net/Destiny 2 sync service with OAuth and manifest management"
+icon: "sync"
+---
+
+# TRVLR Sync
+
+TRVLR Sync provides backend functionality for syncing Bungie OAuth accounts and Destiny manifest data using Supabase Edge Functions and PostgreSQL. This service enables seamless integration between Destiny 2 game data and external applications.
+
+## Overview
+
+TRVLR Sync handles Bungie.net OAuth authentication, stores Destiny 2 manifest data, and provides APIs for accessing character data, inventory, loadouts, and vendor information. The service supports both JSON and SQLite manifest storage formats.
+
+### Key Features
+
+- **Bungie OAuth Integration**: Custom PKCE handshake and secure token storage
+- **Manifest Management**: Dual storage options (PostgreSQL JSON and S3 SQLite)
+- **Character Data Sync**: Real-time synchronization of Destiny 2 character data
+- **Inventory Management**: Track and manage in-game inventory
+- **Loadout Builder**: Create and manage character loadouts
+- **Vendor Tracking**: Monitor vendor inventories and rewards
+
+## Architecture
+
+### Technology Stack
+
+- **Frontend**: Next.js 15, TypeScript, React
+- **Backend**: Supabase Edge Functions, PostgreSQL
+- **Storage**: Supabase Storage (S3-compatible) for SQLite manifests
+- **Authentication**: Bungie.net OAuth 2.0 with PKCE
+- **Database**: PostgreSQL with Row Level Security (RLS)
+- **Deployment**: Vercel (frontend), Supabase (backend)
+
+### Application Structure
+
+```
+apps/trvlr-sync/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   │   └── auth/            # Bungie OAuth handlers
+│   └── (routes)/             # Application pages
+├── supabase/
+│   ├── functions/            # Edge Functions
+│   │   ├── bungie-auth/     # OAuth handlers
+│   │   └── sync-manifest/   # Manifest sync
+│   └── migrations/           # Database migrations
+├── lib/                      # API clients and utilities
+└── certs/                    # SSL certificates for local HTTPS
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- Supabase CLI (>= v2.20.x)
+- Bungie.net API credentials
+- OpenSSL (for local HTTPS certificates)
+
+### Setup
+
+1. **Navigate to application directory**:
+   ```bash
+   cd apps/trvlr-sync
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pnpm install
+   ```
+
+3. **Generate SSL certificates** (for local HTTPS):
+   ```bash
+   mkdir certs
+   openssl req -x509 -newkey rsa:4096 -nodes \
+     -keyout certs/dev.key -out certs/dev.crt \
+     -subj "/CN=localhost" -days 365
+   ```
+
+4. **Configure environment variables**:
+   Create `.env.local`:
+   ```env
+   # Supabase Connection
+   NEXT_PUBLIC_SUPABASE_URL=https://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+   SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+   
+   # Bungie API Credentials
+   BUNGIE_CLIENT_ID=<your-client-id>
+   BUNGIE_CLIENT_SECRET=<your-client-secret>
+   BUNGIE_API_KEY=<your-api-key>
+   
+   # Application URLs
+   APP_URL=http://localhost:3000
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   ```
+
+5. **Start Supabase locally**:
+   ```bash
+   supabase start
+   ```
+
+6. **Apply database migrations**:
+   ```bash
+   supabase db reset
+   ```
+
+7. **Run development server**:
+   ```bash
+   pnpm dev
+   ```
+
+## Bungie OAuth Flow
+
+TRVLR Sync implements a custom PKCE (Proof Key for Code Exchange) OAuth flow:
+
+1. **Initiate OAuth**: User clicks "Connect Bungie Account"
+2. **PKCE Generation**: Server generates code verifier and challenge
+3. **Redirect to Bungie**: User authenticates with Bungie.net
+4. **Callback Handling**: Server receives authorization code
+5. **Token Exchange**: Exchange code for access/refresh tokens
+6. **Token Storage**: Store tokens securely in `bungie_accounts` table
+
+### Edge Functions
+
+- **`bungie-auth/init.ts`**: Initiates PKCE handshake and redirects to Bungie OAuth
+- **`bungie-auth/callback.ts`**: Handles OAuth callback and token storage
+
+## Manifest Management
+
+TRVLR Sync supports two manifest storage formats:
+
+### JSON Storage (PostgreSQL)
+- Stored directly in `destiny_manifest` table
+- Fast queries with PostgreSQL indexing
+- Suitable for frequently accessed data
+
+### SQLite Storage (S3)
+- Stored in Supabase Storage (S3-compatible)
+- Metadata tracked in `manifest_files` table
+- Suitable for large manifest files
+
+### Manifest Sync
+
+The `sync-manifest` Edge Function:
+- Fetches latest manifest from Bungie API
+- Stores JSON version in PostgreSQL
+- Stores SQLite version in S3 (if enabled)
+- Updates manifest metadata
+
+Schedule daily sync:
+```bash
+supabase functions schedule sync-manifest "0 0 * * *"
+```
+
+## Database Schema
+
+### Tables
+
+- **`bungie_accounts`**: Stores OAuth tokens and account metadata
+- **`destiny_manifest`**: JSON manifest data
+- **`manifest_files`**: SQLite manifest file metadata
+
+See [Database Migrations](#database-migrations) for schema details.
+
+## API Endpoints
+
+### Authentication
+- `GET /api/auth/bungie/login` - Initiate OAuth flow
+- `GET /api/auth/bungie/callback` - Handle OAuth callback
+
+### Manifest
+- `GET /api/manifest` - Get current manifest version
+- `POST /api/manifest/sync` - Trigger manifest sync
+
+### Character Data
+- `GET /api/characters` - Get user's characters
+- `GET /api/inventory` - Get character inventory
+- `GET /api/loadouts` - Get saved loadouts
+
+## Deployment
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+| `BUNGIE_CLIENT_ID` | Bungie.net OAuth client ID | Yes |
+| `BUNGIE_CLIENT_SECRET` | Bungie.net OAuth client secret | Yes |
+| `BUNGIE_API_KEY` | Bungie.net API key | Yes |
+
+### Vercel Deployment
+
+1. Connect repository to Vercel
+2. Set environment variables
+3. Configure Supabase Edge Functions separately
+4. Deploy frontend application
+
+## Troubleshooting
+
+### Common Issues
+
+#### SSL Certificate Errors
+- **Issue**: "Certificate verification failed" when connecting to local Supabase
+- **Solution**: Ensure SSL certificates are generated correctly and paths are correct in environment variables.
+
+#### OAuth Callback Failures
+- **Issue**: OAuth callback not working or redirecting incorrectly
+- **Solution**: Verify `APP_URL` and `NEXT_PUBLIC_SITE_URL` match your local development URL. Check Bungie API credentials.
+
+#### Manifest Sync Failures
+- **Issue**: Manifest sync not completing or errors during sync
+- **Solution**: Check Bungie API key validity. Verify database connection and storage permissions. Review Edge Function logs.
+
+### Performance Tips
+
+- **Use JSON Storage**: For frequently accessed data, use PostgreSQL JSON storage
+- **Use SQLite Storage**: For large manifest files, use S3-compatible storage
+- **Schedule Syncs**: Use scheduled Edge Functions to keep manifest up-to-date
+- **Cache Responses**: Implement caching for manifest queries
+
+## Related Resources
+
+- [Bungie API Documentation](/api/devops/bungie/index) - Bungie.net API reference
+- [Supabase Edge Functions](/developer-resources/supabase-local-development) - Function development
+- [Database Migrations](/developer-resources/migration-patterns) - Migration patterns
+- [Supabase Client Package](/packages/supabase-client) - Database client utilities
+- [Supabase S3 Access](/developer-resources/supabase-s3-access) - S3-compatible storage setup
+

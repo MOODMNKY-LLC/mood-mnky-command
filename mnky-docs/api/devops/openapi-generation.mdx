@@ -1,0 +1,381 @@
+---
+title: 'OpenAPI Specification Generation'
+description: 'How to generate and integrate OpenAPI specifications for MOOD MNKY API services'
+---
+
+# OpenAPI Specification Generation Guide
+
+This guide provides instructions on how to generate OpenAPI specifications for the MOOD MNKY API services and integrate them with our documentation system.
+
+## Overview
+
+OpenAPI specifications (formerly known as Swagger specifications) provide a standardized way to describe RESTful APIs. For the MOOD MNKY ecosystem, we use OpenAPI specifications to:
+
+- Document API endpoints, parameters, and responses
+- Provide interactive API testing through Swagger UI
+- Enable automatic client library generation
+- Ensure API consistency across services
+- Power our API playground in the documentation
+
+## Prerequisites
+
+To work with OpenAPI specifications, you'll need:
+
+- Node.js 18+ installed
+- Basic understanding of REST APIs
+- Access to the service repositories
+- Development environment set up for each service
+
+## Understanding OpenAPI in Our Ecosystem
+
+MOOD MNKY uses OpenAPI 3.0 specifications for all API services. Each service (Ollama, Flowise, Langchain, and n8n) maintains its own OpenAPI specification, which is then integrated into our documentation system.
+
+### File Locations
+
+The OpenAPI specifications are stored in the following locations:
+
+```
+/docs/api/openapi/
+├── ollama.yaml       # Ollama API specification
+├── flowise.yaml      # Flowise API specification
+├── langchain.yaml    # Langchain API specification
+└── n8n.yaml          # n8n API specification
+```
+
+## Generating OpenAPI Specifications
+
+Each service has a different process for generating OpenAPI specifications:
+
+### Ollama
+
+Ollama uses a manual approach to create and maintain the OpenAPI specification:
+
+1. Navigate to the Ollama service directory:
+   ```bash
+   cd services/ollama
+   ```
+
+2. Install the required packages:
+   ```bash
+   npm install --save-dev swagger-jsdoc
+   ```
+
+3. Run the generation script:
+   ```bash
+   npm run generate-openapi
+   ```
+
+4. The generated specification will be available at `dist/openapi.yaml`
+
+5. Copy the generated file to the documentation:
+   ```bash
+   cp dist/openapi.yaml ../../docs/api/openapi/ollama.yaml
+   ```
+
+### Flowise
+
+Flowise has built-in OpenAPI generation:
+
+1. Navigate to the Flowise service directory:
+   ```bash
+   cd services/flowise
+   ```
+
+2. Start the Flowise service:
+   ```bash
+   npm run start
+   ```
+
+3. Access the OpenAPI specification at:
+   ```
+   http://localhost:3000/api/v1/openapi.yaml
+   ```
+
+4. Save this file to the documentation:
+   ```bash
+   curl http://localhost:3000/api/v1/openapi.yaml --output ../../docs/api/openapi/flowise.yaml
+   ```
+
+### Langchain
+
+Langchain uses FastAPI's automatic OpenAPI generation:
+
+1. Navigate to the Langchain service directory:
+   ```bash
+   cd services/langchain
+   ```
+
+2. Start the Langchain service:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+   ```
+
+3. Access the OpenAPI specification at:
+   ```
+   http://localhost:8000/openapi.json
+   ```
+
+4. Convert the JSON to YAML format and save it:
+   ```bash
+   curl http://localhost:8000/openapi.json | npx json2yaml > ../../docs/api/openapi/langchain.yaml
+   ```
+
+### n8n
+
+For n8n, we need to extract the OpenAPI specification:
+
+1. Navigate to the n8n service directory:
+   ```bash
+   cd services/n8n
+   ```
+
+2. Start the n8n service:
+   ```bash
+   npm install
+   npm run start
+   ```
+
+3. Access the OpenAPI specification at:
+   ```
+   http://localhost:5678/api/v1/openapi.json
+   ```
+
+4. Convert the JSON to YAML format and save it:
+   ```bash
+   curl http://localhost:5678/api/v1/openapi.json | npx json2yaml > ../../docs/api/openapi/n8n.yaml
+   ```
+
+## Customizing OpenAPI Specifications
+
+After generating the base specifications, you may need to customize them for better documentation:
+
+### Adding Server Information
+
+Ensure each specification includes both development and production servers:
+
+```yaml
+servers:
+  - url: http://localhost:11434
+    description: Local Development
+  - url: https://ollama.moodmnky.com
+    description: Production
+```
+
+### Enhancing Descriptions
+
+Improve endpoint descriptions to provide more context:
+
+```yaml
+paths:
+  /api/chat:
+    post:
+      summary: Create a chat completion
+      description: |
+        Creates a model response for the given chat conversation.
+        Chat interactions are stateless - the model responds based solely on the conversation provided in the request.
+```
+
+### Adding Examples
+
+Include request and response examples for key endpoints:
+
+```yaml
+requestBody:
+  content:
+    application/json:
+      examples:
+        simple:
+          summary: Simple chat request
+          value:
+            model: llama2
+            messages:
+              - role: user
+                content: Hello, how can you help me today?
+```
+
+### Security Definitions
+
+Add security schemes for authentication:
+
+```yaml
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key authentication. Format: "Bearer YOUR_API_KEY"
+```
+
+## Validating OpenAPI Specifications
+
+Before integrating specifications into documentation, validate them:
+
+1. Install the validator:
+   ```bash
+   npm install -g @stoplight/spectral-cli
+   ```
+
+2. Validate a specification:
+   ```bash
+   spectral lint docs/api/openapi/ollama.yaml
+   ```
+
+3. Fix any validation errors before proceeding
+
+## Integrating with Documentation
+
+Once your OpenAPI specifications are ready, integrate them with our Mintlify documentation:
+
+1. Update the `docs.json` configuration to reference the OpenAPI specifications:
+
+```json
+{
+  "openapi": [
+    {
+      "name": "Ollama API",
+      "file": "/api/openapi/ollama.yaml"
+    },
+    {
+      "name": "Flowise API",
+      "file": "/api/openapi/flowise.yaml"
+    },
+    {
+      "name": "Langchain API",
+      "file": "/api/openapi/langchain.yaml"
+    },
+    {
+      "name": "n8n API",
+      "file": "/api/openapi/n8n.yaml"
+    }
+  ]
+}
+```
+
+2. Ensure the API playground can access the specifications:
+
+```json
+{
+  "api": {
+    "playground": {
+      "enabled": true,
+      "mode": "simple"
+    }
+  }
+}
+```
+
+## Automating Specification Updates
+
+Set up automation to keep OpenAPI specifications up-to-date:
+
+1. Create a script to fetch and update all specifications:
+
+```javascript
+// scripts/update-openapi.js
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// Define services and their OpenAPI endpoints
+const services = [
+  {
+    name: 'ollama',
+    command: 'cd services/ollama && npm run generate-openapi && cp dist/openapi.yaml ../../docs/api/openapi/ollama.yaml'
+  },
+  {
+    name: 'flowise',
+    command: 'curl http://localhost:3000/api/v1/openapi.yaml --output docs/api/openapi/flowise.yaml'
+  },
+  {
+    name: 'langchain',
+    command: 'curl http://localhost:8000/openapi.json | npx json2yaml > docs/api/openapi/langchain.yaml'
+  },
+  {
+    name: 'n8n',
+    command: 'curl http://localhost:5678/api/v1/openapi.json | npx json2yaml > docs/api/openapi/n8n.yaml'
+  }
+];
+
+// Ensure the output directory exists
+const outputDir = path.join(__dirname, '../docs/api/openapi');
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir, { recursive: true });
+}
+
+// Update each specification
+services.forEach(service => {
+  try {
+    console.log(`Updating ${service.name} OpenAPI specification...`);
+    execSync(service.command, { stdio: 'inherit' });
+    console.log(`✅ ${service.name} specification updated successfully`);
+  } catch (error) {
+    console.error(`❌ Error updating ${service.name} specification:`, error.message);
+  }
+});
+```
+
+2. Add an npm script to run the update:
+
+```json
+{
+  "scripts": {
+    "update-openapi": "node scripts/update-openapi.js"
+  }
+}
+```
+
+3. Run the update script:
+   ```bash
+   npm run update-openapi
+   ```
+
+## Best Practices
+
+1. **Keep Specifications in Sync**: Update OpenAPI specs whenever API changes occur.
+
+2. **Version Control**: Commit OpenAPI specs to version control to track changes.
+
+3. **Maintain Consistency**: Use similar terminology and patterns across all service specifications.
+
+4. **Include Authentication**: Always document authentication requirements for each endpoint.
+
+5. **Add Examples**: Provide realistic examples for request bodies and responses.
+
+6. **Document Error Responses**: Include potential error responses with status codes and descriptions.
+
+7. **Use Tags**: Organize endpoints using tags for better navigation.
+
+## Generating Client Libraries
+
+You can generate client libraries from OpenAPI specifications:
+
+1. Install the OpenAPI Generator:
+   ```bash
+   npm install @openapitools/openapi-generator-cli -g
+   ```
+
+2. Generate a TypeScript client for Ollama:
+   ```bash
+   openapi-generator-cli generate -i docs/api/openapi/ollama.yaml -g typescript-fetch -o clients/typescript/ollama
+   ```
+
+3. Generate a Python client for Langchain:
+   ```bash
+   openapi-generator-cli generate -i docs/api/openapi/langchain.yaml -g python -o clients/python/langchain
+   ```
+
+## Additional Resources
+
+- [OpenAPI Specification](https://swagger.io/specification/) - The official OpenAPI specification
+- [Swagger Editor](https://editor.swagger.io/) - Online editor for OpenAPI specs
+- [OpenAPI Generator](https://openapi-generator.tech/) - For generating client libraries
+- [Swagger UI Guide](/api/devops/swagger-ui-guide) - How to use our Swagger UI interfaces
+- [Mintlify OpenAPI Documentation](https://mintlify.com/docs/api-playground/openapi) - Integrating OpenAPI with Mintlify
+
+## Support
+
+If you need assistance with OpenAPI specifications or integration, please contact our developer support team at [api-support@moodmnky.com](mailto:api-support@moodmnky.com) or join our [Developer Community](https://community.moodmnky.com/developers) for assistance. 

@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: Bungie API
+  description: |
+    Official API documentation for the MOOD MNKY Bungie integration.
+    The Bungie API provides access to in-game data and services for Destiny 2 and other Bungie games.
+    This integration enables MOOD MNKY applications to interact with player data, item information, and game activities.
+  version: 1.0.0
+  contact:
+    name: MOOD MNKY Support
+    email: support@moodmnky.com
+    url: https://moodmnky.com/support
+
+servers:
+  - url: https://www.bungie.net/Platform
+    description: Production
+
+tags:
+  - name: App
+    description: Application operations
+  - name: User
+    description: User authentication and profiles
+  - name: Destiny2
+    description: Destiny 2 game data and player information
+  - name: GroupV2
+    description: Clan and fireteam management
+  - name: Social
+    description: Social interactions and messaging
+  - name: Content
+    description: Game content and assets
+
+paths:
+  /App/ApiUsage:
+    get:
+      tags:
+        - App
+      summary: Get API usage statistics
+      description: Gets API usage by application for time frame specified.
+      operationId: GetApiUsage
+      parameters:
+        - name: applicationId
+          in: query
+          description: The application's API key
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: end
+          in: query
+          description: End time for query in UTC
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: start
+          in: query
+          description: Start time for query in UTC
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: API usage statistics successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    description: API usage response
+                  ErrorCode:
+                    type: integer
+                  ThrottleSeconds:
+                    type: integer
+                  ErrorStatus:
+                    type: string
+                  Message:
+                    type: string
+                  MessageData:
+                    type: object
+
+  /User/GetMembershipsForCurrentUser:
+    get:
+      tags:
+        - User
+      summary: Get memberships for current user
+      description: Returns a list of accounts associated with the authenticated user.
+      operationId: GetMembershipsForCurrentUser
+      responses:
+        '200':
+          description: User memberships successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      destinyMemberships:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            membershipId:
+                              type: string
+                            membershipType:
+                              type: integer
+                            displayName:
+                              type: string
+                  ErrorCode:
+                    type: integer
+                  ThrottleSeconds:
+                    type: integer
+                  ErrorStatus:
+                    type: string
+                  Message:
+                    type: string
+                  MessageData:
+                    type: object
+      security:
+        - oauth2: ['read_basic_user_profile']
+
+  /Destiny2/Manifest:
+    get:
+      tags:
+        - Destiny2
+      summary: Get Destiny 2 manifest
+      description: Returns the current version of the Destiny 2 manifest.
+      operationId: GetDestinyManifest
+      responses:
+        '200':
+          description: Manifest information successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      mobileAssetContentPath:
+                        type: string
+                      mobileGearAssetDataBases:
+                        type: array
+                        items:
+                          type: object
+                      mobileWorldContentPaths:
+                        type: object
+                  ErrorCode:
+                    type: integer
+                  ThrottleSeconds:
+                    type: integer
+                  ErrorStatus:
+                    type: string
+                  Message:
+                    type: string
+                  MessageData:
+                    type: object
+
+  /Destiny2/{membershipType}/Profile/{destinyMembershipId}:
+    get:
+      tags:
+        - Destiny2
+      summary: Get Destiny 2 profile
+      description: Returns Destiny profile information for the supplied membership.
+      operationId: GetProfile
+      parameters:
+        - name: membershipType
+          in: path
+          required: true
+          description: A valid membership type
+          schema:
+            type: integer
+            enum: [0, 1, 2, 3, 4, 5, 10, 254]
+            default: 3
+        - name: destinyMembershipId
+          in: path
+          required: true
+          description: Destiny membership ID
+          schema:
+            type: string
+        - name: components
+          in: query
+          required: true
+          description: A comma separated list of components to return
+          schema:
+            type: array
+            items:
+              type: integer
+            default: [100, 200]
+      responses:
+        '200':
+          description: Profile information successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                  ErrorCode:
+                    type: integer
+                  ThrottleSeconds:
+                    type: integer
+                  ErrorStatus:
+                    type: string
+                  Message:
+                    type: string
+                  MessageData:
+                    type: object
+              examples:
+                profile:
+                  value:
+                    Response:
+                      profile:
+                        data:
+                          userInfo:
+                            membershipType: 3
+                            membershipId: "12345678901234567"
+                            displayName: "GuardianUser"
+                          characterIds: ["1234567890123456", "6543210987654321"]
+                          dateLastPlayed: "2023-06-15T22:30:00Z"
+                    ErrorCode: 1
+                    ThrottleSeconds: 0
+                    ErrorStatus: "Success"
+                    Message: "Ok"
+                    MessageData: {}
+
+  /GroupV2/Name/{groupName}/{groupType}:
+    get:
+      tags:
+        - GroupV2
+      summary: Get group by name
+      description: Returns a group that matches the name and type provided.
+      operationId: GetGroupByName
+      parameters:
+        - name: groupName
+          in: path
+          required: true
+          description: The name of the group to retrieve
+          schema:
+            type: string
+        - name: groupType
+          in: path
+          required: true
+          description: Type of group to retrieve
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+      responses:
+        '200':
+          description: Group information successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: object
+                    properties:
+                      detail:
+                        type: object
+                        properties:
+                          groupId:
+                            type: string
+                          name:
+                            type: string
+                          memberCount:
+                            type: integer
+                  ErrorCode:
+                    type: integer
+                  ThrottleSeconds:
+                    type: integer
+                  ErrorStatus:
+                    type: string
+                  Message:
+                    type: string
+                  MessageData:
+                    type: object
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://www.bungie.net/en/OAuth/Authorize
+          tokenUrl: https://www.bungie.net/platform/app/oauth/token/
+          scopes:
+            'read_basic_user_profile': Read basic user profile
+            'read_destiny_inventory': Read Destiny inventory
+            'move_equipment': Move equipment between characters and vault
+
+security:
+  - apiKey: [] 

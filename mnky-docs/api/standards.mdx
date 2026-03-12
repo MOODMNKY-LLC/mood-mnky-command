@@ -1,0 +1,212 @@
+---
+title: 'API Standards'
+description: 'Design principles and conventions for MOOD MNKY APIs'
+---
+
+# API Standards
+
+This page outlines the design principles, conventions, and standards used across all MOOD MNKY APIs. Following these standards ensures a consistent developer experience across our entire API ecosystem.
+
+## Design Principles
+
+All MOOD MNKY APIs adhere to the following core principles:
+
+### RESTful Architecture
+
+Our APIs follow REST principles where appropriate:
+- Resources are identified by URLs
+- Standard HTTP methods define operations (GET, POST, PUT, DELETE)
+- HTTP status codes indicate success or failure
+- Resources are represented in JSON format
+
+### Predictable Structure
+
+APIs are organized in a predictable way:
+- Collection endpoints (`/resources`) for listing and creating resources
+- Resource endpoints (`/resources/{id}`) for retrieving, updating, and deleting specific resources
+- Related resource endpoints (`/resources/{id}/sub-resources`) for accessing associated data
+
+### Developer Experience
+
+We prioritize the developer experience:
+- Descriptive error messages with actionable details
+- Consistent parameter naming and behavior across endpoints
+- Interactive documentation with examples
+- SDKs for popular programming languages
+
+## URL Structure
+
+### API Base URLs
+
+Each API has a unique base URL:
+
+- Core API: `https://api.moodmnky.com/v1`
+- E-commerce API: `https://shop-api.moodmnky.com/v1`
+- Ollama API: `https://ollama.moodmnky.com/api`
+- Flowise API: `https://flowise.moodmnky.com/api/v1`
+- Langchain API: `https://langchain.moodmnky.com/api`
+- n8n API: `https://mnky-mind-n8n.moodmnky.com/api/v1`
+
+### URL Path Conventions
+
+- Use lowercase, kebab-case for URL paths
+- Use nouns, not verbs (e.g., `/users`, not `/getUsers`)
+- Collection resources use plural nouns (e.g., `/users`, `/products`)
+- Individual resources include identifiers (e.g., `/users/{id}`, `/products/{id}`)
+- Nested resources show relationships (e.g., `/users/{id}/orders`)
+
+## HTTP Methods
+
+We use standard HTTP methods consistently:
+
+| Method | Usage | Example |
+|--------|-------|---------|
+| GET | Retrieve resources | GET /users/{id} |
+| POST | Create resources | POST /users |
+| PUT | Replace resources | PUT /users/{id} |
+| PATCH | Update resources partially | PATCH /users/{id} |
+| DELETE | Delete resources | DELETE /users/{id} |
+
+## Request Format
+
+### Headers
+
+Common request headers:
+
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+API-specific headers are documented in the respective API references.
+
+### Query Parameters
+
+Common query parameters:
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| limit | Maximum number of items to return | ?limit=20 |
+| offset | Number of items to skip | ?offset=40 |
+| sort | Field to sort by | ?sort=created_at |
+| order | Sort order (asc/desc) | ?order=desc |
+| fields | Fields to include | ?fields=id,name,email |
+| filter | Field-specific filters | ?status=active |
+
+### Request Body
+
+For POST, PUT, and PATCH requests, the request body should be a JSON object:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "preferences": {
+    "theme": "dark",
+    "notifications": true
+  }
+}
+```
+
+## Response Format
+
+### Success Responses
+
+Successful responses include:
+- Appropriate HTTP status code (200, 201, 204)
+- JSON response body (except for 204 No Content)
+- Consistent structure
+
+Collection responses:
+
+```json
+{
+  "data": [
+    { "id": "1", "name": "Item 1" },
+    { "id": "2", "name": "Item 2" }
+  ],
+  "pagination": {
+    "total": 100,
+    "limit": 10,
+    "offset": 0,
+    "next": "/resources?limit=10&offset=10"
+  }
+}
+```
+
+Single resource responses:
+
+```json
+{
+  "data": {
+    "id": "1",
+    "name": "Item 1",
+    "created_at": "2023-01-01T12:00:00Z",
+    "updated_at": "2023-01-02T12:00:00Z"
+  }
+}
+```
+
+### Error Responses
+
+Error responses include:
+- Appropriate HTTP status code (4xx, 5xx)
+- Consistent error object structure
+- Error code, message, and details
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid request parameters",
+    "status": 400,
+    "details": [
+      {
+        "field": "email",
+        "message": "Must be a valid email address"
+      }
+    ]
+  }
+}
+```
+
+## Versioning
+
+We use semantic versioning for our APIs:
+
+- Major version changes (v1 → v2) may include breaking changes
+- Minor version changes maintain backward compatibility
+- Versions are specified in the URL path (e.g., `/v1/resources`)
+- We maintain multiple API versions simultaneously during transition periods
+
+## Authentication & Security
+
+Security best practices include:
+
+- HTTPS for all API requests
+- JWT bearer tokens for authentication
+- Detailed permission scopes for authorization
+- Rate limiting to prevent abuse
+- Input validation to prevent injection attacks
+- Security headers for all responses
+
+## Implementing These Standards
+
+If you're developing integrations with MOOD MNKY APIs:
+
+1. Use the API References to understand endpoint behavior
+2. Refer to these standards for consistent implementation
+3. Use our SDKs when available to simplify integration
+4. Follow our [Best Practices](/api/devops/best-practices) guide
+
+## API Evolution
+
+Our APIs evolve over time, following these principles:
+
+- We add new fields and endpoints without breaking existing integrations
+- We maintain deprecated endpoints during transition periods
+- We provide migration guides for major version changes
+- We communicate changes through our [developer changelog](/changelog)
+
+For questions about these standards, contact our [developer support team](mailto:dev-support@moodmnky.com). 

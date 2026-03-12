@@ -1,0 +1,114 @@
+---
+title: 'The Dojo'
+description: "The members' private hub in the MNKY VERSE—XP, quests, Blending Lab, MNKY CHAT, and preferences"
+icon: "book-open"
+---
+
+# The Dojo
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full"
+  src="/images/dojo-trio-hero-3d.png"
+  alt="The Dojo Platform Interface"
+/>
+
+## Overview
+
+The Dojo is the members' **private hub** in the MNKY VERSE—more exclusive than the public storefront. Each authenticated user has access to their own Dojo at `/dojo`. It is built as part of the same Next.js app as MNKY VERSE and MNKY LABZ, with a dedicated layout and sidebar.
+
+<Note>
+The name "Dojo" reflects our philosophy of continual growth and mastery in self-care practices. Just as a traditional dojo is a place of focused learning and development, our platform provides a space for members to develop their personal wellness journey.
+</Note>
+
+## Key Characteristics
+
+- **Private**: All Dojo routes require authentication. Unauthenticated users are redirected to `/auth/login`.
+- **Member access**: Non-admin authenticated users can access `/dojo` alongside MNKY VERSE.
+- **No public paths**: Unlike Verse (which has public glossary, formulas, etc.), Dojo is fully private.
+- **Context-aware**: Sidebar supports context switching between Home, Crafting, Verse, and Chat.
+
+## Route Structure
+
+| Path | Description |
+|------|-------------|
+| `/dojo` | Main hub—XP/level, quests, quick actions, manga/UGC entry points |
+| `/dojo/preferences` | User preferences (default agent, etc.) |
+| `/dojo/chat` | MNKY CHAT interface with Flowise integration |
+| `/dojo/crafting` | Blending Lab |
+| `/dojo/crafting/saved` | Saved blends |
+| `/dojo/flowise` | Flowise configuration |
+
+## Core Features
+
+### Gamification (XP & Quests)
+
+The Dojo home page surfaces:
+- **XP / Level card**: Fetches from `xp_state`, links to `/verse/profile`
+- **Quests card**: Fetches active quests and `quest_progress` completed count, links to `/verse/quests`
+- **Quick actions**: Preferences, MNKY VERSE Shop, Chat, Issues, UGC
+- **Lower section**: Manga/Issues and UGC entry points linking to `/verse/issues` and `/verse/ugc`
+
+APIs: `GET /api/xp/state`, `GET /api/quests`, `GET /api/quests/my-progress`
+
+### Blending Lab (Crafting)
+
+Members can create custom fragrance blends and save them for later. The Blending Lab is available in the Crafting context with links to:
+- Blending Lab
+- Saved Blends
+- Glossary (public Verse route)
+- MNKY VERSE Shop
+
+### MNKY CHAT
+
+Dojo includes MNKY CHAT—a chat interface with Flowise integration. Members can:
+- Start new chats
+- View saved chats and folders
+- Configure Flowise chatbot settings
+
+### Preferences
+
+At `/dojo/preferences`, members can set their default agent and other user-specific settings.
+
+## Layout and Design
+
+The Dojo uses the **shadcn sidebar-07** pattern (dashboard-07 block):
+- **Collapsible sidebar**: Icon mode when collapsed
+- **Team/context switcher**: Switch between Home, Crafting, MNKY VERSE, Chat
+- **Nav groups**: Dojo (Home, MNKY CHAT, Preferences); MNKY VERSE (Home, Shop, Chat, Profile); Crafting (Blending Lab, Saved Blends)
+- **Quick access**: Shortcuts to Shop, Chat, Profile, Issues, UGC
+- **User footer**: Avatar, Profile, Preferences, Sign out
+
+Layout components: `DojoDashboardLayout`, `DojoSidebar`, `DojoAuthContext`
+
+## Technical Architecture
+
+- **Framework**: Next.js 14+ (App Router), same as MNKY VERSE
+- **UI**: shadcn/ui, Tailwind CSS
+- **Auth**: Supabase Auth (server-side user fetch, redirect if unauthenticated)
+- **Data**: Supabase (profiles, xp_state, quests, quest_progress, saved_blends, chat_sessions)
+
+## Integration with MNKY VERSE
+
+The Dojo provides quick links to MNKY VERSE:
+- MNKY VERSE Home, Shop, Chat, Profile
+- Issues (manga), UGC
+- Glossary (from Crafting context)
+
+Legacy `/verse/dojo` redirects to `/dojo`.
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Dojo Features" icon="list" href="/platform-services/dojo-features">
+    Detailed feature documentation
+  </Card>
+  <Card title="MNKY VERSE" icon="globe" href="/brand-overview/mood-experience">
+    The web experiential portal
+  </Card>
+  <Card title="MNKY LABZ" icon="flask" href="/platform-services/labz-overview">
+    Admin dashboard and backstage
+  </Card>
+  <Card title="Gamification" icon="trophy" href="/platform-services/reward-system">
+    XP, quests, and rewards
+  </Card>
+</CardGroup>

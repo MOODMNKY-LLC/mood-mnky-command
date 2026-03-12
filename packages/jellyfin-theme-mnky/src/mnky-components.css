@@ -1,0 +1,69 @@
+/* Components: cards/tiles, buttons, inputs, login */
+
+.dashboard-gs-generic-item,
+.paperList .listItem,
+.cardContent {
+  background: var(--mnky-glass-bg-card);
+  backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+  box-shadow: var(--mnky-glass-shadow);
+  color: var(--mnky-text);
+  transition: transform var(--mnky-float-duration) ease, box-shadow var(--mnky-float-duration) ease;
+}
+
+.dashboard-gs-generic-item:hover,
+.paperList .listItem:hover {
+  transform: translateY(var(--mnky-float-offset));
+  box-shadow: var(--mnky-card-hover-shadow);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dashboard-gs-generic-item,
+  .paperList .listItem,
+  .cardContent {
+    background: var(--mnky-glass-bg-solid);
+  }
+}
+
+.btnPlay,
+.emby-button.emby-button-primary,
+[data-id="playButton"],
+.button-primary {
+  background-color: var(--mnky-primary) !important;
+  color: var(--mnky-primary-foreground) !important;
+  border: 1px solid var(--mnky-primary) !important;
+  border-radius: var(--mnky-glass-radius);
+}
+
+.emby-button:not(.emby-button-primary) {
+  color: var(--mnky-text);
+  border-color: var(--mnky-glass-border);
+}
+
+#loginPage {
+  background-color: var(--mnky-bg) !important;
+  color: var(--mnky-text);
+}
+
+#loginPage .readOnlyContent,
+#loginPage .formDialogContent {
+  background: var(--mnky-glass-bg-card);
+  backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--mnky-glass-blur-soft));
+  border: 1px solid var(--mnky-glass-border);
+  border-radius: var(--mnky-glass-radius);
+}
+
+.inputLabel,
+.formDialogLabel {
+  color: var(--mnky-text-muted);
+}
+
+.emby-input {
+  background: var(--mnky-glass-bg);
+  border: 1px solid var(--mnky-glass-border);
+  color: var(--mnky-text);
+  border-radius: calc(var(--mnky-glass-radius) / 2);
+}

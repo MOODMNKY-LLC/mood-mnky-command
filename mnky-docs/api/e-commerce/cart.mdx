@@ -1,0 +1,447 @@
+---
+title: 'Cart API'
+description: 'API reference for shopping cart management'
+---
+
+# Cart API
+
+The Cart API provides endpoints for managing shopping carts, including adding items, applying discounts, and preparing for checkout in the MOOD MNKY e-commerce system.
+
+## Endpoints
+
+### Get Cart
+
+```
+GET /api/cart
+```
+
+Retrieves the current user's shopping cart.
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "createdAt": "2023-04-15T10:30:00Z",
+  "updatedAt": "2023-04-16T08:45:00Z",
+  "items": [
+    {
+      "id": "item_123456",
+      "productId": "prod_123456",
+      "variantId": "var_789012",
+      "name": "Serenity Candle",
+      "variantName": "Small",
+      "sku": "SER-CAN-S",
+      "price": 24.99,
+      "quantity": 1,
+      "image": "https://example.com/images/candle1.jpg",
+      "customizations": {
+        "fragrance": "standard",
+        "giftWrapped": false
+      }
+    },
+    {
+      "id": "item_123457",
+      "productId": "prod_234567",
+      "variantId": "var_789014",
+      "name": "Lavender Bath Bombs",
+      "variantName": "3-Pack",
+      "sku": "LAV-BB-3P",
+      "price": 34.99,
+      "quantity": 1,
+      "image": "https://example.com/images/bath-bomb-pack.jpg",
+      "customizations": {
+        "giftWrapped": true,
+        "giftMessage": "Happy Birthday!"
+      }
+    }
+  ],
+  "itemCount": 2,
+  "subtotal": 59.98,
+  "discounts": [
+    {
+      "code": "WELCOME10",
+      "description": "10% off your first order",
+      "type": "percentage",
+      "value": 10,
+      "amount": 5.99
+    }
+  ],
+  "discountTotal": 5.99,
+  "estimatedTax": 5.40,
+  "estimatedTotal": 59.39,
+  "currency": "USD",
+  "notes": "Please gift wrap the Lavender Bath Bombs"
+}
+```
+
+### Add Item to Cart
+
+```
+POST /api/cart/items
+```
+
+Adds a product to the shopping cart.
+
+#### Request Body
+
+```json
+{
+  "productId": "prod_345678",
+  "variantId": "var_901234",
+  "quantity": 1,
+  "customizations": {
+    "fragrance": "custom",
+    "fragranceId": "scent_123456",
+    "giftWrapped": true,
+    "giftMessage": "Enjoy your custom fragrance!"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Existing items...
+    {
+      "id": "item_123458",
+      "productId": "prod_345678",
+      "variantId": "var_901234",
+      "name": "Custom Blend Diffuser",
+      "variantName": "Medium",
+      "sku": "CBD-MED",
+      "price": 39.99,
+      "quantity": 1,
+      "image": "https://example.com/images/diffuser1.jpg",
+      "customizations": {
+        "fragrance": "custom",
+        "fragranceId": "scent_123456",
+        "fragranceName": "Summer Breeze",
+        "giftWrapped": true,
+        "giftMessage": "Enjoy your custom fragrance!"
+      }
+    }
+  ],
+  "itemCount": 3,
+  "subtotal": 99.97,
+  "discountTotal": 5.99,
+  "estimatedTax": 9.40,
+  "estimatedTotal": 103.38,
+  "currency": "USD",
+  "updatedAt": "2023-04-16T09:15:00Z"
+}
+```
+
+### Update Cart Item
+
+```
+PATCH /api/cart/items/{itemId}
+```
+
+Updates the quantity or customizations of a cart item.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| itemId | string | Yes | The unique identifier of the cart item |
+
+#### Request Body
+
+```json
+{
+  "quantity": 2,
+  "customizations": {
+    "giftWrapped": false
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Other items...
+    {
+      "id": "item_123458",
+      "productId": "prod_345678",
+      "variantId": "var_901234",
+      "name": "Custom Blend Diffuser",
+      "variantName": "Medium",
+      "sku": "CBD-MED",
+      "price": 39.99,
+      "quantity": 2,
+      "image": "https://example.com/images/diffuser1.jpg",
+      "customizations": {
+        "fragrance": "custom",
+        "fragranceId": "scent_123456",
+        "fragranceName": "Summer Breeze",
+        "giftWrapped": false
+      }
+    },
+    // Other items...
+  ],
+  "itemCount": 4,
+  "subtotal": 139.96,
+  "discountTotal": 5.99,
+  "estimatedTax": 13.40,
+  "estimatedTotal": 147.37,
+  "currency": "USD",
+  "updatedAt": "2023-04-16T09:20:00Z"
+}
+```
+
+### Remove Cart Item
+
+```
+DELETE /api/cart/items/{itemId}
+```
+
+Removes an item from the shopping cart.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| itemId | string | Yes | The unique identifier of the cart item |
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Remaining items after removal
+  ],
+  "itemCount": 2,
+  "subtotal": 59.98,
+  "discountTotal": 5.99,
+  "estimatedTax": 5.40,
+  "estimatedTotal": 59.39,
+  "currency": "USD",
+  "updatedAt": "2023-04-16T09:25:00Z"
+}
+```
+
+### Apply Discount Code
+
+```
+POST /api/cart/discounts
+```
+
+Applies a discount code to the shopping cart.
+
+#### Request Body
+
+```json
+{
+  "code": "SPRING20"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Cart items...
+  ],
+  "itemCount": 2,
+  "subtotal": 59.98,
+  "discounts": [
+    {
+      "code": "SPRING20",
+      "description": "20% off spring collection",
+      "type": "percentage",
+      "value": 20,
+      "amount": 12.00
+    }
+  ],
+  "discountTotal": 12.00,
+  "estimatedTax": 4.80,
+  "estimatedTotal": 52.78,
+  "currency": "USD",
+  "updatedAt": "2023-04-16T09:30:00Z"
+}
+```
+
+### Remove Discount Code
+
+```
+DELETE /api/cart/discounts/{code}
+```
+
+Removes a discount code from the shopping cart.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| code | string | Yes | The discount code to remove |
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Cart items...
+  ],
+  "itemCount": 2,
+  "subtotal": 59.98,
+  "discounts": [],
+  "discountTotal": 0.00,
+  "estimatedTax": 6.00,
+  "estimatedTotal": 65.98,
+  "currency": "USD",
+  "updatedAt": "2023-04-16T09:35:00Z"
+}
+```
+
+### Add Cart Note
+
+```
+POST /api/cart/notes
+```
+
+Adds a note to the shopping cart.
+
+#### Request Body
+
+```json
+{
+  "note": "Please deliver on weekdays only"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Cart items...
+  ],
+  "notes": "Please deliver on weekdays only",
+  "updatedAt": "2023-04-16T09:40:00Z"
+}
+```
+
+### Calculate Shipping Estimates
+
+```
+POST /api/cart/shipping-estimates
+```
+
+Calculates shipping estimates for the current cart.
+
+#### Request Body
+
+```json
+{
+  "address": {
+    "postalCode": "10001",
+    "country": "US",
+    "state": "NY"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "estimates": [
+    {
+      "method": "standard",
+      "carrier": "USPS",
+      "cost": 5.99,
+      "estimatedDelivery": "5-7 business days",
+      "estimatedDeliveryMin": "2023-04-21",
+      "estimatedDeliveryMax": "2023-04-25"
+    },
+    {
+      "method": "express",
+      "carrier": "UPS",
+      "cost": 9.99,
+      "estimatedDelivery": "2-3 business days",
+      "estimatedDeliveryMin": "2023-04-18",
+      "estimatedDeliveryMax": "2023-04-19"
+    },
+    {
+      "method": "overnight",
+      "carrier": "FedEx",
+      "cost": 19.99,
+      "estimatedDelivery": "Next business day",
+      "estimatedDeliveryMin": "2023-04-17",
+      "estimatedDeliveryMax": "2023-04-17"
+    }
+  ],
+  "freeShippingEligible": false,
+  "freeShippingThreshold": 75.00,
+  "amountToFreeShipping": 15.02
+}
+```
+
+### Prepare Cart for Checkout
+
+```
+POST /api/cart/checkout
+```
+
+Prepares the cart for checkout by validating inventory and finalizing calculations.
+
+#### Response
+
+```json
+{
+  "id": "cart_123456",
+  "customerId": "user_123456",
+  "items": [
+    // Cart items...
+  ],
+  "itemCount": 2,
+  "subtotal": 59.98,
+  "discountTotal": 0.00,
+  "estimatedTax": 6.00,
+  "estimatedTotal": 65.98,
+  "currency": "USD",
+  "checkoutId": "checkout_123456",
+  "checkoutExpires": "2023-04-16T10:10:00Z",
+  "inventoryReserved": true,
+  "readyForCheckout": true
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 404 | Not Found - Cart or item not found |
+| 409 | Conflict - Item out of stock |
+| 422 | Unprocessable Entity - Invalid discount code or other validation error |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Implement cart expiration to release inventory for abandoned carts
+- Use client-side validation for quantity limits before API calls
+- Cache cart contents for faster retrieval
+- Implement real-time inventory validation before checkout
+- Handle logged-in and guest carts consistently
+- Merge anonymous cart with user cart on login 

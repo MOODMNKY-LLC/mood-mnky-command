@@ -1,0 +1,494 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth Cursor: keep text cursor in inputs when custom cursor is active */
+input,
+textarea,
+select {
+  cursor: text !important;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.progress-indeterminate-indicator {
+  width: 30%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+/* Magic UI Marquee: horizontal scroll with --duration and --gap */
+@keyframes marquee-horizontal {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+.animate-marquee-horizontal {
+  animation: marquee-horizontal var(--duration, 40s) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 40s) linear infinite;
+}
+
+.marquee-paused .animate-marquee-horizontal,
+.marquee-paused .animate-marquee-vertical {
+  animation-play-state: paused;
+}
+
+/* 3D marquee variant: subtle perspective; disabled when user prefers reduced motion */
+.marquee-3d-inner {
+  transform: rotateX(6deg) rotateY(-2deg);
+  transform-style: preserve-3d;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-3d-inner {
+    transform: none;
+  }
+}
+
+/* Verse blog prose preset: on-brand headings, code, blockquotes */
+@layer components {
+  .prose-verse {
+    --tw-prose-body: var(--verse-text-muted, inherit);
+    --tw-prose-headings: var(--verse-text, inherit);
+    --tw-prose-links: var(--verse-button, inherit);
+    --tw-prose-quote-borders: var(--verse-button, currentColor);
+    --tw-prose-code: var(--verse-text, inherit);
+  }
+  .prose-verse pre {
+    background: rgb(0 0 0 / 0.05);
+  }
+  .dark .prose-verse pre {
+    background: rgb(255 255 255 / 0.06);
+  }
+}
+
+@layer base {
+  /* ---------------------------------------------------------------------
+     Fallback: Main light (default before JS sets data-theme)
+     --------------------------------------------------------------------- */
+  :root {
+    --theme: main;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 25%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 35%;
+    --chart-1: 0 0% 35%;
+    --chart-2: 165 50% 45%;
+    --chart-3: 200 50% 50%;
+    --chart-4: 36 80% 56%;
+    --chart-5: 0 72% 51%;
+    --radius: 0.375rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 0 0% 35%;
+    --success-foreground: 0 0% 98%;
+    --warning: 36 80% 56%;
+    --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 50%;
+    --status-active: 145 63% 42%;
+    --glass-blur: 16px;
+    --glass-alpha: 0.85;
+    --glass-border-alpha: 0.25;
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --shadow-card-dark: 0 4px 24px rgba(0, 0, 0, 0.2);
+    --glass-bg-nav: rgba(255, 255, 255, 0.85);
+    --glass-border-nav: rgba(0, 0, 0, 0.08);
+    --glass-bg-solid: rgba(255, 255, 255, 0.92);
+    --verse-bg: #f8fafc;
+    --verse-bg-rgb: 248, 250, 252;
+    --verse-text: #0f172a;
+    --verse-text-rgb: 15, 23, 42;
+    --verse-text-muted: #475569;
+    --verse-border: rgba(15, 23, 42, 0.08);
+    --verse-button: #475569;
+    --verse-button-rgb: 71, 85, 105;
+    --verse-button-text: #f8fafc;
+  }
+
+  /* ---------------------------------------------------------------------
+     Theme: MAIN (black/white/grayscale, glassmorphic)
+     --------------------------------------------------------------------- */
+  [data-theme="main"] {
+    --theme: main;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 25%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 35%;
+    --chart-1: 0 0% 35%;
+    --chart-2: 165 50% 45%;
+    --chart-3: 200 50% 50%;
+    --chart-4: 36 80% 56%;
+    --chart-5: 0 72% 51%;
+    --radius: 0.375rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 0 0% 35%;
+    --success-foreground: 0 0% 98%;
+    --warning: 36 80% 56%;
+    --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 50%;
+    --status-active: 145 63% 42%;
+    --glass-blur: 16px;
+    --glass-alpha: 0.85;
+    --glass-border-alpha: 0.22;
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --shadow-card-dark: 0 4px 24px rgba(0, 0, 0, 0.2);
+    --glass-bg-nav: rgba(255, 255, 255, 0.85);
+    --glass-border-nav: rgba(0, 0, 0, 0.08);
+    --glass-bg-solid: rgba(255, 255, 255, 0.92);
+    --verse-bg: #f1f5f9;
+    --verse-bg-rgb: 241, 245, 249;
+    --verse-text: #0f172a;
+    --verse-text-rgb: 15, 23, 42;
+    --verse-text-muted: #475569;
+    --verse-border: rgba(15, 23, 42, 0.08);
+    --verse-button: #475569;
+    --verse-button-rgb: 71, 85, 105;
+    --verse-button-text: #f8fafc;
+  }
+
+  [data-theme="main"].dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 5.5%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 6.5%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 0 0% 65%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 65%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 65%;
+    --chart-1: 0 0% 65%;
+    --chart-2: 165 50% 45%;
+    --chart-3: 200 50% 50%;
+    --chart-4: 36 80% 56%;
+    --chart-5: 0 72% 51%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 0 0% 65%;
+    --success-foreground: 0 0% 98%;
+    --warning: 36 80% 56%;
+    --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 55%;
+    --status-active: 145 50% 48%;
+    --glass-alpha: 0.72;
+    --glass-border-alpha: 0.18;
+    --glass-bg-nav: rgba(0, 0, 0, 0.75);
+    --glass-border-nav: rgba(255, 255, 255, 0.1);
+    --glass-bg-solid: rgba(0, 0, 0, 0.88);
+    --verse-bg: #181619;
+    --verse-bg-rgb: 24, 22, 25;
+    --verse-text: #c8c4c4;
+    --verse-text-rgb: 200, 196, 196;
+    --verse-text-muted: #94a3b8;
+    --verse-border: rgba(200, 196, 196, 0.12);
+    --verse-button: #94a3b8;
+    --verse-button-rgb: 148, 163, 184;
+    --verse-button-text: #0f172a;
+  }
+
+  /* ---------------------------------------------------------------------
+     Theme: DOJO (Dojo storefront – slate light, #181619 dark)
+     Applied to MNKY DOJO storefront and auth; one palette, one product name.
+     --------------------------------------------------------------------- */
+  [data-theme="dojo"] {
+    --theme: dojo;
+    /* Verse light: #f1f5f9 bg, #0f172a text, #475569 muted/primary */
+    --background: 210 40% 97%;
+    --foreground: 222 47% 11%;
+    --card: 210 40% 98%;
+    --card-foreground: 222 47% 11%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 215 20% 37%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 93%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 93%;
+    --muted-foreground: 215 20% 37%;
+    --accent: 215 20% 37%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 215 20% 37%;
+    --chart-1: 215 20% 37%;
+    --chart-2: 165 50% 45%;
+    --chart-3: 200 50% 50%;
+    --chart-4: 36 80% 56%;
+    --chart-5: 0 72% 51%;
+    --radius: 0.5rem;
+    --sidebar-background: 210 40% 96%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 215 20% 37%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 93%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 98%;
+    --warning: 36 80% 56%;
+    --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 50%;
+    --status-active: 145 63% 42%;
+    --glass-blur: 20px;
+    --glass-alpha: 0.78;
+    --glass-border-alpha: 0.2;
+    --shadow-card: 0 4px 24px rgba(15, 23, 42, 0.08);
+    --shadow-card-dark: 0 4px 24px rgba(0, 0, 0, 0.25);
+    --glass-bg-nav: rgba(241, 245, 249, 0.9);
+    --glass-border-nav: rgba(15, 23, 42, 0.08);
+    --glass-bg-solid: rgba(241, 245, 249, 0.98);
+    --verse-bg: #f1f5f9;
+    --verse-bg-rgb: 241, 245, 249;
+    --verse-text: #0f172a;
+    --verse-text-rgb: 15, 23, 42;
+    --verse-text-muted: #475569;
+    --verse-border: rgba(15, 23, 42, 0.08);
+    --verse-button: #475569;
+    --verse-button-rgb: 71, 85, 105;
+    --verse-button-text: #f8fafc;
+    /* Dock bar: darker than page so icons are visible (Dojo light) */
+    --verse-dock-bg: #475569;
+    --verse-dock-text: #f8fafc;
+    --verse-dock-border: rgba(15, 23, 42, 0.12);
+  }
+
+  [data-theme="dojo"].dark {
+    /* Verse dark: #181619 bg, #c8c4c4 text, #94a3b8 muted/primary */
+    --background: 30 8% 9%;
+    --foreground: 30 5% 78%;
+    --card: 30 8% 11%;
+    --card-foreground: 30 5% 78%;
+    --popover: 30 8% 11%;
+    --popover-foreground: 30 5% 78%;
+    --primary: 213 24% 65%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 30 6% 18%;
+    --secondary-foreground: 30 5% 78%;
+    --muted: 30 6% 18%;
+    --muted-foreground: 213 20% 65%;
+    --accent: 213 24% 65%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 6% 22%;
+    --input: 30 6% 22%;
+    --ring: 213 24% 65%;
+    --chart-1: 213 24% 65%;
+    --chart-2: 165 50% 45%;
+    --chart-3: 200 50% 55%;
+    --chart-4: 36 80% 56%;
+    --chart-5: 0 72% 51%;
+    --sidebar-background: 30 8% 8%;
+    --sidebar-foreground: 30 5% 78%;
+    --sidebar-primary: 213 24% 65%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 30 6% 18%;
+    --sidebar-accent-foreground: 30 5% 78%;
+    --sidebar-border: 30 6% 22%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 145 50% 48%;
+    --success-foreground: 0 0% 98%;
+    --warning: 36 80% 56%;
+    --warning-foreground: 0 0% 4%;
+    --status-ready: 200 50% 55%;
+    --status-active: 145 50% 48%;
+    --glass-alpha: 0.72;
+    --glass-border-alpha: 0.18;
+    --glass-bg-nav: rgba(24, 22, 25, 0.85);
+    --glass-border-nav: rgba(200, 196, 196, 0.12);
+    --glass-bg-solid: rgba(24, 22, 25, 0.95);
+    --verse-bg: #181619;
+    --verse-bg-rgb: 24, 22, 25;
+    --verse-text: #c8c4c4;
+    --verse-text-rgb: 200, 196, 196;
+    --verse-text-muted: #94a3b8;
+    --verse-border: rgba(200, 196, 196, 0.12);
+    --verse-button: #94a3b8;
+    --verse-button-rgb: 148, 163, 184;
+    --verse-button-text: #0f172a;
+    /* Dock bar: Dojo dark uses palette accent (light blue) for dock icons */
+    --verse-dock-bg: #181619;
+    --verse-dock-text: #94a3b8;
+    --verse-dock-border: rgba(200, 196, 196, 0.12);
+  }
+
+  .theme {
+    --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+    --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+    --animate-shiny-text: shiny-text 8s infinite;
+    --animate-orbit: orbit calc(var(--duration)*1s) linear infinite;
+    --animate-grid: grid 15s linear infinite;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* Hide all scrollbars while keeping scroll behavior */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and old Edge */
+  }
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+@theme inline {
+  @keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+    }
+  }
+  @keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+    }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+    }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+    }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+    }
+  }
+  @keyframes shiny-text {
+  0%, 90%, 100% {
+    background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+  30%, 60% {
+    background-position: calc(100% + var(--shiny-width)) 0;
+    }
+  }
+  @keyframes orbit {
+  0% {
+    transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg));
+    }
+  100% {
+    transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px)) rotate(calc((var(--angle) * -1deg) - 360deg));
+    }
+  }
+  @keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+  }
+}
+
+/* Dojo glass panel - token-driven frosted glass */
+.dojo-dashboard .dojo-glass-panel {
+  background: hsl(var(--background) / var(--glass-alpha));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid hsl(var(--border) / var(--glass-border-alpha));
+  box-shadow: var(--shadow-card);
+}
+
+.dark .dojo-dashboard .dojo-glass-panel {
+  box-shadow: var(--shadow-card-dark);
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}

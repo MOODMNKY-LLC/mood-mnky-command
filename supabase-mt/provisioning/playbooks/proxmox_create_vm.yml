@@ -1,0 +1,65 @@
+---
+# Create a VM on Proxmox by cloning a template.
+# Run: ansible-playbook playbooks/proxmox_create_vm.yml -e "vm_name=mood-stack-001" -e "spec_cpu=2" -e "spec_ram_mb=4096" -e "spec_disk_gb=50"
+# Optional: -e "subscription_id=<uuid>" to drive naming; set PROXMOX_* in env or group_vars.
+
+- name: Create VM on Proxmox
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    vm_name: "mood-stack-001"
+    subscription_id: ""
+    spec_cpu: 2
+    spec_ram_mb: 4096
+    spec_disk_gb: 50
+    proxmox_node: "{{ lookup('env', 'PROXMOX_NODE') | default('pve', true) }}"
+    proxmox_api_host: "{{ lookup('env', 'PROXMOX_API_HOST') }}"
+    proxmox_api_user: "{{ lookup('env', 'PROXMOX_API_USER') }}"
+    proxmox_api_password: "{{ lookup('env', 'PROXMOX_API_PASSWORD') | default('', true) }}"
+    proxmox_api_token_id: "{{ lookup('env', 'PROXMOX_API_TOKEN_ID') | default('', true) }}"
+    proxmox_api_token_secret: "{{ lookup('env', 'PROXMOX_API_TOKEN_SECRET') | default('', true) }}"
+    template: "{{ lookup('env', 'PROXMOX_TEMPLATE_VM') | default('debian-12-cloud', true) }}"
+    storage: "{{ lookup('env', 'PROXMOX_STORAGE') | default('local-lvm', true) }}"
+  tasks:
+    - name: Ensure Proxmox API credentials are set
+      ansible.builtin.assert:
+        that:
+          - proxmox_api_host | length > 0
+          - proxmox_api_user | length > 0
+          - (proxmox_api_password | length > 0) or (proxmox_api_token_id | length > 0 and proxmox_api_token_secret | length > 0)
+        fail_msg: "Set PROXMOX_API_HOST, PROXMOX_API_USER, and either PROXMOX_API_PASSWORD or PROXMOX_API_TOKEN_ID/SECRET."
+      tags: always
+
+    - name: Create VM from template (clone)
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password if proxmox_api_password else omit }}"
+        api_token_id: "{{ proxmox_api_token_id if proxmox_api_token_id else omit }}"
+        api_token_secret: "{{ proxmox_api_token_secret if proxmox_api_token_secret else omit }}"
+        node: "{{ proxmox_node }}"
+        name: "{{ vm_name }}"
+        clone: "{{ template }}"
+        storage: "{{ storage }}"
+        cores: "{{ spec_cpu }}"
+        memory: "{{ spec_ram_mb }}"
+        state: present
+      register: proxmox_vm
+      when: proxmox_api_host | length > 0
+
+    - name: Set VM started
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password if proxmox_api_password else omit }}"
+        api_token_id: "{{ proxmox_api_token_id if proxmox_api_token_id else omit }}"
+        api_token_secret: "{{ proxmox_api_token_secret if proxmox_api_token_secret else omit }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ proxmox_vm.vmid | default(proxmox_vm.vm.vmid) }}"
+        state: started
+      when: proxmox_vm is changed or proxmox_vm.vmid is defined
+
+    - name: Print VM id for portal/status update
+      ansible.builtin.debug:
+        msg: "Created/updated VM vmid={{ proxmox_vm.vmid | default(proxmox_vm.vm.vmid) }} on {{ proxmox_node }}. Update tenant_stack_subscriptions with vm_id and status=running when the VM is reachable."

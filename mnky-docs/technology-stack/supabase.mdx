@@ -1,0 +1,680 @@
+---
+title: 'Supabase Integration'
+description: 'Documentation for MOOD MNKYs core database infrastructure'
+---
+
+# Supabase Integration
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/supabase-logo.svg"
+  alt="Supabase Logo"
+/>
+
+## Overview
+
+Supabase serves as the omniscient database for the entire MOOD MNKY ecosystem. It provides structured relational SQL storage, authentication, storage solutions, and real-time functionality that powers all of our applications and services.
+
+<Note>
+  Supabase is an open-source Firebase alternative that provides a Postgres database, authentication, instant APIs, Edge Functions, realtime subscriptions, and storage.
+</Note>
+
+## Core Features
+
+<CardGroup cols={3}>
+  <Card title="Database" icon="database" color="#3ECF8E">
+    PostgreSQL database with structured schemas for all MOOD MNKY data
+  </Card>
+  <Card title="Auth" icon="lock" color="#3ECF8E">
+    Secure authentication system for user management across all applications
+  </Card>
+  <Card title="Storage" icon="hard-drive" color="#3ECF8E">
+    Managed file storage with both API and S3-compatible access
+  </Card>
+  <Card title="API" icon="brackets-curly" color="#3ECF8E">
+    Auto-generated RESTful and GraphQL APIs for data access
+  </Card>
+  <Card title="Realtime" icon="bolt" color="#3ECF8E">
+    Instant updates via WebSockets for collaborative features
+  </Card>
+  <Card title="Edge Functions" icon="server" color="#3ECF8E">
+    Serverless functions for custom backend logic
+  </Card>
+</CardGroup>
+
+## Project Structure
+
+Our Supabase implementation follows a clear organizational structure in the monorepo:
+
+<Tabs>
+  <Tab title="Infrastructure">
+    ```
+    infra/supabase/
+    ├── migrations/            # Database migration scripts
+    │   ├── 20240401_initial_  # Timestamp-prefixed migrations
+    │   └── README.md          # Migration documentation
+    ├── functions/             # Edge and database functions
+    │   ├── auth/              # Authentication-related functions
+    │   ├── api/               # API endpoint functions
+    │   └── triggers/          # Database trigger functions
+    ├── config.toml            # Supabase configuration
+    ├── certs/                 # SSL certificates for secure connections
+    └── seed-data/             # Development seed data
+        ├── users.sql          # User seed data
+        └── products.sql       # Product seed data
+    ```
+  </Tab>
+  <Tab title="Data">
+    ```
+    data/
+    ├── schemas/               # SQL schema definitions
+    │   ├── users.sql          # Users table schema
+    │   ├── products.sql       # Products table schema
+    │   └── content.sql        # Content table schema
+    ├── models/                # TypeScript data models
+    │   ├── user.model.ts      # User model definition
+    │   ├── product.model.ts   # Product model definition
+    │   └── content.model.ts   # Content model definition
+    └── README.md              # Documentation for data models
+    ```
+  </Tab>
+  <Tab title="Client">
+    ```
+    packages/supabase-client/
+    ├── src/
+    │   ├── index.ts           # Main client exports
+    │   ├── auth.ts            # Authentication utilities
+    │   ├── storage.ts         # Storage utilities
+    │   └── hooks/             # React hooks for data access
+    │       ├── useQuery.ts    # Data query hook
+    │       └── useMutation.ts # Data mutation hook
+    ├── package.json           # Package metadata
+    └── tsconfig.json          # TypeScript configuration
+    ```
+  </Tab>
+</Tabs>
+
+## Database Schema
+
+Our Supabase database is organized into several key schemas to support different aspects of the MOOD MNKY ecosystem:
+
+### Schema Definitions
+
+All schema definitions are stored in the `data/schemas` directory as SQL files:
+
+```sql
+-- data/schemas/users.sql
+CREATE TABLE public.users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  
+  -- Member-specific fields
+  member_tier TEXT,
+  member_since TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  
+  constraint username_length check (char_length(full_name) >= 3)
+);
+
+-- Row Level Security Policies
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public profiles are viewable by everyone."
+  ON users FOR SELECT
+  USING ( true );
+
+CREATE POLICY "Users can insert their own profile."
+  ON users FOR INSERT
+  WITH CHECK ( auth.uid() = id );
+
+CREATE POLICY "Users can update own profile."
+  ON users FOR UPDATE
+  USING ( auth.uid() = id );
+```
+
+### Data Models
+
+TypeScript models in the `data/models` directory provide type safety for database interactions:
+
+```typescript
+// data/models/user.model.ts
+export interface User {
+  id: string;
+  email: string;
+  fullName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  memberTier: string | null;
+  memberSince: string;
+}
+
+// Helper functions for type conversion
+export function fromDbUser(dbUser: any): User {
+  return {
+    id: dbUser.id,
+    email: dbUser.email,
+    fullName: dbUser.full_name,
+    createdAt: dbUser.created_at,
+    updatedAt: dbUser.updated_at,
+    memberTier: dbUser.member_tier,
+    memberSince: dbUser.member_since,
+  };
+}
+
+export function toDbUser(user: User): any {
+  return {
+    id: user.id,
+    email: user.email,
+    full_name: user.fullName,
+    created_at: user.createdAt,
+    updated_at: user.updatedAt,
+    member_tier: user.memberTier,
+    member_since: user.memberSince,
+  };
+}
+```
+
+## Authentication Flow
+
+Our authentication system leverages Supabase Auth for secure user management:
+
+<Steps>
+  <Step title="Initial Setup">
+    Initialize the Supabase client with your project URL and anonymous key.
+    
+    ```typescript
+    import { getSupabaseClient } from '@repo/supabase-client';
+    
+    // Get the configured Supabase client
+    const supabase = getSupabaseClient();
+    ```
+  </Step>
+  <Step title="User Sign Up">
+    Register new users with email and password or OAuth providers.
+    
+    ```typescript
+    const { data, error } = await supabase.auth.signUp({
+      email: 'example@moodmnky.co',
+      password: 'securepassword',
+      options: {
+        data: {
+          full_name: 'MOOD MNKY Member',
+        }
+      }
+    });
+    ```
+  </Step>
+  <Step title="User Sign In">
+    Authenticate existing users.
+    
+    ```typescript
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: 'example@moodmnky.co',
+      password: 'securepassword'
+    });
+    ```
+  </Step>
+  <Step title="Session Management">
+    Handle user sessions and authentication state.
+    
+    ```typescript
+    // Get current session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        // Handle sign in
+      } else if (event === 'SIGNED_OUT') {
+        // Handle sign out
+      }
+    });
+    ```
+  </Step>
+</Steps>
+
+## Data Access Patterns
+
+Our applications use the following patterns for accessing Supabase data:
+
+### Using the Shared Client
+
+All applications should import the Supabase client from the shared package:
+
+```typescript
+import { getSupabaseClient } from '@repo/supabase-client';
+
+async function getProducts() {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('product_type', 'candle')
+    .order('created_at', { ascending: false })
+    .limit(10);
+    
+  if (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+  
+  return data;
+}
+```
+
+### Direct API Access
+
+For simple CRUD operations, we use the Supabase client directly:
+
+```typescript
+// Fetch data
+const { data, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('product_type', 'candle')
+  .order('created_at', { ascending: false })
+  .limit(10)
+
+// Insert data
+const { data, error } = await supabase
+  .from('profiles')
+  .insert([
+    { username: 'mnky_lover', full_name: 'MOOD MNKY Fan' }
+  ])
+  .select()
+
+// Update data
+const { data, error } = await supabase
+  .from('products')
+  .update({ stock_quantity: 15 })
+  .eq('id', '123e4567-e89b-12d3-a456-426614174000')
+  .select()
+
+// Delete data
+const { error } = await supabase
+  .from('content')
+  .delete()
+  .eq('id', '123e4567-e89b-12d3-a456-426614174000')
+```
+
+### Realtime Subscriptions
+
+For collaborative features and live updates, we use Supabase Realtime:
+
+```typescript
+// Subscribe to changes
+const subscription = supabase
+  .channel('table-db-changes')
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'conversation_history',
+      filter: `member_id=eq.${userId}`
+    },
+    (payload) => {
+      console.log('Change received!', payload)
+      // Update UI with new message
+    }
+  )
+  .subscribe()
+
+// Cleanup subscription
+onUnmount(() => {
+  supabase.removeChannel(subscription)
+})
+```
+
+## Storage Solutions
+
+Supabase provides two distinct ways to interact with storage:
+
+### Standard API Access
+
+For most use cases, the Supabase client storage API provides a simple interface:
+
+```typescript
+// Upload file
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .upload('public/product-123.jpg', imageFile, {
+    cacheControl: '3600',
+    upsert: false
+  })
+
+// Get public URL
+const { data } = supabase.storage
+  .from('product-images')
+  .getPublicUrl('public/product-123.jpg')
+
+// Download file
+const { data, error } = await supabase.storage
+  .from('product-images')
+  .download('public/product-123.jpg')
+```
+
+### S3-Compatible Access
+
+For advanced use cases, Supabase Storage supports the S3 protocol:
+
+```typescript
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+
+// Initialize S3 client with Supabase credentials
+const s3Client = new S3Client({
+  endpoint: process.env.SUPABASE_S3_URL,
+  region: process.env.SUPABASE_S3_REGION,
+  credentials: {
+    accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: true, // Required for Supabase Storage
+});
+
+// Upload a file
+const putCommand = new PutObjectCommand({
+  Bucket: 'product-images',
+  Key: 'public/product-123.jpg',
+  Body: fileBuffer,
+  ContentType: 'image/jpeg',
+});
+await s3Client.send(putCommand);
+
+// Download a file
+const getCommand = new GetObjectCommand({
+  Bucket: 'product-images',
+  Key: 'public/product-123.jpg',
+});
+const response = await s3Client.send(getCommand);
+const fileContent = await response.Body.transformToByteArray();
+```
+
+#### Benefits of S3 Protocol Support
+
+- **Direct file uploads/downloads**: Bypass the Supabase API
+- **Bulk operations**: Efficient handling of multiple files
+- **Integration with S3-compatible tools**: Use existing tools and libraries
+- **Custom file processing workflows**: Build advanced media pipelines
+
+For more details on storage solutions, see our [dedicated Storage Services documentation](/developer-resources/storage).
+
+## Migration Management
+
+Our database migrations are managed through the Supabase CLI and stored in the `infra/supabase/migrations` directory.
+
+<Steps>
+  <Step title="Creating Migrations">
+    Migrations can be created in two ways:
+    
+    1. **Schema-First Approach**: Create or modify the schema files in `/data/schemas`, then generate migrations:
+    
+    ```bash
+    # Navigate to the Supabase infrastructure directory
+    cd infra/supabase
+    
+    # Generate a migration from schema changes
+    supabase db diff --schema public --file add_new_feature
+    ```
+    
+    2. **Direct Migration Creation**:
+    
+    ```bash
+    # Create a new empty migration
+    supabase migration new add_new_feature
+    
+    # Edit the SQL file in migrations/
+    ```
+  </Step>
+  <Step title="Applying Migrations">
+    Apply migrations using the Supabase CLI:
+    
+    ```bash
+    # Reset database and apply all migrations
+    supabase db reset
+    
+    # Apply only new migrations
+    supabase db push
+    ```
+  </Step>
+  <Step title="Tracking Schema Changes">
+    After applying migrations, update the schema files in `data/schemas` to maintain consistency.
+  </Step>
+</Steps>
+
+## Local Development
+
+To set up and run Supabase locally:
+
+<Steps>
+  <Step title="Install Supabase CLI">
+    ```bash
+    npm install -g supabase
+    ```
+  </Step>
+  <Step title="Initialize Local Development">
+    ```bash
+    # Navigate to the Supabase directory
+    cd infra/supabase
+    
+    # Start the local Supabase instance
+    supabase start
+    ```
+    
+    This will start a Docker-based Supabase stack with PostgreSQL, Auth, Storage, and other services.
+  </Step>
+  <Step title="Apply Migrations">
+    ```bash
+    # Apply all migrations
+    supabase db reset
+    ```
+  </Step>
+  <Step title="Configure Environment Variables">
+    Update your `.env.local` file with the local Supabase URL and keys:
+    
+    ```
+    NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
+    SUPABASE_SERVICE_ROLE_KEY=your-local-service-key
+    ```
+  </Step>
+</Steps>
+
+## SSL Configuration
+
+For secure connections to Supabase, especially in production environments, we use SSL:
+
+<Steps>
+  <Step title="SSL Certificate Setup">
+    SSL certificates are stored in `infra/supabase/certs/`:
+    
+    ```
+    infra/supabase/certs/
+    └── production.crt  # Production SSL certificate
+    ```
+  </Step>
+  <Step title="Environment Configuration">
+    Configure the SSL certificate path in your environment:
+    
+    ```
+    # Production .env configuration
+    DATABASE_URL=postgres://postgres:[PASSWORD]@db.coevjitstmuhdhbyizpk.supabase.co:5432/postgres
+    SUPABASE_SSL_CERT_PATH=./infra/certs/supabase/production.crt
+    ```
+  </Step>
+  <Step title="Client Configuration">
+    The Supabase client automatically configures SSL in production:
+    
+    ```typescript
+    // In packages/supabase-client/src/index.ts
+    import fs from 'fs';
+    import { createClient } from '@supabase/supabase-js';
+    
+    export function getSupabaseClient() {
+      const isProduction = process.env.NODE_ENV === 'production';
+      
+      const options = isProduction ? {
+        db: {
+          ssl: {
+            ca: fs.readFileSync(process.env.SUPABASE_SSL_CERT_PATH).toString(),
+          }
+        }
+      } : {};
+      
+      return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        options
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+For more details on SSL configuration, see our [Supabase SSL Configuration Guide](/developer-resources/supabase-ssl-config).
+
+## Security Implementation
+
+We implement multiple layers of security in our Supabase setup:
+
+### Row Level Security
+
+All tables have Row Level Security (RLS) policies to control access:
+
+```sql
+-- Example: Products table security
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can view active products
+CREATE POLICY "Anyone can view active products"
+  ON products FOR SELECT
+  USING (is_active = true);
+
+-- Only admins can insert/update products
+CREATE POLICY "Only admins can insert products"
+  ON products FOR INSERT
+  USING (auth.jwt() -> 'app_metadata' ->> 'role' = 'admin');
+
+CREATE POLICY "Only admins can update products"
+  ON products FOR UPDATE
+  USING (auth.jwt() -> 'app_metadata' ->> 'role' = 'admin');
+```
+
+### Data Validation
+
+We implement strict validation on all data operations:
+
+```typescript
+// Client-side validation example
+function validateProduct(product) {
+  const errors = {};
+  
+  if (!product.name) errors.name = 'Product name is required';
+  if (!product.price || product.price <= 0) errors.price = 'Valid price is required';
+  if (!product.product_type) errors.product_type = 'Product type is required';
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+}
+
+// Server-side validation with Edge Functions
+export async function validateProductServerSide(product) {
+  // More complex validation logic
+  // ...
+  
+  // Database constraints through schema design
+  // ...
+}
+```
+
+## Environment Configuration
+
+<AccordionGroup>
+  <Accordion title="Development Environment" icon="code">
+    - Local Docker-based setup using Supabase CLI
+    - Connect using localhost URL and keys
+    - Automatic schema reset and data seeding
+    - Configuration via `/infra/supabase/config.toml`
+  </Accordion>
+  <Accordion title="Staging Environment" icon="flask">
+    - Project Name: mood-mnky-staging
+    - Region: us-east-1
+    - Database Size: Small
+    - Custom Domain: staging-db.moodmnky.co
+    - Automated Backups: Daily
+  </Accordion>
+  <Accordion title="Production Environment" icon="rocket">
+    - Project Name: mood-mnky-prod
+    - Region: us-east-1
+    - Database Size: Medium
+    - Custom Domain: db.moodmnky.co
+    - Automated Backups: Daily + Point-in-time Recovery
+    - SSL Enforcement: Required
+    - S3-Compatible Storage Access: Enabled
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+When working with our Supabase infrastructure, follow these guidelines:
+
+<CardGroup cols={2}>
+  <Card title="Data Access" icon="database" color="#3ECF8E">
+    - Always use the shared client from `@repo/supabase-client`
+    - Use the most specific queries possible to minimize data transfer
+    - Implement client-side caching for frequently accessed data
+    - Use appropriate indexes for performance optimization
+  </Card>
+  <Card title="Security" icon="shield" color="#3ECF8E">
+    - Never expose sensitive data in client-side code
+    - Always validate user input before storage
+    - Use RLS policies for all tables
+    - Regularly audit security policies
+    - Use SSL for all production database connections
+  </Card>
+  <Card title="Schema Design" icon="table" color="#3ECF8E">
+    - Keep schema definitions in `data/schemas`
+    - Use foreign keys for referential integrity
+    - Follow naming conventions consistently
+    - Document all tables and columns
+    - Normalize data appropriately
+  </Card>
+  <Card title="Storage Usage" icon="hard-drive" color="#3ECF8E">
+    - Use standard API for simple operations
+    - Leverage S3 protocol for advanced needs
+    - Implement proper access controls
+    - Optimize file sizes and formats
+    - Use appropriate storage buckets
+  </Card>
+</CardGroup>
+
+## Recent Updates
+
+- Added SSL certificate configuration for secure production database connections
+- Restructured Supabase implementation to align with monorepo architecture
+- Implemented S3-compatible storage access for advanced file operations
+- Created comprehensive documentation for Supabase integration
+- Added environment-specific configuration management
+- Enhanced client library with SSL support and better error handling
+
+## Resources
+
+<CardGroup cols={3}>
+  <Card title="Supabase Documentation" icon="book" href="https://supabase.com/docs" target="_blank">
+    Official Supabase documentation and guides
+  </Card>
+  <Card title="Storage Services" icon="hard-drive" href="/developer-resources/storage">
+    Detailed documentation on storage options
+  </Card>
+  <Card title="SSL Configuration" icon="lock" href="/developer-resources/supabase-ssl-config">
+    Guide for securing database connections
+  </Card>
+</CardGroup>
+
+---
+
+For any questions or issues related to our Supabase implementation, please contact the MOOD MNKY development team.

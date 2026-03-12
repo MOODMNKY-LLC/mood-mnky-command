@@ -1,0 +1,17 @@
+# Mintlify Ignore File
+# Excludes files and directories from Mintlify processing
+
+# Exclude archive directory (contains historical documentation with broken links)
+archive/
+
+# Exclude draft files (if any)
+*.draft.mdx
+
+# Exclude internal documentation (if needed)
+# internal/
+
+# Exclude specific files (add as needed)
+# private-notes.md
+
+
+

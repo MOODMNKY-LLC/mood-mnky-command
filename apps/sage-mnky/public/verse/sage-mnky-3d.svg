@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="sage-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(142,30%,96%)"/>
+      <stop offset="100%" style="stop-color:hsl(142,25%,90%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="24" fill="url(#sage-bg)"/>
+  <circle cx="128" cy="100" r="56" fill="hsl(142,50%,45%)" stroke="hsl(142,60%,35%)" stroke-width="2"/>
+  <text x="128" y="195" text-anchor="middle" fill="hsl(142,40%,30%)" font-family="system-ui,sans-serif" font-size="14" font-weight="600">SAGE MNKY</text>
+</svg>

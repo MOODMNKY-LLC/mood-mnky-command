@@ -1,0 +1,201 @@
+---
+title: 'Ollama Service API'
+description: 'Complete API documentation for the MOOD MNKY Ollama service'
+---
+
+# Ollama Service API
+
+The MOOD MNKY Ollama service provides enterprise-grade AI model management and inference capabilities. This documentation covers all available endpoints, authentication methods, and best practices for integration.
+
+## Base URL
+
+```bash
+https://ollama.moodmnky.com
+```
+
+## Available Endpoints
+
+### Model Management
+
+- [Create a Model](/api/devops/ollama/models#create-a-model)
+- [List Models](/api/devops/ollama/models#list-models)
+- [Show Model Info](/api/devops/ollama/models#show-model-info)
+- [Copy a Model](/api/devops/ollama/models#copy-a-model)
+- [Delete a Model](/api/devops/ollama/models#delete-a-model)
+- [Pull a Model](/api/devops/ollama/models#pull-a-model)
+- [Push a Model](/api/devops/ollama/models#push-a-model)
+
+### Generation & Inference
+
+- [Generate Completion](/api/devops/ollama/generation#generate-completion)
+- [Generate Chat Completion](/api/devops/ollama/generation#generate-chat-completion)
+- [Generate Embeddings](/api/devops/ollama/generation#generate-embeddings)
+
+### Monitoring & Health
+
+- [List Running Models](/api/devops/ollama/monitoring#list-running-models)
+- [Service Health](/api/devops/ollama/monitoring#service-health)
+- [Version Info](/api/devops/ollama/monitoring#version-info)
+- [Resource Metrics](/api/devops/ollama/monitoring#resource-metrics)
+
+## Authentication
+
+All requests to the Ollama service must include an API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+To obtain an API key:
+1. Contact the DevOps team through the [developer portal](#)
+2. Specify your use case and required rate limits
+3. Follow our [security best practices](#) for API key management
+
+## Request Format
+
+All POST requests should use JSON with the content type header:
+
+```bash
+Content-Type: application/json
+```
+
+## Response Format
+
+Successful responses will have appropriate HTTP status codes and JSON bodies:
+
+```json
+{
+  "status": "success",
+  "data": {
+    // Response data here
+  }
+}
+```
+
+Error responses follow the standard error format:
+
+```json
+{
+  "error": {
+    "code": "error_code",
+    "message": "Error description",
+    "details": {
+      // Additional error details
+    }
+  }
+}
+```
+
+## Rate Limiting
+
+The service implements the following rate limits:
+
+| Endpoint Category | Rate Limit | Burst Limit |
+|------------------|------------|-------------|
+| Generation | 100/min | 120/min |
+| Model Management | 1000/min | 1200/min |
+| Monitoring | 1000/min | 1200/min |
+
+Rate limit headers are included in all responses:
+- `X-RateLimit-Limit`: Rate limit ceiling
+- `X-RateLimit-Remaining`: Remaining requests
+- `X-RateLimit-Reset`: Time until limit reset
+
+## Monitoring
+
+The service exposes Prometheus metrics at:
+```bash
+https://ollama.moodmnky.com/metrics
+```
+
+Available metrics include:
+- Request counts and latencies
+- Model loading/unloading events
+- Resource utilization
+- Error rates
+- Token usage
+
+## Best Practices
+
+1. **Model Management**
+   - Cache model information locally
+   - Implement exponential backoff for retries
+   - Monitor model versions
+
+2. **Generation Requests**
+   - Use streaming for long generations
+   - Implement request timeouts
+   - Handle rate limits gracefully
+
+3. **Production Usage**
+   - Monitor API response times
+   - Set up alerts for error rates
+   - Track token usage
+   - Implement circuit breakers
+
+## Examples
+
+### Curl
+
+```bash
+# Generate a completion
+curl -X POST https://ollama.moodmnky.com/api/generate \
+  -H "Authorization: Bearer your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2",
+    "prompt": "Why is the sky blue?"
+  }'
+```
+
+### Python
+
+```python
+import requests
+
+API_KEY = "your-api-key"
+BASE_URL = "https://ollama.moodmnky.com"
+
+def generate_completion(prompt, model="llama3.2"):
+    response = requests.post(
+        f"{BASE_URL}/api/generate",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": model,
+            "prompt": prompt
+        }
+    )
+    return response.json()
+```
+
+### JavaScript
+
+```javascript
+const API_KEY = 'your-api-key';
+const BASE_URL = 'https://ollama.moodmnky.com';
+
+async function generateCompletion(prompt, model = 'llama3.2') {
+  const response = await fetch(`${BASE_URL}/api/generate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      prompt
+    })
+  });
+  return await response.json();
+}
+```
+
+## Support
+
+- [API Status Page](#)
+- [Developer Forum](#)
+- [Documentation Updates](#)
+- [Security Notifications](#) 

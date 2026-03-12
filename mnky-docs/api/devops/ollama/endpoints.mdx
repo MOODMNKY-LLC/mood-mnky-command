@@ -1,0 +1,494 @@
+# Ollama Service API Endpoints
+
+This document provides detailed information about all available endpoints in the MOOD MNKY Ollama service.
+
+## Base URL
+
+All endpoints are relative to: `https://ollama.moodmnky.com`
+
+## Authentication
+
+All endpoints require authentication using an API key in the header:
+
+```bash
+Authorization: Bearer <your_api_key>
+```
+
+## Available Endpoints
+
+### Model Management
+
+#### List Models
+
+Retrieves all available models.
+
+- **Endpoint**: `GET /api/models`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "models": [
+    {
+      "name": "llama2",
+      "modified_at": "2024-03-20T10:00:00Z",
+      "size": 4563402752,
+      "digest": "sha256:abc123...",
+      "details": {
+        "format": "gguf",
+        "family": "llama",
+        "parameter_size": "7B",
+        "quantization_level": "Q4_K_M"
+      }
+    }
+  ]
+}
+```
+
+#### Get Model Info
+
+Retrieves information about a specific model.
+
+- **Endpoint**: `GET /api/models/{name}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "name": "llama2",
+  "modified_at": "2024-03-20T10:00:00Z",
+  "size": 4563402752,
+  "digest": "sha256:abc123...",
+  "details": {
+    "format": "gguf",
+    "family": "llama",
+    "parameter_size": "7B",
+    "quantization_level": "Q4_K_M",
+    "license": "LLAMA 2 COMMUNITY LICENSE",
+    "modelfile": "FROM llama2\nPARAMETER temperature 0.7",
+    "template": "{{ .Prompt }}"
+  }
+}
+```
+
+#### Create Model
+
+Creates or updates a model.
+
+- **Endpoint**: `POST /api/models`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "name": "custom-llama2",
+  "modelfile": "FROM llama2\nPARAMETER temperature 0.7\nPARAMETER num_ctx 4096",
+  "path": "optional/path/to/model/files"
+}
+```
+
+Example Response:
+```json
+{
+  "status": "success",
+  "message": "Model created successfully",
+  "name": "custom-llama2",
+  "digest": "sha256:def456..."
+}
+```
+
+#### Delete Model
+
+Deletes a model.
+
+- **Endpoint**: `DELETE /api/models/{name}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "status": "success",
+  "message": "Model deleted successfully",
+  "name": "custom-llama2"
+}
+```
+
+### Generation
+
+#### Generate Completion
+
+Generates a completion for the given prompt.
+
+- **Endpoint**: `POST /api/generate`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "model": "llama2",
+  "prompt": "What is artificial intelligence?",
+  "system": "You are a helpful AI assistant.",
+  "template": "{{ .System }}\n\n{{ .Prompt }}",
+  "context": [],
+  "options": {
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "num_predict": 100,
+    "stop": ["\n", "###"],
+    "repeat_penalty": 1.1,
+    "num_ctx": 4096,
+    "num_thread": 4
+  },
+  "raw": false
+}
+```
+
+Example Response:
+```json
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:00Z",
+  "response": "Artificial intelligence (AI) is a branch of computer science...",
+  "done": true,
+  "context": [64, 23, 45, ...],
+  "total_duration": 2.5,
+  "load_duration": 0.1,
+  "prompt_eval_duration": 0.2,
+  "eval_duration": 2.2,
+  "eval_count": 150,
+  "prompt_eval_count": 20
+}
+```
+
+#### Stream Generation
+
+Generates a completion with streaming response.
+
+- **Endpoint**: `POST /api/generate/stream`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "model": "llama2",
+  "prompt": "Write a story about a space adventure",
+  "options": {
+    "temperature": 0.8,
+    "num_predict": 500
+  }
+}
+```
+
+Example Response (Streaming):
+```json
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:00Z",
+  "response": "In the vast expanse",
+  "done": false
+}
+// ... more streaming responses ...
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:05Z",
+  "response": ".",
+  "done": true,
+  "context": [64, 23, 45, ...],
+  "total_duration": 5.0,
+  "eval_duration": 4.8,
+  "eval_count": 300
+}
+```
+
+### Chat
+
+#### Chat Completion
+
+Generates a chat completion.
+
+- **Endpoint**: `POST /api/chat`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "model": "llama2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful AI assistant."
+    },
+    {
+      "role": "user",
+      "content": "What is the meaning of life?"
+    }
+  ],
+  "options": {
+    "temperature": 0.7,
+    "num_predict": 200
+  }
+}
+```
+
+Example Response:
+```json
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:00Z",
+  "message": {
+    "role": "assistant",
+    "content": "The meaning of life is a profound philosophical question..."
+  },
+  "done": true,
+  "total_duration": 3.0,
+  "load_duration": 0.1,
+  "prompt_eval_count": 30,
+  "eval_count": 200,
+  "context": [64, 23, 45, ...]
+}
+```
+
+#### Stream Chat
+
+Generates a chat completion with streaming response.
+
+- **Endpoint**: `POST /api/chat/stream`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "model": "llama2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tell me a joke"
+    }
+  ],
+  "options": {
+    "temperature": 0.9
+  }
+}
+```
+
+Example Response (Streaming):
+```json
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:00Z",
+  "message": {
+    "role": "assistant",
+    "content": "Why did"
+  },
+  "done": false
+}
+// ... more streaming responses ...
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T12:00:02Z",
+  "message": {
+    "role": "assistant",
+    "content": "?"
+  },
+  "done": true,
+  "total_duration": 2.0,
+  "eval_count": 100
+}
+```
+
+### Embeddings
+
+#### Generate Embeddings
+
+Generates embeddings for the given text.
+
+- **Endpoint**: `POST /api/embeddings`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "model": "llama2",
+  "prompt": "The quick brown fox jumps over the lazy dog",
+  "options": {
+    "num_ctx": 4096
+  }
+}
+```
+
+Example Response:
+```json
+{
+  "embedding": [0.1, -0.2, 0.3, ...],
+  "dim": 4096
+}
+```
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+```json
+{
+  "error": "Invalid request parameters",
+  "details": "Missing required field: model"
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "error": "Authentication failed",
+  "details": "Invalid or missing API key"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "Resource not found",
+  "details": "Model 'nonexistent-model' not found"
+}
+```
+
+### 429 Too Many Requests
+```json
+{
+  "error": "Rate limit exceeded",
+  "details": "Please try again in 60 seconds"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "error": "Internal server error",
+  "details": "An unexpected error occurred"
+}
+```
+
+## Rate Limiting
+
+The Ollama service implements rate limiting based on the following tiers:
+
+- **Basic**: 100 requests per hour
+- **Standard**: 1000 requests per hour
+- **Premium**: 10000 requests per hour
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 985
+X-RateLimit-Reset: 1623456789
+```
+
+## Best Practices
+
+1. **Model Management**
+   - Use appropriate model sizes for your use case
+   - Keep models updated to latest versions
+   - Clean up unused models regularly
+   - Monitor model performance and usage
+   - Document model configurations
+
+2. **Performance Optimization**
+   - Use streaming for long responses
+   - Implement client-side caching
+   - Choose appropriate context sizes
+   - Optimize prompt design
+   - Monitor resource usage
+
+3. **Error Handling**
+   - Implement proper fallbacks
+   - Handle timeouts gracefully
+   - Log errors for debugging
+   - Provide meaningful error messages
+   - Monitor error rates
+
+## Code Examples
+
+### Python Example
+```python
+import requests
+
+API_URL = "https://ollama.moodmnky.com"
+API_KEY = "your_api_key"
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# Generate completion
+response = requests.post(
+    f"{API_URL}/api/generate",
+    headers=headers,
+    json={
+        "model": "llama2",
+        "prompt": "What is artificial intelligence?",
+        "options": {
+            "temperature": 0.7,
+            "num_predict": 100
+        }
+    }
+)
+
+print(response.json())
+```
+
+### JavaScript Example
+```javascript
+const API_URL = "https://ollama.moodmnky.com";
+const API_KEY = "your_api_key";
+
+async function streamChat() {
+  const response = await fetch(
+    `${API_URL}/api/chat/stream`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "llama2",
+        messages: [
+          {
+            role: "user",
+            content: "Tell me a story"
+          }
+        ],
+        options: {
+          temperature: 0.8
+        }
+      })
+    }
+  );
+
+  const reader = response.body.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    console.log(new TextDecoder().decode(value));
+  }
+}
+```
+
+## Support
+
+For API support and updates:
+
+- **Status Page**: [status.moodmnky.com](https://status.moodmnky.com)
+- **Developer Community**: [community.moodmnky.com](https://community.moodmnky.com)
+- **API Updates**: Subscribe to our [API changelog](https://docs.moodmnky.com/changelog)
+- **Security**: Report security issues to [security@moodmnky.com](mailto:security@moodmnky.com) 

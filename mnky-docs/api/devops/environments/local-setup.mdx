@@ -1,0 +1,240 @@
+# Local Development Setup
+
+This guide walks you through setting up the local development environment for MOOD MNKY API services.
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Node.js 18 or higher
+- Python 3.9 or higher
+- Git
+
+## Service Setup
+
+### 1. Ollama Service
+
+```bash
+# Clone the repository
+git clone https://github.com/moodmnky-llc/ollama-service
+cd ollama-service
+
+# Start the service
+docker-compose up -d
+
+# Verify the service is running
+curl http://localhost:11434/api/health
+```
+
+### 2. Flowise Service
+
+```bash
+# Clone the repository
+git clone https://github.com/moodmnky-llc/flowise-service
+cd flowise-service
+
+# Install dependencies
+npm install
+
+# Start the service
+npm run dev
+
+# Service will be available at http://localhost:3000
+```
+
+### 3. Langchain Service
+
+```bash
+# Clone the repository
+git clone https://github.com/moodmnky-llc/langchain-service
+cd langchain-service
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the service
+uvicorn main:app --reload --port 8000
+```
+
+### 4. n8n Service
+
+```bash
+# Clone the repository
+git clone https://github.com/moodmnky-llc/n8n-service
+cd n8n-service
+
+# Install dependencies
+npm install
+
+# Start the service
+npm run dev
+
+# Service will be available at http://localhost:5678
+```
+
+## Environment Configuration
+
+Create a `.env` file in each service directory:
+
+### Ollama Service
+```env
+PORT=11434
+MODEL_PATH=./models
+ENABLE_DEBUG=true
+```
+
+### Flowise Service
+```env
+PORT=3000
+DATABASE_TYPE=sqlite
+DATABASE_PATH=./.database/flowise.db
+```
+
+### Langchain Service
+```env
+PORT=8000
+OPENAI_API_KEY=your_openai_key
+ENABLE_DEBUG=true
+```
+
+### n8n Service
+```env
+PORT=5678
+WEBHOOK_URL=http://localhost:5678
+N8N_LOG_LEVEL=debug
+```
+
+## Development API Keys
+
+Request development API keys from the [Developer Portal](https://developers.moodmnky.com):
+
+1. Log in to your account
+2. Navigate to API Keys section
+3. Click "Generate Development Key"
+4. Store keys securely in your environment
+
+## Testing the Setup
+
+### 1. Health Check All Services
+
+```bash
+#!/bin/bash
+
+# Ollama
+curl http://localhost:11434/api/health
+
+# Flowise
+curl http://localhost:3000/health
+
+# Langchain
+curl http://localhost:8000/health
+
+# n8n
+curl http://localhost:5678/health
+```
+
+### 2. Test API Endpoints
+
+```bash
+# Ollama - List Models
+curl http://localhost:11434/api/tags
+
+# Flowise - List Chatflows
+curl http://localhost:3000/api/v1/chatflows \
+  -H "x-api-key: dev_your_api_key"
+
+# Langchain - List Chains
+curl http://localhost:8000/api/v1/chains \
+  -H "x-api-key: dev_your_api_key"
+
+# n8n - List Workflows
+curl http://localhost:5678/api/v1/workflows \
+  -H "x-api-key: dev_your_api_key"
+```
+
+## Development Tools
+
+### API Documentation
+
+Access local API documentation:
+
+- Ollama: http://localhost:11434/docs
+- Flowise: http://localhost:3000/docs
+- Langchain: http://localhost:8000/docs
+- n8n: http://localhost:5678/docs
+
+### Debugging Tools
+
+1. **Logging**
+   ```bash
+   # Ollama logs
+   docker logs -f ollama-service
+
+   # Flowise logs
+   npm run dev -- --debug
+
+   # Langchain logs
+   uvicorn main:app --reload --log-level debug
+
+   # n8n logs
+   npm run dev -- --debug
+   ```
+
+2. **Database Management**
+   - Flowise: SQLite browser at `http://localhost:3000/admin`
+   - Langchain: Database viewer at `http://localhost:8000/admin`
+   - n8n: Admin panel at `http://localhost:5678/admin`
+
+## Common Issues
+
+### Port Conflicts
+
+If ports are already in use:
+
+1. Check for running processes:
+   ```bash
+   # Linux/Mac
+   lsof -i :<port>
+
+   # Windows
+   netstat -ano | findstr :<port>
+   ```
+
+2. Update service ports in `.env` files
+
+### Network Issues
+
+1. Verify Docker network:
+   ```bash
+   docker network ls
+   docker network inspect moodmnky-network
+   ```
+
+2. Check service connectivity:
+   ```bash
+   # Install netcat
+   nc -zv localhost <port>
+   ```
+
+### Authentication Issues
+
+1. Verify API key format:
+   - Development keys start with `dev_`
+   - Keys should be properly formatted
+
+2. Check permissions:
+   ```bash
+   curl http://localhost:<port>/api/v1/verify \
+     -H "x-api-key: dev_your_api_key"
+   ```
+
+## Support & Resources
+
+- [Environment Overview](/api/devops/environments/overview)
+- [Production Guide](/api/devops/environments/production)
+- [GitHub Repositories](https://github.com/moodmnky-llc)
+- [Developer Forum](https://community.moodmnky.com)
+- [Local Development FAQ](https://docs.moodmnky.com/faq/local-dev) 

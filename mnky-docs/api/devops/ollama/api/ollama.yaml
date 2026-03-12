@@ -1,0 +1,656 @@
+openapi: 3.0.3
+info:
+  title: Ollama API
+  description: |
+    Official API documentation for the MOOD MNKY Ollama integration. 
+    Ollama allows you to run large language models locally or in the cloud. 
+    This API provides endpoints for model management, generation, chat, and embedding.
+  version: 0.1.0
+  contact:
+    name: MOOD MNKY Support
+    email: support@moodmnky.com
+    url: https://moodmnky.com/support
+
+servers:
+  - url: http://localhost:11434
+    description: Local Development
+  - url: https://ollama.moodmnky.com
+    description: Production
+
+tags:
+  - name: Models
+    description: Endpoints for managing models
+  - name: Chat
+    description: Endpoints for chat completion
+  - name: Generation
+    description: Endpoints for text generation
+  - name: Embeddings
+    description: Endpoints for creating embeddings
+
+paths:
+  /api/tags:
+    get:
+      tags:
+        - Models
+      summary: List models
+      description: List all available models
+      operationId: listModels
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModelInfo'
+
+  /api/tags/{name}:
+    delete:
+      tags:
+        - Models
+      summary: Delete a model
+      description: Delete a model
+      operationId: deleteModel
+      parameters:
+        - name: name
+          in: path
+          description: Model name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model deleted successfully
+        '404':
+          description: Model not found
+        '500':
+          description: Server error
+
+  /api/pull:
+    post:
+      tags:
+        - Models
+      summary: Pull a model
+      description: Download a model from the Ollama library
+      operationId: pullModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Model name to pull (e.g., llama2:7b)
+                  example: "llama2:7b"
+                insecure:
+                  type: boolean
+                  description: Allow insecure connections to the library
+                  default: false
+                stream:
+                  type: boolean
+                  description: Stream the response
+                  default: true
+      responses:
+        '200':
+          description: Model pulled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PullResponse'
+        '404':
+          description: Model not found in library
+        '500':
+          description: Server error
+
+  /api/create:
+    post:
+      tags:
+        - Models
+      summary: Create a model
+      description: Create a custom model from a Modelfile
+      operationId: createModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - modelfile
+              properties:
+                name:
+                  type: string
+                  description: Name to assign to the model
+                  example: "custom-llama:latest"
+                modelfile:
+                  type: string
+                  description: Contents of the Modelfile
+                  example: "FROM llama2:7b\nPARAMETER temperature 0.7\nSYSTEM You are a helpful assistant."
+                stream:
+                  type: boolean
+                  description: Stream the response
+                  default: true
+      responses:
+        '200':
+          description: Model created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+        '400':
+          description: Invalid Modelfile
+        '500':
+          description: Server error
+
+  /api/copy:
+    post:
+      tags:
+        - Models
+      summary: Copy a model
+      description: Create a copy of a model
+      operationId: copyModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source
+                - destination
+              properties:
+                source:
+                  type: string
+                  description: Source model name
+                  example: "llama2:7b"
+                destination:
+                  type: string
+                  description: Destination model name
+                  example: "llama2-copy:latest"
+      responses:
+        '200':
+          description: Model copied successfully
+        '404':
+          description: Source model not found
+        '500':
+          description: Server error
+
+  /api/chat:
+    post:
+      tags:
+        - Chat
+      summary: Chat with a model
+      description: Creates a response based on the conversation with a model
+      operationId: chatWithModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              simple:
+                summary: Simple chat request
+                value:
+                  model: "llama2"
+                  messages: [
+                    {
+                      "role": "user",
+                      "content": "Hello, how are you?"
+                    }
+                  ]
+              withSystem:
+                summary: Chat with system message
+                value:
+                  model: "llama2"
+                  messages: [
+                    {
+                      "role": "system",
+                      "content": "You are a helpful assistant who excels at explaining complex topics."
+                    },
+                    {
+                      "role": "user",
+                      "content": "Explain quantum computing in simple terms."
+                    }
+                  ]
+              multiTurn:
+                summary: Multi-turn conversation
+                value:
+                  model: "llama2"
+                  messages: [
+                    {
+                      "role": "user",
+                      "content": "What are the top 3 programming languages to learn in 2023?"
+                    },
+                    {
+                      "role": "assistant",
+                      "content": "Based on current trends and job market demand, the top 3 programming languages to learn in 2023 are:\n\n1. Python - Versatile, popular for data science, AI, web development\n2. JavaScript - Essential for web development, both frontend and backend\n3. Rust - Growing rapidly for systems programming with safety guarantees"
+                    },
+                    {
+                      "role": "user",
+                      "content": "Why is Rust becoming popular?"
+                    }
+                  ]
+                  
+      responses:
+        '200':
+          description: Chat response generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Model not found
+        '500':
+          description: Server error
+
+  /api/generate:
+    post:
+      tags:
+        - Generation
+      summary: Generate text
+      description: Generate a completion for a prompt with a model
+      operationId: generateText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+      responses:
+        '200':
+          description: Text generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Model not found
+        '500':
+          description: Server error
+
+  /api/embeddings:
+    post:
+      tags:
+        - Embeddings
+      summary: Create embeddings
+      description: Generate embeddings for a prompt with a model
+      operationId: createEmbeddings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model
+                - prompt
+              properties:
+                model:
+                  type: string
+                  description: Model name
+                  example: "llama2:7b"
+                prompt:
+                  type: string
+                  description: Prompt to generate an embedding for
+                  example: "The quick brown fox jumps over the lazy dog"
+                options:
+                  $ref: '#/components/schemas/ModelOptions'
+      responses:
+        '200':
+          description: Embeddings created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Model not found
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    ModelInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Model name
+          example: "llama2:7b"
+        model:
+          type: string
+          description: Model identifier
+          example: "llama2:7b"
+        modified_at:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+        size:
+          type: integer
+          format: int64
+          description: Model size in bytes
+          example: 3964612345
+        digest:
+          type: string
+          description: Model digest
+          example: "sha256:a1b2c3d4..."
+        details:
+          $ref: '#/components/schemas/ModelDetails'
+
+    ModelDetails:
+      type: object
+      properties:
+        format:
+          type: string
+          description: Model format
+          example: "gguf"
+        family:
+          type: string
+          description: Model family
+          example: "llama"
+        families:
+          type: array
+          items:
+            type: string
+          description: All model families
+          example: ["llama", "clip"]
+        parameter_size:
+          type: string
+          description: Parameter size
+          example: "7B"
+        quantization_level:
+          type: string
+          description: Quantization level
+          example: "Q4_0"
+
+    PullResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status message
+          example: "downloading model"
+        digest:
+          type: string
+          description: Model digest
+          example: "sha256:a1b2c3d4..."
+        total:
+          type: integer
+          format: int64
+          description: Total size in bytes
+        completed:
+          type: integer
+          format: int64
+          description: Completed size in bytes
+
+    CreateResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status message
+          example: "creating model"
+
+    ChatRequest:
+      type: object
+      required:
+        - model
+        - messages
+      properties:
+        model:
+          type: string
+          description: Model name
+          example: "llama2:7b"
+        messages:
+          type: array
+          description: Chat messages
+          items:
+            $ref: '#/components/schemas/Message'
+        format:
+          type: string
+          enum: [json]
+          description: Response format
+        options:
+          $ref: '#/components/schemas/ModelOptions'
+        stream:
+          type: boolean
+          description: Stream the response
+          default: false
+        keep_alive:
+          type: string
+          description: Controls how long the model will stay loaded
+          enum: ["5m", "1h", "forever"]
+          example: "5m"
+
+    Message:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          description: Message role
+          enum: [system, user, assistant]
+          example: "user"
+        content:
+          type: string
+          description: Message content
+          example: "Hello, how are you?"
+        images:
+          type: array
+          description: List of base64-encoded images (for multimodal models)
+          items:
+            type: string
+            format: byte
+
+    ChatResponse:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Model name
+          example: "llama2:7b"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        message:
+          $ref: '#/components/schemas/Message'
+        done:
+          type: boolean
+          description: Whether the response is complete
+        total_duration:
+          type: integer
+          description: Total processing time in nanoseconds
+        load_duration:
+          type: integer
+          description: Model loading time in nanoseconds
+        prompt_eval_count:
+          type: integer
+          description: Number of prompt tokens processed
+        prompt_eval_duration:
+          type: integer
+          description: Time spent processing prompt in nanoseconds
+        eval_count:
+          type: integer
+          description: Number of generation tokens processed
+        eval_duration:
+          type: integer
+          description: Time spent generating in nanoseconds
+
+    GenerateRequest:
+      type: object
+      required:
+        - model
+        - prompt
+      properties:
+        model:
+          type: string
+          description: Model name
+          example: "llama2:7b"
+        prompt:
+          type: string
+          description: Prompt to generate a completion for
+          example: "Once upon a time"
+        system:
+          type: string
+          description: System prompt to send to the model
+          example: "You are a creative storyteller."
+        template:
+          type: string
+          description: Prompt template string to use
+        context:
+          type: array
+          items:
+            type: integer
+          description: Context tokens to use for generation
+        format:
+          type: string
+          enum: [json]
+          description: Response format
+        options:
+          $ref: '#/components/schemas/ModelOptions'
+        stream:
+          type: boolean
+          description: Stream the response
+          default: false
+
+    GenerateResponse:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Model name
+          example: "llama2:7b"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        response:
+          type: string
+          description: Generated response
+        context:
+          type: array
+          items:
+            type: integer
+          description: Context token IDs
+        done:
+          type: boolean
+          description: Whether the response is complete
+        total_duration:
+          type: integer
+          description: Total processing time in nanoseconds
+        load_duration:
+          type: integer
+          description: Model loading time in nanoseconds
+        prompt_eval_count:
+          type: integer
+          description: Number of prompt tokens processed
+        prompt_eval_duration:
+          type: integer
+          description: Time spent processing prompt in nanoseconds
+        eval_count:
+          type: integer
+          description: Number of generation tokens processed
+        eval_duration:
+          type: integer
+          description: Time spent generating in nanoseconds
+
+    EmbeddingResponse:
+      type: object
+      properties:
+        embedding:
+          type: array
+          items:
+            type: number
+            format: float
+          description: Vector embedding
+
+    ModelOptions:
+      type: object
+      properties:
+        temperature:
+          type: number
+          format: float
+          description: Sampling temperature
+          example: 0.7
+        top_p:
+          type: number
+          format: float
+          description: Top-p sampling
+          example: 0.9
+        top_k:
+          type: integer
+          description: Top-k sampling
+          example: 40
+        frequency_penalty:
+          type: number
+          format: float
+          description: Frequency penalty
+          example: 0.0
+        presence_penalty:
+          type: number
+          format: float
+          description: Presence penalty
+          example: 0.0
+        mirostat:
+          type: integer
+          description: Enable Mirostat sampling
+          enum: [0, 1, 2]
+          example: 0
+        mirostat_eta:
+          type: number
+          format: float
+          description: Mirostat learning rate
+          example: 0.1
+        mirostat_tau:
+          type: number
+          format: float
+          description: Mirostat target entropy
+          example: 5.0
+        num_ctx:
+          type: integer
+          description: Context window size
+          example: 4096
+        num_predict:
+          type: integer
+          description: Maximum number of tokens to predict
+          example: 256
+        seed:
+          type: integer
+          description: Random seed
+          example: 42
+        stop:
+          type: array
+          items:
+            type: string
+          description: Stop sequences
+          example: ["##", "###"]
+        tfs_z:
+          type: number
+          format: float
+          description: Tail free sampling parameter
+          example: 1.0
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication (format - 'Bearer YOUR_API_KEY') 

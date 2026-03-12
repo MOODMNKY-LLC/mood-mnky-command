@@ -1,0 +1,252 @@
+---
+title: 'Agent Capabilities Database'
+description: 'Documentation for the technical and functional capabilities of MOOD MNKY agents'
+---
+
+# Agent Capabilities Database
+
+The Agent Capabilities Database defines the specific functional abilities of each agent in the MOOD MNKY ecosystem. It serves as a comprehensive registry of what each agent can do, how these capabilities are implemented, and how they connect to other system components.
+
+## Purpose and Role
+
+<Info>
+The Capabilities Database defines "what" each agent can do, serving as the technical specification for agent functionality across the ecosystem.
+</Info>
+
+This database stores detailed information about agent capabilities, including:
+
+- Technical functions and APIs
+- Implementation details and methods
+- Performance metrics and limitations
+- Permission requirements
+- Integration requirements
+- Tool connections (including MCP servers)
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "capability_id": "string",
+      "name": "string",
+      "description": "string",
+      "agent_id": "string",
+      "capability_type": "string",
+      "implementation": "string",
+      "tools": "array",
+      "permissions": "array",
+      "metrics": "object",
+      "status": "string",
+      "version": "string",
+      "mcp_servers": "array"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "capability_id": "c_001",
+      "name": "Custom Fragrance Recommendation",
+      "description": "Provide personalized scent recommendations based on user preferences and history",
+      "agent_id": "mood_mnky_001",
+      "capability_type": "recommendation",
+      "implementation": "langchain_retrieval_agent",
+      "tools": ["scent_database_query", "user_profile_analyzer", "shopify_product_fetch"],
+      "permissions": ["read:user_profiles", "read:product_catalog"],
+      "metrics": {
+        "accuracy": 0.89,
+        "latency": "1.2s",
+        "satisfaction": 4.7
+      },
+      "status": "active",
+      "version": "2.3.1",
+      "mcp_servers": ["file_system_mcp", "shopify_mcp"]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="capability_id">
+    A unique identifier for the capability.
+  </Accordion>
+  <Accordion title="name">
+    The name of the capability in human-readable form.
+  </Accordion>
+  <Accordion title="description">
+    A detailed description of what the capability does and how it's used.
+  </Accordion>
+  <Accordion title="agent_id">
+    The ID of the agent that possesses this capability.
+  </Accordion>
+  <Accordion title="capability_type">
+    The category of capability (e.g., recommendation, analysis, creation).
+  </Accordion>
+  <Accordion title="implementation">
+    The technical method used to implement the capability.
+  </Accordion>
+  <Accordion title="tools">
+    An array of tools used by this capability.
+  </Accordion>
+  <Accordion title="permissions">
+    Required access permissions for this capability to function.
+  </Accordion>
+  <Accordion title="metrics">
+    Performance metrics associated with this capability.
+  </Accordion>
+  <Accordion title="status">
+    Current deployment status (active, beta, deprecated, etc.).
+  </Accordion>
+  <Accordion title="version">
+    Current version number of the capability implementation.
+  </Accordion>
+  <Accordion title="mcp_servers">
+    Array of MCP servers required for this capability.
+  </Accordion>
+</AccordionGroup>
+
+## Integration with Other Databases
+
+The Capabilities Database integrates with multiple other databases in the system:
+
+- **Agents Database**: Links capabilities to specific agent identities
+- **Integration Points Database**: Defines how capabilities connect to external systems
+- **Knowledge Base Database**: Identifies information sources needed by each capability
+- **Memory Systems Database**: Specifies memory requirements for contextual capabilities
+- **Training Database**: Tracks how capabilities improve through training
+
+## Implementation with OpenAI Agents SDK
+
+Capabilities are implemented using the OpenAI Agents SDK, which provides a framework for integrating tools, maintaining context, and orchestrating agent behavior.
+
+### Basic Capability Implementation
+
+```python
+from agents import Agent, Tool, Runner
+
+# Define tools for a capability
+fragrance_search_tool = Tool(
+    name="fragrance_search",
+    description="Search for fragrances in the catalog",
+    function=search_fragrances_func
+)
+
+scent_profile_tool = Tool(
+    name="scent_profile",
+    description="Analyze user's scent preferences and history",
+    function=analyze_scent_profile_func
+)
+
+# Implement the capability within an agent
+mood_mnky_agent = Agent(
+    name="MOOD MNKY",
+    instructions="""You are MOOD MNKY, the fragrance and self-care specialist.
+    When recommending fragrances, analyze the user's preferences and match them to our catalog.
+    Provide personalized, emotionally resonant recommendations that match their mood and style.""",
+    tools=[fragrance_search_tool, scent_profile_tool]
+)
+
+# Execute the capability
+runner = Runner()
+result = await runner.run(mood_mnky_agent, "I need a calming scent for my bedroom")
+```
+
+### Integration with MCP Servers
+
+Capabilities can also leverage external tools through MCP (Model Context Protocol) servers:
+
+```python
+from agents import Agent, Runner
+from agents.mcp.server import MCPServerStdio, MCPServerSseParams
+
+# Set up MCP server for file system access
+async with MCPServerStdio(
+    params={
+        "command": "npx",
+        "args": ["@mcp/fs-server", "--allow-paths", "./data,./content"]
+    },
+    name="file_system"
+) as fs_server:
+    
+    # Set up MCP server for Shopify access
+    async with MCPServerStdio(
+        params={
+            "command": "node",
+            "args": ["./mcp-servers/shopify-server.js"]
+        },
+        name="shopify"
+    ) as shopify_server:
+        
+        # Create agent with access to MCP servers
+        mood_mnky_agent = Agent(
+            name="MOOD MNKY",
+            instructions="""You are MOOD MNKY, the fragrance and self-care specialist.
+            You can access product data and user preferences to make recommendations.
+            Provide personalized, emotionally resonant recommendations.""",
+            mcp_servers=[fs_server, shopify_server]
+        )
+        
+        # Execute the capability with MCP server access
+        runner = Runner()
+        result = await runner.run(mood_mnky_agent, "Can you recommend a fragrance based on my previous purchases?")
+```
+
+## Capability Types
+
+<CardGroup cols={2}>
+  <Card title="Recommendation" icon="star">
+    Suggest products, content, or actions based on user preferences and context
+  </Card>
+  <Card title="Creation" icon="wand-magic-sparkles">
+    Generate new content, designs, or configurations based on parameters
+  </Card>
+  <Card title="Analysis" icon="magnifying-glass-chart">
+    Process and interpret data, providing insights and observations
+  </Card>
+  <Card title="Instruction" icon="book-open-reader">
+    Guide users through processes, providing educational content
+  </Card>
+  <Card title="Integration" icon="plug">
+    Connect with external systems and data sources
+  </Card>
+  <Card title="Memory" icon="brain">
+    Store, retrieve, and manage contextual information
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+### Capability Design
+
+- **Single Responsibility**: Each capability should do one thing well
+- **Clear Documentation**: Document purpose, limitations, and usage examples
+- **Version Control**: Track changes and improvements over time
+- **Performance Monitoring**: Establish metrics and monitor them consistently
+- **Graceful Degradation**: Design for resilience when dependencies fail
+
+### MCP Server Integration
+
+- **Appropriate Server Selection**: Use Stdio servers for local development, SSE servers for distributed systems
+- **Tool Caching**: Enable caching for frequently used tools to improve performance
+- **Permission Management**: Carefully control what MCP servers can access
+- **Error Handling**: Implement robust error handling for MCP server failures
+- **Monitoring**: Set up tracing and logging to track MCP server interactions
+
+### Implementation Guidelines
+
+- **Specialized Agents**: Create focused agents for specific capability domains rather than generalists
+- **Clear Instructions**: Provide detailed instructions for each capability
+- **Contextual Awareness**: Ensure capabilities have access to relevant user context
+- **Testing Strategy**: Develop comprehensive tests for each capability
+- **Continuous Improvement**: Use feedback and performance data to refine capabilities
+
+## Additional Resources
+
+- [OpenAI Agents SDK Documentation](https://openai.github.io/openai-agents-python/)
+- [Model Context Protocol (MCP) Guide](https://openai.github.io/openai-agents-python/mcp/)
+- [Agent Patterns and Best Practices](https://openai.github.io/openai-agents-python/examples/)
+- [Agent Development Guide](/agents/developer-guide)
+- [MOOD MNKY Agent Overview](/agents/mood-mnky/overview)

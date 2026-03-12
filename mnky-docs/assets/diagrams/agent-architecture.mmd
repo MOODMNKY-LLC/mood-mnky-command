@@ -1,0 +1,47 @@
+graph TB
+    %% Main Agents
+    MOOD[MOOD MNKY Agent<br/>Customer Experience]
+    CODE[CODE MNKY Agent<br/>Development Support]
+    SAGE[SAGE MNKY Agent<br/>Learning & Community]
+
+    %% Shared Infrastructure
+    KnowledgeBase[Knowledge Base]
+    Memory[Memory System]
+    AgentOrch[Agent Orchestration]
+
+    %% External Systems
+    WebPlatform[Web Platform]
+    Shopify[E-commerce System]
+    Dojo[Dojo Platform]
+    Content[Content Management]
+
+    %% Agent Connections to Shared Infrastructure
+    MOOD --- AgentOrch
+    CODE --- AgentOrch
+    SAGE --- AgentOrch
+    AgentOrch --- KnowledgeBase
+    AgentOrch --- Memory
+
+    %% System Integrations
+    MOOD === WebPlatform
+    MOOD === Shopify
+    CODE === WebPlatform
+    SAGE === Dojo
+    SAGE === Content
+
+    %% Knowledge Flow
+    KnowledgeBase -.-> MOOD
+    KnowledgeBase -.-> CODE
+    KnowledgeBase -.-> SAGE
+    Memory -.-> MOOD
+    Memory -.-> CODE
+    Memory -.-> SAGE
+
+    %% Styling
+    classDef agent fill:#f9f,stroke:#333,stroke-width:2px
+    classDef infra fill:#9cf,stroke:#333,stroke-width:2px
+    classDef system fill:#cfc,stroke:#333,stroke-width:2px
+
+    class MOOD,CODE,SAGE agent
+    class KnowledgeBase,Memory,AgentOrch infra
+    class WebPlatform,Shopify,Dojo,Content system

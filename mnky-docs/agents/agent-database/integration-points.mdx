@@ -1,0 +1,291 @@
+---
+title: 'Integration Points Database'
+description: 'Documentation for the connection points between MOOD MNKY agents and external systems'
+---
+
+# Integration Points Database
+
+The Integration Points Database defines how MOOD MNKY agents connect with other systems in the ecosystem and external services. It outlines the technical interfaces, protocols, and data exchange formats used by agents to communicate with their environment.
+
+## Purpose and Role
+
+<Info>
+The Integration Points Database defines "where" agents connect, enabling seamless integration across the ecosystem and with external tools.
+</Info>
+
+This database documents:
+- API specifications for agent connections
+- MCP server integrations and configurations
+- Authentication and security requirements
+- Data exchange formats and protocols
+- Service dependencies
+- Integration testing and validation procedures
+
+## Schema and Structure
+
+<Tabs>
+  <Tab title="Database Schema">
+    ```json
+    {
+      "integration_id": "string",
+      "name": "string",
+      "description": "string",
+      "integration_type": "string",
+      "protocol": "string",
+      "endpoint": "string",
+      "auth_method": "string",
+      "data_format": "string",
+      "capabilities": "array",
+      "agents": "array",
+      "status": "string",
+      "mcp_configuration": "object"
+    }
+    ```
+  </Tab>
+  <Tab title="Example Entry">
+    ```json
+    {
+      "integration_id": "int_001",
+      "name": "Shopify Store Integration",
+      "description": "Connection to the MOOD MNKY Shopify store for product and order information",
+      "integration_type": "e-commerce",
+      "protocol": "REST API",
+      "endpoint": "https://api.shopify.com/admin/api/2023-01",
+      "auth_method": "OAuth 2.0",
+      "data_format": "JSON",
+      "capabilities": ["product_fetch", "order_status", "customer_lookup"],
+      "agents": ["mood_mnky_001"],
+      "status": "active",
+      "mcp_configuration": {
+        "server_type": "SSE",
+        "server_name": "shopify_mcp",
+        "server_path": "./mcp-servers/shopify-server.js",
+        "tool_caching": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Field Descriptions
+
+<AccordionGroup>
+  <Accordion title="integration_id">
+    A unique identifier for the integration point.
+  </Accordion>
+  <Accordion title="name">
+    The name of the integration in human-readable form.
+  </Accordion>
+  <Accordion title="description">
+    A detailed description of what the integration does and how it's used.
+  </Accordion>
+  <Accordion title="integration_type">
+    The category of integration (e.g., e-commerce, content management, analytics).
+  </Accordion>
+  <Accordion title="protocol">
+    The communication protocol used for the integration.
+  </Accordion>
+  <Accordion title="endpoint">
+    The base URL or address for the integration.
+  </Accordion>
+  <Accordion title="auth_method">
+    The authentication method required for the integration.
+  </Accordion>
+  <Accordion title="data_format">
+    The format used for data exchange.
+  </Accordion>
+  <Accordion title="capabilities">
+    An array of capabilities that utilize this integration.
+  </Accordion>
+  <Accordion title="agents">
+    An array of agents that utilize this integration.
+  </Accordion>
+  <Accordion title="status">
+    Current status of the integration (active, beta, deprecated, etc.).
+  </Accordion>
+  <Accordion title="mcp_configuration">
+    Configuration details for MCP server implementation.
+  </Accordion>
+</AccordionGroup>
+
+## MCP Server Types
+
+The MOOD MNKY agent system uses two primary types of MCP servers for integrations:
+
+<CardGroup cols={2}>
+  <Card title="Stdio MCP Servers" icon="terminal">
+    - Uses standard input/output for communication
+    - Ideal for local development
+    - Lower latency for co-located processes
+    - Simpler setup for development environments
+    - Direct process communication
+  </Card>
+  <Card title="SSE MCP Servers" icon="network-wired">
+    - Uses HTTP with Server-Sent Events
+    - Better for distributed systems
+    - Supports remote service integration
+    - More robust for production environments
+    - Scalable for multiple agents
+  </Card>
+</CardGroup>
+
+## Implementation with OpenAI Agents SDK
+
+### Basic Integration Setup
+
+```python
+from agents import Agent, Tool, Runner
+import requests
+
+# Define custom tool for integration
+def shopify_product_search(query: str) -> dict:
+    """Search for products in the Shopify store."""
+    response = requests.get(
+        "https://shop.moodmnky.com/api/products/search",
+        params={"query": query},
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    )
+    return response.json()
+
+# Create tool for the agent
+shopify_tool = Tool(
+    name="shopify_product_search",
+    description="Search for products in the MOOD MNKY store",
+    function=shopify_product_search
+)
+
+# Create agent with the tool
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant. Help customers find products.",
+    tools=[shopify_tool]
+)
+
+# Run the agent
+runner = Runner()
+result = await runner.run(agent, "I'm looking for candles with lavender")
+```
+
+### MCP Server Integration
+
+```python
+from agents import Agent, Runner
+from agents.mcp.server import MCPServerSse, MCPServerSseParams
+
+# Set up MCP server for Shopify integration
+async with MCPServerSse(
+    params=MCPServerSseParams(
+        url="http://localhost:3000/mcp",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    ),
+    name="shopify_mcp",
+    cache_tools_list=True
+) as shopify_server:
+    
+    # Create agent with MCP server
+    agent = Agent(
+        name="MOOD MNKY",
+        instructions="You are MOOD MNKY, the brand assistant. Help customers find products.",
+        mcp_servers=[shopify_server]
+    )
+    
+    # Run the agent
+    runner = Runner()
+    result = await runner.run(agent, "I'm looking for candles with lavender")
+```
+
+## Integration Categories
+
+<CardGroup cols={3}>
+  <Card title="E-commerce" icon="shopping-cart">
+    Connections to Shopify store and product systems
+  </Card>
+  <Card title="Content Management" icon="file-lines">
+    Integrations with Notion, Mintlify, and content repositories
+  </Card>
+  <Card title="User Data" icon="user">
+    Connections to user profile systems and preference data
+  </Card>
+  <Card title="Analytics" icon="chart-simple">
+    Integrations with data analytics and reporting tools
+  </Card>
+  <Card title="Communication" icon="message">
+    Connections to messaging and notification systems
+  </Card>
+  <Card title="Community" icon="users">
+    Integrations with community platforms and forums
+  </Card>
+</CardGroup>
+
+## Best Practices for MCP Integrations
+
+### Design Principles
+
+- **Modular Design**: Create focused, single-purpose MCP servers
+- **Consistent Interfaces**: Standardize tool naming and parameter structures
+- **Error Handling**: Implement robust error handling and graceful degradation
+- **Performance Optimization**: Use tool caching for frequently accessed data
+- **Security First**: Apply principle of least privilege for all integrations
+
+### Implementation Guidelines
+
+- **Server Selection**: Choose Stdio servers for local development, SSE servers for production
+- **Configuration Management**: Use configuration files for MCP server parameters
+- **Monitoring**: Implement tracing and logging for all MCP server interactions
+- **Testing Strategy**: Develop mocks and test harnesses for MCP servers
+- **Documentation**: Maintain comprehensive documentation of all integration points
+
+### Deployment Considerations
+
+- **Environment Isolation**: Use environment-specific configurations
+- **Scaling Strategy**: Plan for horizontal scaling of MCP servers
+- **Failover Mechanisms**: Implement redundancy for critical integrations
+- **Versioning**: Manage API versions explicitly
+- **Compliance**: Ensure all integrations meet data protection requirements
+
+## Using YAML Configuration for MCP Servers
+
+MCP servers can be configured using a YAML configuration file:
+
+```yaml
+mcp_servers:
+  shopify:
+    type: stdio
+    command: node
+    args:
+      - ./mcp-servers/shopify-server.js
+    cache_tools: true
+    
+  file_system:
+    type: stdio
+    command: npx
+    args:
+      - @mcp/fs-server
+      - --allow-paths
+      - ./data,./content
+    cache_tools: false
+```
+
+Using configuration with OpenAI Agents SDK:
+
+```python
+from agents_mcp import Agent, Runner
+
+# The Agent SDK will automatically find mcp_agent.config.yaml
+agent = Agent(
+    name="MOOD MNKY",
+    instructions="You are MOOD MNKY, the brand assistant.",
+    mcp_servers=["shopify", "file_system"]
+)
+
+runner = Runner()
+result = await runner.run(agent, "Can you find my previous orders?")
+```
+
+## Additional Resources
+
+- [OpenAI Agents SDK MCP Documentation](https://openai.github.io/openai-agents-python/mcp/)
+- [MCP Server Implementation Guide](https://apidog.com/blog/mcp-servers-openai-agents/)
+- [Agent Integration Patterns](/agents/developer-guide)
+- [Shopify Integration Details](/platform-services/integration-points)
+- [Security Best Practices](/technology-stack/security)

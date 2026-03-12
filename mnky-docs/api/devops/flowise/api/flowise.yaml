@@ -1,0 +1,669 @@
+openapi: 3.0.3
+info:
+  title: Flowise API
+  description: |
+    API documentation for the MOOD MNKY Flowise integration. Flowise is a drag-and-drop UI tool 
+    for building LLM applications. This API allows you to manage chatflows, execute predictions, 
+    and integrate AI workflows within the MOOD MNKY ecosystem.
+    
+    This OpenAPI specification defines the comprehensive REST API interface for Flowise, 
+    customized for integration into the MOOD MNKY agent ecosystem. It includes endpoints 
+    for chatflow execution, flow management, node schema discovery, credential operations, 
+    deployment handling, and system metadata. Designed with first-principles engineering, 
+    this spec enables robust AI-assisted automation, integration with Supabase, n8n, LangChain, 
+    and CODE MNKY's virtual agents.
+  version: 1.0.0
+  contact:
+    name: MOOD MNKY Support
+    email: support@moodmnky.com
+    url: https://moodmnky.com/support
+
+servers:
+  - url: http://localhost:3000
+    description: Local Development
+  - url: https://flowise.moodmnky.com
+    description: Production
+
+tags:
+  - name: Chatflow
+    description: Endpoints for managing chatflows
+  - name: Prediction
+    description: Endpoints for executing predictions
+  - name: Components
+    description: Endpoints for managing components
+  - name: Credentials
+    description: Endpoints for managing credentials
+  - name: Tools
+    description: Endpoints for managing tools
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /api/v1/chatflows:
+    get:
+      tags:
+        - Chatflow
+      summary: Get all chatflows
+      description: Returns a list of all chatflows
+      operationId: getChatflows
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          description: Number of results to skip
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chatflow'
+    post:
+      tags:
+        - Chatflow
+      summary: Create a new chatflow
+      description: Creates a new chatflow with the provided configuration
+      operationId: createChatflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatflowCreate'
+      responses:
+        '201':
+          description: Chatflow created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chatflow'
+
+  /api/v1/chatflows/{id}:
+    get:
+      tags:
+        - Chatflow
+      summary: Get chatflow by ID
+      description: Returns a single chatflow by ID
+      operationId: getChatflowById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chatflow to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chatflow'
+        '404':
+          description: Chatflow not found
+    put:
+      tags:
+        - Chatflow
+      summary: Update a chatflow
+      description: Updates an existing chatflow with the provided configuration
+      operationId: updateChatflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chatflow to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatflowUpdate'
+      responses:
+        '200':
+          description: Chatflow updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chatflow'
+        '404':
+          description: Chatflow not found
+    delete:
+      tags:
+        - Chatflow
+      summary: Delete a chatflow
+      description: Deletes a chatflow by ID
+      operationId: deleteChatflow
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chatflow to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chatflow deleted successfully
+        '404':
+          description: Chatflow not found
+
+  /api/v1/prediction/{id}:
+    post:
+      tags:
+        - Prediction
+      summary: Execute a chatflow prediction
+      description: Executes a prediction using the specified chatflow
+      operationId: executePrediction
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chatflow to execute
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+            examples:
+              simple:
+                summary: Simple text input
+                value:
+                  question: "What is artificial intelligence?"
+              withHistory:
+                summary: With conversation history
+                value:
+                  question: "Can you elaborate on that?"
+                  history: [
+                    {"type": "human", "message": "What is machine learning?"},
+                    {"type": "ai", "message": "Machine learning is a subset of artificial intelligence..."}
+                  ]
+              withConfig:
+                summary: With custom configuration
+                value:
+                  question: "Summarize this article"
+                  overrideConfig:
+                    temperature: 0.5
+                    maxTokens: 500
+                  files: ["https://example.com/sample.pdf"]
+      responses:
+        '200':
+          description: Successful prediction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+        '400':
+          description: Invalid input
+        '404':
+          description: Chatflow not found
+        '500':
+          description: Prediction failed
+
+  /api/v1/chatflows/{id}/streamNode:
+    post:
+      tags:
+        - Chatflow
+      summary: Execute a specific node in a chatflow and stream the results
+      description: Executes a specific node in a chatflow and streams the results
+      operationId: streamNode
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chatflow
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nodeId:
+                  type: string
+                  description: ID of the node to execute
+                inputs:
+                  type: object
+                  description: Inputs for the node
+      responses:
+        '200':
+          description: Successful streaming response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '404':
+          description: Chatflow or node not found
+        '500':
+          description: Execution failed
+
+  /api/v1/components:
+    get:
+      tags:
+        - Components
+      summary: Get all components
+      description: Returns a list of all available components
+      operationId: getComponents
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Component'
+
+  /api/v1/credentials:
+    get:
+      tags:
+        - Credentials
+      summary: Get all credentials
+      description: Returns a list of all credentials (sensitive data is redacted)
+      operationId: getCredentials
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Credential'
+    post:
+      tags:
+        - Credentials
+      summary: Create new credentials
+      description: Creates new credentials for a specific component
+      operationId: createCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialCreate'
+      responses:
+        '201':
+          description: Credentials created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+
+  /api/v1/tools:
+    get:
+      tags:
+        - Tools
+      summary: Get all tools
+      description: Returns a list of all available tools
+      operationId: getTools
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tool'
+
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Check API health
+      description: Returns health status of the Flowise API
+      operationId: checkHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+components:
+  schemas:
+    Chatflow:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the chatflow
+          example: "64f0e4e71d5389852d7d85aa"
+        name:
+          type: string
+          description: Name of the chatflow
+          example: "Customer Support Assistant"
+        deployed:
+          type: boolean
+          description: Whether the chatflow is deployed
+          example: true
+        isPublic:
+          type: boolean
+          description: Whether the chatflow is publicly accessible
+          example: false
+        apiKey:
+          type: string
+          description: API key for accessing the chatflow (if not public)
+        nodes:
+          type: array
+          description: Nodes within the chatflow
+          items:
+            $ref: '#/components/schemas/Node'
+        edges:
+          type: array
+          description: Connections between nodes
+          items:
+            $ref: '#/components/schemas/Edge'
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    ChatflowCreate:
+      type: object
+      required:
+        - name
+        - nodes
+        - edges
+      properties:
+        name:
+          type: string
+          description: Name of the chatflow
+          example: "Product Recommendation Bot"
+        deployed:
+          type: boolean
+          description: Whether the chatflow should be deployed upon creation
+          default: false
+        isPublic:
+          type: boolean
+          description: Whether the chatflow should be publicly accessible
+          default: false
+        nodes:
+          type: array
+          description: Nodes within the chatflow
+          items:
+            $ref: '#/components/schemas/Node'
+        edges:
+          type: array
+          description: Connections between nodes
+          items:
+            $ref: '#/components/schemas/Edge'
+
+    ChatflowUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the chatflow
+        deployed:
+          type: boolean
+          description: Whether the chatflow should be deployed
+        isPublic:
+          type: boolean
+          description: Whether the chatflow should be publicly accessible
+        nodes:
+          type: array
+          description: Nodes within the chatflow
+          items:
+            $ref: '#/components/schemas/Node'
+        edges:
+          type: array
+          description: Connections between nodes
+          items:
+            $ref: '#/components/schemas/Edge'
+
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the node
+        type:
+          type: string
+          description: Type of the node
+          example: "chatMessage"
+        position:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+        data:
+          type: object
+          description: Node configuration data
+        width:
+          type: number
+          description: Width of the node in the UI
+        height:
+          type: number
+          description: Height of the node in the UI
+
+    Edge:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the edge
+        source:
+          type: string
+          description: ID of the source node
+        target:
+          type: string
+          description: ID of the target node
+        sourceHandle:
+          type: string
+          description: Output handle of the source node
+        targetHandle:
+          type: string
+          description: Input handle of the target node
+
+    PredictionRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          description: The query or input text for the chatflow
+          example: "How can I reset my password?"
+        history:
+          type: array
+          description: Previous conversation messages for context
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [human, ai]
+              message:
+                type: string
+        overrideConfig:
+          type: object
+          description: Override default chatflow configuration
+          properties:
+            temperature:
+              type: number
+              description: Temperature for LLM responses
+            maxTokens:
+              type: integer
+              description: Maximum tokens to generate
+            topP:
+              type: number
+              description: Top P value for sampling
+            frequencyPenalty:
+              type: number
+              description: Frequency penalty for generated text
+        sessionId:
+          type: string
+          description: Session ID for maintaining conversation state
+        files:
+          type: array
+          description: URLs or base64 encoded files to process
+          items:
+            type: string
+
+    PredictionResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The generated response text
+          example: "To reset your password, please visit the account settings page and click on 'Forgot Password'."
+        sessionId:
+          type: string
+          description: Session ID for continuing the conversation
+          example: "user-123-session-456"
+        chatHistory:
+          type: array
+          description: Updated conversation history
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [human, ai]
+              message:
+                type: string
+        sourceDocuments:
+          type: array
+          description: Source documents used for the response (if applicable)
+          items:
+            type: object
+            properties:
+              pageContent:
+                type: string
+              metadata:
+                type: object
+
+    Component:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the component
+          example: "OpenAIChat"
+        description:
+          type: string
+          description: Description of the component
+          example: "Chat completion using OpenAI API"
+        type:
+          type: string
+          description: Type of the component
+          example: "LLMs"
+        inputs:
+          type: array
+          description: Input parameters for the component
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              description:
+                type: string
+              default:
+                type: string
+              required:
+                type: boolean
+
+    Credential:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the credential
+        name:
+          type: string
+          description: Name of the credential
+          example: "OpenAI API Key"
+        credentialName:
+          type: string
+          description: Type of credential
+          example: "openAIApi"
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    CredentialCreate:
+      type: object
+      required:
+        - name
+        - credentialName
+        - plainDataObj
+      properties:
+        name:
+          type: string
+          description: Name of the credential
+          example: "Production OpenAI Key"
+        credentialName:
+          type: string
+          description: Type of credential
+          example: "openAIApi"
+        plainDataObj:
+          type: object
+          description: Credential data (sensitive information)
+          example:
+            apiKey: "sk-xxxxxxxxxxxxx"
+
+    Tool:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the tool
+          example: "GoogleSearch"
+        description:
+          type: string
+          description: Description of the tool
+          example: "Search for information on the web using Google"
+        apiNamespace:
+          type: string
+          description: API namespace for the tool
+          example: "google"
+        schema:
+          type: object
+          description: JSON schema for the tool's parameters
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication (format - 'Bearer YOUR_API_KEY')
+
+security:
+  - ApiKeyAuth: [] 

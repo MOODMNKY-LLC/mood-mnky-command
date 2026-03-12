@@ -1,0 +1,110 @@
+{% comment %}
+  MNKY Rewards - Potential points block
+  Shows "Earn X points" for a given subtotal (product price or cart total).
+  Fetches from App Proxy: /apps/mnky/api/points-preview?subtotal=...
+  Use in product or cart section; set subtotal from block setting or from section (e.g. product.price, cart.total_price).
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign heading = block.settings.heading | default: 'Earn points' | strip
+  assign fallback_text = block.settings.fallback_text | default: 'Earn points with this purchase.' | strip
+  assign subtotal = block.settings.subtotal | default: 0
+  if subtotal == 0 and product != blank and product.price != blank
+    assign subtotal = product.price | times: 1.0 | divided_by: 100
+  endif
+  assign is_valid = false
+  if app_url != '' and app_url != blank
+    assign is_valid = true
+  endif
+-%}
+<div
+  class="mood-mnky-potential-points"
+  {{ block.shopify_attributes }}
+  data-subtotal="{{ subtotal }}"
+  data-fallback="{{ fallback_text | escape }}"
+  data-heading="{{ heading | escape }}"
+>
+  {%- if heading != blank -%}
+    <p class="mnky-potential-points-heading" style="margin:0 0 0.25rem 0;font-weight:600;font-size:0.9rem;">{{ heading }}</p>
+  {%- endif -%}
+  <div class="mnky-potential-points-value" data-mnky-points-placeholder>
+    {%- if is_valid and subtotal > 0 -%}
+      <span class="mnky-potential-points-loading" style="color:#666;">…</span>
+    {%- else -%}
+      <span class="mnky-potential-points-fallback">{{ fallback_text }}</span>
+    {%- endif -%}
+  </div>
+</div>
+{%- if is_valid and subtotal > 0 -%}
+<script>
+  (function() {
+    var el = document.querySelector('.mood-mnky-potential-points[data-subtotal]');
+    if (!el) return;
+    var placeholder = el.querySelector('[data-mnky-points-placeholder]');
+    var fallback = el.getAttribute('data-fallback') || 'Earn points with this purchase.';
+    if (!placeholder) return;
+    var proxyUrl = window.location.origin + '/apps/mnky/api/points-preview?subtotal=' + encodeURIComponent(el.getAttribute('data-subtotal') || '0');
+    fetch(proxyUrl, { credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var pts = (data && data.points) ? data.points : 0;
+        if (pts > 0) {
+          placeholder.innerHTML = '<span class="mnky-potential-points-value-text">Earn <strong>' + pts + '</strong> XP with this purchase.</span>';
+        } else {
+          placeholder.innerHTML = '<span class="mnky-potential-points-fallback">' + fallback + '</span>';
+        }
+      })
+      .catch(function() {
+        placeholder.innerHTML = '<span class="mnky-potential-points-fallback">' + fallback + '</span>';
+      });
+  })();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "MNKY Potential points",
+  "target": "section",
+  "stylesheet": "app-blocks.css",
+  "enabled_on": {
+    "templates": ["product", "cart", "index", "collection", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command. Points are fetched via store proxy.",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Earn points"
+    },
+    {
+      "type": "number",
+      "id": "subtotal",
+      "label": "Subtotal (optional)",
+      "info": "Leave 0 on product template to use product price; on cart use 0 and set via section or leave for cart total in a cart section.",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "fallback_text",
+      "label": "Fallback text",
+      "info": "Shown when API is unavailable or points are 0",
+      "default": "Earn points with this purchase."
+    }
+  ]
+}
+{% endschema %}

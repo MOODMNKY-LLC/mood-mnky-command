@@ -1,0 +1,436 @@
+---
+title: 'Orders API'
+description: 'API reference for order management and processing'
+---
+
+# Orders API
+
+The Orders API provides endpoints for managing orders, tracking order status, and processing transactions in the MOOD MNKY e-commerce system.
+
+## Endpoints
+
+### Get All Orders
+
+```
+GET /api/orders
+```
+
+Retrieves a paginated list of orders for the authenticated user.
+
+#### Query Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| page | integer | No | Page number (default: 1) |
+| limit | integer | No | Items per page (default: 10, max: 50) |
+| status | string | No | Filter by order status (e.g., 'pending', 'processing', 'completed') |
+| fromDate | string | No | Filter orders from date (ISO format) |
+| toDate | string | No | Filter orders to date (ISO format) |
+
+#### Response
+
+```json
+{
+  "orders": [
+    {
+      "id": "order_123456",
+      "number": "MNKY-1001",
+      "status": "completed",
+      "createdAt": "2023-03-15T14:30:00Z",
+      "updatedAt": "2023-03-16T10:45:00Z",
+      "totalAmount": 84.97,
+      "currency": "USD",
+      "items": [
+        {
+          "id": "item_123456",
+          "productId": "prod_123456",
+          "name": "Serenity Candle",
+          "variantName": "Large",
+          "price": 34.99,
+          "quantity": 2,
+          "subtotal": 69.98
+        },
+        {
+          "id": "item_123457",
+          "productId": "prod_234567",
+          "name": "Lavender Bath Bombs",
+          "variantName": "Single",
+          "price": 14.99,
+          "quantity": 1,
+          "subtotal": 14.99
+        }
+      ],
+      "shippingDetails": {
+        "method": "standard",
+        "cost": 5.99,
+        "estimatedDelivery": "2023-03-20"
+      },
+      "taxAmount": 8.50,
+      "discountAmount": 10.00,
+      "discountCode": "WELCOME10"
+    },
+    // Additional orders...
+  ],
+  "pagination": {
+    "total": 5,
+    "pages": 1,
+    "page": 1,
+    "limit": 10
+  }
+}
+```
+
+### Get Order
+
+```
+GET /api/orders/{orderId}
+```
+
+Retrieves detailed information for a specific order.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| orderId | string | Yes | The unique identifier of the order |
+
+#### Response
+
+```json
+{
+  "id": "order_123456",
+  "number": "MNKY-1001",
+  "status": "completed",
+  "createdAt": "2023-03-15T14:30:00Z",
+  "updatedAt": "2023-03-16T10:45:00Z",
+  "completedAt": "2023-03-16T10:45:00Z",
+  "totalAmount": 84.97,
+  "currency": "USD",
+  "customer": {
+    "id": "user_123456",
+    "email": "customer@example.com",
+    "name": "Jane Smith"
+  },
+  "items": [
+    {
+      "id": "item_123456",
+      "productId": "prod_123456",
+      "name": "Serenity Candle",
+      "variantName": "Large",
+      "sku": "SER-CAN-L",
+      "price": 34.99,
+      "quantity": 2,
+      "subtotal": 69.98,
+      "image": "https://example.com/images/candle1.jpg"
+    },
+    {
+      "id": "item_123457",
+      "productId": "prod_234567",
+      "name": "Lavender Bath Bombs",
+      "variantName": "Single",
+      "sku": "LAV-BB-S",
+      "price": 14.99,
+      "quantity": 1,
+      "subtotal": 14.99,
+      "image": "https://example.com/images/bath-bomb1.jpg"
+    }
+  ],
+  "shippingAddress": {
+    "name": "Jane Smith",
+    "line1": "123 Main St",
+    "line2": "Apt 4B",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "US",
+    "phone": "+1 (555) 555-1234"
+  },
+  "billingAddress": {
+    "name": "Jane Smith",
+    "line1": "123 Main St",
+    "line2": "Apt 4B",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "US",
+    "phone": "+1 (555) 555-1234"
+  },
+  "shippingDetails": {
+    "method": "standard",
+    "carrier": "USPS",
+    "trackingNumber": "1Z999AA10123456784",
+    "trackingUrl": "https://tools.usps.com/go/TrackConfirmAction?tLabels=1Z999AA10123456784",
+    "cost": 5.99,
+    "estimatedDelivery": "2023-03-20",
+    "shippedAt": "2023-03-16T10:00:00Z"
+  },
+  "paymentDetails": {
+    "method": "credit_card",
+    "status": "paid",
+    "lastFour": "4242",
+    "cardType": "Visa",
+    "paidAt": "2023-03-15T14:35:00Z"
+  },
+  "subtotal": 84.97,
+  "taxAmount": 8.50,
+  "taxDetails": [
+    {
+      "name": "State Tax",
+      "rate": 0.06,
+      "amount": 5.10
+    },
+    {
+      "name": "City Tax",
+      "rate": 0.04,
+      "amount": 3.40
+    }
+  ],
+  "discountAmount": 10.00,
+  "discountCode": "WELCOME10",
+  "notes": "Please leave package at front door",
+  "status_history": [
+    {
+      "status": "created",
+      "timestamp": "2023-03-15T14:30:00Z"
+    },
+    {
+      "status": "processing",
+      "timestamp": "2023-03-15T14:35:00Z"
+    },
+    {
+      "status": "shipped",
+      "timestamp": "2023-03-16T10:00:00Z"
+    },
+    {
+      "status": "completed",
+      "timestamp": "2023-03-16T10:45:00Z"
+    }
+  ]
+}
+```
+
+### Create Order
+
+```
+POST /api/orders
+```
+
+Creates a new order.
+
+#### Request Body
+
+```json
+{
+  "items": [
+    {
+      "productId": "prod_123456",
+      "variantId": "var_789013",
+      "quantity": 1
+    },
+    {
+      "productId": "prod_234567",
+      "variantId": "var_789014",
+      "quantity": 2
+    }
+  ],
+  "shippingAddress": {
+    "name": "John Doe",
+    "line1": "456 Oak Street",
+    "line2": "",
+    "city": "San Francisco",
+    "state": "CA",
+    "postalCode": "94102",
+    "country": "US",
+    "phone": "+1 (555) 555-5678"
+  },
+  "billingAddress": {
+    "sameAsShipping": true
+  },
+  "shippingMethod": "express",
+  "paymentDetails": {
+    "method": "credit_card",
+    "token": "tok_visa"
+  },
+  "discountCode": "SPRING20",
+  "notes": "Gift wrap please"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "order_789012",
+  "number": "MNKY-1002",
+  "status": "processing",
+  "createdAt": "2023-04-16T16:00:00Z",
+  "updatedAt": "2023-04-16T16:00:00Z",
+  "totalAmount": 94.96,
+  "currency": "USD",
+  // ... full order details
+  "paymentDetails": {
+    "method": "credit_card",
+    "status": "paid",
+    "lastFour": "4242",
+    "cardType": "Visa",
+    "paidAt": "2023-04-16T16:00:00Z"
+  }
+}
+```
+
+### Update Order Status (Admin)
+
+```
+PATCH /api/admin/orders/{orderId}/status
+```
+
+Updates the status of an existing order.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| orderId | string | Yes | The unique identifier of the order |
+
+#### Request Body
+
+```json
+{
+  "status": "shipped",
+  "trackingNumber": "1Z999AA10123456784",
+  "trackingUrl": "https://tools.usps.com/go/TrackConfirmAction?tLabels=1Z999AA10123456784",
+  "carrier": "USPS",
+  "notifyCustomer": true
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "order_789012",
+  "number": "MNKY-1002",
+  "status": "shipped",
+  "updatedAt": "2023-04-16T19:30:00Z",
+  "shippingDetails": {
+    "method": "express",
+    "carrier": "USPS",
+    "trackingNumber": "1Z999AA10123456784",
+    "trackingUrl": "https://tools.usps.com/go/TrackConfirmAction?tLabels=1Z999AA10123456784",
+    "cost": 9.99,
+    "estimatedDelivery": "2023-04-18",
+    "shippedAt": "2023-04-16T19:30:00Z"
+  },
+  "status_history": [
+    {
+      "status": "created",
+      "timestamp": "2023-04-16T16:00:00Z"
+    },
+    {
+      "status": "processing",
+      "timestamp": "2023-04-16T16:00:00Z"
+    },
+    {
+      "status": "shipped",
+      "timestamp": "2023-04-16T19:30:00Z"
+    }
+  ],
+  "notification": {
+    "sent": true,
+    "method": "email",
+    "timestamp": "2023-04-16T19:31:00Z"
+  }
+}
+```
+
+### Cancel Order
+
+```
+POST /api/orders/{orderId}/cancel
+```
+
+Cancels an order if it hasn't been shipped yet.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| orderId | string | Yes | The unique identifier of the order |
+
+#### Request Body
+
+```json
+{
+  "reason": "Changed mind",
+  "comments": "Found an alternative product"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "order_789012",
+  "number": "MNKY-1002",
+  "status": "cancelled",
+  "updatedAt": "2023-04-16T17:15:00Z",
+  "cancellation": {
+    "reason": "Changed mind",
+    "comments": "Found an alternative product",
+    "cancelledAt": "2023-04-16T17:15:00Z"
+  },
+  "status_history": [
+    {
+      "status": "created",
+      "timestamp": "2023-04-16T16:00:00Z"
+    },
+    {
+      "status": "processing",
+      "timestamp": "2023-04-16T16:00:00Z"
+    },
+    {
+      "status": "cancelled",
+      "timestamp": "2023-04-16T17:15:00Z"
+    }
+  ],
+  "refund": {
+    "status": "processing",
+    "amount": 94.96,
+    "estimatedProcessingTime": "3-5 business days"
+  }
+}
+```
+
+## Order Statuses
+
+| Status | Description |
+|--------|-------------|
+| created | Order has been created but not yet processed |
+| processing | Order is being prepared for fulfillment |
+| payment_pending | Awaiting payment confirmation |
+| paid | Payment has been confirmed |
+| shipped | Order has been shipped |
+| delivered | Order has been delivered |
+| completed | Order has been delivered and marked as complete |
+| cancelled | Order has been cancelled |
+| refunded | Order has been refunded |
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Order does not exist |
+| 409 | Conflict - Cannot update order in current state |
+| 422 | Unprocessable Entity - Order cannot be fulfilled (e.g., out of stock) |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Use webhook notifications for real-time order status updates
+- Implement idempotent order creation to prevent duplicate orders
+- Include detailed product information in order responses
+- Provide clear error messages for order validation issues
+- Store shipping tracking information for all shipped orders 

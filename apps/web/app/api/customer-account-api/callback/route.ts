@@ -1,0 +1,184 @@
+/**
+ * Shopify Customer Account API – OAuth callback.
+ * GET /api/customer-account-api/callback
+ * Exchanges code for tokens, stores token (with profile_id), sets session cookie, updates profiles.shopify_customer_id.
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import {
+  getCustomerAccountApiConfig,
+  CUSTOMER_SESSION_COOKIE,
+  getCustomerSessionCookieOptions,
+} from "@/lib/shopify/customer-account-auth";
+import { fetchCustomerWithToken } from "@/lib/shopify/customer-account-client";
+
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const errorParam = url.searchParams.get("error");
+
+  const verseErrorRedirect = (errorCode: string) => {
+    const origin = new URL(request.url).origin;
+    return NextResponse.redirect(`${origin}/verse?error=${encodeURIComponent(errorCode)}`);
+  };
+
+  if (errorParam) {
+    console.error("Customer Account API callback error:", errorParam);
+    return verseErrorRedirect("shopify_auth_failed");
+  }
+
+  if (!code || !state) {
+    return verseErrorRedirect("missing_params");
+  }
+
+  try {
+    const { storeDomain, clientId, appUrl, tokenUrl: envTokenUrl } =
+      getCustomerAccountApiConfig(request);
+
+    if (!storeDomain || !clientId || !appUrl) {
+      return verseErrorRedirect("config");
+    }
+
+    const supabase = createAdminClient();
+
+    const { data: verifierRow, error: verifierError } = await supabase
+      .from("customer_account_code_verifiers")
+      .select("verifier, profile_id")
+      .eq("state", state)
+      .single();
+
+    if (verifierError || !verifierRow) {
+      console.error("Customer Account API: verifier not found", verifierError);
+      return verseErrorRedirect("invalid_state");
+    }
+
+    const serverSupabase = await createClient();
+    const {
+      data: { user },
+    } = await serverSupabase.auth.getUser();
+    if (
+      user?.id != null &&
+      verifierRow.profile_id != null &&
+      user.id !== verifierRow.profile_id
+    ) {
+      console.error("Customer Account API: profile_id mismatch");
+      return NextResponse.redirect(
+        new URL("/auth/login?error=shopify_session_mismatch", appUrl)
+      );
+    }
+
+    const tokenEndpoint =
+      envTokenUrl ||
+      (storeDomain
+        ? await (async () => {
+            const openidConfigUrl = `https://${storeDomain}/.well-known/openid-configuration`;
+            const openidResponse = await fetch(openidConfigUrl);
+            if (!openidResponse.ok) return null;
+            const openidConfig = (await openidResponse.json()) as {
+              token_endpoint?: string;
+            };
+            return openidConfig.token_endpoint ?? null;
+          })()
+        : null);
+
+    if (!tokenEndpoint) {
+      return verseErrorRedirect("discovery_failed");
+    }
+
+    const callbackUrl = `${appUrl}/api/customer-account-api/callback`;
+
+    const tokenResponse = await fetch(tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        redirect_uri: callbackUrl,
+        code,
+        code_verifier: verifierRow.verifier,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      const errText = await tokenResponse.text();
+      console.error(
+        "Customer Account API token exchange failed:",
+        tokenResponse.status,
+        errText
+      );
+      return NextResponse.redirect(
+        new URL("/auth/login?error=token_exchange_failed", request.url)
+      );
+    }
+
+    const tokenData = (await tokenResponse.json()) as {
+      access_token: string;
+      expires_in?: number;
+      refresh_token?: string;
+      id_token?: string;
+    };
+
+    const expiresAt = tokenData.expires_in
+      ? new Date(Date.now() + tokenData.expires_in * 1000)
+      : null;
+
+    const profileId = user?.id ?? verifierRow.profile_id ?? null;
+
+    const { data: tokenRow, error: insertError } = await supabase
+      .from("customer_account_tokens")
+      .insert({
+        shop: storeDomain,
+        access_token: tokenData.access_token,
+        expires_at: expiresAt?.toISOString() ?? null,
+        refresh_token: tokenData.refresh_token ?? null,
+        id_token: tokenData.id_token ?? null,
+        profile_id: profileId,
+      })
+      .select("id")
+      .single();
+
+    if (insertError || !tokenRow) {
+      console.error(
+        "Customer Account API: failed to store token",
+        insertError
+      );
+      return verseErrorRedirect("storage_failed");
+    }
+
+    await supabase
+      .from("customer_account_code_verifiers")
+      .delete()
+      .eq("state", state);
+
+    const customer = await fetchCustomerWithToken(
+      tokenData.access_token,
+      storeDomain
+    );
+    if (customer?.id && profileId) {
+      await supabase
+        .from("profiles")
+        .update({ shopify_customer_id: customer.id })
+        .eq("id", profileId);
+    }
+
+    const requestOrigin = url.origin;
+    const versePath = "/verse/products?shopify=linked";
+    const redirectUrl = `${requestOrigin}${versePath}`;
+    const redirect = NextResponse.redirect(redirectUrl);
+    const opts = getCustomerSessionCookieOptions();
+    redirect.cookies.set(CUSTOMER_SESSION_COOKIE, tokenRow.id, {
+      ...opts,
+      maxAge: opts.maxAge ?? 3600,
+    });
+
+    return redirect;
+  } catch (err) {
+    console.error("Customer Account API callback error:", err);
+    return verseErrorRedirect("callback_failed");
+  }
+}

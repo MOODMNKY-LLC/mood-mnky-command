@@ -1,0 +1,711 @@
+---
+title: 'Custom Blends API'
+description: 'API reference for creating and managing personalized fragrance blends'
+---
+
+# Custom Blends API
+
+The Custom Blends API provides endpoints for creating and managing personalized fragrance blends in the MOOD MNKY ecosystem. This API enables customers to create custom scent profiles, design signature fragrances, and apply them to various products.
+
+## Endpoints
+
+### Get Scent Categories
+
+```
+GET /api/custom-blends/categories
+```
+
+Retrieves the available scent categories and their properties.
+
+#### Response
+
+```json
+{
+  "categories": [
+    {
+      "id": "cat_floral",
+      "name": "Floral",
+      "description": "Delicate and sweet aromas reminiscent of flowers in bloom",
+      "image": "https://example.com/images/floral-category.jpg",
+      "mood": "romantic, refreshing, uplifting",
+      "popularNotes": ["lavender", "rose", "jasmine", "ylang-ylang"],
+      "complementaryCategories": ["citrus", "fresh"]
+    },
+    {
+      "id": "cat_woody",
+      "name": "Woody",
+      "description": "Warm and grounding scents inspired by forests and trees",
+      "image": "https://example.com/images/woody-category.jpg",
+      "mood": "grounding, calming, centering",
+      "popularNotes": ["cedar", "sandalwood", "pine", "oakmoss"],
+      "complementaryCategories": ["spicy", "earthy"]
+    },
+    {
+      "id": "cat_citrus",
+      "name": "Citrus",
+      "description": "Bright and energizing aromas from citrus fruits",
+      "image": "https://example.com/images/citrus-category.jpg",
+      "mood": "energizing, uplifting, refreshing",
+      "popularNotes": ["bergamot", "lemon", "grapefruit", "orange"],
+      "complementaryCategories": ["floral", "fresh"]
+    },
+    // Additional categories...
+  ]
+}
+```
+
+### Get Scent Notes
+
+```
+GET /api/custom-blends/notes
+```
+
+Retrieves all available scent notes with details.
+
+#### Query Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| category | string | No | Filter notes by category ID |
+| searchTerm | string | No | Search term for note names or descriptions |
+
+#### Response
+
+```json
+{
+  "notes": [
+    {
+      "id": "note_lavender",
+      "name": "Lavender",
+      "description": "Calming floral scent with herbal undertones",
+      "image": "https://example.com/images/lavender.jpg",
+      "category": "floral",
+      "intensity": "medium",
+      "volatility": "middle",
+      "mood": ["calming", "soothing", "relaxing"],
+      "complementaryNotes": ["bergamot", "cedar", "vanilla"]
+    },
+    {
+      "id": "note_bergamot",
+      "name": "Bergamot",
+      "description": "Bright citrus with subtle floral hints",
+      "image": "https://example.com/images/bergamot.jpg",
+      "category": "citrus",
+      "intensity": "strong",
+      "volatility": "top",
+      "mood": ["uplifting", "refreshing", "energizing"],
+      "complementaryNotes": ["lavender", "sandalwood", "ylang-ylang"]
+    },
+    {
+      "id": "note_cedar",
+      "name": "Cedar",
+      "description": "Dry woody scent with balsamic undertones",
+      "image": "https://example.com/images/cedar.jpg",
+      "category": "woody",
+      "intensity": "medium",
+      "volatility": "base",
+      "mood": ["grounding", "stabilizing", "focusing"],
+      "complementaryNotes": ["lavender", "bergamot", "sandalwood"]
+    },
+    // Additional notes...
+  ]
+}
+```
+
+### Get Customer's Blends
+
+```
+GET /api/custom-blends
+```
+
+Retrieves the authenticated customer's saved custom blends.
+
+#### Response
+
+```json
+{
+  "blends": [
+    {
+      "id": "blend_123456",
+      "name": "Summer Breeze",
+      "description": "Light floral with citrus notes",
+      "createdAt": "2023-01-15T13:20:00Z",
+      "updatedAt": "2023-01-15T13:20:00Z",
+      "isPublic": false,
+      "composition": {
+        "notes": [
+          {
+            "id": "note_lavender",
+            "name": "Lavender",
+            "ratio": 0.4
+          },
+          {
+            "id": "note_bergamot",
+            "name": "Bergamot",
+            "ratio": 0.35
+          },
+          {
+            "id": "note_lemongrass",
+            "name": "Lemongrass",
+            "ratio": 0.25
+          }
+        ],
+        "baseIntensity": "medium"
+      },
+      "profile": {
+        "categories": ["floral", "citrus"],
+        "mood": ["refreshing", "uplifting", "calming"],
+        "occasions": ["morning", "daytime"]
+      },
+      "usedIn": [
+        {
+          "productId": "prod_123456",
+          "productName": "Custom Diffuser",
+          "orderId": "order_123456",
+          "orderDate": "2023-01-16T10:30:00Z"
+        }
+      ]
+    },
+    {
+      "id": "blend_234567",
+      "name": "Cozy Evening",
+      "description": "Warm woody with vanilla undertones",
+      "createdAt": "2023-02-20T18:15:00Z",
+      "updatedAt": "2023-02-20T18:15:00Z",
+      "isPublic": true,
+      "composition": {
+        "notes": [
+          {
+            "id": "note_cedar",
+            "name": "Cedar",
+            "ratio": 0.3
+          },
+          {
+            "id": "note_sandalwood",
+            "name": "Sandalwood",
+            "ratio": 0.3
+          },
+          {
+            "id": "note_vanilla",
+            "name": "Vanilla",
+            "ratio": 0.4
+          }
+        ],
+        "baseIntensity": "strong"
+      },
+      "profile": {
+        "categories": ["woody", "sweet"],
+        "mood": ["comforting", "warming", "relaxing"],
+        "occasions": ["evening", "winter"]
+      },
+      "usedIn": [
+        {
+          "productId": "prod_234567",
+          "productName": "Custom Candle",
+          "orderId": "order_234567",
+          "orderDate": "2023-02-21T14:20:00Z"
+        }
+      ]
+    }
+    // Additional blends...
+  ]
+}
+```
+
+### Get Blend
+
+```
+GET /api/custom-blends/{blendId}
+```
+
+Retrieves detailed information for a specific blend.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| blendId | string | Yes | The unique identifier of the blend |
+
+#### Response
+
+```json
+{
+  "id": "blend_123456",
+  "name": "Summer Breeze",
+  "description": "Light floral with citrus notes",
+  "createdAt": "2023-01-15T13:20:00Z",
+  "updatedAt": "2023-01-15T13:20:00Z",
+  "isPublic": false,
+  "composition": {
+    "notes": [
+      {
+        "id": "note_lavender",
+        "name": "Lavender",
+        "ratio": 0.4,
+        "category": "floral",
+        "volatility": "middle"
+      },
+      {
+        "id": "note_bergamot",
+        "name": "Bergamot",
+        "ratio": 0.35,
+        "category": "citrus",
+        "volatility": "top"
+      },
+      {
+        "id": "note_lemongrass",
+        "name": "Lemongrass",
+        "ratio": 0.25,
+        "category": "herbal",
+        "volatility": "top"
+      }
+    ],
+    "baseIntensity": "medium"
+  },
+  "profile": {
+    "categories": ["floral", "citrus"],
+    "mood": ["refreshing", "uplifting", "calming"],
+    "occasions": ["morning", "daytime"]
+  },
+  "expert_analysis": {
+    "notes": "A bright, uplifting blend with good balance between floral and citrus. The lemongrass adds an interesting herbaceous dimension.",
+    "longevity": "4-6 hours",
+    "sillage": "moderate",
+    "recommendations": [
+      "Try adding a touch of vanilla for more depth",
+      "Works well in diffusers and room sprays",
+      "Consider a higher ratio for candles"
+    ]
+  },
+  "compatibleProducts": [
+    {
+      "id": "prod_123456",
+      "name": "Custom Diffuser",
+      "image": "https://example.com/images/diffuser.jpg",
+      "compatibilityScore": 95
+    },
+    {
+      "id": "prod_234567",
+      "name": "Custom Candle",
+      "image": "https://example.com/images/candle.jpg",
+      "compatibilityScore": 90
+    },
+    {
+      "id": "prod_345678",
+      "name": "Custom Room Spray",
+      "image": "https://example.com/images/spray.jpg",
+      "compatibilityScore": 85
+    }
+  ],
+  "usedIn": [
+    {
+      "productId": "prod_123456",
+      "productName": "Custom Diffuser",
+      "orderId": "order_123456",
+      "orderDate": "2023-01-16T10:30:00Z"
+    }
+  ]
+}
+```
+
+### Create Blend
+
+```
+POST /api/custom-blends
+```
+
+Creates a new custom blend.
+
+#### Request Body
+
+```json
+{
+  "name": "Forest Retreat",
+  "description": "Earthy woody blend with pine highlights",
+  "isPublic": true,
+  "composition": {
+    "notes": [
+      {
+        "id": "note_pine",
+        "ratio": 0.3
+      },
+      {
+        "id": "note_cedar",
+        "ratio": 0.4
+      },
+      {
+        "id": "note_oakmoss",
+        "ratio": 0.2
+      },
+      {
+        "id": "note_bergamot",
+        "ratio": 0.1
+      }
+    ],
+    "baseIntensity": "strong"
+  },
+  "profile": {
+    "occasions": ["outdoors", "meditation"]
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "blend_345678",
+  "name": "Forest Retreat",
+  "description": "Earthy woody blend with pine highlights",
+  "createdAt": "2023-04-16T11:30:00Z",
+  "updatedAt": "2023-04-16T11:30:00Z",
+  "isPublic": true,
+  "composition": {
+    "notes": [
+      {
+        "id": "note_pine",
+        "name": "Pine",
+        "ratio": 0.3,
+        "category": "woody",
+        "volatility": "middle"
+      },
+      {
+        "id": "note_cedar",
+        "name": "Cedar",
+        "ratio": 0.4,
+        "category": "woody",
+        "volatility": "base"
+      },
+      {
+        "id": "note_oakmoss",
+        "name": "Oakmoss",
+        "ratio": 0.2,
+        "category": "earthy",
+        "volatility": "base"
+      },
+      {
+        "id": "note_bergamot",
+        "name": "Bergamot",
+        "ratio": 0.1,
+        "category": "citrus",
+        "volatility": "top"
+      }
+    ],
+    "baseIntensity": "strong"
+  },
+  "profile": {
+    "categories": ["woody", "earthy", "citrus"],
+    "mood": ["grounding", "refreshing", "natural"],
+    "occasions": ["outdoors", "meditation"]
+  },
+  "expert_analysis": {
+    "notes": "A strong woody blend with excellent depth. The touch of bergamot adds brightness to an otherwise earthy profile.",
+    "longevity": "6-8 hours",
+    "sillage": "strong",
+    "recommendations": [
+      "Excellent choice for candles and reed diffusers",
+      "Consider reducing intensity for smaller spaces",
+      "Would pair well with cedarwood or pine accessories"
+    ]
+  },
+  "compatibleProducts": [
+    {
+      "id": "prod_234567",
+      "name": "Custom Candle",
+      "image": "https://example.com/images/candle.jpg",
+      "compatibilityScore": 98
+    },
+    {
+      "id": "prod_456789",
+      "name": "Custom Reed Diffuser",
+      "image": "https://example.com/images/reed-diffuser.jpg",
+      "compatibilityScore": 95
+    },
+    {
+      "id": "prod_567890",
+      "name": "Custom Body Oil",
+      "image": "https://example.com/images/body-oil.jpg",
+      "compatibilityScore": 85
+    }
+  ]
+}
+```
+
+### Update Blend
+
+```
+PATCH /api/custom-blends/{blendId}
+```
+
+Updates an existing custom blend.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| blendId | string | Yes | The unique identifier of the blend |
+
+#### Request Body
+
+```json
+{
+  "name": "Forest Meditation",
+  "description": "Earthy woody blend with refreshing pine and subtle citrus",
+  "composition": {
+    "notes": [
+      {
+        "id": "note_pine",
+        "ratio": 0.35
+      },
+      {
+        "id": "note_cedar",
+        "ratio": 0.35
+      },
+      {
+        "id": "note_oakmoss",
+        "ratio": 0.15
+      },
+      {
+        "id": "note_bergamot",
+        "ratio": 0.15
+      }
+    ]
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "blend_345678",
+  "name": "Forest Meditation",
+  "description": "Earthy woody blend with refreshing pine and subtle citrus",
+  "createdAt": "2023-04-16T11:30:00Z",
+  "updatedAt": "2023-04-16T11:45:00Z",
+  "isPublic": true,
+  "composition": {
+    "notes": [
+      {
+        "id": "note_pine",
+        "name": "Pine",
+        "ratio": 0.35,
+        "category": "woody",
+        "volatility": "middle"
+      },
+      {
+        "id": "note_cedar",
+        "name": "Cedar",
+        "ratio": 0.35,
+        "category": "woody",
+        "volatility": "base"
+      },
+      {
+        "id": "note_oakmoss",
+        "name": "Oakmoss",
+        "ratio": 0.15,
+        "category": "earthy",
+        "volatility": "base"
+      },
+      {
+        "id": "note_bergamot",
+        "name": "Bergamot",
+        "ratio": 0.15,
+        "category": "citrus",
+        "volatility": "top"
+      }
+    ],
+    "baseIntensity": "strong"
+  },
+  // ... other fields remain the same or are updated
+}
+```
+
+### Delete Blend
+
+```
+DELETE /api/custom-blends/{blendId}
+```
+
+Deletes a custom blend.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| blendId | string | Yes | The unique identifier of the blend |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Blend successfully deleted",
+  "id": "blend_345678"
+}
+```
+
+### Get Blend Recommendations
+
+```
+GET /api/custom-blends/recommendations
+```
+
+Retrieves personalized blend recommendations based on the customer's scent profile and preferences.
+
+#### Query Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| category | string | No | Filter recommendations by category |
+| mood | string | No | Filter recommendations by mood |
+| occasion | string | No | Filter recommendations by occasion |
+
+#### Response
+
+```json
+{
+  "recommendations": [
+    {
+      "id": "rec_123456",
+      "name": "Relaxing Evening",
+      "description": "A calming blend of lavender and vanilla with woody undertones",
+      "matchScore": 95,
+      "composition": {
+        "notes": [
+          {
+            "id": "note_lavender",
+            "name": "Lavender",
+            "ratio": 0.4
+          },
+          {
+            "id": "note_vanilla",
+            "name": "Vanilla",
+            "ratio": 0.35
+          },
+          {
+            "id": "note_sandalwood",
+            "name": "Sandalwood",
+            "ratio": 0.25
+          }
+        ],
+        "baseIntensity": "medium"
+      },
+      "profile": {
+        "categories": ["floral", "sweet", "woody"],
+        "mood": ["calming", "relaxing", "soothing"],
+        "occasions": ["evening", "bedtime", "relaxation"]
+      },
+      "reasoning": "Based on your preference for lavender and vanilla notes, and your evening relaxation routine"
+    },
+    {
+      "id": "rec_234567",
+      "name": "Morning Refresh",
+      "description": "An invigorating citrus blend to start your day",
+      "matchScore": 90,
+      "composition": {
+        "notes": [
+          {
+            "id": "note_bergamot",
+            "name": "Bergamot",
+            "ratio": 0.4
+          },
+          {
+            "id": "note_lemon",
+            "name": "Lemon",
+            "ratio": 0.3
+          },
+          {
+            "id": "note_rosemary",
+            "name": "Rosemary",
+            "ratio": 0.3
+          }
+        ],
+        "baseIntensity": "strong"
+      },
+      "profile": {
+        "categories": ["citrus", "herbal"],
+        "mood": ["energizing", "refreshing", "uplifting"],
+        "occasions": ["morning", "workout", "focus"]
+      },
+      "reasoning": "Designed to complement your morning routine and preference for energizing scents"
+    },
+    // Additional recommendations...
+  ]
+}
+```
+
+### Test Blend on Product
+
+```
+POST /api/custom-blends/{blendId}/test-product
+```
+
+Simulates how a blend would perform in a specific product.
+
+#### Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| blendId | string | Yes | The unique identifier of the blend |
+
+#### Request Body
+
+```json
+{
+  "productId": "prod_234567",
+  "intensity": "medium",
+  "environment": "small_room"
+}
+```
+
+#### Response
+
+```json
+{
+  "productName": "Custom Candle",
+  "blendName": "Forest Meditation",
+  "compatibility": {
+    "score": 92,
+    "description": "Excellent match for this product"
+  },
+  "performance": {
+    "burnTime": "40-45 hours",
+    "throwStrength": "medium-strong",
+    "notes": "The woody notes will be prominent with the citrus adding brightness throughout the burn"
+  },
+  "recommendations": {
+    "intensityAdjustment": "No adjustment needed",
+    "notesBalance": "Consider increasing bergamot to 20% for more top note presence in a candle",
+    "usage": "Ideal for spaces up to 200 sq ft, allow 1-2 hours for full scent development"
+  },
+  "visualization": {
+    "colorPalette": ["#4B5320", "#8B7355", "#00755E", "#FFCC00"],
+    "moodImages": [
+      "https://example.com/images/visualizations/forest-candle-1.jpg",
+      "https://example.com/images/visualizations/forest-candle-2.jpg"
+    ]
+  }
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Blend, note, or product does not exist |
+| 409 | Conflict - Blend name already exists |
+| 422 | Unprocessable Entity - Invalid blend composition (e.g., ratios don't sum to 1.0) |
+| 500 | Internal Server Error |
+
+## Best Practices
+
+- Limit the number of notes in a blend to 3-7 for optimal results
+- Ensure note ratios sum to 1.0 (or 100%)
+- Use the test-product endpoint before finalizing product creation
+- Consider note volatility (top, middle, base) when designing balanced blends
+- Save customer's preferred blends for easy reordering
+- Request expert analysis for complex or special-purpose blends 

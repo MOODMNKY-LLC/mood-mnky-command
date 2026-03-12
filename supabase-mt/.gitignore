@@ -1,0 +1,6 @@
+.vercel
+.env*.local
+# MinIO AIStor license (do not commit)
+docker-compose/minio.license
+# Large 3D models (use Git LFS or host elsewhere)
+portal/public/models/*.glb

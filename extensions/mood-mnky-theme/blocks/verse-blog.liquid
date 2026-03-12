@@ -1,0 +1,120 @@
+{% comment %}
+  MOOD MNKY - Latest from MNKY VERSE
+  Fetches recent blog posts from the app API and displays them.
+  Requires app_base_url to be set (e.g. https://mnky-command.moodmnky.com).
+{% endcomment %}
+{%- liquid
+  assign app_url = block.settings.app_base_url | default: '' | strip
+  assign limit = block.settings.post_limit | default: 3
+  assign heading = block.settings.heading | default: 'Latest from MNKY VERSE'
+  assign view_all_label = block.settings.view_all_label | default: 'View all in the MNKY VERSE'
+  assign api_url = app_url | append: '/api/verse/blog?limit=' | append: limit
+  assign verse_blog_url = app_url | append: '/verse/blog'
+-%}
+<div
+  class="mood-mnky-app-block mood-mnky-verse-blog"
+  data-mnky-verse-blog-api="{{ api_url }}"
+  data-mnky-verse-blog-heading="{{ heading | escape }}"
+  data-mnky-verse-blog-view-all="{{ view_all_label | escape }}"
+  data-mnky-verse-blog-url="{{ verse_blog_url }}"
+  {{ block.shopify_attributes }}
+>
+  {%- if app_url != blank -%}
+    <div class="mood-mnky-verse-blog__header">
+      <h3 class="mood-mnky-block-heading">{{ heading | escape }}</h3>
+    </div>
+    <div class="mood-mnky-verse-blog__posts" aria-label="MNKY VERSE blog posts">
+      <div class="mood-mnky-verse-blog__loading" data-mnky-loading>
+        <span>Loading...</span>
+      </div>
+      <ul class="mood-mnky-verse-blog__list" data-mnky-posts hidden></ul>
+    </div>
+    <div class="mood-mnky-verse-blog__footer">
+      <a href="{{ verse_blog_url }}" class="button button--secondary">
+        {{ view_all_label | escape }}
+      </a>
+    </div>
+    <script>
+      (function() {
+        var script = document.currentScript;
+        var container = script ? script.closest('.mood-mnky-verse-blog') : document.querySelector('.mood-mnky-verse-blog');
+        if (!container) return;
+        var api = container.getAttribute('data-mnky-verse-blog-api');
+        var loading = container.querySelector('[data-mnky-loading]');
+        var list = container.querySelector('[data-mnky-posts]');
+        if (!api || !loading || !list) return;
+        fetch(api)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            loading.hidden = true;
+            if (data.posts && data.posts.length > 0) {
+              list.hidden = false;
+              data.posts.forEach(function(p) {
+                var li = document.createElement('li');
+                li.className = 'mood-mnky-verse-blog__item';
+                li.innerHTML = '<a href="' + (p.url || '') + '" class="mood-mnky-verse-blog__link">' +
+                  '<span class="mood-mnky-verse-blog__title">' + (p.title || '') + '</span>' +
+                  (p.excerpt ? '<span class="mood-mnky-verse-blog__excerpt">' + p.excerpt + '</span>' : '') +
+                  '</a>';
+                list.appendChild(li);
+              });
+            }
+          })
+          .catch(function() {
+            loading.innerHTML = '<span>Unable to load posts.</span>';
+          });
+      })();
+    </script>
+  {%- else -%}
+    <p class="mood-mnky-block-subheading">Configure App base URL in block settings to load MNKY VERSE blog posts.</p>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Latest from MNKY VERSE",
+  "target": "section",
+  "stylesheet": "app-blocks.css",
+  "enabled_on": {
+    "templates": ["index", "blog", "page"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "App integration"
+    },
+    {
+      "type": "text",
+      "id": "app_base_url",
+      "label": "App base URL",
+      "info": "Base URL of mood-mnky-command app (e.g. https://mnky-command.moodmnky.com). Required for loading blog posts.",
+      "placeholder": "https://mnky-command.moodmnky.com"
+    },
+    {
+      "type": "range",
+      "id": "post_limit",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "label": "Number of posts"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Latest from MNKY VERSE"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View all link label",
+      "default": "View all in the MNKY VERSE"
+    }
+  ]
+}
+{% endschema %}

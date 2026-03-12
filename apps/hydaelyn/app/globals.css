@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Hydaelyn theme: crystal/azure primary, soft gold accent.
+ * Light: off-white bg, crystal blue primary. Dark: deep blue/slate, crystal highlight.
+ * Single palette; data-theme="hydaelyn" set in layout for consistency.
+ */
+@layer base {
+  :root {
+    --background: 210 25% 98%;
+    --foreground: 215 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+    --primary: 208 70% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 215 25% 20%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 42 85% 55%;
+    --accent-foreground: 215 30% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 208 70% 42%;
+    --radius: 0.5rem;
+    --chart-1: 208 70% 42%;
+    --chart-2: 42 85% 55%;
+    --chart-3: 165 50% 45%;
+    --chart-4: 280 60% 55%;
+    --chart-5: 0 72% 51%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 218 25% 10%;
+    --foreground: 210 20% 92%;
+    --card: 218 25% 12%;
+    --card-foreground: 210 20% 92%;
+    --popover: 218 25% 12%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 199 75% 55%;
+    --primary-foreground: 218 25% 8%;
+    --secondary: 218 20% 18%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 218 20% 18%;
+    --muted-foreground: 210 15% 58%;
+    --accent: 42 70% 50%;
+    --accent-foreground: 218 25% 8%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 218 20% 22%;
+    --input: 218 20% 22%;
+    --ring: 199 75% 55%;
+    --chart-1: 199 75% 55%;
+    --chart-2: 42 70% 50%;
+    --chart-3: 165 50% 45%;
+    --chart-4: 280 55% 60%;
+    --chart-5: 0 65% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes job-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

@@ -1,0 +1,80 @@
+---
+title: 'Webhooks'
+description: 'Real-time event notifications from the MOOD MNKY platform'
+---
+
+# Webhooks
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/webhooks.svg"
+  alt="Webhooks"
+/>
+
+## Overview
+
+Webhooks provide a way for your application to receive real-time notifications about events that occur within the MOOD MNKY platform. Instead of polling our API for changes, webhooks push data to your application as events happen.
+
+<Note>
+  This is a placeholder document. Detailed webhook documentation will be added in future updates.
+</Note>
+
+## Event Types
+
+<CardGroup cols={2}>
+  <Card title="User Events" icon="user">
+    Account creation, profile updates, preference changes
+  </Card>
+  <Card title="Order Events" icon="shopping-cart">
+    Order created, status updated, fulfilled, canceled
+  </Card>
+  <Card title="Product Events" icon="box">
+    Inventory updates, new products, price changes
+  </Card>
+  <Card title="Subscription Events" icon="repeat">
+    Created, renewed, canceled, payment failed
+  </Card>
+</CardGroup>
+
+## Webhook Format
+
+```json
+{
+  "id": "evt_1234567890",
+  "type": "order.created",
+  "created": 1619712000,
+  "data": {
+    "order_id": "ord_1234567890",
+    "customer_id": "cus_1234567890",
+    "amount": 9900,
+    "currency": "usd",
+    "status": "processing",
+    "items": [
+      {
+        "product_id": "prod_1234567890",
+        "quantity": 1,
+        "price": 9900
+      }
+    ]
+  }
+}
+```
+
+## Security
+
+Webhook endpoints should be secured with HTTPS. We sign each webhook request with a signature that your application can verify to ensure the webhook came from MOOD MNKY.
+
+## Coming Soon
+
+This documentation is under development and will include:
+
+- Detailed event type references
+- Webhook signature verification
+- Best practices for webhook handling
+- Retry policies
+- Testing webhooks locally
+- Webhook logs and debugging
+- Sample implementations in various languages
+- Webhook management dashboard
+
+Check back soon for updates!

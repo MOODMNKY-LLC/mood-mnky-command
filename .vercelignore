@@ -1,0 +1,28 @@
+# Reduce upload file count for Vercel CLI (15k limit)
+# See https://vercel.com/docs/cli/deploy#archive
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+.vercel
+.cursor
+**/.cursor
+*.log
+.pnpm-store
+.env
+.env.*
+!.env.example
+Shopify/theme-live
+Shopify/theme-dev
+mnky-docs/archive
+mnky-docs/env-management
+certs
+apps/web/certificates
+voice-previews
+temp
+**/__pycache__
+**/.pnpm-store
+**/dist
+**/.cache

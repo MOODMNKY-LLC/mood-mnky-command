@@ -1,0 +1,20 @@
+/* Auth shell - applies verse-storefront tokens to auth pages */
+/* Tokens are inherited from verse-storefront.css; this file adds auth-specific scoping */
+.auth-shell {
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.auth-shell.verse-storefront {
+  /* Ensure auth pages use verse typography and tokens (already set by verse-storefront) */
+  font-family: var(--font-roboto), Roboto, sans-serif;
+}
+
+/* Glass-style auth card - frosted glass with verse tokens */
+.auth-card {
+  border: 1px solid var(--verse-border);
+  background: rgba(var(--verse-bg-rgb, 241, 245, 249), 0.85);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}

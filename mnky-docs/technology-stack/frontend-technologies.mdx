@@ -1,0 +1,620 @@
+---
+title: 'Frontend Technologies'
+description: 'Documentation for MOOD MNKYs frontend technology stack'
+---
+
+# Frontend Technologies
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-32 mx-auto my-6"
+  src="/images/frontend-stack.svg"
+  alt="Frontend Technology Stack"
+/>
+
+## Core Framework: Next.js
+
+Next.js serves as our primary framework for building server-rendered React applications across the MOOD MNKY ecosystem.
+
+<Note>
+  We use Next.js for its powerful hybrid rendering capabilities, built-in routing, API routes, and seamless deployment options.
+</Note>
+
+### Key Features We Leverage
+
+<CardGroup cols={2}>
+  <Card title="Hybrid Rendering" icon="server">
+    Combination of SSR, SSG, and Client-side rendering for optimal performance
+  </Card>
+  <Card title="API Routes" icon="brackets-curly">
+    Backend functionality directly within our frontend codebase
+  </Card>
+  <Card title="File-based Routing" icon="sitemap">
+    Intuitive routing system based on file structure
+  </Card>
+  <Card title="Image Optimization" icon="image">
+    Automatic image optimization with the Next.js Image component
+  </Card>
+</CardGroup>
+
+## Vue.js Components
+
+While our primary applications are built with Next.js, we use Vue.js for specific interactive components and standalone applications within the MOOD MNKY ecosystem.
+
+### Implementation Approach
+
+```typescript
+// Example Vue component integration in Next.js
+import { defineComponent, h } from 'vue'
+import { createVueApp } from 'vue-in-react'
+
+const MoodTrackerComponent = defineComponent({
+  props: {
+    userId: String,
+    initialMood: String,
+  },
+  setup(props) {
+    // Vue component implementation
+    return () => h('div', [
+      // Component template
+    ])
+  }
+})
+
+const VueMoodTracker = createVueApp({
+  component: MoodTrackerComponent
+})
+
+// Use in React/Next.js
+function MoodTrackerIntegration({ userId, mood }) {
+  return (
+    <div className="vue-component-wrapper">
+      <VueMoodTracker userId={userId} initialMood={mood} />
+    </div>
+  )
+}
+```
+
+## Styling: Tailwind CSS
+
+Tailwind CSS provides our utility-first styling approach, enabling rapid development while maintaining consistent design principles.
+
+<Tabs>
+  <Tab title="Configuration">
+    ```javascript
+    // tailwind.config.js
+    module.exports = {
+      content: [
+        './pages/**/*.{js,ts,jsx,tsx,mdx}',
+        './components/**/*.{js,ts,jsx,tsx,mdx}',
+      ],
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              light: '#7C9A92', // Sage Green
+              DEFAULT: '#2A2A4A', // Deep Indigo
+              dark: '#1A1A30',
+            },
+            accent: {
+              light: '#E6B17E', // Warm Amber
+              DEFAULT: '#D27D5C', // Terracotta
+              dark: '#59344F', // Deep Plum
+            },
+          },
+          fontFamily: {
+            sans: ['Montserrat', 'sans-serif'],
+            serif: ['Lora', 'serif'],
+          },
+        },
+      },
+      plugins: [
+        require('@tailwindcss/forms'),
+        require('@tailwindcss/typography'),
+      ],
+    }
+    ```
+  </Tab>
+  <Tab title="Usage Pattern">
+    ```jsx
+    // Component example with Tailwind CSS
+    function ProductCard({ product }) {
+      return (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-xl">
+          <div className="relative h-48">
+            <img 
+              src={product.imageUrl} 
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+            {product.isNew && (
+              <span className="absolute top-2 right-2 bg-accent px-2 py-1 text-xs text-white rounded">
+                New
+              </span>
+            )}
+          </div>
+          <div className="p-4">
+            <h3 className="font-sans font-medium text-lg text-primary-dark">{product.name}</h3>
+            <p className="font-serif text-sm text-gray-600 mt-1">{product.description}</p>
+            <div className="flex justify-between items-center mt-4">
+              <span className="font-sans font-bold text-accent-dark">${product.price}</span>
+              <button className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary-dark transition-colors">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+**MOOD MNKY Typography System**
+
+Our application uses a custom typography system with the following font families:
+- **RocGroteskWide**: Brand font for headings (font-heading, font-brand)
+- **RocGrotesk**: More readable brand font for UI elements (font-grotesk)
+- **Helvetica**: Clean font for body text (font-body)
+- **HelveticaRounded**: Friendly font for buttons and CTAs (font-rounded)
+
+For detailed typography guidelines and usage examples, see the [Theme Customization](/developer-resources/theme-customization) documentation.
+</Note>
+
+## State Management: Pinia
+
+For Vue applications, we use Pinia as our state management solution, while for React/Next.js applications, we use a combination of React Context and Redux.
+
+### Pinia Store Example
+
+```typescript
+// Mood tracking store
+import { defineStore } from 'pinia'
+import { supabase } from '@/lib/supabase'
+
+export const useMoodStore = defineStore('mood', {
+  state: () => ({
+    currentMood: null,
+    moodHistory: [],
+    isLoading: false,
+    error: null
+  }),
+  
+  getters: {
+    moodTrend: (state) => {
+      // Calculate trends based on mood history
+      if (state.moodHistory.length < 2) return 'neutral'
+      // Trend calculation logic
+    }
+  },
+  
+  actions: {
+    async fetchMoodHistory(userId) {
+      this.isLoading = true
+      try {
+        const { data, error } = await supabase
+          .from('mood_entries')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        
+        if (error) throw error
+        
+        this.moodHistory = data
+      } catch (e) {
+        this.error = e.message
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    async recordMood(mood, userId) {
+      this.isLoading = true
+      try {
+        const { data, error } = await supabase
+          .from('mood_entries')
+          .insert([{ mood, user_id: userId }])
+          .select()
+        
+        if (error) throw error
+        
+        this.currentMood = mood
+        this.moodHistory = [data[0], ...this.moodHistory]
+      } catch (e) {
+        this.error = e.message
+      } finally {
+        this.isLoading = false
+      }
+    }
+  }
+})
+```
+
+## UI Components: Headless UI and Element Plus
+
+We use a combination of Headless UI for React applications and Element Plus for Vue applications to create consistent, accessible, and beautiful interfaces.
+
+<AccordionGroup>
+  <Accordion title="Headless UI Integration" icon="react">
+    ```jsx
+    import { Dialog, Transition } from '@headlessui/react'
+    import { Fragment, useState } from 'react'
+    
+    export function MoodSelectionModal({ isOpen, closeModal, onSelect }) {
+      const moods = [
+        { name: 'Happy', emoji: '😊', color: '#FFD700' },
+        { name: 'Calm', emoji: '😌', color: '#90EE90' },
+        { name: 'Energetic', emoji: '⚡', color: '#FF6F61' },
+        { name: 'Reflective', emoji: '🤔', color: '#7B68EE' },
+        { name: 'Tired', emoji: '😴', color: '#A9A9A9' },
+      ]
+      
+      return (
+        <Transition appear show={isOpen} as={Fragment}>
+          <Dialog as="div" className="relative z-50" onClose={closeModal}>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-25" />
+            </Transition.Child>
+            
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-medium leading-6 text-gray-900"
+                    >
+                      How are you feeling today?
+                    </Dialog.Title>
+                    
+                    <div className="mt-4 grid grid-cols-5 gap-2">
+                      {moods.map((mood) => (
+                        <button
+                          key={mood.name}
+                          className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                          onClick={() => {
+                            onSelect(mood)
+                            closeModal()
+                          }}
+                          style={{ backgroundColor: `${mood.color}20` }}
+                        >
+                          <span className="text-3xl">{mood.emoji}</span>
+                          <span className="mt-1 text-sm">{mood.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
+      )
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Element Plus Usage" icon="vuejs">
+    ```vue
+    <template>
+      <div class="custom-scent-builder">
+        <el-steps :active="activeStep" finish-status="success">
+          <el-step title="Base Notes" icon="nose" />
+          <el-step title="Middle Notes" icon="vial" />
+          <el-step title="Top Notes" icon="spray-can" />
+          <el-step title="Review" icon="check" />
+        </el-steps>
+        
+        <div class="mt-8">
+          <div v-if="activeStep === 0">
+            <h3 class="text-xl font-medium mb-4">Select Base Notes</h3>
+            <el-row :gutter="16">
+              <el-col v-for="note in baseNotes" :key="note.id" :span="8">
+                <el-card @click="toggleNote(note, 'base')" :class="{ 'selected': selectedBase.includes(note.id) }">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full" :style="{ backgroundColor: note.color }"></div>
+                    <div class="ml-4">
+                      <h4 class="font-medium">{{ note.name }}</h4>
+                      <p class="text-sm text-gray-600">{{ note.description }}</p>
+                    </div>
+                  </div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+          
+          <!-- Other steps omitted for brevity -->
+          
+          <div class="mt-6 flex justify-between">
+            <el-button v-if="activeStep > 0" @click="activeStep--">Previous</el-button>
+            <el-button v-if="activeStep < 3" type="primary" @click="activeStep++">Next</el-button>
+            <el-button v-else type="success" @click="createScent">Create Your Scent</el-button>
+          </div>
+        </div>
+      </div>
+    </template>
+    
+    <script setup>
+    import { ref } from 'vue'
+    import { ElMessage } from 'element-plus'
+    import { useFragranceStore } from '@/stores/fragrance'
+    
+    const activeStep = ref(0)
+    const selectedBase = ref([])
+    const selectedMiddle = ref([])
+    const selectedTop = ref([])
+    
+    const fragranceStore = useFragranceStore()
+    const baseNotes = fragranceStore.getAvailableNotes('base')
+    
+    function toggleNote(note, type) {
+      if (type === 'base') {
+        const index = selectedBase.value.indexOf(note.id)
+        if (index === -1) {
+          if (selectedBase.value.length < 3) {
+            selectedBase.value.push(note.id)
+          } else {
+            ElMessage.warning('You can select up to 3 base notes')
+          }
+        } else {
+          selectedBase.value.splice(index, 1)
+        }
+      }
+      // Similar logic for middle and top notes
+    }
+    
+    function createScent() {
+      fragranceStore.createCustomFragrance({
+        baseNotes: selectedBase.value,
+        middleNotes: selectedMiddle.value,
+        topNotes: selectedTop.value
+      })
+    }
+    </script>
+    
+    <style scoped>
+    .custom-scent-builder {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .selected {
+      border: 2px solid #2A2A4A;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Client-side Utilities: VueUse
+
+For Vue applications, we leverage VueUse for composable utilities that enhance developer productivity and application functionality.
+
+### Common VueUse Implementations
+
+```typescript
+import { useMouse } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
+import { useMediaQuery } from '@vueuse/core'
+
+// Fragrance visualization component
+export function useFragranceVisualizer() {
+  // Track mouse position for interactive visualization
+  const { x, y } = useMouse()
+  
+  // Responsive design detection
+  const isMobile = useMediaQuery('(max-width: 640px)')
+  
+  // Persist user preferences
+  const visualizationStyle = useLocalStorage('fragrance-viz-style', 'particles')
+  
+  // Custom composable logic
+  function generateVisualization(fragranceData) {
+    // Generate visualization based on fragrance data, mouse position,
+    // device type, and user preferences
+    return {
+      particles: [],
+      intensity: fragranceData.intensity,
+      // ...other visualization data
+    }
+  }
+  
+  return {
+    x, y,
+    isMobile,
+    visualizationStyle,
+    generateVisualization
+  }
+}
+```
+
+## Documentation: Mintlify
+
+Our documentation system leverages Mintlify to create comprehensive, accessible, and beautiful documentation for all aspects of the MOOD MNKY ecosystem.
+
+<CardGroup cols={2}>
+  <Card title="Key Features" icon="list-check">
+    - Interactive code samples
+    - Responsive design
+    - Dark/light mode support
+    - Search functionality
+    - Versioning support
+  </Card>
+  <Card title="Content Organization" icon="folder-tree">
+    - Brand documentation
+    - Technical documentation
+    - API references
+    - Product catalog
+    - Developer guides
+  </Card>
+</CardGroup>
+
+## Frontend Testing Strategy
+
+Our frontend testing approach involves multiple layers to ensure quality and reliability:
+
+<Steps>
+  <Step title="Unit Testing">
+    Using Jest and React Testing Library for React components, and Vitest for Vue components.
+    
+    ```typescript
+    // Example unit test for a React component
+    import { render, screen, fireEvent } from '@testing-library/react'
+    import { MoodSelector } from './MoodSelector'
+    
+    describe('MoodSelector', () => {
+      it('renders all mood options', () => {
+        render(<MoodSelector onSelect={() => {}} />)
+        
+        expect(screen.getByText('Happy')).toBeInTheDocument()
+        expect(screen.getByText('Calm')).toBeInTheDocument()
+        expect(screen.getByText('Energetic')).toBeInTheDocument()
+        expect(screen.getByText('Reflective')).toBeInTheDocument()
+        expect(screen.getByText('Tired')).toBeInTheDocument()
+      })
+      
+      it('calls onSelect with the correct mood when clicked', () => {
+        const handleSelect = jest.fn()
+        render(<MoodSelector onSelect={handleSelect} />)
+        
+        fireEvent.click(screen.getByText('Happy'))
+        
+        expect(handleSelect).toHaveBeenCalledWith({
+          name: 'Happy',
+          emoji: '😊',
+          color: '#FFD700'
+        })
+      })
+    })
+    ```
+  </Step>
+  <Step title="Component Testing">
+    Using Storybook to develop and test components in isolation.
+    
+    ```typescript
+    // Example Storybook story
+    import { MoodSelector } from './MoodSelector'
+    
+    export default {
+      title: 'Components/MoodSelector',
+      component: MoodSelector,
+      argTypes: {
+        onSelect: { action: 'selected' }
+      }
+    }
+    
+    const Template = (args) => <MoodSelector {...args} />
+    
+    export const Default = Template.bind({})
+    Default.args = {}
+    
+    export const WithPreselectedMood = Template.bind({})
+    WithPreselectedMood.args = {
+      initialMood: 'Happy'
+    }
+    
+    export const Disabled = Template.bind({})
+    Disabled.args = {
+      disabled: true
+    }
+    ```
+  </Step>
+  <Step title="Integration Testing">
+    Using Cypress for end-to-end testing of user flows.
+    
+    ```typescript
+    // Example Cypress test
+    describe('Mood Tracking Flow', () => {
+      beforeEach(() => {
+        cy.login('test-user@moodmnky.co', 'password')
+        cy.visit('/dashboard')
+      })
+      
+      it('allows a user to record their current mood', () => {
+        cy.contains('How are you feeling today?').should('be.visible')
+        cy.contains('button', 'Select Mood').click()
+        
+        cy.contains('Happy').click()
+        
+        cy.contains('Mood recorded successfully').should('be.visible')
+        cy.contains('Current Mood: Happy').should('be.visible')
+      })
+      
+      it('shows mood history in a chart', () => {
+        cy.get('[data-testid="mood-history-chart"]').should('be.visible')
+        cy.get('[data-testid="mood-history-chart"] .chart-bar').should('have.length.at.least', 1)
+      })
+    })
+    ```
+  </Step>
+</Steps>
+
+## Performance Optimization
+
+We implement various strategies to ensure optimal frontend performance:
+
+<CardGroup cols={3}>
+  <Card title="Code Splitting" icon="code-branch">
+    Dynamic imports and lazy loading for route-based code splitting
+  </Card>
+  <Card title="Image Optimization" icon="image">
+    Next.js Image component with WebP format and responsive sizing
+  </Card>
+  <Card title="Caching Strategy" icon="database">
+    Progressive data loading and local caching with SWR/React Query
+  </Card>
+  <Card title="Bundle Analysis" icon="chart-pie">
+    Regular webpack bundle analysis to identify and reduce bloat
+  </Card>
+  <Card title="Core Web Vitals" icon="gauge-high">
+    Monitoring and optimization of LCP, FID, and CLS metrics
+  </Card>
+  <Card title="Server Components" icon="server">
+    Leveraging Next.js Server Components for faster rendering
+  </Card>
+</CardGroup>
+
+## Frontend Architecture
+
+Our frontend architecture follows these principles:
+
+1. **Component-Based Design**: Reusable, composable components
+2. **Atomic Design**: Organizing components into atoms, molecules, organisms, templates, and pages
+3. **Progressive Enhancement**: Core functionality works without JavaScript, enhanced with client-side features
+4. **Responsive Design**: Mobile-first approach with adaptable layouts
+5. **Accessibility**: WCAG compliance throughout all interfaces
+
+## Resources
+
+<CardGroup cols={3}>
+  <Card title="Next.js Documentation" icon="book" href="https://nextjs.org/docs" target="_blank">
+    Official documentation for our primary framework
+  </Card>
+  <Card title="Vue.js Documentation" icon="book" href="https://vuejs.org/guide/introduction.html" target="_blank">
+    Official Vue.js guides and API reference
+  </Card>
+  <Card title="Tailwind CSS Documentation" icon="book" href="https://tailwindcss.com/docs" target="_blank">
+    Comprehensive guide to our utility-first CSS framework
+  </Card>
+</CardGroup>
+
+---
+
+For any questions related to our frontend technologies, please contact the MOOD MNKY development team. 

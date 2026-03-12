@@ -1,0 +1,34 @@
+# Shopify Theme Editing — Project Rules (Cursor)
+
+## Operating model
+- Prefer minimal, reversible edits.
+- Avoid breaking the Online Store editor: preserve section blocks, settings, and schema integrity.
+- When uncertain, inspect existing theme patterns before introducing new structure.
+
+## Shopify/Liquid conventions
+- Use snippets for reusable UI.
+- Use sections for editor-configurable UI.
+- Keep `{% schema %}` valid JSON. Never add trailing commas.
+- Avoid changing core objects (`product`, `collection`, `cart`) semantics.
+- Prefer theme's existing patterns (Dawn-style) over inventing a new system.
+
+## Assets
+- Prefer editing existing `assets/*.css` and `assets/*.js` when possible.
+- Avoid inline CSS/JS in Liquid unless tiny and unavoidable.
+- If adding new CSS/JS files, ensure they're loaded appropriately.
+
+## Safety rails
+- Never delete settings/blocks unless explicitly requested.
+- When touching `layout/theme.liquid`, explain the blast radius and keep changes localized.
+- Keep accessibility in mind: labels, focus states, keyboard navigation, aria attributes when needed.
+
+## Workflow
+- Before implementing: summarize plan + list files you will change.
+- After implementing: summarize what changed and what to test manually in Shopify (product page, cart, header mobile, search).
+
+## Testing checklist (manual)
+- Header: mobile menu, search, cart icon
+- Product: variants, add-to-cart, quantity
+- Cart: update qty, remove, notes (if present)
+- Performance: no heavy blocking JS added
+- Editor: section settings still visible and functional

@@ -1,0 +1,213 @@
+---
+title: "UI Components Package"
+description: "Shared UI component library based on ShadCN UI"
+icon: "palette"
+---
+
+# UI Components Package (@repo/ui)
+
+The UI Components package provides a comprehensive library of reusable React components based on ShadCN UI, ensuring consistent design and user experience across all MOOD MNKY applications.
+
+## Overview
+
+`@repo/ui` is a shared component library that provides pre-styled, accessible React components built on top of Radix UI primitives and Tailwind CSS. This package ensures design consistency across the entire MOOD MNKY ecosystem while maintaining flexibility for customization.
+
+### Key Features
+
+- **ShadCN-Based**: Built on ShadCN UI components
+- **Accessible**: WCAG-compliant components with ARIA support
+- **Type-Safe**: Full TypeScript support
+- **Customizable**: Themeable and extensible
+- **Consistent**: Shared design system across apps
+
+## Installation
+
+The package is automatically available as a workspace dependency:
+
+```json
+{
+  "dependencies": {
+    "@repo/ui": "workspace:*"
+  }
+}
+```
+
+## Usage
+
+### Basic Import
+
+```typescript
+import { Button, Card, Input } from '@repo/ui';
+```
+
+### Component Examples
+
+#### Button
+
+```typescript
+import { Button } from '@repo/ui';
+
+function MyComponent() {
+  return (
+    <Button variant="default" size="lg">
+      Click Me
+    </Button>
+  );
+}
+```
+
+#### Card
+
+```typescript
+import { Card, CardHeader, CardTitle, CardContent } from '@repo/ui';
+
+function MyCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+      </CardHeader>
+      <CardContent>
+        Card content goes here
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+#### Input
+
+```typescript
+import { Input } from '@repo/ui';
+
+function MyForm() {
+  return (
+    <Input 
+      type="email" 
+      placeholder="Enter your email"
+    />
+  );
+}
+```
+
+## Available Components
+
+The package includes all standard ShadCN UI components:
+
+- **Buttons**: Various styles and sizes
+- **Cards**: Container components with headers and content
+- **Forms**: Input, Textarea, Select, Checkbox, Radio
+- **Navigation**: Tabs, Accordion, Dropdown Menu
+- **Feedback**: Alert, Toast, Dialog, Sheet
+- **Layout**: Separator, Scroll Area, Aspect Ratio
+- **Data Display**: Table, Badge, Avatar
+
+## Theming
+
+Components support theming through Tailwind CSS:
+
+```typescript
+// Use theme variables
+<div className="bg-primary text-primary-foreground">
+  Themed content
+</div>
+```
+
+### Customization
+
+Override component styles by extending the theme:
+
+```typescript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#000000',
+          foreground: '#FFFFFF',
+        },
+      },
+    },
+  },
+};
+```
+
+## Component Patterns
+
+### Composition Pattern
+
+Components are designed for composition:
+
+```typescript
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Button 
+} from '@repo/ui';
+
+function ProductCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Product Name</CardTitle>
+        <CardDescription>Product description</CardDescription>
+      </CardHeader>
+      <CardContent>
+        Product details
+      </CardContent>
+      <CardFooter>
+        <Button>Add to Cart</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+## Accessibility
+
+All components follow WCAG guidelines:
+
+- **Keyboard Navigation**: Full keyboard support
+- **ARIA Attributes**: Proper ARIA labels and roles
+- **Focus Management**: Visible focus indicators
+- **Screen Reader Support**: Semantic HTML and ARIA
+
+## TypeScript Support
+
+Full TypeScript support with exported types:
+
+```typescript
+import type { ButtonProps } from '@repo/ui';
+
+function CustomButton(props: ButtonProps) {
+  return <Button {...props} />;
+}
+```
+
+## Best Practices
+
+### When to Use Shared Components
+
+- ✅ Use for common UI patterns across apps
+- ✅ Use for consistent design system elements
+- ✅ Use for accessible, tested components
+
+### When to Create App-Specific Components
+
+- ❌ Don't use for app-specific business logic
+- ❌ Don't use for one-off designs
+- ❌ Don't use for experimental features
+
+## Related Resources
+
+- [ShadCN UI Documentation](https://ui.shadcn.com) - Component reference
+- [Applications](/applications/overview) - See components in use
+- [Theme Customization](/developer-resources/theme-customization) - Theming guide
+
+
+

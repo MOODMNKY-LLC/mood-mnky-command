@@ -1,0 +1,264 @@
+# Chat
+
+This guide covers the chat capabilities of the Ollama service.
+
+## Chat Endpoint
+
+```bash
+POST /api/chat
+
+curl -X POST "https://ollama.moodmnky.com/api/chat" \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama2",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful AI assistant."
+      },
+      {
+        "role": "user",
+        "content": "What is the capital of France?"
+      }
+    ],
+    "stream": false,
+    "options": {
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "top_k": 40,
+      "num_ctx": 4096,
+      "repeat_penalty": 1.1
+    }
+  }'
+```
+
+Response:
+```json
+{
+  "model": "llama2",
+  "created_at": "2024-03-20T15:23:44Z",
+  "message": {
+    "role": "assistant",
+    "content": "The capital of France is Paris."
+  },
+  "done": true,
+  "total_duration": 1250000000,
+  "load_duration": 50000000,
+  "prompt_eval_duration": 150000000,
+  "eval_duration": 1050000000,
+  "eval_count": 25,
+  "context_length": 15
+}
+```
+
+## Request Parameters
+
+### Core Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| model | string | Yes | The model to use for chat |
+| messages | array | Yes | Array of message objects |
+| stream | boolean | No | Whether to stream the response |
+| options | object | No | Model parameters for generation |
+
+### Message Object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| role | string | Yes | "system", "user", or "assistant" |
+| content | string | Yes | The message content |
+
+### Options Object
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| temperature | float | 0.7 | Controls randomness (0.0 - 1.0) |
+| top_p | float | 0.9 | Nucleus sampling threshold |
+| top_k | integer | 40 | Top-k sampling threshold |
+| num_ctx | integer | 4096 | Context window size |
+| repeat_penalty | float | 1.1 | Repetition penalty |
+
+## Usage Examples
+
+### Basic Chat
+
+```typescript
+const response = await client.ollama.chat({
+  model: "llama2",
+  messages: [
+    {
+      role: "user",
+      content: "What is the capital of France?"
+    }
+  ]
+});
+
+console.log(response.message.content);
+```
+
+### Chat with System Message
+
+```typescript
+const response = await client.ollama.chat({
+  model: "llama2",
+  messages: [
+    {
+      role: "system",
+      content: "You are a helpful AI assistant that provides concise answers."
+    },
+    {
+      role: "user",
+      content: "What is the capital of France?"
+    }
+  ],
+  options: {
+    temperature: 0.5
+  }
+});
+```
+
+### Streaming Chat
+
+```typescript
+const stream = await client.ollama.chat({
+  model: "llama2",
+  messages: [
+    {
+      role: "user",
+      content: "Write a short story about a robot."
+    }
+  ],
+  stream: true
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.message.content);
+}
+```
+
+### Multi-turn Conversation
+
+```typescript
+const conversation = [
+  {
+    role: "system",
+    content: "You are a helpful AI assistant."
+  }
+];
+
+// First turn
+const response1 = await client.ollama.chat({
+  model: "llama2",
+  messages: [
+    ...conversation,
+    {
+      role: "user",
+      content: "What is machine learning?"
+    }
+  ]
+});
+conversation.push(
+  { role: "user", content: "What is machine learning?" },
+  response1.message
+);
+
+// Second turn
+const response2 = await client.ollama.chat({
+  model: "llama2",
+  messages: [
+    ...conversation,
+    {
+      role: "user",
+      content: "Can you give me an example?"
+    }
+  ]
+});
+```
+
+## Best Practices
+
+1. **Conversation Management**
+   - Keep conversation history for context
+   - Limit context window size for performance
+   - Clear conversation history when starting new topics
+   - Use system messages to set behavior
+
+2. **Parameter Optimization**
+   - Lower temperature for factual responses
+   - Higher temperature for creative tasks
+   - Adjust top_p and top_k for response diversity
+   - Monitor and optimize context length
+
+3. **Error Handling**
+   - Implement retry logic for timeouts
+   - Handle streaming errors gracefully
+   - Monitor response quality
+   - Implement fallback options
+
+4. **Performance Optimization**
+   - Use streaming for long responses
+   - Batch similar requests when possible
+   - Implement request queuing
+   - Monitor and optimize response times
+
+## Error Handling
+
+```typescript
+try {
+  const response = await client.ollama.chat({
+    model: "llama2",
+    messages: [
+      {
+        role: "user",
+        content: "Hello!"
+      }
+    ]
+  });
+} catch (error) {
+  switch (error.code) {
+    case "MODEL_NOT_LOADED":
+      console.error("Model not loaded");
+      // Attempt to load model
+      break;
+    case "CONTEXT_LENGTH_EXCEEDED":
+      console.error("Context length exceeded");
+      // Truncate conversation history
+      break;
+    case "RATE_LIMIT_EXCEEDED":
+      console.error("Rate limit exceeded");
+      // Implement backoff strategy
+      break;
+    default:
+      console.error("Unexpected error:", error);
+  }
+}
+```
+
+## Common Use Cases
+
+1. **Customer Support**
+   - Answer product questions
+   - Troubleshoot issues
+   - Provide technical support
+   - Handle common inquiries
+
+2. **Content Generation**
+   - Write creative content
+   - Generate summaries
+   - Create descriptions
+   - Draft responses
+
+3. **Task Assistance**
+   - Step-by-step instructions
+   - Process explanations
+   - Problem-solving guidance
+   - Information lookup
+
+## Support & Resources
+
+- [API Reference](https://docs.moodmnky.com/api/ollama)
+- [Chat Guide](https://docs.moodmnky.com/guides/chat)
+- [Best Practices](https://docs.moodmnky.com/guides/best-practices)
+- [Support](mailto:support@moodmnky.com) 

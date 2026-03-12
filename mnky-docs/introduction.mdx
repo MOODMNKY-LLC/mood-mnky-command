@@ -1,0 +1,131 @@
+---
+title: 'Introduction'
+description: 'An overview of the three pillars that form the foundation of the MOOD MNKY ecosystem'
+---
+
+<img
+  className="hidden dark:block mx-auto rounded-lg my-8"
+  src="/images/mnky-trio-hero-gold.png"
+  alt="MNKY Trio - Dark Theme"
+  width="80%"
+/>
+
+<img
+  className="block dark:hidden mx-auto rounded-lg my-8"
+  src="/images/mnky-trio-hero-white.png"
+  alt="MNKY Trio - Light Theme"
+  width="80%"
+/>
+
+# Introduction
+
+The MNKY VERSE is built on three interconnected pillars that work together to create a cohesive ecosystem for bespoke fragrance and personalized self-care. Each pillar serves a distinct purpose while reinforcing the others.
+
+## The Three Pillars Architecture
+
+<Frame caption="The Three Pillars of MOOD MNKY">
+  <img src="/images/mnky-trio-icon.png" alt="Three Pillars Architecture" />
+</Frame>
+
+### MNKY VERSE: The Web Portal
+
+<img
+  className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
+  src="/images/mood-mnky-2d.png"
+  alt="MOOD MNKY"
+/>
+
+**MNKY VERSE** is the web experiential portal—the public-facing destination where customers explore products, engage with AI agents, read the blog, participate in gamification, and connect with the community.
+
+**Core Focus:** Bespoke fragrance in the MNKY VERSE. Always scentsing the MOOD.
+
+**Key Components:**
+- Storefront and product catalog (Shopify Storefront API)
+- MNKY VERSE blog (Supabase, synced from Notion)
+- AI agents directory and chat
+- Gamification (XP, quests)
+- Manga/Issues, UGC, community
+- Fragrance tools (wheel, oils, formulas, glossary, blending guide)
+
+[Learn more about MNKY VERSE](/brand-overview/mood-experience)
+
+---
+
+### The Dojo: Members' Private Hub
+
+<img
+  className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
+  src="/images/sage-mnky-2d.png"
+  alt="SAGE MNKY Agent"
+/>
+
+**The Dojo** is the members' private hub—an authenticated space for preferences, Blending Lab, MNKY CHAT, and saved blends.
+
+**Core Focus:** A private "dojo" for growth and mastery in self-care practices.
+
+**Key Components:**
+- XP and quests (gamification)
+- Blending Lab and saved blends
+- MNKY CHAT with Flowise
+- Preferences (default agent, settings)
+- Quick access to MNKY VERSE
+
+[Learn more about The Dojo](/platform-services/dojo-overview)
+
+---
+
+### MNKY LABZ: Command Center
+
+<img
+  className="float-right ml-4 mb-4 w-24 h-24 rounded-full"
+  src="/images/code-mnky-2d.png"
+  alt="CODE MNKY Agent"
+/>
+
+**MNKY LABZ** is the admin dashboard and backstage—where operations, product data, and the CODE MNKY assistant converge.
+
+**Core Focus:** Developer-centric infrastructure and operational tools.
+
+**Key Components:**
+- Formulas, fragrance oils, glossary
+- Shopify store management
+- Notion sync
+- CODE MNKY conversational assistant
+- Platform tools (SQL, Flowise, funnels)
+- Verse backoffice (manga, XP, UGC)
+
+[Learn more about MNKY LABZ](/platform-services/labz-overview)
+
+---
+
+## Integration of the Pillars
+
+<img
+  className="mx-auto my-8 rounded-lg shadow-lg"
+  src="/images/mnky-trio-3d.png"
+  alt="Integrated MNKY Pillars"
+  width="70%"
+/>
+
+The three pillars work together:
+
+- **MNKY VERSE + Dojo**: Public portal links to private hub; gamification spans both
+- **Dojo + MNKY LABZ**: MNKY LABZ powers product data (formulas, oils) used in Blending Lab
+- **MNKY LABZ + VERSE**: MNKY LABZ manages Shopify catalog and Notion content for the Verse blog
+- **All Three**: Complete ecosystem in one Next.js app
+
+This integrated approach delivers:
+
+1. **Extreme Personalization**: Tailored to individual preferences
+2. **Multi-sensory Integration**: Engaging all senses
+3. **AI-Augmented Wellness**: Enhanced by specialized AI agents
+4. **Engaged Community**: Connected through shared experiences
+5. **Accessible Premium Experience**: Democratizing premium self-care
+
+## Pillar Summary Table
+
+| Pillar | Focus | Core Agent | Key Technology | Primary Value |
+|--------|-------|------------|----------------|---------------|
+| **MNKY VERSE** | Web Portal | MOOD MNKY Agent | Shopify, Hydrogen React | Discovery & Engagement |
+| **The Dojo** | Private Hub | SAGE MNKY Agent | Supabase Auth | Growth & Crafting |
+| **MNKY LABZ** | Command Center | CODE MNKY Agent | Supabase, Notion, Shopify Admin | Operations & Development |

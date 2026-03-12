@@ -1,0 +1,24 @@
+{
+  "description": "FFXIV job IDs aligned with game log / ACT / FFLogs. Used for overlay labels and Hydaelyn filters.",
+  "jobs": [
+    { "id": 19, "abbr": "PLD", "name": "Paladin", "role": "tank" },
+    { "id": 20, "abbr": "WAR", "name": "Warrior", "role": "tank" },
+    { "id": 21, "abbr": "DRK", "name": "Dark Knight", "role": "tank" },
+    { "id": 22, "abbr": "GNB", "name": "Gunbreaker", "role": "tank" },
+    { "id": 24, "abbr": "WHM", "name": "White Mage", "role": "healer" },
+    { "id": 25, "abbr": "SCH", "name": "Scholar", "role": "healer" },
+    { "id": 26, "abbr": "AST", "name": "Astrologian", "role": "healer" },
+    { "id": 27, "abbr": "SGE", "name": "Sage", "role": "healer" },
+    { "id": 30, "abbr": "MNK", "name": "Monk", "role": "melee" },
+    { "id": 31, "abbr": "DRG", "name": "Dragoon", "role": "melee" },
+    { "id": 32, "abbr": "NIN", "name": "Ninja", "role": "melee" },
+    { "id": 33, "abbr": "SAM", "name": "Samurai", "role": "melee" },
+    { "id": 34, "abbr": "RPR", "name": "Reaper", "role": "melee" },
+    { "id": 35, "abbr": "BRD", "name": "Bard", "role": "ranged" },
+    { "id": 36, "abbr": "MCH", "name": "Machinist", "role": "ranged" },
+    { "id": 37, "abbr": "DNC", "name": "Dancer", "role": "ranged" },
+    { "id": 38, "abbr": "BLM", "name": "Black Mage", "role": "caster" },
+    { "id": 39, "abbr": "SMN", "name": "Summoner", "role": "caster" },
+    { "id": 40, "abbr": "RDM", "name": "Red Mage", "role": "caster" }
+  ]
+}

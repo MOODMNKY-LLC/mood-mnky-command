@@ -1,0 +1,104 @@
+---
+title: 'Introduction to MOOD MNKY'
+description: 'Get started with the MOOD MNKY development ecosystem'
+---
+
+# Introduction to MOOD MNKY Development
+
+Welcome to the MOOD MNKY development ecosystem! This guide provides an overview of our platform architecture, development standards, and key resources to help you get started.
+
+## MOOD MNKY Ecosystem Overview
+
+MOOD MNKY combines physical products, digital experiences, and AI-driven personalization to transform self-care into a meaningful, personalized journey:
+
+```
+                  ┌───────────────┐
+                  │  Shopify API   │
+                  └───────┬───────┘
+                          │
+                          ▼
+┌──────────────┐    ┌───────────────┐    ┌───────────────┐
+│ Web Platform │◄───┤ E-commerce   │───►│ Agent System  │
+│ (Next.js)    │    │ API Layer     │    │               │
+└──────────────┘    └───────────────┘    └───────────────┘
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │   Supabase    │
+                  │  (Extended    │
+                  │    Data)      │
+                  └───────────────┘
+```
+
+## Repository Organization
+
+Our codebase is organized as a monorepo using Turborepo and pnpm workspaces:
+
+```
+MNKY-REPO/
+├── apps/                 # User-facing applications
+├── packages/             # Shared libraries and utilities
+├── agents/               # Agent definitions and configurations
+├── content/              # Content libraries and assets
+├── docs/                 # Documentation (Mintlify)
+├── infra/                # Infrastructure and deployment
+├── data/                 # Data models and schemas
+├── scripts/              # Utility scripts
+├── config/               # Shared configurations
+```
+
+## Core Technologies
+
+- **Frontend**: Next.js, TypeScript, Tailwind CSS, ShadCN
+- **Backend**: Supabase (PostgreSQL), Serverless Functions
+- **E-commerce**: Headless Shopify
+- **AI**: Custom agent framework with specialized capabilities
+- **Documentation**: Mintlify
+- **Build & CI/CD**: Turborepo, GitHub Actions
+
+## Key Development Areas
+
+As a developer, you can contribute to several areas of the MOOD MNKY ecosystem:
+
+### Web Platform
+
+Our web applications use Next.js with the App Router, TypeScript, and a comprehensive UI component library built with Tailwind CSS and ShadCN.
+
+[Web Platform Documentation →](/reference/architecture/web-platform)
+
+### Agent Framework
+
+Our AI agent system consists of three specialized agents - MOOD MNKY, CODE MNKY, and SAGE MNKY - built on a shared infrastructure.
+
+[Agent Framework Documentation →](/agents)
+
+### E-commerce Integration
+
+Our e-commerce system is built around a headless Shopify implementation, integrated with our Next.js frontend and agent system.
+
+[E-commerce Documentation →](/platform/e-commerce)
+
+### Dojo Platform
+
+The Dojo Platform serves as a personalized "life OS" that provides tailored learning and development environments.
+
+[Dojo Platform Documentation →](/platform/dojo)
+
+## Getting Started
+
+To begin developing for MOOD MNKY:
+
+1. [Set up your development environment](/guides/getting-started/environment-setup)
+2. [Understand our coding standards](/guides/development/code-standards)
+3. [Review contribution guidelines](/guides/getting-started/contribution-guidelines)
+4. [Explore our API documentation](/api)
+
+## Need Help?
+
+If you need assistance, you can:
+
+- Visit our [Developer Forum](https://community.moodmnky.co/developers)
+- Join our [Discord Server](https://discord.gg/moodmnky)
+- Contact the [Developer Relations Team](mailto:dev-relations@moodmnky.co)
+
+We're excited to have you join our development community!

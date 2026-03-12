@@ -1,0 +1,89 @@
+---
+title: 'Bungie API'
+description: 'Integration documentation for the Bungie API within MOOD MNKY'
+---
+
+# Bungie API Integration
+
+The Bungie API provides programmatic access to Bungie's games, including Destiny 2. This integration allows MOOD MNKY applications to retrieve game data, track player progress, and integrate with the Destiny 2 ecosystem.
+
+## Overview
+
+The MOOD MNKY Bungie API integration provides access to:
+
+- **Game Data** - Access to items, activities, locations, and other game content
+- **Player Profiles** - Access to player characters, inventory, and progression
+- **Clans and Groups** - Access to clan information and membership
+- **Vendor & Economy** - Access to in-game vendors and economy data
+
+## Authentication
+
+The Bungie API uses two authentication methods:
+
+1. **API Key Authentication**
+   - Required for all requests
+   - Passed via the `X-API-Key` header
+   - Obtain from the [Bungie Developer Portal](https://www.bungie.net/en/Application)
+
+2. **OAuth 2.0**
+   - Required for accessing user-specific data
+   - Uses standard OAuth 2.0 flow with authorization_code grant type
+   - Requires user consent for specified scopes
+
+## Rate Limiting
+
+Bungie enforces strict rate limits on API usage:
+- 25 requests per second
+- Throttling information returned in response headers
+- Additional limits on specific endpoints
+
+## Implemented Endpoints
+
+Our integration currently supports the following key endpoints:
+
+| Endpoint | Description | Auth Required |
+|----------|-------------|--------------|
+| GET /App/ApiUsage | Get API usage statistics | API Key |
+| GET /User/GetMembershipsForCurrentUser | Get user profile information | API Key + OAuth |
+| GET /Destiny2/Manifest | Get manifest data | API Key |
+| GET /Destiny2/{membershipType}/Profile/{destinyMembershipId} | Get player profile | API Key |
+| GET /GroupV2/Name/{groupName}/{groupType} | Get group/clan by name | API Key |
+
+## Getting Started
+
+To begin using the Bungie API within MOOD MNKY:
+
+1. **Register an Application**
+   - Visit the [Bungie Developer Portal](https://www.bungie.net/en/Application)
+   - Create a new application with appropriate OAuth scopes
+   - Note your API key and OAuth credentials
+
+2. **Authorization**
+   - Implement OAuth 2.0 flow for user authorization
+   - Store access and refresh tokens securely
+   - Handle token renewal when tokens expire
+
+3. **Make API Requests**
+   - Include your API key in all requests
+   - For user-specific endpoints, include the OAuth token
+   - Handle rate limiting by respecting throttle values
+
+## Integration Use Cases
+
+The Bungie API integration enables several features within the MOOD MNKY ecosystem:
+
+- **Player Progress Tracking**: Monitor player achievements and progress in Destiny 2
+- **Loadout Optimization**: Provide recommendations for optimal equipment loadouts
+- **Activity Scheduling**: Coordinate in-game activities with friends and clanmates
+- **Game Content Integration**: Incorporate game lore and content into MOOD MNKY experiences
+
+## API Playground
+
+Use our [Bungie API Playground](/api/devops/bungie/playground) to interactively test endpoints with your own API key.
+
+## Resources
+
+- [Official Bungie API Documentation](https://bungie-net.github.io/multi/index.html)
+- [GitHub Repository](https://github.com/Bungie-net/api)
+- [API Usage Guidelines](https://github.com/Bungie-net/api/wiki/API-Usage-Guidelines-&-Code-of-Conduct)
+- [Bungie Developer Portal](https://www.bungie.net/en/Application) 

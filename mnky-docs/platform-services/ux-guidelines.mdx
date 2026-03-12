@@ -1,0 +1,523 @@
+---
+title: "UX Guidelines"
+description: "Design and user experience guidelines for the MOOD MNKY ecosystem"
+---
+
+# UX Guidelines
+
+Welcome to the MOOD MNKY UX Guidelines. This document provides comprehensive guidelines for creating consistent, accessible, and engaging user experiences across the MOOD MNKY ecosystem.
+
+## Design Principles
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+  <div className="p-5 border rounded-lg">
+    <h3 className="text-xl font-semibold mb-3">Sensory-First Design</h3>
+    <p className="text-sm">Design experiences that engage multiple senses, creating immersive and memorable interactions that reflect our focus on sensory wellness.</p>
+  </div>
+  <div className="p-5 border rounded-lg">
+    <h3 className="text-xl font-semibold mb-3">Personalized Expression</h3>
+    <p className="text-sm">Create interfaces that adapt to individual preferences and enable personal expression through customization and tailored experiences.</p>
+  </div>
+  <div className="p-5 border rounded-lg">
+    <h3 className="text-xl font-semibold mb-3">Accessible Luxury</h3>
+    <p className="text-sm">Balance premium aesthetics with inclusive design to ensure that luxury experiences are accessible to diverse audiences with varying needs.</p>
+  </div>
+</div>
+
+## Color System
+
+<div className="my-8">
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div>
+      <div className="h-20 bg-amber-500 rounded-t-lg"></div>
+      <div className="p-3 border-x border-b rounded-b-lg">
+        <div className="font-medium">Amber</div>
+        <div className="text-xs text-gray-500">#F59E0B</div>
+        <div className="text-xs">Primary brand color</div>
+      </div>
+    </div>
+    <div>
+      <div className="h-20 bg-green-500 rounded-t-lg"></div>
+      <div className="p-3 border-x border-b rounded-b-lg">
+        <div className="font-medium">Green</div>
+        <div className="text-xs text-gray-500">#10B981</div>
+        <div className="text-xs">Secondary accent</div>
+      </div>
+    </div>
+    <div>
+      <div className="h-20 bg-blue-500 rounded-t-lg"></div>
+      <div className="p-3 border-x border-b rounded-b-lg">
+        <div className="font-medium">Blue</div>
+        <div className="text-xs text-gray-500">#3B82F6</div>
+        <div className="text-xs">Technical accent</div>
+      </div>
+    </div>
+    <div>
+      <div className="h-20 bg-gray-900 rounded-t-lg"></div>
+      <div className="p-3 border-x border-b rounded-b-lg">
+        <div className="font-medium">Charcoal</div>
+        <div className="text-xs text-gray-500">#111827</div>
+        <div className="text-xs">Base neutral</div>
+      </div>
+    </div>
+  </div>
+  
+  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border">
+    <h3 className="text-lg font-semibold mb-4">Color Usage Guidelines</h3>
+    <ul className="space-y-2 text-sm">
+      <li><strong>Amber:</strong> Primary action buttons, key highlights, MOOD MNKY agent elements</li>
+      <li><strong>Green:</strong> Success states, SAGE MNKY agent elements, wellness indicators</li>
+      <li><strong>Blue:</strong> Technical interfaces, CODE MNKY agent elements, information components</li>
+      <li><strong>Neutrals:</strong> Background hierarchy, typography, containers, and structural elements</li>
+    </ul>
+  </div>
+</div>
+
+## Typography
+
+<div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg my-8">
+  <div className="space-y-8">
+    <div>
+      <span className="text-xs text-gray-500 uppercase tracking-wider">Headings</span>
+      <h1 className="text-4xl font-bold mt-1">Helvetica Neue</h1>
+      <div className="mt-3 text-sm">
+        <code className="bg-gray-100 dark:bg-gray-700 py-0.5 px-1.5 rounded">font-family: "Helvetica Neue", Helvetica, sans-serif;</code>
+        <p className="mt-2">Used for headings, product names, and key interface elements. Selected for its clarity, precision, and premium feel.</p>
+      </div>
+    </div>
+    
+    <div>
+      <span className="text-xs text-gray-500 uppercase tracking-wider">Body</span>
+      <h2 className="text-2xl font-normal mt-1" style={{fontFamily: "Georgia, serif"}}>Georgia</h2>
+      <div className="mt-3 text-sm">
+        <code className="bg-gray-100 dark:bg-gray-700 py-0.5 px-1.5 rounded">font-family: Georgia, serif;</code>
+        <p className="mt-2">Used for body text, descriptions, and longform content. Selected for its readability and subtle contrast with our sans-serif headings.</p>
+      </div>
+    </div>
+    
+    <div>
+      <span className="text-xs text-gray-500 uppercase tracking-wider">UI Elements</span>
+      <h3 className="text-xl font-medium mt-1" style={{fontFamily: "Inter, sans-serif"}}>Inter</h3>
+      <div className="mt-3 text-sm">
+        <code className="bg-gray-100 dark:bg-gray-700 py-0.5 px-1.5 rounded">font-family: "Inter", sans-serif;</code>
+        <p className="mt-2">Used for UI elements, buttons, and navigation. Selected for its excellent readability at small sizes and clean, modern appearance.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+## Layout Guidelines
+
+<div className="p-6 border bg-gray-50 dark:bg-gray-800/50 rounded-lg my-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Grid System</h3>
+      <img src="/images/grid-system.png" alt="Grid System" className="w-full h-auto border rounded-lg" />
+      <ul className="mt-4 list-disc pl-5 space-y-1">
+        <li>12-column grid system for flexible layouts</li>
+        <li>Consistent gutters (16px on mobile, 24px on desktop)</li>
+        <li>
+          Four responsive breakpoints:
+          <ul className="mt-1 ml-4 list-disc">
+            <li>Mobile: 0-639px</li>
+            <li>Tablet: 640px-1023px</li>
+            <li>Desktop: 1024px-1279px</li>
+            <li>Large Desktop: 1280px+</li>
+          </ul>
+        </li>
+        <li>Auto-adjusting container widths</li>
+      </ul>
+    </div>
+    
+    <div>
+      <h3 className="text-xl font-semibold mb-4">Spacing System</h3>
+      <div className="border rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-700 p-4">
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <div className="w-16 h-4 bg-amber-200 mr-3"></div>
+              <span className="text-sm">4px - Extra Small</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-16 h-8 bg-amber-300 mr-3"></div>
+              <span className="text-sm">8px - Small</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-16 h-12 bg-amber-400 mr-3"></div>
+              <span className="text-sm">16px - Medium</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-16 h-16 bg-amber-500 mr-3"></div>
+              <span className="text-sm">24px - Large</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-16 h-20 bg-amber-600 mr-3"></div>
+              <span className="text-sm">32px - Extra Large</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="mt-4">The spacing system uses an 8-point grid to maintain rhythm and consistency throughout the interface. Spacing increments are applied consistently for margins, padding, and positioning.</p>
+    </div>
+  </div>
+</div>
+
+## Interaction Patterns
+
+<CardGroup cols={2}>
+  <Card title="Navigation" icon="sitemap">
+    Core navigation patterns
+    - Consistent global navigation
+    - Context-aware local navigation
+    - Breadcrumbs for deep hierarchies
+    - Tab patterns for related content
+    - Progressive disclosure for complex interfaces
+  </Card>
+  <Card title="Forms & Inputs" icon="keyboard">
+    Form design guidelines
+    - Input validation patterns
+    - Error state handling
+    - Progressive form completion
+    - Inline help and tooltips
+    - Accessible form labels
+  </Card>
+  <Card title="Feedback & Notifications" icon="bell">
+    User feedback patterns
+    - Success/error/warning states
+    - Toast notifications
+    - Loading states and indicators
+    - Empty states
+    - Confirmation dialogs
+  </Card>
+  <Card title="Content Patterns" icon="file-lines">
+    Content presentation
+    - Card layouts
+    - Lists and tables
+    - Detail views
+    - Media presentation
+    - Content hierarchy
+  </Card>
+</CardGroup>
+
+## Accessibility Guidelines
+
+<AccordionGroup>
+  <Accordion title="Visual Accessibility">
+    Ensuring interfaces are visually accessible
+    - Minimum contrast ratios (4.5:1 for normal text, 3:1 for large text)
+    - Text resizing without loss of functionality
+    - Color not used as the sole means of conveying information
+    - Focus states clearly visible
+    - Alternative text for all non-text content
+  </Accordion>
+  <Accordion title="Keyboard Navigation">
+    Supporting keyboard-only users
+    - All functionality available via keyboard
+    - Logical tab order following visual layout
+    - Focus trapping in modals and other contained components
+    - Keyboard shortcuts for power users
+    - Skip navigation links
+  </Accordion>
+  <Accordion title="Screen Reader Support">
+    Optimizing for assistive technologies
+    - Proper semantic HTML markup
+    - ARIA roles, states, and properties when needed
+    - Descriptive headings and labels
+    - Meaningful link text
+    - Proper form input labeling
+  </Accordion>
+  <Accordion title="Cognitive Considerations">
+    Making interfaces understandable for all users
+    - Clear and consistent navigation
+    - Predictable interactions
+    - Error prevention and recovery
+    - Sufficient time to read and use content
+    - Minimal distractions
+  </Accordion>
+</AccordionGroup>
+
+## Agent Integration Guidelines
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
+  <div className="p-6 border rounded-lg shadow-md relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-16 h-16">
+      <div className="absolute transform rotate-45 bg-amber-500 text-white text-xs font-semibold py-1 right-[-35px] top-[32px] w-[170px] text-center">
+        MOOD MNKY
+      </div>
+    </div>
+    <div className="mb-12">
+      <h3 className="text-xl font-semibold text-amber-600 mb-2">Experience Agent</h3>
+      <p className="text-sm">Guidelines for integrating the MOOD MNKY agent into customer-facing interfaces.</p>
+      <ul className="mt-4 list-disc pl-5 space-y-1 text-sm">
+        <li>Use warm, conversational tone</li>
+        <li>Incorporate amber color accents</li>
+        <li>Showcase agent avatar consistently</li>
+        <li>Focus on personalization features</li>
+      </ul>
+    </div>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-16 h-16">
+      <div className="absolute transform rotate-45 bg-green-500 text-white text-xs font-semibold py-1 right-[-35px] top-[32px] w-[170px] text-center">
+        SAGE MNKY
+      </div>
+    </div>
+    <div className="mb-12">
+      <h3 className="text-xl font-semibold text-green-600 mb-2">Knowledge Agent</h3>
+      <p className="text-sm">Guidelines for integrating the SAGE MNKY agent into learning and content environments.</p>
+      <ul className="mt-4 list-disc pl-5 space-y-1 text-sm">
+        <li>Use educational, supportive tone</li>
+        <li>Incorporate green color accents</li>
+        <li>Showcase agent avatar consistently</li>
+        <li>Focus on knowledge exploration features</li>
+      </ul>
+    </div>
+  </div>
+  <div className="p-6 border rounded-lg shadow-md relative overflow-hidden">
+    <div className="absolute top-0 right-0 w-16 h-16">
+      <div className="absolute transform rotate-45 bg-blue-500 text-white text-xs font-semibold py-1 right-[-35px] top-[32px] w-[170px] text-center">
+        CODE MNKY
+      </div>
+    </div>
+    <div className="mb-12">
+      <h3 className="text-xl font-semibold text-blue-600 mb-2">Technical Agent</h3>
+      <p className="text-sm">Guidelines for integrating the CODE MNKY agent into development interfaces.</p>
+      <ul className="mt-4 list-disc pl-5 space-y-1 text-sm">
+        <li>Use clear, precise tone</li>
+        <li>Incorporate blue color accents</li>
+        <li>Showcase agent avatar consistently</li>
+        <li>Focus on technical assistance features</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg my-8">
+  <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-300 mb-4">Agent Chat Interface Guidelines</h3>
+  
+  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+    <div className="flex items-start mb-4">
+      <img src="/images/mood-mnky-2d.png" alt="MOOD MNKY" className="w-10 h-10 rounded-full mr-3" />
+      <div className="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-lg rounded-tl-none max-w-md">
+        <p className="text-sm">Hello! I'm MOOD MNKY, your personal guide to creating perfect scent experiences. How can I help you today?</p>
+      </div>
+    </div>
+    
+    <div className="flex items-start flex-row-reverse mb-4">
+      <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg rounded-tr-none max-w-md">
+        <p className="text-sm">I'd like to create a custom candle with a relaxing scent.</p>
+      </div>
+    </div>
+    
+    <div className="flex items-start mb-4">
+      <img src="/images/mood-mnky-2d.png" alt="MOOD MNKY" className="w-10 h-10 rounded-full mr-3" />
+      <div className="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-lg rounded-tl-none max-w-md">
+        <p className="text-sm">Perfect! I'd be happy to help you craft a relaxing candle. Based on your preferences from previous sessions, I think you might enjoy a blend of lavender, bergamot, and cedar. Would you like to start with that as a base?</p>
+      </div>
+    </div>
+  </div>
+  
+  <div className="space-y-4 text-sm">
+    <h4 className="font-semibold text-blue-800 dark:text-blue-300">Design Guidelines</h4>
+    <ul className="list-disc pl-5 space-y-1">
+      <li>Use speech bubbles with rounded corners for a conversational feel</li>
+      <li>Apply subtle background colors that correspond to the agent (amber, green, blue)</li>
+      <li>Include agent avatar consistently for brand recognition</li>
+      <li>Ensure ample white space for readability</li>
+      <li>Support rich content within bubbles (images, links, interactive elements)</li>
+      <li>Design for both light and dark mode</li>
+      <li>Implement typing indicators and read receipts for better UX</li>
+    </ul>
+  </div>
+</div>
+
+## Component Library
+
+<div className="p-6 border rounded-lg my-8">
+  <div className="flex items-center justify-between mb-6">
+    <h3 className="text-xl font-semibold">MNKY UI Components</h3>
+    <a href="https://ui.moodmnky.com" className="text-sm text-amber-600 hover:text-amber-700 flex items-center">
+      <span>View Full Library</span>
+      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+    </a>
+  </div>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="border rounded p-3">
+      <div className="font-medium mb-2">Buttons</div>
+      <div className="space-y-2">
+        <button className="w-full bg-amber-500 text-white py-2 px-4 rounded-md">Primary</button>
+        <button className="w-full border border-amber-500 text-amber-500 py-2 px-4 rounded-md">Secondary</button>
+        <button className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md">Tertiary</button>
+      </div>
+    </div>
+    
+    <div className="border rounded p-3">
+      <div className="font-medium mb-2">Form Controls</div>
+      <div className="space-y-2">
+        <input type="text" placeholder="Text input" className="w-full border rounded-md px-3 py-2" />
+        <select className="w-full border rounded-md px-3 py-2">
+          <option>Dropdown</option>
+        </select>
+        <div className="flex items-center">
+          <input type="checkbox" id="checkbox" className="mr-2" />
+          <label htmlFor="checkbox">Checkbox</label>
+        </div>
+      </div>
+    </div>
+    
+    <div className="border rounded p-3">
+      <div className="font-medium mb-2">Cards</div>
+      <div className="border rounded-lg overflow-hidden">
+        <div className="bg-gray-100 h-16"></div>
+        <div className="p-3">
+          <div className="font-medium">Card Title</div>
+          <div className="text-xs text-gray-500">Card content and description</div>
+        </div>
+      </div>
+    </div>
+    
+    <div className="border rounded p-3">
+      <div className="font-medium mb-2">Navigation</div>
+      <div className="space-y-2">
+        <div className="flex border-b">
+          <div className="px-3 py-2 border-b-2 border-amber-500 font-medium">Tab 1</div>
+          <div className="px-3 py-2 text-gray-500">Tab 2</div>
+          <div className="px-3 py-2 text-gray-500">Tab 3</div>
+        </div>
+        <div className="flex text-sm">
+          <div className="text-gray-500">Home</div>
+          <div className="mx-2 text-gray-400">/</div>
+          <div className="text-gray-500">Section</div>
+          <div className="mx-2 text-gray-400">/</div>
+          <div className="font-medium">Page</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+## Implementation Resources
+
+<CardGroup cols={3}>
+  <Card title="UI Component Repository" icon="github">
+    Access the complete MNKY UI component library on GitHub, including:
+    - ShadCN-based component library
+    - Tailwind configuration
+    - Storybook documentation
+    - Usage examples
+    
+    [View Repository](https://github.com/mood-mnky/ui)
+  </Card>
+  <Card title="Design System in Figma" icon="figma">
+    Explore the MOOD MNKY design system in Figma:
+    - Master component library
+    - Design tokens
+    - Pattern examples
+    - Responsive templates
+    
+    [Open Figma](https://figma.com/team/mood-mnky)
+  </Card>
+  <Card title="Usage Guidelines" icon="book">
+    Detailed documentation for implementing the UX guidelines:
+    - Integration instructions
+    - Best practices
+    - Accessibility implementation
+    - Case studies
+    
+    [Read Documentation](https://docs.moodmnky.com/design)
+  </Card>
+</CardGroup>
+
+## Responsive Design
+
+<Steps>
+  <Step title="Mobile First">
+    Always design for mobile screens first, then progressively enhance for larger screens. This ensures a solid foundation for all users.
+  </Step>
+  <Step title="Breakpoint System">
+    Use our defined breakpoints (640px, 1024px, 1280px) consistently to maintain a coherent responsive experience across the platform.
+  </Step>
+  <Step title="Flexible Components">
+    Ensure all UI components adapt appropriately to different screen sizes using relative units and flexible layouts.
+  </Step>
+  <Step title="Touch Optimization">
+    Design interactive elements with touch targets of at least 44x44px and appropriate spacing between clickable items.
+  </Step>
+  <Step title="Content Prioritization">
+    Carefully consider content hierarchy on smaller screens, prioritizing essential information and actions.
+  </Step>
+</Steps>
+
+## Performance Guidelines
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+  <div className="p-5 border rounded-lg">
+    <h3 className="text-xl font-semibold mb-3">Core Web Vitals</h3>
+    <ul className="space-y-3">
+      <li>
+        <div className="flex items-center mb-1">
+          <span className="font-medium">LCP (Largest Contentful Paint)</span>
+          <span className="ml-auto text-green-500 font-medium">≤ 2.5s</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full" style={{width: '75%'}}></div>
+        </div>
+      </li>
+      <li>
+        <div className="flex items-center mb-1">
+          <span className="font-medium">FID (First Input Delay)</span>
+          <span className="ml-auto text-green-500 font-medium">≤ 100ms</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full" style={{width: '85%'}}></div>
+        </div>
+      </li>
+      <li>
+        <div className="flex items-center mb-1">
+          <span className="font-medium">CLS (Cumulative Layout Shift)</span>
+          <span className="ml-auto text-green-500 font-medium">≤ 0.1</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full" style={{width: '90%'}}></div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  
+  <div className="p-5 border rounded-lg">
+    <h3 className="text-xl font-semibold mb-3">Optimization Techniques</h3>
+    <ul className="list-disc ml-5 space-y-2">
+      <li>Image optimization (WebP format, lazy loading, proper dimensions)</li>
+      <li>Code splitting and bundle optimization</li>
+      <li>Critical CSS inlining</li>
+      <li>Efficient resource loading and caching</li>
+      <li>Server-side rendering for initial page loads</li>
+      <li>Deferred loading of non-critical components</li>
+      <li>Optimized animations and transitions</li>
+    </ul>
+  </div>
+</div>
+
+## Further Resources
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+  <a href="https://ui.moodmnky.com" className="block p-5 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+    <h3 className="text-lg font-medium mb-2">Component Library</h3>
+    <p className="text-sm text-gray-600 dark:text-gray-400">Explore the full MNKY UI component library with implementation examples.</p>
+  </a>
+  <a href="https://figma.com/team/mood-mnky" className="block p-5 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+    <h3 className="text-lg font-medium mb-2">Design Files</h3>
+    <p className="text-sm text-gray-600 dark:text-gray-400">Access Figma files, design tokens, and visual assets for the MOOD MNKY platform.</p>
+  </a>
+  <a href="https://github.com/mood-mnky/ui-docs" className="block p-5 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+    <h3 className="text-lg font-medium mb-2">Implementation Guides</h3>
+    <p className="text-sm text-gray-600 dark:text-gray-400">Detailed technical documentation for implementing UX guidelines in your projects.</p>
+  </a>
+</div>
+
+<Info>
+  These guidelines are continuously evolving. If you have questions or need clarification, please contact the Design Systems team.
+</Info> 
+
+

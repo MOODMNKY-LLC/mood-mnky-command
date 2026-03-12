@@ -1,0 +1,106 @@
+---
+title: 'Dojo Platform Features'
+description: 'Core features and capabilities of The Dojo—XP, quests, Blending Lab, MNKY CHAT, and preferences'
+---
+
+# Dojo Platform Features
+
+<img
+  className="rounded-lg shadow-lg border border-gray-200 max-w-full h-auto mx-auto my-6"
+  src="/images/dojo-trio-hero.png"
+  alt="Dojo Platform Features"
+/>
+
+## Overview
+
+The Dojo is the members' private hub in the MNKY VERSE. This document details the core features implemented in the current application.
+
+<Note>
+The Dojo integrates with MNKY VERSE for gamification (quests, profile), shopping, and content. Future roadmap items (mood tracking, fragrance studio, wellness rituals) may expand these capabilities.
+</Note>
+
+## Implemented Features
+
+<CardGroup cols={2}>
+  <Card title="XP & Level" icon="chart-line">
+    Gamification progress displayed on the Dojo home. Fetches from `xp_state`; links to profile.
+  </Card>
+  <Card title="Quests" icon="flag-checkered">
+    Active quests and completed count. Links to `/verse/quests`.
+  </Card>
+  <Card title="Blending Lab" icon="flask">
+    Create and save custom fragrance blends. Access via Crafting context.
+  </Card>
+  <Card title="Saved Blends" icon="book-marked">
+    User's saved fragrance blends, stored in Supabase.
+  </Card>
+  <Card title="MNKY CHAT" icon="message-square">
+    Chat interface with Flowise integration. New chat, saved chats, Flowise config.
+  </Card>
+  <Card title="Preferences" icon="settings">
+    Default agent selection and user settings.
+  </Card>
+</CardGroup>
+
+## Navigation Contexts
+
+The Dojo sidebar supports four contexts (Team Switcher):
+
+| Context | Focus | Nav Items |
+|---------|-------|-----------|
+| **Home** | Dojo hub | Home, MNKY CHAT, Preferences; MNKY VERSE links |
+| **Crafting** | Blending | Blending Lab, Saved Blends, MNKY CHAT; Glossary, Shop |
+| **Verse** | MNKY VERSE | Verse Home, Shop, Chat, Profile, Issues, UGC; Dojo links |
+| **Chat** | MNKY CHAT | New chat, Saved chats, Folders, Flowise config, Settings |
+
+## Quick Actions
+
+From the Dojo home, members can quickly access:
+- Preferences
+- MNKY VERSE Shop
+- Chat
+- Issues (manga)
+- UGC (user-generated content)
+
+## APIs
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/xp/state` | XP and level state |
+| `GET /api/xp/award` | Award XP (internal) |
+| `GET /api/xp/rules` | XP rules |
+| `GET /api/quests` | Quests list |
+| `GET /api/quests/my-progress` | User quest progress |
+| `GET /api/dojo/profile` | Dojo profile |
+| `GET /api/dojo/music` | Music playlists |
+
+## Auth Model
+
+- **Required**: All Dojo routes require Supabase Auth.
+- **Redirect**: Unauthenticated users → `/auth/login`.
+- **RLS**: Dojo data (profiles, saved_blends, xp_state, quest_progress) protected by Row Level Security.
+
+## Components
+
+Key components in `apps/web/components/dojo/`:
+- `dojo-dashboard-layout.tsx` — Layout with SidebarProvider
+- `dojo-sidebar.tsx` — Sidebar with nav groups
+- `dojo-xp-card.tsx`, `dojo-quests-card.tsx` — Gamification cards
+- `dojo-quick-actions-card.tsx` — Quick action buttons
+- `dojo-blending-lab.tsx`, `dojo-saved-blends-list.tsx` — Crafting
+- `dojo-chat-sidebar.tsx`, `dojo-flowise-chatbot.tsx` — Chat
+- `dojo-auth-context.tsx` — Auth and redirect
+
+---
+
+<CardGroup cols={2}>
+  <Card title="Dojo Overview" icon="book-open" href="/platform-services/dojo-overview">
+    Architecture and route structure
+  </Card>
+  <Card title="Reward System" icon="gift" href="/platform-services/reward-system">
+    XP, quests, and rewards design
+  </Card>
+  <Card title="MNKY VERSE" icon="globe" href="/brand-overview/mood-experience">
+    The web portal
+  </Card>
+</CardGroup>

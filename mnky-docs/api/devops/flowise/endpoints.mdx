@@ -1,0 +1,403 @@
+# Flowise Service API Endpoints
+
+This document provides detailed information about all available endpoints in the MOOD MNKY Flowise service.
+
+## Base URL
+
+All endpoints are relative to: `https://flowise.moodmnky.com`
+
+## Authentication
+
+All endpoints require authentication using an API key in the header:
+
+```bash
+Authorization: Bearer <your_api_key>
+```
+
+## Available Endpoints
+
+### Chatflow Management
+
+#### List Chatflows
+
+Retrieves all available chatflows.
+
+- **Endpoint**: `GET /api/v1/chatflows`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "chatflows": [
+    {
+      "id": "flow-123",
+      "name": "Customer Support Flow",
+      "description": "Handles customer inquiries",
+      "created_at": "2024-03-20T10:00:00Z",
+      "updated_at": "2024-03-20T11:00:00Z"
+    }
+  ]
+}
+```
+
+#### Get Chatflow
+
+Retrieves a specific chatflow by ID.
+
+- **Endpoint**: `GET /api/v1/chatflows/{id}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "id": "flow-123",
+  "name": "Customer Support Flow",
+  "description": "Handles customer inquiries",
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "llmNode",
+      "data": {
+        "model": "gpt-4",
+        "temperature": 0.7
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "node-1",
+      "target": "node-2"
+    }
+  ],
+  "created_at": "2024-03-20T10:00:00Z",
+  "updated_at": "2024-03-20T11:00:00Z"
+}
+```
+
+#### Create Chatflow
+
+Creates a new chatflow.
+
+- **Endpoint**: `POST /api/v1/chatflows`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "name": "New Support Flow",
+  "description": "Enhanced customer support flow",
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "llmNode",
+      "data": {
+        "model": "gpt-4",
+        "temperature": 0.7
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "node-1",
+      "target": "node-2"
+    }
+  ]
+}
+```
+
+Example Response:
+```json
+{
+  "id": "flow-124",
+  "name": "New Support Flow",
+  "description": "Enhanced customer support flow",
+  "created_at": "2024-03-20T12:00:00Z",
+  "updated_at": "2024-03-20T12:00:00Z"
+}
+```
+
+### Prediction & Chat
+
+#### Predict
+
+Runs a prediction using a specific chatflow.
+
+- **Endpoint**: `POST /api/v1/prediction/{chatflowId}`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "question": "How can I reset my password?",
+  "overrideConfig": {
+    "temperature": 0.8
+  },
+  "history": [
+    {
+      "role": "user",
+      "content": "I need help with my account"
+    },
+    {
+      "role": "assistant",
+      "content": "I'll be happy to help you with your account. What specific assistance do you need?"
+    }
+  ]
+}
+```
+
+Example Response:
+```json
+{
+  "id": "pred-123",
+  "chatflowId": "flow-123",
+  "question": "How can I reset my password?",
+  "answer": "To reset your password, please follow these steps:\n1. Click on 'Forgot Password'\n2. Enter your email address\n3. Check your email for reset instructions",
+  "created_at": "2024-03-20T12:05:00Z",
+  "executionTime": 2.5
+}
+```
+
+#### Stream Chat
+
+Initiates a streaming chat session with a chatflow.
+
+- **Endpoint**: `POST /api/v1/chatflows-stream/{chatflowId}`
+- **Authentication**: Required
+- **Request Format**: JSON
+
+Example Request:
+```json
+{
+  "question": "Tell me about your services",
+  "history": [],
+  "overrideConfig": {
+    "temperature": 0.7
+  }
+}
+```
+
+Example Response (Streaming):
+```json
+{
+  "type": "message",
+  "content": "We offer a variety of services including...",
+  "done": false
+}
+// ... more streaming responses ...
+{
+  "type": "message",
+  "content": ".",
+  "done": true
+}
+```
+
+### Analytics & Monitoring
+
+#### Get Chatflow Analytics
+
+Retrieves analytics for a specific chatflow.
+
+- **Endpoint**: `GET /api/v1/analytics/chatflow/{chatflowId}`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "chatflowId": "flow-123",
+  "totalCalls": 1500,
+  "averageResponseTime": 2.3,
+  "successRate": 98.5,
+  "timeRange": "last_7_days",
+  "dailyStats": [
+    {
+      "date": "2024-03-20",
+      "calls": 250,
+      "averageResponseTime": 2.1,
+      "successRate": 99.0
+    }
+  ]
+}
+```
+
+#### Get System Status
+
+Retrieves the current system status and resource usage.
+
+- **Endpoint**: `GET /api/v1/status`
+- **Authentication**: Required
+- **Response Format**: JSON
+
+Example Response:
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "uptime": 345600,
+  "activeChatflows": 15,
+  "activeConnections": 25,
+  "resourceUsage": {
+    "cpu": 45.2,
+    "memory": 2048,
+    "storage": {
+      "used": 10240,
+      "total": 51200
+    }
+  }
+}
+```
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+```json
+{
+  "error": "Invalid request parameters",
+  "details": "Missing required field: question"
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "error": "Authentication failed",
+  "details": "Invalid or missing API key"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "Resource not found",
+  "details": "Chatflow with ID 'flow-999' not found"
+}
+```
+
+### 429 Too Many Requests
+```json
+{
+  "error": "Rate limit exceeded",
+  "details": "Please try again in 60 seconds"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "error": "Internal server error",
+  "details": "An unexpected error occurred"
+}
+```
+
+## Rate Limiting
+
+The Flowise service implements rate limiting based on the following tiers:
+
+- **Basic**: 100 requests per hour
+- **Standard**: 1000 requests per hour
+- **Premium**: 10000 requests per hour
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 985
+X-RateLimit-Reset: 1623456789
+```
+
+## Best Practices
+
+1. **Chatflow Design**
+   - Keep flows modular and reusable
+   - Implement proper error handling in nodes
+   - Use appropriate memory nodes for context
+   - Test flows thoroughly before deployment
+
+2. **Performance Optimization**
+   - Use streaming for long-running responses
+   - Implement client-side caching where appropriate
+   - Monitor and optimize resource usage
+   - Use appropriate batch sizes for processing
+
+3. **Error Handling**
+   - Implement proper fallbacks in flows
+   - Handle timeouts gracefully
+   - Log errors for debugging
+   - Provide meaningful error messages to users
+
+## Code Examples
+
+### Python Example
+```python
+import requests
+
+API_URL = "https://flowise.moodmnky.com"
+API_KEY = "your_api_key"
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# Make a prediction
+response = requests.post(
+    f"{API_URL}/api/v1/prediction/flow-123",
+    headers=headers,
+    json={
+        "question": "How can I help you?",
+        "history": [],
+        "overrideConfig": {
+            "temperature": 0.7
+        }
+    }
+)
+
+print(response.json())
+```
+
+### JavaScript Example
+```javascript
+const API_URL = "https://flowise.moodmnky.com";
+const API_KEY = "your_api_key";
+
+async function streamChat() {
+  const response = await fetch(
+    `${API_URL}/api/v1/chatflows-stream/flow-123`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        question: "Tell me about your services",
+        history: [],
+        overrideConfig: {
+          temperature: 0.7
+        }
+      })
+    }
+  );
+
+  const reader = response.body.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    console.log(new TextDecoder().decode(value));
+  }
+}
+```
+
+## Support
+
+For API support and updates:
+
+- **Status Page**: [status.moodmnky.com](https://status.moodmnky.com)
+- **Developer Community**: [community.moodmnky.com](https://community.moodmnky.com)
+- **API Updates**: Subscribe to our [API changelog](https://docs.moodmnky.com/changelog)
+- **Security**: Report security issues to [security@moodmnky.com](mailto:security@moodmnky.com) 

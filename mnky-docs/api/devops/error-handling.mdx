@@ -1,0 +1,383 @@
+# Error Handling Guide
+
+This guide provides comprehensive information about error handling when working with MOOD MNKY API services. Understanding and properly handling errors is crucial for building robust and reliable applications.
+
+## Error Response Format
+
+All API errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {
+      "field": "Additional error context",
+      "suggestion": "Suggested resolution"
+    },
+    "request_id": "unique-request-identifier"
+  }
+}
+```
+
+## Common Error Types
+
+### Authentication Errors (401)
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or missing API key",
+    "details": {
+      "header": "x-api-key",
+      "suggestion": "Ensure you're including a valid API key in the request header"
+    },
+    "request_id": "req_123abc"
+  }
+}
+```
+
+### Authorization Errors (403)
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Insufficient permissions for this operation",
+    "details": {
+      "required_permission": "write",
+      "current_permission": "read",
+      "suggestion": "Upgrade your API key permissions or request access"
+    },
+    "request_id": "req_456def"
+  }
+}
+```
+
+### Validation Errors (400)
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request parameters",
+    "details": {
+      "fields": {
+        "model_name": "Required field missing",
+        "temperature": "Must be between 0 and 1"
+      },
+      "suggestion": "Check the API documentation for required fields and valid ranges"
+    },
+    "request_id": "req_789ghi"
+  }
+}
+```
+
+### Rate Limit Errors (429)
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests",
+    "details": {
+      "retry_after": 60,
+      "current_limit": "100/hour",
+      "suggestion": "Implement exponential backoff or upgrade your plan"
+    },
+    "request_id": "req_012jkl"
+  }
+}
+```
+
+### Server Errors (500)
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_SERVER_ERROR",
+    "message": "An unexpected error occurred",
+    "details": {
+      "error_id": "err_xyz789",
+      "suggestion": "Contact support if the issue persists"
+    },
+    "request_id": "req_345mno"
+  }
+}
+```
+
+## Service-Specific Errors
+
+### Ollama Service
+
+1. **Model Errors**
+```json
+{
+  "error": {
+    "code": "MODEL_NOT_FOUND",
+    "message": "Requested model is not available",
+    "details": {
+      "model": "custom-model",
+      "available_models": ["gpt-4", "llama2"],
+      "suggestion": "Use an available model or upload your custom model"
+    },
+    "request_id": "req_678pqr"
+  }
+}
+```
+
+2. **Generation Errors**
+```json
+{
+  "error": {
+    "code": "GENERATION_ERROR",
+    "message": "Failed to generate response",
+    "details": {
+      "reason": "Context length exceeded",
+      "max_length": 4096,
+      "current_length": 4500,
+      "suggestion": "Reduce input length or use streaming API"
+    },
+    "request_id": "req_901stu"
+  }
+}
+```
+
+### Flowise Service
+
+1. **Chatflow Errors**
+```json
+{
+  "error": {
+    "code": "CHATFLOW_ERROR",
+    "message": "Error in chatflow execution",
+    "details": {
+      "node_id": "node_123",
+      "node_type": "llm",
+      "error": "API timeout",
+      "suggestion": "Check node configuration or increase timeout"
+    },
+    "request_id": "req_234vwx"
+  }
+}
+```
+
+2. **Stream Errors**
+```json
+{
+  "error": {
+    "code": "STREAM_ERROR",
+    "message": "Stream connection failed",
+    "details": {
+      "stream_id": "stream_456",
+      "reason": "Client disconnected",
+      "suggestion": "Implement reconnection logic"
+    },
+    "request_id": "req_567yza"
+  }
+}
+```
+
+### Langchain Service
+
+1. **Chain Errors**
+```json
+{
+  "error": {
+    "code": "CHAIN_EXECUTION_ERROR",
+    "message": "Error executing chain",
+    "details": {
+      "chain_id": "chain_789",
+      "step": "document_loading",
+      "error": "Invalid document format",
+      "suggestion": "Ensure document format is supported"
+    },
+    "request_id": "req_890bcd"
+  }
+}
+```
+
+2. **Memory Errors**
+```json
+{
+  "error": {
+    "code": "MEMORY_ERROR",
+    "message": "Error accessing conversation memory",
+    "details": {
+      "memory_type": "buffer",
+      "operation": "read",
+      "suggestion": "Check memory configuration"
+    },
+    "request_id": "req_123efg"
+  }
+}
+```
+
+## Error Handling Best Practices
+
+### Client-Side Implementation
+
+1. **Implement Retry Logic**
+```typescript
+interface RetryConfig {
+  maxAttempts: number;
+  initialDelay: number;
+  maxDelay: number;
+  backoffFactor: number;
+}
+
+class RetryHandler {
+  constructor(private config: RetryConfig) {}
+
+  async withRetry<T>(operation: () => Promise<T>): Promise<T> {
+    let attempts = 0;
+    let delay = this.config.initialDelay;
+
+    while (attempts < this.config.maxAttempts) {
+      try {
+        return await operation();
+      } catch (error) {
+        if (!this.isRetryable(error) || attempts === this.config.maxAttempts - 1) {
+          throw error;
+        }
+
+        await this.sleep(delay);
+        delay = Math.min(delay * this.config.backoffFactor, this.config.maxDelay);
+        attempts++;
+      }
+    }
+
+    throw new Error('Max retry attempts reached');
+  }
+
+  private isRetryable(error: any): boolean {
+    return error.status === 429 || (error.status >= 500 && error.status < 600);
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+```
+
+2. **Error Recovery Strategies**
+```typescript
+class ErrorRecovery {
+  static async handleError(error: APIError, context: RequestContext): Promise<void> {
+    switch (error.code) {
+      case 'RATE_LIMIT_EXCEEDED':
+        await this.handleRateLimit(error);
+        break;
+      case 'TOKEN_EXPIRED':
+        await this.refreshToken(context);
+        break;
+      case 'STREAM_ERROR':
+        await this.reconnectStream(context);
+        break;
+      default:
+        this.logError(error);
+        throw error;
+    }
+  }
+
+  private static async handleRateLimit(error: APIError): Promise<void> {
+    const retryAfter = parseInt(error.details.retry_after) || 60;
+    await this.sleep(retryAfter * 1000);
+  }
+
+  private static async refreshToken(context: RequestContext): Promise<void> {
+    // Implementation
+  }
+
+  private static async reconnectStream(context: RequestContext): Promise<void> {
+    // Implementation
+  }
+}
+```
+
+### Error Monitoring and Reporting
+
+1. **Error Logging**
+```typescript
+class ErrorLogger {
+  constructor(private service: string) {}
+
+  logError(error: APIError, context: RequestContext): void {
+    console.error({
+      timestamp: new Date().toISOString(),
+      service: this.service,
+      error_code: error.code,
+      message: error.message,
+      request_id: error.request_id,
+      context: {
+        endpoint: context.endpoint,
+        method: context.method,
+        user_id: context.user_id
+      }
+    });
+  }
+
+  async reportToMonitoring(error: APIError): Promise<void> {
+    // Implementation for external error monitoring service
+  }
+}
+```
+
+2. **Error Analytics**
+```typescript
+class ErrorAnalytics {
+  private errors: Map<string, ErrorStats> = new Map();
+
+  trackError(error: APIError): void {
+    const stats = this.errors.get(error.code) || {
+      count: 0,
+      first_seen: new Date(),
+      last_seen: new Date()
+    };
+
+    stats.count++;
+    stats.last_seen = new Date();
+    this.errors.set(error.code, stats);
+  }
+
+  getErrorReport(): ErrorReport {
+    return {
+      total_errors: Array.from(this.errors.values())
+        .reduce((sum, stats) => sum + stats.count, 0),
+      by_code: Object.fromEntries(this.errors),
+      timestamp: new Date()
+    };
+  }
+}
+```
+
+## Support & Troubleshooting
+
+### Getting Help
+
+1. **Error Resolution Resources**
+   - Check the [API Status Page](https://status.moodmnky.com)
+   - Review [Common Issues](https://docs.moodmnky.com/errors/common-issues)
+   - Search the [Developer Forum](https://community.moodmnky.com)
+   - Contact [Support](mailto:api-support@moodmnky.com)
+
+2. **Debugging Tools**
+   - Use the `request_id` for support inquiries
+   - Enable debug logging in your client
+   - Check service-specific logs
+   - Monitor error patterns
+
+### Error Prevention
+
+1. **Request Validation**
+   - Validate input before sending
+   - Check required fields
+   - Verify parameter types and ranges
+   - Test edge cases
+
+2. **Monitoring & Alerts**
+   - Set up error rate monitoring
+   - Configure alerts for critical errors
+   - Track error patterns
+   - Monitor API health 

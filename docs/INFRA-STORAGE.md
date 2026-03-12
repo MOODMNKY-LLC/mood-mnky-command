@@ -1,0 +1,95 @@
+# Infra artifacts storage (Supabase)
+
+Theme CSS, Dockerfiles, and n8n workflows for MOOD MNKY services are stored in Supabase Storage and registered in the `infra_artifact_versions` table. This gives a single source of truth and public URLs (CDN-style) for deployment and MNKY LABZ.
+
+## Buckets
+
+| Bucket             | Purpose                                      | Public read |
+|--------------------|----------------------------------------------|-------------|
+| `infra-artifacts`  | Service themes (CSS), Docker files, n8n JSON | Yes         |
+
+Path layout inside `infra-artifacts`:
+
+- `themes/{versionTag}/{serviceId}/mnky.css` – e.g. `themes/v1/mnky-cloud/mnky.css`
+- `themes/latest/{serviceId}/mnky.css` – stable “latest” copy (written on each publish for Jellyfin @import); e.g. `themes/latest/mnky-media/mnky.css`
+- `themes/jellyfin-web-{version}/mnky-media/mnky.css` – optional versioned path from theme-publish Edge Function (e.g. `10.11.6`)
+- `docker/{versionTag}/{serviceId}/Dockerfile` – e.g. `docker/v1/mnky-cloud/Dockerfile`
+- `n8n/workflows/{versionTag}/{name}.json` – exported n8n workflows
+
+## Database
+
+Table: `public.infra_artifact_versions`
+
+- `artifact_type`: enum `service_theme`, `docker`, `compose`, `n8n_workflow`, `other`
+- `service_id`: e.g. `mnky-cloud`, `mnky-media`, `mnky-auto` (nullable for global)
+- `storage_path`: path within the bucket
+- `version_tag`: e.g. `v1` or timestamp
+- `created_at`: for “current” = latest by `(artifact_type, service_id)`
+
+RLS: public read for `anon` and `authenticated`; no insert/update/delete for anon/authenticated (writes via service role only, e.g. publish script).
+
+## Repo layout
+
+Source files live under `infra/` at repo root:
+
+- `infra/service-themes/{nextcloud,jellyfin,jellyseerr,flowise}/mnky.css`
+- `infra/docker/{nextcloud,jellyfin,jellyseerr,n8n,flowise}/Dockerfile`
+- `infra/n8n/workflows/*.json`
+
+See [infra/README.md](../infra/README.md).
+
+## Publish script
+
+**Migrations only create the bucket and policies** — they do not upload any files. The `themes/` and `docker/` “folders” in Storage appear only after you run the publish script. Uploads go to **whichever Supabase project** is configured in the env used by the script.
+
+From repo root:
+
+- **Local Supabase** (default; loads `.env.local` then `.env`):
+  ```bash
+  pnpm run publish:infra [versionTag]
+  ```
+- **Production Supabase** (loads `.env.production` then `.env`):
+  ```bash
+  pnpm run publish:infra:production [versionTag]
+  ```
+
+Or from `apps/web` with explicit env files:
+
+```bash
+dotenv -e ../../.env.local -e ../../.env -- tsx scripts/publish-infra-artifacts.ts [versionTag]
+# Production:
+dotenv -e ../../.env.production -e ../../.env -- tsx scripts/publish-infra-artifacts.ts [versionTag]
+```
+
+`versionTag` defaults to a generated tag (e.g. `v1` or timestamp-based). The script:
+
+1. Reads from `infra/service-themes`, `infra/docker`, `infra/n8n/workflows`
+2. Uploads files to the `infra-artifacts` bucket under the versioned paths above
+3. Inserts one row per file into `infra_artifact_versions`
+
+**Required env (per target):** `NEXT_PUBLIC_SUPABASE_URL` (or `SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY` for the project you want to publish to. Use `.env.local` for local, `.env.production` for production. For `publish:infra:production`, ensure `SUPABASE_SERVICE_ROLE_KEY` is set in either `.env.production` (e.g. after `vercel env pull .env.production --environment=production`) or in a gitignored **`.env.production.local`** at the repo root (the script loads it automatically when the key is missing). Get the value from Supabase Dashboard → Project Settings → API → service_role (secret). If both are empty/missing, the script will throw "Missing Supabase config".
+
+## Resolving “current” artifact URL
+
+In app or MNKY LABZ, to get the public URL for the latest theme for a service:
+
+1. Query `infra_artifact_versions` where `artifact_type = 'service_theme'` and `service_id = 'mnky-cloud'`, order by `created_at desc`, limit 1.
+2. Take `storage_path` and build the public URL with `supabase.storage.from('infra-artifacts').getPublicUrl(storage_path).data.publicUrl`.
+
+Helper in app: use `BUCKETS.infraArtifacts` and `getPublicUrl()` from `@/lib/supabase/storage`.
+
+## CORS (Jellyfin theme @import)
+
+For Jellyfin Custom CSS `@import` of the theme from this bucket to work from `watch.moodmnky.com` and `mnky-media.moodmnky.com`, add these **allowed origins** for the `infra-artifacts` bucket in Supabase Dashboard → **Storage** → **infra-artifacts** → **Configuration** (or **CORS**):
+
+- `https://watch.moodmnky.com`
+- `https://mnky-media.moodmnky.com`
+
+## Bucket creation
+
+Buckets are created by migration: `supabase/migrations/20260223120001_infra_artifacts_bucket.sql`. Run `supabase db push` or apply migrations in your Supabase project so the bucket and policies exist before running the publish script.
+
+## See also
+
+- [SERVICES-ENV.md](SERVICES-ENV.md) – per-service API credentials
+- [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) – tokens used in service theme CSS
