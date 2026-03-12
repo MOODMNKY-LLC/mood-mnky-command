@@ -20,6 +20,7 @@
     "supabase:tls-setup": "node scripts/gen-supabase-certs.mjs",
     "lint": "turbo run lint",
     "dev:mood-mnky": "pnpm --filter mood-mnky dev",
+    "dev:flow-mnky": "pnpm --filter flow-mnky dev",
     "dev:sage-mnky": "pnpm --filter sage-mnky dev",
     "dev:code-mnky": "pnpm --filter code-mnky dev",
     "dev:hydaelyn": "pnpm --filter hydaelyn dev",
