@@ -8,8 +8,6 @@ Bespoke fragrance in the MNKY ecosystem: the Dojo (storefront and community), Bl
 
 ## What This Repo Is
 
-<!-- redeploy -->
-
 This repository is a **monorepo** containing:
 
 - **Next.js app** — One app, three surfaces: **Main** (brand/marketing at `/main`), **The Dojo** (storefront + member hub at `/dojo`), and **MNKY LABZ** (dashboard at `/platform`, `/labz`); served from a single canonical domain (www.moodmnky.com) and deployed on Vercel.
@@ -107,10 +105,8 @@ Further setup (Supabase migrations, MNKY VERSE blog sync, MNKY LABZ): see [docs/
 ### Monorepo deployment (Vercel)
 
 - **Root Directory:** Set to `apps/web` in the Vercel project settings.
-- **Install:** Use `pnpm install --no-frozen-lockfile` (no `cd ../..`) so pnpm runs from `apps/web` and creates correct workspace symlinks (e.g. `@mnky/mt-supabase`). See `apps/web/vercel.json`.
-- **Build Command:** `cd ../.. && pnpm exec turbo run build --filter=web` (or let Vercel detect Turborepo).
-- **Environment variables:** Configure in Vercel; list build-affecting vars in root `turbo.json` `globalPassThroughEnv`.
-- **Full matrix:** For each app (web, hydaelyn, portal, flow-mnky, code-mnky), see [docs/VERCEL-SETTINGS-MATRIX.md](docs/VERCEL-SETTINGS-MATRIX.md) for Root Directory, Install/Build commands, required env, and how to fix a misconfigured or duplicate Vercel project.
+- **Build Command:** From repo root, e.g. `cd ../.. && pnpm install && pnpm turbo build --filter=web` (or let Vercel detect Turborepo when `turbo.json` exists at root; if Root Directory is `apps/web`, run install and build from repo root in the build command).
+- **Environment variables:** Configure in Vercel as before; list any build-affecting vars in root `turbo.json` `globalEnv` so Turbo cache keys are correct.
 
 ---
 

@@ -31,10 +31,7 @@
     "switch-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/switch-mt-dev-owner.ts",
     "restore-mt-dev-owner": "dotenv -e .env.local -e .env -- tsx scripts/restore-mt-dev-owner.ts",
     "dev:mt-portal": "pnpm --filter mt-portal dev",
-    "dev:flow-mnky": "pnpm --filter flow-mnky dev",
-    "add-mt-overseer": "dotenv -e .env.local -e .env -- tsx scripts/add-mt-overseer.ts",
-    "deploy": "vercel deploy --prod --archive=tgz",
-    "deploy:preview": "vercel deploy --archive=tgz"
+    "add-mt-overseer": "dotenv -e .env.local -e .env -- tsx scripts/add-mt-overseer.ts"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
