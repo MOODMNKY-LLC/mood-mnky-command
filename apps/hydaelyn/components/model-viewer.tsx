@@ -15,7 +15,8 @@ import type { Group } from "three";
 const FIT_SCALE = 1.4;
 
 function Model({ url }: { url: string }) {
-  const { scene } = useGLTF(url) as { scene: Group };
+  // Cast through unknown to avoid three.js versioned type incompatibilities between @react-three/drei and @types/three
+  const { scene } = useGLTF(url) as unknown as { scene: Group };
   const cloned = useMemo(() => scene.clone(), [scene]);
   return (
     <Center
