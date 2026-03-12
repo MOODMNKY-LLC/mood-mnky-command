@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import type { Formula, Phase, Ingredient } from "@/lib/types"
 import { formulaToHtml } from "@/lib/formula-to-pdf"
-import { htmlToPdf } from "@/lib/adobe/pdf-services"
 
 export const maxDuration = 60
 
@@ -125,6 +124,7 @@ export async function POST(
   try {
     const formula = dbRowToFormula(data)
     const html = formulaToHtml(formula)
+    const { htmlToPdf } = await import("@/lib/adobe/pdf-services")
     const pdfBuffer = await htmlToPdf(html)
     const fileName = `${formula.name.replace(/[^a-zA-Z0-9]/g, "_")}_formula.pdf`
 

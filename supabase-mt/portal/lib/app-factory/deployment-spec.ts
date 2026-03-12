@@ -123,6 +123,6 @@ export function parseDeploymentSpec(data: unknown): DeploymentSpec {
 }
 
 /** Safe parse; returns { success, data } or { success: false, error } */
-export function safeParseDeploymentSpec(data: unknown): z.SafeParseReturnType<unknown, DeploymentSpec> {
+export function safeParseDeploymentSpec(data: unknown): ReturnType<typeof deploymentSpecSchema.safeParse> {
   return deploymentSpecSchema.safeParse(data);
 }

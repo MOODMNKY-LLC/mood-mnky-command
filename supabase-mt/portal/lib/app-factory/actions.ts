@@ -163,7 +163,7 @@ export async function submitLaunchSpec(input: LaunchSpecInput): Promise<SubmitLa
 
   const parsed = safeParseDeploymentSpec(spec);
   if (!parsed.success) {
-    const parts = parsed.error.errors?.map((e) => {
+    const parts = (parsed.error as { issues?: Array<{ path?: (string | number)[]; message: string }> }).issues?.map((e: { path?: (string | number)[]; message: string }) => {
       const path = e.path?.length ? `${e.path.join(".")}: ` : "";
       return `${path}${e.message}`;
     }) ?? [];

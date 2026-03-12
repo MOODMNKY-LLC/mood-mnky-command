@@ -30,14 +30,15 @@ function ProviderSettingsView({
   onSuccess,
 }: {
   projectRef: string
-  schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>>
+  schema: z.ZodObject<any> | z.ZodType<any>
   title: string
   initialValues: any
   onSuccess: () => void
 }) {
   const { mutate: updateAuthConfig, isPending: isUpdatingConfig } = useUpdateAuthConfig()
 
-  const actualSchema = 'shape' in schema ? schema : (schema._def.schema as z.ZodObject<any>)
+  const actualSchema =
+    'shape' in schema ? schema : ((schema as { _def?: { schema?: z.ZodObject<any> } })._def?.schema ?? schema)
 
   const handleUpdateAuthConfig = (formData: z.infer<typeof actualSchema>) => {
     const payload = Object.fromEntries(
@@ -64,7 +65,8 @@ function ProviderSettingsView({
     if (!allInitialValues) {
       return undefined
     }
-    const schemaKeys = Object.keys(actualSchema.shape)
+    const shape = 'shape' in actualSchema ? (actualSchema as z.ZodObject<any>).shape : null
+    const schemaKeys = shape ? Object.keys(shape) : Object.keys(allInitialValues)
     const result = schemaKeys.reduce(
       (acc, key) => {
         if (Object.prototype.hasOwnProperty.call(allInitialValues, key)) {
@@ -82,7 +84,7 @@ function ProviderSettingsView({
     <div className="w-full max-w-3xl mx-auto p-6 pt-4 lg:p-12 lg:pt-12">
       <h2 className="lg:text-xl font-semibold mb-2 lg:mb-4">{title}</h2>
       <DynamicForm
-        schema={actualSchema}
+        schema={actualSchema as z.ZodObject<any>}
         onSubmit={handleUpdateAuthConfig}
         isLoading={isUpdatingConfig}
         initialValues={formInitialValues}
@@ -122,7 +124,7 @@ export function AuthManager({ projectRef }: { projectRef: string }) {
     name: string
     icon: React.ReactNode
     description: string
-    schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>>
+    schema: z.ZodObject<any> | z.ZodType<any>
   }[] = [
     {
       icon: <Mail className="h-4 w-4 text-muted-foreground" />,
@@ -145,7 +147,7 @@ export function AuthManager({ projectRef }: { projectRef: string }) {
   ]
 
   const handleProviderClick = useCallback(
-    (provider: { name: string; schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>> }) => {
+    (provider: { name: string; schema: z.ZodObject<any> | z.ZodType<any> }) => {
       push({
         title: `${provider.name} Provider Settings`,
         component: (

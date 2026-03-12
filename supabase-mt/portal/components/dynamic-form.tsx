@@ -34,10 +34,10 @@ interface DynamicFormProps<T extends z.ZodRawShape = z.ZodRawShape> {
   columnInfo?: Record<string, { data_type: string; is_nullable: boolean }>
 }
 
-const getZodDef = (schema: ZodTypeAny): Record<string, any> =>
-  (schema as any)._def || (schema as any).def
+const getZodDef = (schema: any): Record<string, any> =>
+  schema?._def ?? schema?.def ?? {}
 
-const unwrapZodType = (fieldSchema: ZodTypeAny): ZodTypeAny => {
+const unwrapZodType = (fieldSchema: any): any => {
   if (
     !fieldSchema ||
     typeof getZodDef(fieldSchema) !== 'object' ||
@@ -152,7 +152,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
           if (typeof fieldDefFromSchema === 'undefined') {
             throw new Error(`Schema error in useEffect: schema.shape['${key}'] is undefined.`)
           }
-          const value = initialValues.hasOwnProperty(key) ? initialValues[key] : undefined
+          const value = initialValues.hasOwnProperty(key) ? (initialValues as Record<string, unknown>)[key] : undefined
           const baseFieldType = unwrapZodType(fieldDefFromSchema)
 
           // Support both old (typeName) and new (type) Zod formats
@@ -212,7 +212,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
     }
   }, [initialValues, form, schema])
 
-  const renderField = (fieldName: string, fieldSchema: ZodTypeAny) => {
+  const renderField = (fieldName: string, fieldSchema: any) => {
     const baseType = unwrapZodType(fieldSchema)
     // Support both old (typeName) and new (type) Zod formats
     const getTypeName = (def: Record<string, any>) => def.typeName || def.type

@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { parseSteamId64FromClaimedId, fetchSteamProfile } from "@/lib/steam"
 import { cookies } from "next/headers"
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const openid = require("openid")
 
 const STEAM_STATE_COOKIE = "steam_link_state"
 const DEFAULT_RETURN_PATH = "/main/services/mnky-games"
@@ -48,6 +46,8 @@ export async function GET(request: NextRequest) {
   const realm = process.env.STEAM_REALM
     ? (process.env.STEAM_REALM.endsWith("/") ? process.env.STEAM_REALM : `${process.env.STEAM_REALM}/`)
     : `${origin}/`
+
+  const openid = await import("openid")
   const relyingParty = new openid.RelyingParty(returnUrl, realm, false, false, [])
 
   const assertionUrl = request.url

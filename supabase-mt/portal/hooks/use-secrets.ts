@@ -1,7 +1,6 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { type AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/management-api'
@@ -70,7 +69,7 @@ export const useCreateSecrets = () => {
         queryKey: ['secrets', variables.projectRef],
       })
     },
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || 'There was a problem with your request.')
     },
   })
@@ -109,7 +108,7 @@ export const useDeleteSecrets = () => {
         queryKey: ['secrets', variables.projectRef],
       })
     },
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || 'There was a problem with your request.')
     },
   })

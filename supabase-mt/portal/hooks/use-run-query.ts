@@ -1,7 +1,6 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
-import { type AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/management-api'
@@ -38,7 +37,7 @@ export const runQuery = async ({
 export const useRunQuery = () => {
   return useMutation({
     mutationFn: runQuery,
-    onError: (error: AxiosError<{ message: string }>) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || 'There was a problem with your query.')
     },
   })

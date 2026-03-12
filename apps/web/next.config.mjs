@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto"
 // Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
 const nextConfig = {
   transpilePackages: ["@mnky/mt-supabase"],
-  serverExternalPackages: ["openid"],
+  serverExternalPackages: ["openid", "@adobe/pdfservices-node-sdk"],
   async redirects() {
     return [
       { source: "/labz", destination: "/platform", permanent: true },
