@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { getEnvFromFile } from "@/lib/env-file";
 
 export type AppInstance = {
   id: string;
@@ -22,27 +21,6 @@ export const ENV_INSTANCE_IDS = {
 } as const;
 
 export type AppType = "flowise" | "n8n" | "minio" | "nextcloud" | "coolify";
-
-/** Read a single env var from supabase-mt/.env.local when process.env doesn't have it (e.g. dev script path differs). */
-function getEnvFromFile(key: string): string | null {
-  try {
-    const cwd = process.cwd();
-    const envPath = join(cwd, "..", ".env.local");
-    if (!existsSync(envPath)) return null;
-    const raw = readFileSync(envPath, "utf-8");
-    const line = raw.split(/\r?\n/).find((l) => {
-      const trimmed = l.trim();
-      return trimmed.startsWith(`${key}=`) && !trimmed.startsWith("#");
-    });
-    if (!line) return null;
-    const value = line.slice(line.indexOf("=") + 1).trim();
-    if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1).trim();
-    if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1).trim();
-    return value || null;
-  } catch {
-    return null;
-  }
-}
 
 function getFlowiseApiKey(): string | null {
   return (

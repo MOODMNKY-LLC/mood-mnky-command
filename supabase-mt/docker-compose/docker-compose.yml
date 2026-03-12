@@ -28,8 +28,8 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: mood_mnky_postgres
-    ports:
-      - "5432:5432"
+    # No host port: internal only (Flowise/n8n use service name "postgres"). Avoids "port 5432 already allocated" on Coolify/host.
+    # For local host access, use: docker compose exec postgres psql -U postgres -d mood_mnky
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-mood_mnky}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -63,8 +63,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: mood_mnky_redis
-    ports:
-      - "6379:6379"
+    # No host port: internal only. Avoids port conflict on Coolify/host.
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes --appendfsync everysec
     volumes:
       - redis_data:/data
@@ -140,22 +139,20 @@ services:
     restart: "no"
 
   # Flowise AI Platform
+  # Database: entrypoint tries Postgres first; if unreachable, falls back to SQLite at /root/.flowise.
   flowise:
     image: flowiseai/flowise:latest
     container_name: mood_mnky_flowise
+    entrypoint: ["/bin/sh", "/scripts/flowise-entrypoint.sh"]
+    command: ["pnpm", "start"]
     ports:
       - "${FLOWISE_PORT:-3000}:3000"
     env_file:
       - .env
     environment:
-      # Core database
-      DATABASE_TYPE: postgres
+      # Database: set by entrypoint (Postgres when reachable, else SQLite). Pass-through for entrypoint:
       DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: ${FLOWISE_DB_NAME:-flowise}
-      DATABASE_USER: ${POSTGRES_USER:-postgres}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
-      DATABASE_SSL: "false"
+      DATABASE_PORT: "5432"
       # Auth
       FLOWISE_USERNAME: ${FLOWISE_USERNAME:-admin}
       FLOWISE_PASSWORD: ${FLOWISE_PASSWORD:-admin_password}
@@ -185,6 +182,7 @@ services:
       minio-createbucket:
         condition: service_completed_successfully
     volumes:
+      - ./scripts:/scripts:ro
       - flowise_data:/root/.flowise
     networks:
       - mood_mnky_network
@@ -352,9 +350,8 @@ services:
 networks:
   mood_mnky_network:
     driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: br-mood_mnky
-      com.docker.network.bridge.enable_icc: "true"
+    # Do not set com.docker.network.bridge.name: multiple Coolify deployments would
+    # conflict (same bridge name). Let Docker assign a unique name per project.
 
 volumes:
   postgres_data:

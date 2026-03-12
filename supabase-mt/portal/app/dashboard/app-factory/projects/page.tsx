@@ -1,6 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { getAppFactoryProjects } from "@/lib/app-factory/actions";
+import {
+  getAppFactoryProjects,
+  getCoolifyServicesForTenant,
+  type CoolifyServiceItem,
+} from "@/lib/app-factory/actions";
 import { ProjectsTable } from "./projects-table";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +12,14 @@ export const dynamic = "force-dynamic";
 export default async function AppFactoryProjectsPage() {
   const result = await getAppFactoryProjects();
   const projects = result.success ? result.projects : [];
+
+  // Fetch Coolify services (applications) per tenant so we can surface what is deployed in each project.
+  const tenantIds = [...new Set(projects.map((p) => p.tenant_id).filter(Boolean))] as string[];
+  const servicesByTenantId: Record<string, CoolifyServiceItem[]> = {};
+  for (const tenantId of tenantIds) {
+    const r = await getCoolifyServicesForTenant(tenantId);
+    if (r.success) servicesByTenantId[tenantId] = r.services;
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -34,7 +46,10 @@ export default async function AppFactoryProjectsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectsTable initialProjects={projects} />
+          <ProjectsTable
+            initialProjects={projects}
+            servicesByTenantId={servicesByTenantId}
+          />
         </CardContent>
       </Card>
     </div>

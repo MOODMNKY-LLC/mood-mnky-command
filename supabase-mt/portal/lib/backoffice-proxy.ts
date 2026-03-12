@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
 import {
   getInstanceById,
   getInstanceByTenantAndApp,
@@ -9,6 +7,7 @@ import {
   canAccessInstance,
   type AppInstance,
 } from "./backoffice-instance";
+import { getEnvFromFile } from "@/lib/env-file";
 
 export type ResolveInstanceParams =
   | { instanceId: string }
@@ -249,27 +248,8 @@ const NEXTCLOUD_ENV_PASSWORD_KEYS = [
 export function getNextcloudPassword(instance: AppInstance): string | null {
   if (instance.id === ENV_INSTANCE_IDS.nextcloud) {
     for (const key of NEXTCLOUD_ENV_PASSWORD_KEYS) {
-      const v = process.env[key]?.trim();
+      const v = getEnvFromFile(key);
       if (v) return v;
-    }
-    try {
-      const cwd = process.cwd();
-      const envPath = join(cwd, "..", ".env.local");
-      if (!existsSync(envPath)) return null;
-      const raw = readFileSync(envPath, "utf-8");
-      for (const key of NEXTCLOUD_ENV_PASSWORD_KEYS) {
-        const line = raw.split(/\r?\n/).find((l) => {
-          const t = l.trim();
-          return t.startsWith(`${key}=`) && !t.startsWith("#");
-        });
-        if (!line) continue;
-        let value = line.slice(line.indexOf("=") + 1).trim();
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
-          value = value.slice(1, -1).trim();
-        if (value) return value;
-      }
-    } catch {
-      // ignore
     }
     return null;
   }

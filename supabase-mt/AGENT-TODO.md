@@ -2,7 +2,7 @@
 
 Single source of truth for **agent-actionable todos**, **environment variables**, and **credential workflow** across the MOOD MNKY Portal, Docker Compose stack, and Ansible provisioning.
 
-**Credentials and Notion:** We use the **Notion plugin** to access the **MOOD MNKY credentials database** to find, store, retrieve, and copy needed project secrets to and from `.env.local` and other environment variable files (e.g. `portal/.env.local`, `docker-compose/.env`, provisioning vault or env). When adding or changing env vars, update Notion and this file.
+**Credentials and Notion:** We use the **Notion plugin** to access the **MOOD MNKY credentials database** to find, store, retrieve, and copy needed project secrets to and from `.env.local` and other environment variable files (e.g. `supabase-mt/.env.local`, `docker-compose/.env`, provisioning vault or env). When adding or changing env vars, update Notion and this file. See portal docs **BACKOFFICE-FLOWISE-N8N** → “Notion credential workflow” for the step-by-step.
 
 **Portal env file (avoids wrong-file edits):** The canonical env file for the portal is **`supabase-mt/.env.local`** (one level up from `portal/`). When updating it, use the **full path** (e.g. `supabase-mt/.env.local`) or the **Filesystem MCP** so you edit that file explicitly; editing "`.env.local`" from a context inside `portal/` can otherwise target the wrong file and cause credentials to appear unset in the Launch Wizard and backoffice.
 
@@ -12,12 +12,12 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 
 | ID | Summary | Area | Priority | Assignable |
 |----|---------|------|----------|------------|
-| T1 | Document Notion credential workflow in portal docs (BACKOFFICE or BACKOFFICE-FLOWISE-N8N) | docs | P0 | docs |
-| T2 | Harden `getEnvFromFile` path for different CWDs or document that portal must be run from `supabase-mt/portal` | portal | P1 | code-mnky |
-| T3 | Optional: add env validation script for portal (required vars before dev) | portal | P2 | code-mnky |
-| T4 | Optional: add AI gateway to roadmap (reference CHATGPT-MOODMNKY-PORTAL-INFRA.md) | infra | P2 | sage-mnky |
-| T5 | Keep AGENT:TODO.md and READMEs (docker-compose, provisioning, portal) in sync when env or runbooks change | docs | P1 | docs |
-| T6 | Add app factory env vars to Notion credentials DB and AGENT-TODO matrix (GITHUB_TOKEN, confirm COOLIFY_*) | docs / ops | P0 | docs |
+| T1 | Document Notion credential workflow in portal docs (BACKOFFICE or BACKOFFICE-FLOWISE-N8N) | docs | P0 | docs — Done: BACKOFFICE-FLOWISE-N8N § Notion credential workflow |
+| T2 | Harden `getEnvFromFile` path for different CWDs or document that portal must be run from `supabase-mt/portal` | portal | P1 | code-mnky — Done: portal/lib/env-file.ts + refactors |
+| T3 | Optional: add env validation script for portal (required vars before dev) | portal | P2 | code-mnky — Done: portal/scripts/check-env.mjs, pnpm run check-env |
+| T4 | Optional: add AI gateway to roadmap (reference CHATGPT-MOODMNKY-PORTAL-INFRA.md) | infra | P2 | sage-mnky — Done: AGENT-TODO References § Roadmap |
+| T5 | Keep AGENT:TODO.md and READMEs (docker-compose, provisioning, portal) in sync when env or runbooks change | docs | P1 | docs — When adding/renaming vars or runbooks, update this file and the relevant README (docker-compose/, provisioning/, portal/) |
+| T6 | Add app factory env vars to Notion credentials DB and AGENT-TODO matrix (GITHUB_TOKEN, confirm COOLIFY_*) | docs / ops | P0 | docs — Done: Notion has GitHub + Coolify rows; AGENT-TODO § Credentials used (App Factory) updated |
 | T7 | Document deployment spec JSON schema and template manifest format (for generator) | docs | P1 | docs — Done: portal/docs/APP-FACTORY-DEPLOYMENT-SPEC.md |
 
 ---
@@ -66,11 +66,29 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 | `APP_FACTORY_ROOT_DOMAIN` | portal (App Factory) | Yes for platform URL | .env.local | Root domain (e.g. `moodmnky.com`) for subdomain-per-app. Wizard shows `https://<slug>.<root>`; pipeline sends that domain to Coolify and sets NEXT_PUBLIC_ROOT_DOMAIN / NEXT_PUBLIC_APP_URL on the app so the deployed app does not default to localhost. |
 | Compose vars (POSTGRES_*, MINIO_*, FLOWISE_*, N8N_*, etc.) | docker-compose, provisioning | Per README | docker-compose/.env, target host | See docker-compose/.env.example |
 
+### Full-stack (temp/full-stack)
+
+The **full-stack** compose (`temp/full-stack/docker-compose.full-stack.yml`) uses Supabase self-hosted + Flowise + n8n + MinIO. Reference env: **`temp/full-stack/env.full-stack`** — copy to `.env` next to the compose file and adjust.
+
+| Variable / group | Required | Notes |
+|------------------|----------|--------|
+| `POSTGRES_PASSWORD` | Yes | Supabase DB |
+| `JWT_SECRET` | Yes | Supabase Auth |
+| `ANON_KEY`, `SERVICE_ROLE_KEY` | Yes | From Supabase Dashboard or `supabase status` |
+| Flowise (`FLOWISE_PASSWORD`, queue/worker env) | Yes | Per env.full-stack |
+| n8n (`N8N_BASIC_AUTH_PASSWORD`, etc.) | Yes | Per env.full-stack |
+| MinIO (`MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`) | Yes | S3 for Supabase Storage |
+| `OPENAI_API_KEY` | No | Blank in template; set if using OpenAI nodes |
+| SMTP / domain / secure cookies | Production | Override for production; see FULL-STACK-RUNBOOK |
+
+**Secrets:** Do not commit real secrets. Keep `env.full-stack` as a template with placeholders; production values go in `.env` on the deploy server or in Coolify application env.
+
 ---
 
 ## Credentials used (App Factory)
 
 - **GITHUB_TOKEN** (in `supabase-mt/.env.local`): Retrieved from Notion **MOOD MNKY Credentials** database, row **Parent Program: GitHub**, **Use Cases: MOOD MNKY**. Notion page URL: [GitHub](https://www.notion.so/a3751d345645468792f1a1f3e00a4271). Key stored in **Key Code** property. Token was copied on 2026-03-07. **Test:** On Windows, `curl` to `https://api.github.com/user` may fail with `CRYPT_E_NO_REVOCATION_CHECK`; verify token on Linux/CI or in portal when repo creation is implemented.
+- **COOLIFY_API_KEY** (in `supabase-mt/.env.local`): Retrieved from Notion **MOOD MNKY Credentials** database, row **Parent Program: Coolify**, **Use Cases: API Token** (Examples: MOOD MNKY: Portal). Notion page URL: [Coolify](https://www.notion.so/31ccd2a6542280b69aa1ef8f22088b8f). Key stored in **Key Code** property. Copy to `COOLIFY_API_KEY` in `supabase-mt/.env.local`; set `COOLIFY_URL` (e.g. `http://10.0.0.115:8000` or `https://coolify-hq.moodmnky.com`) in the same file.
 
 ---
 
@@ -92,7 +110,7 @@ Single source of truth for **agent-actionable todos**, **environment variables**
 
 ## References
 
-- [CHATGPT-MOODMNKY-PORTAL-INFRA.md](CHATGPT-MOODMNKY-PORTAL-INFRA.md) — reference architecture (planes, zones, Coolify, AI gateway)
+- [CHATGPT-MOODMNKY-PORTAL-INFRA.md](CHATGPT-MOODMNKY-PORTAL-INFRA.md) — reference architecture (planes, zones, Coolify, AI gateway). **Roadmap:** AI gateway (custom service for tenant-aware AI orchestration) is on the roadmap; see “AI plane” and “AI orchestration” in that doc.
 - [portal/.env.example](portal/.env.example) — Portal env template
 - [docker-compose/.env.example](docker-compose/.env.example) — Compose env template
 - [provisioning/README.md](provisioning/README.md) — Ansible + Proxmox env and playbooks

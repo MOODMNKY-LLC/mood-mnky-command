@@ -17,28 +17,7 @@ import {
   HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import type { AppInstance } from "./backoffice-instance";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
-
-function getEnvFromFile(key: string): string | null {
-  try {
-    const cwd = process.cwd();
-    const envPath = join(cwd, "..", ".env.local");
-    if (!existsSync(envPath)) return null;
-    const raw = readFileSync(envPath, "utf-8");
-    const line = raw.split(/\r?\n/).find((l) => {
-      const trimmed = l.trim();
-      return trimmed.startsWith(`${key}=`) && !trimmed.startsWith("#");
-    });
-    if (!line) return null;
-    const value = line.slice(line.indexOf("=") + 1).trim();
-    if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1).trim();
-    if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1).trim();
-    return value || null;
-  } catch {
-    return null;
-  }
-}
+import { getEnvFromFile } from "@/lib/env-file";
 
 function getMinioSecret(): string | null {
   return (

@@ -57,9 +57,11 @@ check_port 3000 || PORT_ISSUES=1  # Flowise
 check_port 5432 || PORT_ISSUES=1  # PostgreSQL
 check_port 5678 || PORT_ISSUES=1  # n8n
 check_port 6379 || PORT_ISSUES=1  # Redis
+check_port 9000 || PORT_ISSUES=1  # MinIO API
+check_port 9001 || PORT_ISSUES=1  # MinIO Console
 
 if [ $PORT_ISSUES -eq 1 ]; then
-    echo -e "${YELLOW}⚠ Some ports are in use. You may need to modify docker-compose.yml${NC}"
+    echo -e "${YELLOW}⚠ Some ports are in use. Set MINIO_API_PORT / MINIO_CONSOLE_PORT in .env (e.g. 9002, 9003) or modify docker-compose.yml${NC}"
     read -p "Continue anyway? (y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then

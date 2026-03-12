@@ -29,6 +29,8 @@ Complete guide for integrating the Docker Compose stack (Flowise, n8n, Redis, Po
            └───────────────────┘
 ```
 
+**Note:** Flowise and n8n use the stack's Postgres (5432) only; they do not use Supabase. Supabase in the diagram is for the Portal (auth and multitenancy).
+
 ## Environment Setup
 
 ### Local Development

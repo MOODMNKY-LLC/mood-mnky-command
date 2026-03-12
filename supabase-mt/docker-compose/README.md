@@ -95,23 +95,26 @@ The stack uses Docker Compose **profiles** so you run only what you need. Base s
 
 ## Services
 
-### PostgreSQL (Port 5432)
-- Shared database for Flowise and n8n
+### PostgreSQL (internal; no host port by default)
+- Shared database for Flowise and n8n (reachable as `postgres:5432` inside the stack)
 - Version: 15-Alpine
 - Data persisted in `postgres_data` volume
 - Health check enabled
+- **No host port** to avoid "port 5432 already allocated" on Coolify or shared hosts. For local host access (e.g. `psql` from your machine), add in `docker-compose.override.yml`: `postgres: { ports: ["5432:5432"] }`. Or use `docker compose exec postgres psql -U postgres -d mood_mnky`.
 
-### Redis (Port 6379)
-- Cache layer for both Flowise and n8n
+### Redis (internal; no host port by default)
+- Cache layer for both Flowise and n8n (reachable as `redis:6379` inside the stack)
 - Version: 7-Alpine
 - Data persisted in `redis_data` volume
 - Health check enabled
+- **No host port** to avoid conflicts on Coolify. For local host access, add `redis: { ports: ["6379:6379"] }` in `docker-compose.override.yml`.
 
 ### MinIO (Ports 9000, 9001)
 - S3-compatible object storage for Flowise artifacts and n8n binary data (optional).
 - API: 9000; Console: 9001. Buckets `flowise-artifacts` and `n8n-binaries` are created on first run.
 - Set `FLOWISE_STORAGE_TYPE=s3` and/or `BINARYDATA_STORAGE_TYPE=s3` in `.env` to use MinIO. Default is local/filesystem.
 - In production, set `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` and optionally omit port exposure, using a reverse proxy for MinIO.
+- **Coolify / multi-stack:** When the compose is synced to Coolify (Admin → Sync compose agent-stack), MinIO **host** ports are omitted so multiple stacks on the same host do not hit "port 9000 already allocated". MinIO remains reachable at `http://minio:9000` inside the stack. For local runs, the repo `docker-compose.yml` still binds `${MINIO_API_PORT:-9000}:9000`; if 9000 is in use, set `MINIO_API_PORT=9002` (or another free port) in `.env`.
 
 #### MinIO vs MinIO AIStor (recommended for AI workloads)
 - **Default (this stack):** We use the Chainguard MinIO image (S3-compatible, no license). The [upstream MinIO community repo](https://github.com/minio/minio) is in maintenance mode; MinIO Inc. recommends AIStor for new deployments.
@@ -123,7 +126,7 @@ The stack uses Docker Compose **profiles** so you run only what you need. Base s
 
 ### Flowise AI Platform (Port 3000)
 - Visual AI workflow builder
-- Connects to PostgreSQL for workflow storage
+- **Database:** Uses the stack's Postgres when reachable (entrypoint checks at startup); falls back to SQLite at `/root/.flowise` if Postgres is down. Requires `scripts/` mounted at `/scripts` (see `scripts/flowise-entrypoint.sh`). For Coolify or other deploys, ensure the build context includes the `scripts/` directory.
 - Uses Redis for caching
 - Default credentials: admin / admin_password
 - API documentation available at `http://localhost:3000/api-docs`
@@ -204,6 +207,10 @@ All services should show `healthy` or `running` status.
 | PostgreSQL | localhost:5432 | postgres | postgres_password |
 | Redis | localhost:6379 | (no auth) | - |
 | MinIO Console | http://localhost:9001 | MINIO_ROOT_USER | MINIO_ROOT_PASSWORD |
+
+## Stack database vs Supabase
+
+The stack's database for **Flowise** and **n8n** is **Postgres** (service `postgres` in this compose). Supabase is **not** used as a database by this stack. `SUPABASE_MODE` and `NEXT_PUBLIC_SUPABASE_MT_*` are for the **Portal** (auth and multitenancy) only. Flowise and n8n connect only to the stack's Postgres; Flowise falls back to SQLite at `/root/.flowise` if Postgres is unreachable at startup (see [Flowise](#flowise-ai-platform-port-3000) below).
 
 ## Supabase Modes
 

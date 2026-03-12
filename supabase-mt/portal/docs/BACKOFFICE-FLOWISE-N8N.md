@@ -32,7 +32,18 @@ All Flowise and n8n API calls go through the portal backend:
 
 ## Credentials and Notion
 
-Project secrets (Supabase keys, Flowise/n8n API keys, MinIO and Nextcloud credentials, etc.) are maintained in the **MOOD MNKY credentials database** in Notion. Use the **Notion plugin** to find, store, retrieve, and copy values into `supabase-mt/portal/.env.local` (or the repo root `.env.local` used by the portal) and other env files as needed. When adding or changing env vars for the back office or stack, update Notion and the repo’s **AGENT:TODO** ([AGENT-TODO.md](../../../AGENT-TODO.md) in the repo root), which lists all variables and the credential workflow.
+Project secrets (Supabase keys, Flowise/n8n API keys, MinIO, Nextcloud, Coolify, and GitHub credentials, etc.) are maintained in the **MOOD MNKY credentials database** in Notion. The canonical env file for the portal is **`supabase-mt/.env.local`** (one level up from `portal/`). Use the **Notion plugin** to find, store, retrieve, and copy values into that file and other env files as needed. When adding or changing env vars for the back office or stack, update Notion and the repo’s **AGENT:TODO** ([AGENT-TODO.md](../../AGENT-TODO.md)), which lists all variables and the credential workflow.
+
+### Notion credential workflow
+
+1. **Find the database**  
+   In Notion, open the **MOOD MNKY Credentials** database (or equivalent workspace). Rows are typically keyed by **Parent Program** (e.g. GitHub, Supabase, Flowise) and **Use Cases** (e.g. MOOD MNKY, Portal). API keys and secrets are stored in properties such as **Key Code** or **Secret**; copy the value, do not paste it into chat or commit it.
+
+2. **Copy into the portal env file**  
+   Paste the value into **`supabase-mt/.env.local`** under the correct variable name (see [AGENT-TODO.md](../../AGENT-TODO.md) for the full matrix). Use the full path when editing so you do not accidentally edit a different `.env.local` (e.g. inside `portal/`). Restart the dev server after changing env.
+
+3. **Keep Notion and AGENT-TODO in sync**  
+   When you add or rename a variable used by the portal, back office, or App Factory: (a) add or update the row in the Notion credentials database, and (b) update the **Environment variables matrix** and any credential notes in **AGENT-TODO.md**. This keeps agents and developers aligned on where secrets live and what each variable is for.
 
 ## Admin UI
 

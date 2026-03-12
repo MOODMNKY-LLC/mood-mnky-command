@@ -69,9 +69,11 @@ export function TeamSwitcher() {
               Platform
             </DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setActiveTeam({ type: "platform" })} className="gap-2">
-                <Settings className="h-4 w-4 shrink-0" />
-                Backoffice
+              <DropdownMenuItem asChild>
+                <Link href="/admin" className="gap-2" onClick={() => setActiveTeam({ type: "platform" })}>
+                  <Settings className="h-4 w-4 shrink-0" />
+                  Backoffice
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuLabel className="text-xs text-muted-foreground">

@@ -21,16 +21,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { AppFactoryProjectRow } from "@/lib/app-factory/actions";
+import type { AppFactoryProjectRow, CoolifyServiceItem } from "@/lib/app-factory/actions";
 import {
   deleteProject,
   fixCoolifyApplicationConfig,
   getCoolifyAppStatus,
   getCoolifyDeploymentProgress,
+  getCoolifyLogsForProject,
   runPullChanges,
   type CoolifyAppStatusResult,
 } from "@/lib/app-factory/actions";
-import { ExternalLink, GitPullRequest, Loader2, Trash2, Wrench } from "lucide-react";
+import { ExternalLink, GitPullRequest, Loader2, ScrollText, Trash2, Wrench } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const DEPLOY_POLL_INTERVAL_MS = 15000;
 const TERMINAL_SUCCESS = ["success", "succeeded", "finished"];
@@ -55,6 +63,8 @@ function deploymentStatusVariant(
 
 type ProjectsTableProps = {
   initialProjects: AppFactoryProjectRow[];
+  /** Coolify applications (services) per tenant id; each org has one Coolify project with many services. */
+  servicesByTenantId?: Record<string, CoolifyServiceItem[]>;
 };
 
 type DeploymentProgressState = {
@@ -62,7 +72,10 @@ type DeploymentProgressState = {
   deploymentUrl: string | null;
 };
 
-export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
+export function ProjectsTable({
+  initialProjects,
+  servicesByTenantId = {},
+}: ProjectsTableProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [statusByProjectId, setStatusByProjectId] = useState<Record<string, CoolifyAppStatusResult>>({});
   const [deploymentProgressByProjectId, setDeploymentProgressByProjectId] = useState<
@@ -73,6 +86,10 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
   const [deleting, setDeleting] = useState(false);
   const [fixingCoolifyId, setFixingCoolifyId] = useState<string | null>(null);
   const [pullingProjectId, setPullingProjectId] = useState<string | null>(null);
+  const [logsProjectId, setLogsProjectId] = useState<string | null>(null);
+  const [logsContent, setLogsContent] = useState<string | null>(null);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState<string | null>(null);
 
   const fetchDeploymentProgress = useCallback(async (projectId: string, applicationUuid: string) => {
     const result = await getCoolifyDeploymentProgress(applicationUuid);
@@ -133,6 +150,26 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
     }
   };
 
+  const handleViewLogs = async (projectId: string, projectName: string) => {
+    setLogsProjectId(projectId);
+    setLogsContent(null);
+    setLogsError(null);
+    setLogsLoading(true);
+    const result = await getCoolifyLogsForProject(projectId, 500);
+    setLogsLoading(false);
+    if (result.success) {
+      setLogsContent(result.logs);
+    } else {
+      setLogsError(result.error);
+    }
+  };
+
+  const closeLogsDialog = () => {
+    setLogsProjectId(null);
+    setLogsContent(null);
+    setLogsError(null);
+  };
+
   const handleDelete = async (projectId: string) => {
     setDeleting(true);
     const result = await deleteProject(projectId);
@@ -159,6 +196,8 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Slug</TableHead>
+            <TableHead>Tenant</TableHead>
+            <TableHead>Services in Coolify</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Deployment</TableHead>
           </TableRow>
@@ -166,7 +205,7 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
         <TableBody>
           {projects.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                 No projects yet. Create one via the Launch Wizard.
               </TableCell>
             </TableRow>
@@ -175,11 +214,28 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
               const appUuid = project.coolify_application_uuid;
               const statusResult = statusByProjectId[project.id];
               const loading = loadingStatusId === project.id;
+              const tenantId = project.tenant_id ?? null;
+              const services = (tenantId && servicesByTenantId[tenantId]) || [];
 
               return (
                 <TableRow key={project.id}>
                   <TableCell className="font-medium">{project.name}</TableCell>
                   <TableCell className="font-mono text-xs">{project.slug}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {project.tenant_name ?? project.tenant_slug ?? (tenantId ? "—" : "—")}
+                  </TableCell>
+                  <TableCell className="text-sm" title={services.map((s) => s.name || s.uuid || "—").join("\n")}>
+                    {services.length === 0 ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {services.length} service{services.length !== 1 ? "s" : ""}
+                        {services.length <= 3
+                          ? `: ${services.map((s) => s.name || s.uuid).filter(Boolean).join(", ") || "—"}`
+                          : ""}
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={project.status === "generated" ? "default" : "secondary"}>
                       {project.status}
@@ -234,6 +290,22 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Wrench className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewLogs(project.id, project.name)}
+                            disabled={logsLoading && logsProjectId === project.id}
+                            title="Fetch last 500 lines of Coolify container logs"
+                          >
+                            {logsLoading && logsProjectId === project.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <ScrollText className="h-4 w-4 shrink-0" />
+                                <span className="ml-1">Logs</span>
+                              </>
                             )}
                           </Button>
                           <Button
@@ -301,6 +373,37 @@ export function ProjectsTable({ initialProjects }: ProjectsTableProps) {
           )}
         </TableBody>
       </Table>
+
+      <Dialog open={!!logsProjectId} onOpenChange={(open) => !open && closeLogsDialog()}>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              Coolify logs
+              {logsProjectId && (() => {
+                const p = projects.find((x) => x.id === logsProjectId);
+                return p ? ` — ${p.name}` : "";
+              })()}
+            </DialogTitle>
+            <DialogDescription>
+              Last 500 lines from the Coolify application. Not available if the app is stopped.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 rounded-md border bg-muted/30 p-3 overflow-auto">
+            {logsLoading && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Fetching logs…
+              </div>
+            )}
+            {logsError && !logsLoading && (
+              <p className="text-destructive text-sm">{logsError}</p>
+            )}
+            {logsContent != null && !logsLoading && (
+              <pre className="text-xs font-mono whitespace-pre-wrap break-words">{logsContent}</pre>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={(open) => !open && setDeleteProjectId(null)}>
         <AlertDialogContent>

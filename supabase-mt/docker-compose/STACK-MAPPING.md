@@ -1,6 +1,6 @@
 # Stack mapping (app / DB / services)
 
-Short reference for how Portal, Supabase MT, and this Docker Compose stack fit together. For full multitenant architecture and S3/orchestration patterns, see [CHATGPT-MULTITENANT-APP-STACK.md](../CHATGPT-MULTITENANT-APP-STACK.md).
+Short reference for how Portal, Supabase MT, and this Docker Compose stack fit together. Flowise and n8n connect only to the stack's Postgres; they do not use Supabase. For full multitenant architecture and S3/orchestration patterns, see [CHATGPT-MULTITENANT-APP-STACK.md](../CHATGPT-MULTITENANT-APP-STACK.md).
 
 ## Component roles
 

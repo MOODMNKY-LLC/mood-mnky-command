@@ -1,31 +1,14 @@
 /**
  * App Factory: server-side env helper.
- * Reads from process.env or supabase-mt/.env.local so credentials work when dev is run from repo root.
+ * Uses shared portal env-file so credentials work when dev is run from portal or supabase-mt.
  */
 
-import { existsSync, readFileSync } from "fs";
+import { existsSync } from "fs";
 import { join } from "path";
+import { getEnvFromFile } from "@/lib/env-file";
 
 export function getAppFactoryEnv(key: string): string | null {
-  const v = process.env[key]?.trim();
-  if (v) return v;
-  try {
-    const cwd = process.cwd();
-    const envPath = join(cwd, "..", ".env.local");
-    if (!existsSync(envPath)) return null;
-    const raw = readFileSync(envPath, "utf-8");
-    const line = raw.split(/\r?\n/).find((l) => {
-      const t = l.trim();
-      return t.startsWith(`${key}=`) && !t.startsWith("#");
-    });
-    if (!line) return null;
-    let value = line.slice(line.indexOf("=") + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
-      value = value.slice(1, -1).trim();
-    return value || null;
-  } catch {
-    return null;
-  }
+  return getEnvFromFile(key);
 }
 
 export function getGitHubToken(): string | null {

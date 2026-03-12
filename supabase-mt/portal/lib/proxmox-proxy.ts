@@ -1,28 +1,5 @@
 import { NextResponse } from "next/server";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
-
-function getEnv(key: string): string | null {
-  const v = process.env[key]?.trim();
-  if (v) return v;
-  try {
-    const cwd = process.cwd();
-    const envPath = join(cwd, "..", ".env.local");
-    if (!existsSync(envPath)) return null;
-    const raw = readFileSync(envPath, "utf-8");
-    const line = raw.split(/\r?\n/).find((l) => {
-      const t = l.trim();
-      return t.startsWith(`${key}=`) && !t.startsWith("#");
-    });
-    if (!line) return null;
-    let value = line.slice(line.indexOf("=") + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
-      value = value.slice(1, -1).trim();
-    return value || null;
-  } catch {
-    return null;
-  }
-}
+import { getEnvFromFile } from "@/lib/env-file";
 
 export type ProxmoxConfig = {
   baseUrl: string;
@@ -36,19 +13,19 @@ const TICKET_TTL_MS = 55 * 60 * 1000; // 55 min (tickets last 2h)
  * Resolve Proxmox config from env. Prefer API token; fallback to username/password (ticket).
  */
 export async function getProxmoxConfig(): Promise<ProxmoxConfig | null> {
-  const host = getEnv("PROXMOX_API_HOST")?.trim();
+  const host = getEnvFromFile("PROXMOX_API_HOST")?.trim();
   if (!host) return null;
 
   const baseUrl = host.startsWith("http") ? host.replace(/\/$/, "") : `https://${host}`;
 
-  const tokenId = getEnv("PROXMOX_API_TOKEN_ID")?.trim();
-  const tokenSecret = getEnv("PROXMOX_API_TOKEN_SECRET")?.trim();
+  const tokenId = getEnvFromFile("PROXMOX_API_TOKEN_ID")?.trim();
+  const tokenSecret = getEnvFromFile("PROXMOX_API_TOKEN_SECRET")?.trim();
   if (tokenId && tokenSecret) {
     return { baseUrl, auth: { type: "token", tokenId, tokenSecret } };
   }
 
-  const user = getEnv("PROXMOX_API_USER")?.trim();
-  const password = getEnv("PROXMOX_API_PASSWORD")?.trim();
+  const user = getEnvFromFile("PROXMOX_API_USER")?.trim();
+  const password = getEnvFromFile("PROXMOX_API_PASSWORD")?.trim();
   if (user && password) {
     const ticket = await fetchProxmoxTicket(baseUrl, user, password);
     if (ticket) return { baseUrl, auth: { type: "ticket", ticket: ticket.ticket, csrf: ticket.csrf } };

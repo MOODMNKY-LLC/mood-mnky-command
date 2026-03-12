@@ -1,6 +1,10 @@
 # =============================================================================
 # Supabase self-hosted stack (option B: dedicated file for Supabase inclusion)
 # =============================================================================
+# Supabase is NOT a service in this stack. This file documents how to run the
+# reference Supabase stack separately. Flowise and n8n use the stack's Postgres
+# only (see docker-compose.yml).
+#
 # This file does NOT define the 14+ Supabase services in this repo. It
 # documents how to run the reference Supabase stack so "pulling in" Supabase
 # is explicit and versioned. The actual Supabase compose lives in

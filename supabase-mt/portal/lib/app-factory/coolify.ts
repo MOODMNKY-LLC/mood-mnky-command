@@ -59,6 +59,112 @@ async function coolifyFetch(path: string, init?: RequestInit): Promise<Response>
   });
 }
 
+export type CreateCoolifyFromComposeRawInput = {
+  docker_compose_raw: string;
+  appName: string;
+  coolify_project_uuid?: string | null;
+  coolify_server_uuid?: string | null;
+  coolify_environment_uuid?: string | null;
+  domain?: string | null;
+  instant_deploy?: boolean;
+};
+
+/**
+ * Create Coolify application from raw Docker Compose YAML (no Git).
+ * Uses POST /applications/dockercompose. Compose content is typically from compose_stacks in Supabase.
+ */
+export async function createCoolifyApplicationFromComposeRaw(
+  input: CreateCoolifyFromComposeRawInput
+): Promise<CoolifyDeployResult> {
+  let projectUuid = input.coolify_project_uuid ?? null;
+  let serverUuid = input.coolify_server_uuid ?? null;
+
+  if (!projectUuid || !serverUuid) {
+    const [serversRes, projectsRes] = await Promise.all([
+      coolifyFetch("/servers"),
+      coolifyFetch("/projects"),
+    ]);
+    if (!serversRes.ok) {
+      return { success: false, error: `Coolify servers: ${serversRes.status} ${await serversRes.text()}` };
+    }
+    if (!projectsRes.ok) {
+      return { success: false, error: `Coolify projects: ${projectsRes.status} ${await projectsRes.text()}` };
+    }
+    const servers = (await serversRes.json()) as { uuid?: string }[];
+    const projects = (await projectsRes.json()) as { uuid?: string; name?: string }[];
+    if (!serverUuid && servers.length > 0) serverUuid = servers[0].uuid ?? null;
+    if (!projectUuid && projects.length > 0) {
+      const preferredName = getAppFactoryCoolifyProjectName();
+      const byName = preferredName
+        ? projects.find((p) => (p.name ?? "").trim().toLowerCase() === preferredName.trim().toLowerCase())
+        : null;
+      projectUuid = (byName?.uuid ?? projects[0].uuid) ?? null;
+    }
+  }
+
+  if (!projectUuid || !serverUuid) {
+    return { success: false, error: "No Coolify server or project found. Configure coolify_server_uuid and coolify_project_uuid or add a server/project in Coolify." };
+  }
+
+  const hasValidDomain = isValidCoolifyDomain(input.domain);
+  const domainsValue = hasValidDomain
+    ? (input.domain!.trim().startsWith("http") ? input.domain!.trim() : `https://${input.domain!.trim()}`)
+    : undefined;
+
+  // Coolify API expects docker_compose_raw to be base64-encoded.
+  const dockerComposeRawBase64 = Buffer.from(input.docker_compose_raw, "utf-8").toString("base64");
+
+  const body: Record<string, unknown> = {
+    project_uuid: projectUuid,
+    server_uuid: serverUuid,
+    environment_name: input.coolify_environment_uuid ? undefined : "production",
+    environment_uuid: input.coolify_environment_uuid ?? undefined,
+    docker_compose_raw: dockerComposeRawBase64,
+    name: input.appName,
+    instant_deploy: input.instant_deploy !== false,
+  };
+  if (domainsValue) {
+    body.domains = domainsValue;
+    body.autogenerate_domain = false;
+    body.force_domain_override = true;
+  }
+
+  const res = await coolifyFetch("/applications/dockercompose", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+  } catch {
+    // leave data empty
+  }
+
+  if (!res.ok) {
+    const errorMessage = formatCoolifyError(res.status, data, text);
+    return { success: false, error: errorMessage };
+  }
+
+  const applicationUuid = data.uuid as string | undefined;
+  if (!applicationUuid) {
+    return { success: false, error: "Coolify did not return application uuid." };
+  }
+
+  if (domainsValue) {
+    const patchRes = await coolifyFetch(`/applications/${encodeURIComponent(applicationUuid)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ domains: domainsValue }),
+    });
+    if (!patchRes.ok) {
+      console.warn("Coolify PATCH application (domains) failed:", patchRes.status, await patchRes.text());
+    }
+  }
+
+  return { success: true, applicationUuid, message: "Compose application created and deploy triggered." };
+}
+
 /**
  * Create application from public Git repo and optionally trigger instant deploy.
  */
@@ -118,7 +224,13 @@ export async function createCoolifyApplicationAndDeploy(
     build_pack: isCompose ? "dockercompose" : "nixpacks",
     /** Defer deploy until after PATCH so Nixpacks uses our start_command (avoids /bin/bash -c empty argument restart loop). */
     instant_deploy: !needsExplicitCommands,
-    ...(isCompose ? {} : { ports_exposes: "3000" }),
+    ...(isCompose
+      ? {
+          /** Coolify defaults to /docker-compose.yaml; our repos use docker-compose.yml at root. See Context7 / Coolify docs: path is combined with base_directory, extension must match exactly. */
+          base_directory: "/",
+          docker_compose_location: "docker-compose.yml",
+        }
+      : { ports_exposes: "3000" }),
   };
   if (installCmd) body.install_command = installCmd;
   if (buildCmd) body.build_command = buildCmd;
@@ -274,6 +386,199 @@ export async function getCoolifyApplication(
     git_branch: data.git_branch as string | undefined,
   };
   return { success: true, app };
+}
+
+/**
+ * Get application logs by UUID. Coolify API: GET /applications/{uuid}/logs.
+ * @param lines - Number of lines from the end (default 200).
+ */
+export async function getCoolifyApplicationLogs(
+  applicationUuid: string,
+  lines = 200
+): Promise<{ success: true; logs: string } | { success: false; error: string }> {
+  const res = await coolifyFetch(
+    `/applications/${encodeURIComponent(applicationUuid)}/logs?lines=${Math.max(1, Math.min(2000, lines))}`
+  );
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+  } catch {
+    if (!res.ok) return { success: false, error: text || `Coolify ${res.status}` };
+    return { success: true, logs: text };
+  }
+  if (!res.ok) {
+    const err = formatCoolifyError(res.status, data, text);
+    return { success: false, error: err };
+  }
+  const logs = typeof data.logs === "string" ? data.logs : text || "";
+  return { success: true, logs };
+}
+
+/** Single application entry from Coolify GET /applications (includes project for filtering). */
+export type CoolifyApplicationListItem = {
+  uuid?: string;
+  name?: string;
+  status?: string;
+  /** Coolify project id (numeric); used to filter apps by project. */
+  repository_project_id?: number;
+};
+
+/**
+ * List all applications. Coolify API: GET /applications.
+ * Includes repository_project_id so callers can filter by project.
+ */
+export async function listCoolifyApplications(): Promise<
+  { success: true; applications: CoolifyApplicationListItem[] } | { success: false; error: string }
+> {
+  const res = await coolifyFetch("/applications");
+  const text = await res.text();
+  let data: unknown = [];
+  try {
+    data = text ? JSON.parse(text) : [];
+  } catch {
+    data = [];
+  }
+  if (!res.ok) {
+    const err =
+      typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
+        ? String((data as Record<string, unknown>).message)
+        : text || `Coolify ${res.status}`;
+    return { success: false, error: err };
+  }
+  const list = Array.isArray(data) ? data : [];
+  const applications = list.map((a: Record<string, unknown>) => ({
+    uuid: a.uuid as string | undefined,
+    name: a.name as string | undefined,
+    status: a.status as string | undefined,
+    repository_project_id: a.repository_project_id as number | undefined,
+  }));
+  return { success: true, applications };
+}
+
+/**
+ * Get a single project by UUID. Coolify API: GET /projects/{uuid}.
+ * Returns id (numeric) for filtering applications by repository_project_id.
+ */
+export async function getCoolifyProjectByUuid(
+  projectUuid: string
+): Promise<
+  { success: true; project: CoolifyProject } | { success: false; error: string }
+> {
+  const res = await coolifyFetch(`/projects/${encodeURIComponent(projectUuid)}`);
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+  } catch {
+    // leave empty
+  }
+  if (!res.ok) {
+    const err = formatCoolifyError(res.status, data, text);
+    return { success: false, error: err };
+  }
+  const project: CoolifyProject = {
+    id: data.id as number | undefined,
+    uuid: data.uuid as string | undefined,
+    name: data.name as string | undefined,
+    description: data.description as string | undefined,
+  };
+  return { success: true, project };
+}
+
+/**
+ * List Coolify applications (services) in a project. Uses GET /projects/{uuid} to resolve
+ * project id, then GET /applications and filters by repository_project_id.
+ * Use to dynamically surface what is deployed in Coolify per org/project.
+ */
+export async function listCoolifyApplicationsByProjectUuid(
+  projectUuid: string
+): Promise<
+  { success: true; applications: CoolifyApplicationListItem[] } | { success: false; error: string }
+> {
+  const projectRes = await getCoolifyProjectByUuid(projectUuid);
+  if (!projectRes.success) return projectRes;
+  const projectId = projectRes.project.id;
+  if (projectId == null) {
+    return { success: false, error: "Coolify project has no id." };
+  }
+  const listRes = await listCoolifyApplications();
+  if (!listRes.success) return listRes;
+  const applications = listRes.applications.filter(
+    (a) => a.repository_project_id != null && a.repository_project_id === projectId
+  );
+  return { success: true, applications };
+}
+
+/** Coolify project (namespace for applications). API: GET /projects */
+export type CoolifyProject = { uuid?: string; id?: number; name?: string; description?: string };
+
+/**
+ * List all Coolify projects. API: GET /projects.
+ * Use as namespaces per tenant so all tenant apps live in one project.
+ */
+export async function listCoolifyProjects(): Promise<
+  { success: true; projects: CoolifyProject[] } | { success: false; error: string }
+> {
+  const res = await coolifyFetch("/projects");
+  const text = await res.text();
+  let data: unknown = [];
+  try {
+    data = text ? JSON.parse(text) : [];
+  } catch {
+    data = [];
+  }
+  if (!res.ok) {
+    const err =
+      typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
+        ? String((data as Record<string, unknown>).message)
+        : text || `Coolify ${res.status}`;
+    return { success: false, error: err };
+  }
+  const list = Array.isArray(data) ? data : [];
+  const projects = list.map((p: Record<string, unknown>) => ({
+    uuid: p.uuid as string | undefined,
+    id: p.id as number | undefined,
+    name: p.name as string | undefined,
+    description: p.description as string | undefined,
+  }));
+  return { success: true, projects };
+}
+
+export type CreateCoolifyProjectResult =
+  | { success: true; uuid: string }
+  | { success: false; error: string };
+
+/**
+ * Create a Coolify project. API: POST /projects.
+ * Body: { name, description? }. Returns 201 with { uuid }.
+ * Use one project per tenant as a namespace for that tenant's apps.
+ */
+export async function createCoolifyProject(
+  name: string,
+  description?: string | null
+): Promise<CreateCoolifyProjectResult> {
+  const body: Record<string, string> = { name: name.trim() };
+  if (description != null && String(description).trim()) body.description = String(description).trim();
+  const res = await coolifyFetch("/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let data: Record<string, unknown> = {};
+  try {
+    data = (text ? JSON.parse(text) : {}) as Record<string, unknown>;
+  } catch {
+    // leave empty
+  }
+  if (!res.ok) {
+    const err = formatCoolifyError(res.status, data, text);
+    return { success: false, error: err };
+  }
+  const uuid = data.uuid as string | undefined;
+  if (!uuid?.trim()) return { success: false, error: "Coolify did not return project uuid." };
+  return { success: true, uuid: uuid.trim() };
 }
 
 /**
@@ -473,15 +778,24 @@ export async function triggerCoolifyDeploy(applicationUuid: string): Promise<{ s
 }
 
 /**
- * Delete application in Coolify by UUID. Removes app and optionally configs/volumes.
+ * Delete application in Coolify by UUID. Removes app and optionally configs/volumes/networks.
+ * For Docker Compose apps, pass docker_cleanup and delete_connected_networks so containers and
+ * networks are fully removed (see Coolify API delete-application-by-uuid).
  */
 export async function deleteCoolifyApplication(
   applicationUuid: string,
-  options?: { delete_configurations?: boolean; delete_volumes?: boolean }
+  options?: {
+    delete_configurations?: boolean;
+    delete_volumes?: boolean;
+    docker_cleanup?: boolean;
+    delete_connected_networks?: boolean;
+  }
 ): Promise<{ success: true } | { success: false; error: string }> {
   const params = new URLSearchParams();
   if (options?.delete_configurations !== undefined) params.set("delete_configurations", String(options.delete_configurations));
   if (options?.delete_volumes !== undefined) params.set("delete_volumes", String(options.delete_volumes));
+  if (options?.docker_cleanup !== undefined) params.set("docker_cleanup", String(options.docker_cleanup));
+  if (options?.delete_connected_networks !== undefined) params.set("delete_connected_networks", String(options.delete_connected_networks));
   const qs = params.toString();
   const path = `/applications/${encodeURIComponent(applicationUuid)}${qs ? `?${qs}` : ""}`;
   const res = await coolifyFetch(path, { method: "DELETE" });
