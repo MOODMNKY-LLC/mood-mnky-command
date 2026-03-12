@@ -110,6 +110,7 @@ Further setup (Supabase migrations, MNKY VERSE blog sync, MNKY LABZ): see [docs/
 - **Install:** Use `pnpm install --no-frozen-lockfile` (no `cd ../..`) so pnpm runs from `apps/web` and creates correct workspace symlinks (e.g. `@mnky/mt-supabase`). See `apps/web/vercel.json`.
 - **Build Command:** `cd ../.. && pnpm exec turbo run build --filter=web` (or let Vercel detect Turborepo).
 - **Environment variables:** Configure in Vercel; list build-affecting vars in root `turbo.json` `globalPassThroughEnv`.
+- **Full matrix:** For each app (web, hydaelyn, portal, flow-mnky, code-mnky), see [docs/VERCEL-SETTINGS-MATRIX.md](docs/VERCEL-SETTINGS-MATRIX.md) for Root Directory, Install/Build commands, required env, and how to fix a misconfigured or duplicate Vercel project.
 
 ---
 

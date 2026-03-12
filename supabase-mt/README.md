@@ -59,7 +59,7 @@ This project also includes the **Portal** (Next.js back office), the **Docker Co
 
 **mood-mnky-command** is the monorepo; it houses several projects (e.g. in `apps/`). The **MT portal** is different: it lives under **supabase-mt/** and has its own Supabase project (this directory), so it is not in `apps/`.
 
-For the **Vercel project that deploys the MT portal** (its own project, linked to the same repo):
+For the **Vercel project that deploys the MT portal** (its own project, linked to the same repo), see **[docs/VERCEL-SETTINGS-MATRIX.md](../../docs/VERCEL-SETTINGS-MATRIX.md)** for the full settings matrix and required env (`NEXT_PUBLIC_SUPABASE_MT_URL`, etc.).
 
 1. **Root Directory:** In that project’s [Vercel → Settings → General](https://vercel.com/dashboard), set **Root Directory** to **`supabase-mt/portal`**. (If it stays `.`, Vercel builds from repo root, where there is no Next.js app for the portal, and the build fails.)
 2. **Install/Build:** `portal/vercel.json` sets:
