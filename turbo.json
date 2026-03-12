@@ -107,12 +107,14 @@
     "STEAM_REALM",
     "STEAM_RETURN_URL",
     "STEAM_WEB_API_KEY",
-    "VERSE_APP_URL"
+    "VERSE_APP_URL",
+    "XIVAPI_BASE_URL",
+    "XIVAPI_API_KEY"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
