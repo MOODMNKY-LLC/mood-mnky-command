@@ -5,6 +5,7 @@ import withSerwistInit from "@serwist/next"
 /** @type {import('next').NextConfig} */
 // Avoid output: 'standalone' with pnpm workspaces until Next.js fixes path issues (see Next.js issues #77472, #84257).
 const nextConfig = {
+  transpilePackages: ["@mnky/mt-supabase"],
   serverExternalPackages: ["openid"],
   async redirects() {
     return [

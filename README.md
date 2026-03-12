@@ -105,8 +105,10 @@ Further setup (Supabase migrations, MNKY VERSE blog sync, MNKY LABZ): see [docs/
 ### Monorepo deployment (Vercel)
 
 - **Root Directory:** Set to `apps/web` in the Vercel project settings.
-- **Build Command:** From repo root, e.g. `cd ../.. && pnpm install && pnpm turbo build --filter=web` (or let Vercel detect Turborepo when `turbo.json` exists at root; if Root Directory is `apps/web`, run install and build from repo root in the build command).
-- **Environment variables:** Configure in Vercel as before; list any build-affecting vars in root `turbo.json` `globalEnv` so Turbo cache keys are correct.
+- **Build Command:** `cd ../.. && pnpm install && pnpm turbo build --filter=web`
+- **Critical:** The web app depends on the workspace package `@mnky/mt-supabase`; `apps/web/next.config.mjs` must include `transpilePackages: ["@mnky/mt-supabase"]` or the Vercel build fails with "Module not found".
+- **Environment variables:** Configure in Vercel; list build-affecting vars in root `turbo.json` `globalPassThroughEnv` so they are available and cache keys are correct.
+- **Full matrix:** See [docs/VERCEL-MONOREPO.md](docs/VERCEL-MONOREPO.md) for this project and other apps (hydaelyn, flow-mnky, code-mnky, mt-portal).
 
 ---
 
