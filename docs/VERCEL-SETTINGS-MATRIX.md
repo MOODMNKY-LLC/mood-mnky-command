@@ -58,24 +58,18 @@ Ensure Vercel env includes: `FFLOGS_CLIENT_ID`, `FFLOGS_CLIENT_SECRET`, `XIVAPI_
 
 ### 2.3 MT Portal — `mood-mnky-command-portal` or `mood-mnky-portal`
 
+**Use this config when the portal is linked via Supabase dashboard (env synced from Supabase).** Build runs from `supabase-mt/portal` only; no `cd ../..` so the Vercel project does not depend on monorepo root.
+
 | Setting | Value |
 |--------|--------|
 | **Root Directory** | `supabase-mt/portal` |
 | **Framework Preset** | Next.js |
-| **Install Command** | `cd ../.. && pnpm install` |
-| **Build Command** | `cd ../.. && pnpm exec turbo run build --filter=mt-portal` |
+| **Install Command** | `pnpm install` |
+| **Build Command** | `pnpm build` |
 | **Output Directory** | `.next` |
 | **Node.js Version** | 20.x |
 
-Defined in: `supabase-mt/portal/vercel.json`.
-
-**Alternative (minimal — use if matching a known-good portal project):**
-
-| Setting | Value |
-|--------|--------|
-| **Install Command** | `pnpm install` |
-| **Build Command** | `pnpm build` |
-| **Output Directory** | (empty or `.next`) |
+Defined in: `supabase-mt/portal/vercel.json`. Portal `next.config.ts` includes `transpilePackages: ["@mnky/mt-supabase"]` so the workspace package resolves.
 
 **Required environment variables (portal):**  
 The portal’s `scripts/check-env.mjs` and runtime expect at least:
