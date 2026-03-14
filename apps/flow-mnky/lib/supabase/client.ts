@@ -13,5 +13,6 @@ export function createClient(): SupabaseClient | null {
     return null
   }
 
+  // Create the browser client lazily so Turbopack HMR does not hold onto stale module state.
   return createBrowserClient(url, key)
 }
