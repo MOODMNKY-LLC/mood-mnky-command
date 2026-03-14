@@ -2,23 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-
-export type AppRole = 'admin' | 'user' | 'pending'
-
-/** DB role from profiles.role; we map moderator -> user for app role. */
-type ProfileRole = 'admin' | 'moderator' | 'user' | 'pending'
+import { normalizeProfileRole, type AppRole } from '@/lib/auth/roles'
 
 interface UseUserRoleResult {
   role: AppRole
   isAdmin: boolean
   isLoading: boolean
   userId: string | null
-}
-
-function profileRoleToAppRole(r: ProfileRole | null | undefined): AppRole {
-  if (r === 'admin') return 'admin'
-  if (r === 'pending') return 'pending'
-  return 'user' // moderator and user both map to 'user'
 }
 
 /**
@@ -57,8 +47,7 @@ export function useUserRole(): UseUserRoleResult {
           .eq('id', user.id)
           .single()
 
-        const profileRole = profile?.role as ProfileRole | undefined
-        setRole(profileRoleToAppRole(profileRole ?? null))
+        setRole(normalizeProfileRole(profile?.role))
       } catch {
         setRole('user')
       } finally {

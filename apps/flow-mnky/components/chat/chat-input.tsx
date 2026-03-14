@@ -124,7 +124,7 @@ function ToolRow({
 
 // ── Main component ────────────────────────────────────────────────────────────
 interface ChatInputProps {
-  onSubmit: (text: string, files?: File[]) => void
+  onSubmit: (text: string, files?: File[], options?: { enabledTools: string[] }) => void
   isLoading: boolean
   disabled?: boolean
   placeholder?: string
@@ -170,11 +170,13 @@ export function ChatInput({ onSubmit, isLoading, disabled, placeholder }: ChatIn
     const hasText = value.trim().length > 0
     const hasFiles = attachedFiles.length > 0
     if ((!hasText && !hasFiles) || isLoading || disabled) return
-    onSubmit(hasText ? value : '', attachedFiles.map(af => af.file))
+    onSubmit(hasText ? value : '', attachedFiles.map(af => af.file), {
+      enabledTools: tools.filter((tool) => tool.enabled).map((tool) => tool.id),
+    })
     attachedFiles.forEach(af => URL.revokeObjectURL(af.objectUrl))
     setValue('')
     setAttachedFiles([])
-  }, [value, isLoading, disabled, onSubmit, attachedFiles])
+  }, [value, isLoading, disabled, onSubmit, attachedFiles, tools])
 
   const addFiles = useCallback((files: FileList | File[] | null) => {
     if (!files) return

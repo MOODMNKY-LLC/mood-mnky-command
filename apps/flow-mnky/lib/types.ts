@@ -36,6 +36,9 @@ export interface ChatSession {
   flowise_chat_id?: string
   isPinned?: boolean
   isArchived?: boolean
+  isTemporary?: boolean
+  isPersisted?: boolean
+  lastMessageAt?: Date
 }
 
 // -----------------------------------------------------------------------------

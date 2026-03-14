@@ -32,6 +32,7 @@ interface ChatHeaderSelectorsProps {
   chatflows: FlowiseChatflow[]
   selectedChatflowId: string
   onChatflowChange: (id: string) => void
+  allowedModelIds?: string[] | null
   selectedModel: ModelId
   onModelChange: (id: ModelId) => void
   selectedMode: AgentModeId
@@ -52,6 +53,7 @@ export function ChatHeaderSelectors({
   chatflows,
   selectedChatflowId,
   onChatflowChange,
+  allowedModelIds,
   selectedModel,
   onModelChange,
   selectedMode,
@@ -67,11 +69,12 @@ export function ChatHeaderSelectors({
   tempChat,
   onTempChatChange,
 }: ChatHeaderSelectorsProps) {
-  const currentModel = AI_MODELS.find(m => m.id === selectedModel) ?? AI_MODELS[0]
+  const availableModels = AI_MODELS.filter((model) => !allowedModelIds?.length || allowedModelIds.includes(model.id))
+  const currentModel = availableModels.find(m => m.id === selectedModel) ?? availableModels[0] ?? AI_MODELS[0]
   const currentMode = AGENT_MODES.find(m => m.id === selectedMode) ?? AGENT_MODES[0]
   const currentChatflow = chatflows.find(c => c.id === selectedChatflowId)
 
-  const byProvider = AI_MODELS.reduce<Record<string, typeof AI_MODELS[number][]>>((acc, m) => {
+  const byProvider = availableModels.reduce<Record<string, typeof AI_MODELS[number][]>>((acc, m) => {
     ;(acc[m.provider] ??= []).push(m)
     return acc
   }, {})

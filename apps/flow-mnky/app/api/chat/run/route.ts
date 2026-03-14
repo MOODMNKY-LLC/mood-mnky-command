@@ -7,20 +7,27 @@
  */
 import { streamPrediction, streamPredictionWithSDK, syncPrediction } from '@/lib/flowise/client'
 import type { FlowisePredictionPayload } from '@/lib/flowise/client'
+import { requireUser } from '@/lib/auth/require-user'
 
 export const maxDuration = 60
 
 export async function POST(req: Request) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return Response.json({ error: auth.error }, { status: auth.status })
+  }
+
   const body = await req.json() as {
     chatflowId: string
     question: string
     chatId?: string
     streaming?: boolean
     history?: FlowisePredictionPayload['history']
+    overrideConfig?: FlowisePredictionPayload['overrideConfig']
     uploads?: FlowisePredictionPayload['uploads']
   }
 
-  const { chatflowId, question, chatId, streaming = true, history, uploads } = body
+  const { chatflowId, question, chatId, streaming = true, history, overrideConfig, uploads } = body
 
   const hasQuestion = Boolean(question?.trim())
   const hasUploads = Boolean(uploads?.length)
@@ -38,6 +45,7 @@ export async function POST(req: Request) {
     question: questionForFlowise,
     ...(chatId ? { chatId } : {}),
     ...(history?.length ? { history } : {}),
+    ...(overrideConfig ? { overrideConfig } : {}),
     ...(uploads?.length ? { uploads } : {}),
   }
 

@@ -1,7 +1,7 @@
 // Main chat interface with streaming support and temporary chat mode
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import { ThemeToggle } from './theme-toggle'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { RealtimeAvatarStack } from '@/components/realtime-avatar-stack'
 import { useUserRole } from '@/hooks/use-user-role'
-import type { ChatSession, SourceDocument } from '@/lib/types'
+import { AI_MODELS, type AgentModeId, type ChatSession, type ModelId, type SourceDocument } from '@/lib/types'
 
 export interface FlowiseChatflow {
   id: string
@@ -44,14 +44,68 @@ export interface ChatMessage {
   attachments?: ChatMessageAttachment[]
 }
 
+interface ChatflowsResponse {
+  chatflows: Array<FlowiseChatflow & { deployed?: boolean }>
+  defaultChatflowId: string | null
+  allowedOpenAIModels: string[] | null
+  role: string
+}
+
+interface PersistedSessionResponse {
+  id: string
+  title: string
+  chatflow_id: string | null
+  chatflow_name: string | null
+  flowise_chat_id: string | null
+  pinned: boolean
+  archived: boolean
+  message_count: number
+  created_at: string
+  updated_at: string
+}
+
+interface PersistedMessageResponse {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  source_documents: SourceDocument[] | null
+  created_at: string
+}
+
+function toChatSession(session: PersistedSessionResponse): ChatSession {
+  return {
+    id: session.id,
+    title: session.title,
+    chatflowId: session.chatflow_id ?? '',
+    chatflowName: session.chatflow_name ?? undefined,
+    flowise_chat_id: session.flowise_chat_id ?? undefined,
+    isPinned: session.pinned,
+    isArchived: session.archived,
+    isPersisted: true,
+    messageCount: session.message_count,
+    createdAt: new Date(session.created_at),
+    updatedAt: new Date(session.updated_at),
+  }
+}
+
+function toChatMessage(message: PersistedMessageResponse): ChatMessage {
+  return {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    createdAt: new Date(message.created_at),
+    sourceDocuments: message.source_documents ?? undefined,
+  }
+}
+
 export function ChatShell() {
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatflows, setChatflows] = useState<FlowiseChatflow[]>([])
   const [selectedChatflowId, setSelectedChatflowId] = useState<string>('')
-  const [selectedModel, setSelectedModel] = useState('openai/gpt-4o')
-  const [agentMode, setAgentMode] = useState('default')
+  const [selectedModel, setSelectedModel] = useState<ModelId>('openai/gpt-4o')
+  const [agentMode, setAgentMode] = useState<AgentModeId>('default')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isStreaming, setIsStreaming] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'healthy' | 'error'>('unknown')
@@ -60,22 +114,137 @@ export function ChatShell() {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [streamingEnabled, setStreamingEnabled] = useState(true)
   const [tempChat, setTempChat] = useState(false)
-  const { isAdmin } = useUserRole()
+  const [allowedOpenAIModels, setAllowedOpenAIModels] = useState<string[] | null>(null)
+  const { isAdmin, userId } = useUserRole()
+  const skipNextMessageLoadSessionIdRef = useRef<string | null>(null)
+
+  const applySessionUpdate = useCallback((sessionId: string, updater: (session: ChatSession) => ChatSession) => {
+    setSessions((prev) => prev.map((session) => (session.id === sessionId ? updater(session) : session)))
+    setCurrentSession((prev) => (prev?.id === sessionId ? updater(prev) : prev))
+  }, [])
+
+  const persistSessionPatch = useCallback(
+    async (sessionId: string, updates: Record<string, unknown>) => {
+      const res = await fetch(`/api/chat/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      if (!res.ok) {
+        throw new Error(`Failed to update chat session (${res.status})`)
+      }
+      const data = (await res.json()) as { session: PersistedSessionResponse }
+      const next = toChatSession(data.session)
+      applySessionUpdate(sessionId, () => next)
+      return next
+    },
+    [applySessionUpdate]
+  )
 
   useEffect(() => {
-    fetch('/api/admin/flowise/chatflows')
-      .then(r => r.ok ? r.json() : [])
-      .then((data: FlowiseChatflow[]) => {
-        setChatflows(data)
-        if (data.length > 0) setSelectedChatflowId(data[0].id)
-      })
-      .catch(() => {})
+    let isCancelled = false
 
-    fetch('/api/admin/flowise/ping')
-      .then(r => r.json())
-      .then(d => setConnectionStatus(d.status === 'healthy' ? 'healthy' : 'error'))
-      .catch(() => setConnectionStatus('error'))
+    async function loadInitialState() {
+      try {
+        const [chatflowRes, sessionsRes] = await Promise.all([
+          fetch('/api/chat/chatflows'),
+          fetch('/api/chat/sessions'),
+        ])
+
+        if (!chatflowRes.ok) {
+          throw new Error(`Failed to load chatflows (${chatflowRes.status})`)
+        }
+
+        const chatflowData = (await chatflowRes.json()) as ChatflowsResponse
+        const nextChatflows = chatflowData.chatflows ?? []
+        const urlChatflowId =
+          typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('chatflowId')
+            : null
+        const defaultChatflowId =
+          (urlChatflowId && nextChatflows.some((chatflow) => chatflow.id === urlChatflowId)
+            ? urlChatflowId
+            : chatflowData.defaultChatflowId) ?? nextChatflows[0]?.id ?? ''
+
+        const nextSessions = sessionsRes.ok
+          ? (((await sessionsRes.json()) as { sessions?: PersistedSessionResponse[] }).sessions ?? []).map(toChatSession)
+          : []
+
+        if (isCancelled) return
+
+        setChatflows(nextChatflows)
+        setAllowedOpenAIModels(chatflowData.allowedOpenAIModels)
+        setSelectedChatflowId(defaultChatflowId)
+        setSessions(nextSessions)
+        setCurrentSession(nextSessions[0] ?? null)
+        setConnectionStatus('healthy')
+      } catch (err) {
+        console.error('[ChatShell] Failed to load initial state:', err)
+        if (!isCancelled) {
+          setConnectionStatus('error')
+        }
+      }
+    }
+
+    loadInitialState()
+    return () => {
+      isCancelled = true
+    }
   }, [])
+
+  useEffect(() => {
+    if (!allowedOpenAIModels?.length) return
+    if (!allowedOpenAIModels.includes(selectedModel)) {
+      const nextModel = AI_MODELS.find((model) => allowedOpenAIModels.includes(model.id))
+      if (nextModel) setSelectedModel(nextModel.id)
+    }
+  }, [allowedOpenAIModels, selectedModel])
+
+  useEffect(() => {
+    if (!currentSession || currentSession.isTemporary || !currentSession.isPersisted) return
+
+    let isCancelled = false
+    const sessionId = currentSession.id
+
+    if (skipNextMessageLoadSessionIdRef.current === sessionId) {
+      skipNextMessageLoadSessionIdRef.current = null
+      return
+    }
+
+    async function loadMessages() {
+      try {
+        const res = await fetch(`/api/chat/sessions/${sessionId}/messages`)
+        if (!res.ok) {
+          throw new Error(`Failed to load messages (${res.status})`)
+        }
+
+        const data = (await res.json()) as { messages?: PersistedMessageResponse[] }
+        if (!isCancelled) {
+          setMessages((data.messages ?? []).map(toChatMessage))
+        }
+      } catch (err) {
+        console.error('[ChatShell] Failed to load messages:', err)
+        if (!isCancelled) {
+          setMessages([])
+        }
+      }
+    }
+
+    loadMessages()
+    return () => {
+      isCancelled = true
+    }
+  }, [currentSession?.id, currentSession?.isTemporary, currentSession?.isPersisted])
+
+  useEffect(() => {
+    setTempChat(Boolean(currentSession?.isTemporary))
+  }, [currentSession?.id, currentSession?.isTemporary])
+
+  useEffect(() => {
+    if (currentSession?.chatflowId) {
+      setSelectedChatflowId(currentSession.chatflowId)
+    }
+  }, [currentSession?.id, currentSession?.chatflowId])
 
   const handleNewChat = useCallback(() => {
     const session: ChatSession = {
@@ -86,12 +255,14 @@ export function ChatShell() {
       createdAt: new Date(),
       updatedAt: new Date(),
       messageCount: 0,
+      isTemporary: tempChat,
+      isPersisted: false,
     }
     setSessions(prev => [session, ...prev])
     setCurrentSession(session)
     setMessages([])
     if (window.innerWidth < 1024) setSidebarOpen(false)
-  }, [selectedChatflowId, chatflows])
+  }, [selectedChatflowId, chatflows, tempChat])
 
   const handleSelectSession = useCallback((id: string) => {
     const s = sessions.find(s => s.id === id)
@@ -104,16 +275,34 @@ export function ChatShell() {
   const handleDeleteSession = useCallback((id: string) => {
     setSessions(prev => prev.filter(s => s.id !== id))
     if (currentSession?.id === id) { setCurrentSession(null); setMessages([]) }
-  }, [currentSession])
+    const target = sessions.find((session) => session.id === id)
+    if (target && !target.isTemporary) {
+      fetch(`/api/chat/sessions/${id}`, { method: 'DELETE' }).catch((err) => {
+        console.error('[ChatShell] Failed to delete chat session:', err)
+      })
+    }
+  }, [currentSession, sessions])
 
   const handleRenameSession = useCallback((id: string, title: string) => {
     setSessions(prev => prev.map(s => s.id === id ? { ...s, title } : s))
     if (currentSession?.id === id) setCurrentSession(prev => prev ? { ...prev, title } : prev)
-  }, [currentSession])
+    const target = sessions.find((session) => session.id === id)
+    if (target && !target.isTemporary) {
+      persistSessionPatch(id, { title }).catch((err) => {
+        console.error('[ChatShell] Failed to rename chat session:', err)
+      })
+    }
+  }, [currentSession, persistSessionPatch, sessions])
 
   const handlePinSession = useCallback((id: string, pinned: boolean) => {
     setSessions(prev => prev.map(s => s.id === id ? { ...s, isPinned: pinned } : s))
-  }, [])
+    const target = sessions.find((session) => session.id === id)
+    if (target && !target.isTemporary) {
+      persistSessionPatch(id, { pinned }).catch((err) => {
+        console.error('[ChatShell] Failed to pin chat session:', err)
+      })
+    }
+  }, [persistSessionPatch, sessions])
 
   const handleArchiveSession = useCallback((id: string) => {
     setSessions(prev => prev.map(s => s.id === id ? { ...s, isArchived: true } : s))
@@ -121,7 +310,13 @@ export function ChatShell() {
       setCurrentSession(null)
       setMessages([])
     }
-  }, [currentSession])
+    const target = sessions.find((session) => session.id === id)
+    if (target && !target.isTemporary) {
+      persistSessionPatch(id, { archived: true }).catch((err) => {
+        console.error('[ChatShell] Failed to archive chat session:', err)
+      })
+    }
+  }, [currentSession, persistSessionPatch, sessions])
 
   /** Phase 3 Checkpoint: restore conversation to this message (truncate after it) */
   const handleRestoreToMessage = useCallback((messageId: string) => {
@@ -132,7 +327,7 @@ export function ChatShell() {
     })
   }, [])
 
-  const handleSubmit = useCallback(async (text: string, files?: File[]) => {
+  const handleSubmit = useCallback(async (text: string, files?: File[], options?: { enabledTools: string[] }) => {
     const hasText = text.trim().length > 0
     const hasFiles = (files?.length ?? 0) > 0
     if ((!hasText && !hasFiles) || isStreaming || !selectedChatflowId) return
@@ -150,14 +345,39 @@ export function ChatShell() {
         createdAt: new Date(),
         updatedAt: new Date(),
         messageCount: 0,
+        isTemporary: tempChat,
+        isPersisted: false,
       }
       setSessions(prev => [session!, ...prev])
       setCurrentSession(session)
     }
 
+    if (!session.isTemporary && !session.isPersisted && userId) {
+        const createRes = await fetch('/api/chat/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: session.title,
+            chatflowId: session.chatflowId,
+            chatflowName: session.chatflowName,
+            flowiseChatId: session.flowise_chat_id ?? null,
+          }),
+        })
+
+        if (!createRes.ok) {
+          throw new Error(`Failed to create chat session (${createRes.status})`)
+        }
+
+        const created = (await createRes.json()) as { session: PersistedSessionResponse }
+        session = toChatSession(created.session)
+        skipNextMessageLoadSessionIdRef.current = session.id
+        setSessions((prev) => [session!, ...prev.filter((item) => item.id !== currentSession?.id)])
+        setCurrentSession(session)
+    }
+
     // Flowise expects uploads[].data to be the full data URL (data:image/png;base64,...)
     // Create display blob URLs immediately (before any async) so images render in the message
-    const userId = crypto.randomUUID()
+    const userMessageId = crypto.randomUUID()
     const attachmentDisplays: ChatMessageAttachment[] = hasFiles
       ? files!.map((f) => ({
           id: crypto.randomUUID(),
@@ -167,7 +387,7 @@ export function ChatShell() {
         }))
       : []
     const userMsg: ChatMessage = {
-      id: userId,
+      id: userMessageId,
       role: 'user',
       content: displayContent,
       createdAt: new Date(),
@@ -218,6 +438,16 @@ export function ChatShell() {
           question: questionForApi,
           chatId: session.flowise_chat_id,
           streaming: streamingEnabled,
+          overrideConfig: {
+            temperature,
+            maxTokens,
+            systemMessage: systemPrompt || undefined,
+            vars: {
+              agentMode,
+              modelOverride: selectedModel,
+              enabledTools: options?.enabledTools ?? [],
+            },
+          },
           ...(uploads?.length ? { uploads } : {}),
         }),
       })
@@ -233,7 +463,6 @@ export function ChatShell() {
       let accumulated = ''
       let flowise_chat_id = session.flowise_chat_id
       let rawBuffer = ''
-      let readCount = 0
       // Flowise SSE format per docs: separate "event: token" and "data: <raw text>" lines (not JSON in data)
       let currentEvent = ''
 
@@ -305,7 +534,6 @@ export function ChatShell() {
 
       while (true) {
         const { done, value } = await reader.read()
-        readCount += 1
         if (value?.length) rawBuffer += decoder.decode(value, { stream: true })
         const lines = rawBuffer.split(/\r?\n/)
         rawBuffer = lines.pop() ?? ''
@@ -334,7 +562,10 @@ export function ChatShell() {
       }
 
       const finalContent = accumulated || '(no response)'
-      const useTypewriter = finalContent !== '(no response)' && finalContent.length > 0
+      const useTypewriter =
+        !streamingEnabled &&
+        finalContent !== '(no response)' &&
+        finalContent.length > 0
 
       if (useTypewriter) {
         const msPerTick = 10
@@ -379,9 +610,35 @@ export function ChatShell() {
       }
 
       if (flowise_chat_id && session.flowise_chat_id !== flowise_chat_id) {
-        setSessions(prev =>
-          prev.map(s => s.id === session.id ? { ...s, flowise_chat_id } : s)
-        )
+        applySessionUpdate(session.id, (existing) => ({
+          ...existing,
+          flowise_chat_id,
+        }))
+      }
+
+      if (!session.isTemporary) {
+        await fetch(`/api/chat/sessions/${session.id}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'user', content: displayContent },
+              { role: 'assistant', content: finalContent },
+            ],
+          }),
+        })
+
+        await persistSessionPatch(session.id, {
+          title:
+            (session.messageCount ?? 0) === 0
+              ? (text.slice(0, 50) || (hasFiles ? 'New Chat' : 'New Chat')).trim() || 'New Chat'
+              : session.title,
+          flowiseChatId: flowise_chat_id ?? session.flowise_chat_id ?? null,
+          messageCount: (session.messageCount ?? 0) + 2,
+          lastMessageAt: new Date().toISOString(),
+          chatflowId: selectedChatflowId,
+          chatflowName: chatflows.find((chatflow) => chatflow.id === selectedChatflowId)?.name ?? null,
+        })
       }
     } catch (err) {
       console.error('[handleSubmit]', err)
@@ -395,7 +652,23 @@ export function ChatShell() {
     } finally {
       setIsStreaming(false)
     }
-  }, [currentSession, selectedChatflowId, chatflows, streamingEnabled, isStreaming])
+  }, [
+    agentMode,
+    applySessionUpdate,
+    chatflows,
+    currentSession,
+    isStreaming,
+    maxTokens,
+    persistSessionPatch,
+    selectedChatflowId,
+    selectedModel,
+    sessions,
+    streamingEnabled,
+    systemPrompt,
+    tempChat,
+    temperature,
+    userId,
+  ])
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background safe-area-inset">
@@ -435,6 +708,7 @@ export function ChatShell() {
             chatflows={chatflows}
             selectedChatflowId={selectedChatflowId}
             onChatflowChange={setSelectedChatflowId}
+            allowedModelIds={allowedOpenAIModels}
             selectedModel={selectedModel}
             onModelChange={setSelectedModel}
             selectedMode={agentMode}
