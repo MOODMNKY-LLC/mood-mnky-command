@@ -7,8 +7,6 @@ import { useCurrentUserImage } from '@/hooks/use-current-user-image'
 import { useCurrentUserName } from '@/hooks/use-current-user-name'
 import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient()
-
 export type RealtimeUser = {
   id: string
   name: string
@@ -22,7 +20,9 @@ export const useRealtimePresenceRoom = (roomName: string) => {
   const [users, setUsers] = useState<Record<string, RealtimeUser>>({})
 
   useEffect(() => {
+    const supabase = createClient()
     if (!supabase) return
+
     const room = supabase.channel(roomName)
 
     room

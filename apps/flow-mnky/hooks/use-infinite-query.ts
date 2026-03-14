@@ -1,40 +1,17 @@
 'use client'
 
 import { PostgrestQueryBuilder, type PostgrestClientOptions } from '@supabase/postgrest-js'
-import { type SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient()
-
-// The following types are used to make the hook type-safe. It extracts the database type from the supabase client.
-type SupabaseClientType = typeof supabase
-
-// Utility type to check if the type is any
-type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
-
-// Extracts the database type from the supabase client. If the supabase client doesn't have a type, it will fallback properly.
-type Database =
-  SupabaseClientType extends SupabaseClient<infer U>
-    ? IfAny<
-        U,
-        {
-          public: {
-            Tables: Record<string, any>
-            Views: Record<string, any>
-            Functions: Record<string, any>
-          }
-        },
-        U
-      >
-    : {
-        public: {
-          Tables: Record<string, any>
-          Views: Record<string, any>
-          Functions: Record<string, any>
-        }
-      }
+type Database = {
+  public: {
+    Tables: Record<string, any>
+    Views: Record<string, any>
+    Functions: Record<string, any>
+  }
+}
 
 // Change this to the database schema you want to use
 type DatabaseSchema = Database['public']
@@ -89,6 +66,7 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
   props: UseInfiniteQueryProps<T>
 ) {
   const { tableName, columns = '*', pageSize = 20, trailingQuery } = props
+  const supabase = createClient()
 
   let state: StoreState<TData> = {
     data: [],
@@ -113,6 +91,14 @@ function createStore<TData extends SupabaseTableData<T>, T extends SupabaseTable
 
   const fetchPage = async (skip: number) => {
     if (state.hasInitialFetch && (state.isFetching || state.count <= state.data.length)) return
+    if (!supabase) {
+      setState({
+        error: new Error('Supabase is not configured.'),
+        isFetching: false,
+        isLoading: false,
+      })
+      return
+    }
 
     setState({ isFetching: true })
 

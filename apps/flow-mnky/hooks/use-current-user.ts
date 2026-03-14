@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 
 import { createClient } from '@/lib/supabase/client'
@@ -17,6 +19,7 @@ export function useCurrentUser(): CurrentUser {
 
   useEffect(() => {
     const supabase = createClient()
+    if (!supabase) return
 
     const updateFromSession = () => {
       supabase.auth.getSession().then(({ data }) => {

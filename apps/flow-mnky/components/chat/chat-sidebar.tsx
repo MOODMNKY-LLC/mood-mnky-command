@@ -599,7 +599,10 @@ function UserProfileFooter({ isAdmin }: { isAdmin?: boolean }) {
   const handleSignOut = async () => {
     try {
       const { createClient } = await import('@/lib/supabase/client')
-      await createClient().auth.signOut()
+      const supabase = createClient()
+      if (supabase) {
+        await supabase.auth.signOut()
+      }
       window.location.href = '/auth/login'
     } catch {
       window.location.href = '/auth/login'

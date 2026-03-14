@@ -1,6 +1,6 @@
-import { createBrowserClient, type SupabaseClient } from '@supabase/ssr'
+'use client'
 
-let cachedClient: SupabaseClient | null = null
+import { createBrowserClient, type SupabaseClient } from '@supabase/ssr'
 
 export function createClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
@@ -13,11 +13,5 @@ export function createClient(): SupabaseClient | null {
     return null
   }
 
-  // Return cached client if available (prevents multiple instances)
-  if (cachedClient) {
-    return cachedClient
-  }
-
-  cachedClient = createBrowserClient(url, key)
-  return cachedClient
+  return createBrowserClient(url, key)
 }

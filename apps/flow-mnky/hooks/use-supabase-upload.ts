@@ -3,8 +3,6 @@ import { useDropzone, type FileError, type FileRejection } from 'react-dropzone'
 
 import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient()
-
 interface FileWithPreview extends File {
   preview?: string
   errors: readonly FileError[]
@@ -112,6 +110,12 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   })
 
   const onUpload = useCallback(async () => {
+    const supabase = createClient()
+    if (!supabase) {
+      setErrors([{ name: bucketName, message: 'Supabase is not configured.' }])
+      return
+    }
+
     setLoading(true)
 
     // [Joshen] This is to support handling partial successes
@@ -152,7 +156,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     setSuccesses(newSuccesses)
 
     setLoading(false)
-  }, [files, path, bucketName, errors, successes])
+  }, [files, path, bucketName, errors, successes, cacheControl, upsert])
 
   useEffect(() => {
     if (files.length === 0) {
