@@ -3,7 +3,7 @@
 import { Check, ChevronsUpDown, Logs, Terminal } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { genDefaultQuery, LogsTableName } from '../../lib/logs'
+import { genDefaultQuery, LogsTableName } from '@/lib/logs'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'

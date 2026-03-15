@@ -13,6 +13,8 @@ export type RealtimeUser = {
   image: string
 }
 
+export type PresenceUser = RealtimeUser
+
 export const useRealtimePresenceRoom = (roomName: string) => {
   const currentUserImage = useCurrentUserImage()
   const currentUserName = useCurrentUserName()
@@ -30,9 +32,9 @@ export const useRealtimePresenceRoom = (roomName: string) => {
         const newState = room.presenceState<{ image: string; name: string }>()
 
         const newUsers = Object.fromEntries(
-          Object.entries(newState).map(([key, values]) => [
+          Object.entries(newState).map(([key, values]: [string, Array<{ image: string; name: string }>]) => [
             key,
-            { name: values[0].name, image: values[0].image },
+            { id: key, name: values[0].name, image: values[0].image },
           ])
         ) as Record<string, RealtimeUser>
         setUsers(newUsers)

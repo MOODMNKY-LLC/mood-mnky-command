@@ -28,7 +28,7 @@ export function useUserRole(): UseUserRoleResult {
       return
     }
 
-    const resolveRole = async () => {
+    const resolveRole = async (attempt = 0) => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
 
@@ -48,9 +48,15 @@ export function useUserRole(): UseUserRoleResult {
           .single()
 
         setRole(normalizeProfileRole(profile?.role))
+        setIsLoading(false)
       } catch {
+        if (attempt < 1) {
+          window.setTimeout(() => {
+            resolveRole(attempt + 1)
+          }, 300)
+          return
+        }
         setRole('user')
-      } finally {
         setIsLoading(false)
       }
     }

@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'flowise-console-v1';
+const CACHE_NAME = 'flowise-console-v2';
+const IS_LOCAL_DEV = ['localhost', '127.0.0.1'].includes(self.location.hostname);
 const STATIC_ASSETS = [
   '/',
   '/app/chat',
@@ -10,8 +11,17 @@ const STATIC_ASSETS = [
   '/mood-mnky-avatar.png',
 ];
 
+function shouldCacheNavigation(pathname) {
+  return pathname === '/' || pathname === '/app/chat';
+}
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
+  if (IS_LOCAL_DEV) {
+    self.skipWaiting();
+    return;
+  }
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
@@ -26,7 +36,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => IS_LOCAL_DEV || name !== CACHE_NAME)
           .map((name) => caches.delete(name))
       );
     })
@@ -38,6 +48,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  if (IS_LOCAL_DEV) {
+    return;
+  }
 
   // Skip non-GET requests and cross-origin requests
   if (request.method !== 'GET' || url.origin !== location.origin) {
@@ -55,7 +69,7 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           // Clone and cache successful responses
-          if (response.ok) {
+          if (response.ok && shouldCacheNavigation(url.pathname)) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }

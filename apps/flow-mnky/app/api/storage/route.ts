@@ -5,13 +5,37 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getMinIOService } from '@/lib/services/minio.service'
+import { requireUser } from '@/lib/auth/require-user'
+
+const ALLOWED_BUCKETS = new Set(
+  [
+    process.env.MINIO_BUCKET_IMAGES || 'chat-images',
+    process.env.MINIO_BUCKET_DOCUMENTS || 'chat-documents',
+    process.env.MINIO_BUCKET_KNOWLEDGE || 'chat-knowledge-base',
+    process.env.MINIO_BUCKET_PROJECTS || 'chat-projects',
+  ].filter(Boolean)
+)
+
+function validateBucket(bucket: string): string | null {
+  const normalized = bucket.trim()
+  if (!normalized) return 'Bucket is required.'
+  if (!ALLOWED_BUCKETS.has(normalized)) {
+    return `Bucket "${normalized}" is not allowed.`
+  }
+  return null
+}
 
 export async function POST(request: NextRequest) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 
     if (action === 'upload') {
-      return await handleUpload(request)
+      return await handleUpload(request, auth.userId)
     } else if (action === 'presigned-url') {
       return await handlePresignedUrl(request)
     } else if (action === 'delete') {
@@ -29,6 +53,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 
@@ -53,7 +82,7 @@ export async function GET(request: NextRequest) {
 /**
  * Handle file upload
  */
-async function handleUpload(request: NextRequest): Promise<NextResponse> {
+async function handleUpload(request: NextRequest, userId: string): Promise<NextResponse> {
   const formData = await request.formData()
   const file = formData.get('file') as File
   const bucket = (formData.get('bucket') as string) || 'chat-documents'
@@ -61,6 +90,11 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
 
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+  }
+
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
   }
 
   // Validate file size (max 100MB)
@@ -83,7 +117,7 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
       },
       tags: {
         uploadType: 'chat',
-        userId: 'temp-session', // Would be replaced with actual user ID
+        userId,
       },
     })
 
@@ -104,6 +138,11 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
  */
 async function handleListFiles(request: NextRequest): Promise<NextResponse> {
   const bucket = request.nextUrl.searchParams.get('bucket') || 'chat-documents'
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
+  }
+
   const folder = request.nextUrl.searchParams.get('folder') || ''
   const maxKeys = parseInt(request.nextUrl.searchParams.get('maxKeys') || '100', 10)
 
@@ -143,6 +182,11 @@ async function handleDownload(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing bucket or object' }, { status: 400 })
   }
 
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
+  }
+
   try {
     const minioService = getMinIOService()
     const buffer = await minioService.downloadFile(bucket, object)
@@ -173,6 +217,11 @@ async function handlePresignedUrl(request: NextRequest): Promise<NextResponse> {
 
   if (!bucket || !object) {
     return NextResponse.json({ error: 'Missing bucket or object' }, { status: 400 })
+  }
+
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
   }
 
   try {
@@ -210,6 +259,11 @@ async function handleMetadata(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing bucket or object' }, { status: 400 })
   }
 
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
+  }
+
   try {
     const minioService = getMinIOService()
     const metadata = await minioService.getObjectMetadata(bucket, object)
@@ -235,6 +289,11 @@ async function handleDelete(request: NextRequest): Promise<NextResponse> {
 
   if (!bucket || !object) {
     return NextResponse.json({ error: 'Missing bucket or object' }, { status: 400 })
+  }
+
+  const bucketError = validateBucket(bucket)
+  if (bucketError) {
+    return NextResponse.json({ error: bucketError }, { status: 400 })
   }
 
   try {

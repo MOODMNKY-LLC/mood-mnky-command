@@ -1,10 +1,12 @@
-import { listDocumentStores } from '@/lib/flowise/client'
+import { adminListDocumentStores } from '@/lib/actions/admin'
+import { DocumentStoreCreate } from './document-store-create'
 import { DocumentStoreIngest } from './document-store-ingest'
+import { DocumentStoreList } from './document-store-list'
 
 export default async function AdminDocumentStoresPage() {
-  let stores: Awaited<ReturnType<typeof listDocumentStores>> = []
+  let stores: Awaited<ReturnType<typeof adminListDocumentStores>> = []
   try {
-    stores = await listDocumentStores()
+    stores = await adminListDocumentStores()
   } catch {
     // Flowise unreachable or not configured
   }
@@ -14,33 +16,15 @@ export default async function AdminDocumentStoresPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Document stores</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Manage Flowise document stores and ingest files into the vector store.
+          Create knowledge bases, upload files, and ingest (train) so the agent can retrieve and use them in conversation.
         </p>
       </div>
 
+      <DocumentStoreCreate />
+
       <DocumentStoreIngest stores={stores} />
 
-      <section>
-        <h2 className="text-lg font-medium mb-3">Stores</h2>
-        {stores.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No document stores. Create one in Flowise or via API.</p>
-        ) : (
-          <ul className="rounded-lg border border-border/50 divide-y divide-border/50">
-            {stores.map((s) => (
-              <li key={s.id} className="px-4 py-3 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{s.name}</p>
-                  {s.description && (
-                    <p className="text-xs text-muted-foreground">{s.description}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-0.5">ID: {s.id}</p>
-                </div>
-                <span className="text-xs text-muted-foreground capitalize">{s.status ?? '—'}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <DocumentStoreList stores={stores} />
     </div>
   )
 }

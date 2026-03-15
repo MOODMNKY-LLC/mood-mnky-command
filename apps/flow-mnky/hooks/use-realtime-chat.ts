@@ -10,9 +10,20 @@ export interface ChatMessage {
   createdAt: string
 }
 
-export const useRealtimeChat = (roomName: string) => {
+interface UseRealtimeChatOptions {
+  roomName: string
+  username?: string
+}
+
+export const useRealtimeChat = (optionsOrRoomName: string | UseRealtimeChatOptions) => {
+  const roomName =
+    typeof optionsOrRoomName === 'string' ? optionsOrRoomName : optionsOrRoomName.roomName
+  const username =
+    typeof optionsOrRoomName === 'string' ? undefined : optionsOrRoomName.username
+
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
     let channel: typeof channelRef.current = null
@@ -27,27 +38,32 @@ export const useRealtimeChat = (roomName: string) => {
           .on('broadcast', { event: 'message' }, ({ payload }) => {
             setMessages(prev => [...prev, payload as ChatMessage])
           })
-          .subscribe()
+          .subscribe((status) => {
+            setIsConnected(status === 'SUBSCRIBED')
+          })
       } catch {
         // Supabase not configured — graceful no-op
       }
     }
 
     setup()
-    return () => { channel?.unsubscribe() }
+    return () => {
+      setIsConnected(false)
+      channel?.unsubscribe()
+    }
   }, [roomName])
 
-  const sendMessage = useCallback(async (content: string, username: string) => {
+  const sendMessage = useCallback(async (content: string, usernameOverride?: string) => {
     if (!channelRef.current) return
     const msg: ChatMessage = {
       id: crypto.randomUUID(),
       content,
-      user: { name: username },
+      user: { name: usernameOverride ?? username ?? 'User' },
       createdAt: new Date().toISOString(),
     }
     setMessages(prev => [...prev, msg])
     await channelRef.current.send({ type: 'broadcast', event: 'message', payload: msg })
-  }, [])
+  }, [username])
 
-  return { messages, sendMessage }
+  return { messages, sendMessage, isConnected }
 }

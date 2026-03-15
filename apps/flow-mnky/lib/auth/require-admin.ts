@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient, getSupabaseConfigMissing } from '@/lib/supabase/admin'
+import { isAdminLikeRole } from '@/lib/auth/roles'
 
 export type RequireAdminResult =
   | { ok: true; userId: string }
@@ -8,7 +9,7 @@ export type RequireAdminResult =
   | { ok: false; status: 503; error: string }
 
 /**
- * Server-side guard: ensures the current user is an admin (profiles.role === 'admin').
+ * Server-side guard: ensures the current user is an admin.
  * Use at the start of server actions or API handlers that must be admin-only.
  * Returns userId when ok so callers can use it for audit or ownership.
  */
@@ -39,7 +40,7 @@ export async function requireAdmin(): Promise<RequireAdminResult> {
       return { ok: false, status: 503, error: 'Failed to resolve role.' }
     }
 
-    const isAdmin = profile?.role === 'admin' || profile?.is_admin === true
+    const isAdmin = isAdminLikeRole(profile?.role, profile?.is_admin)
     if (!isAdmin) {
       return { ok: false, status: 403, error: 'Admin only.' }
     }

@@ -1,7 +1,9 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { normalizeProfileRole, toDatabaseRole, type AppRole } from '@/lib/auth/roles'
 import {
   listDocumentStores,
   createDocumentStore,
@@ -11,7 +13,7 @@ import {
   listVariables,
 } from '@/lib/flowise/client'
 
-export type ProfileRole = 'admin' | 'moderator' | 'user' | 'pending'
+export type ProfileRole = AppRole
 
 export interface ProfileRow {
   id: string
@@ -37,7 +39,7 @@ async function mergeLastSignInFromAuth(
 ): Promise<ProfileRow[]> {
   if (rows.length === 0) return rows
   try {
-    const { data } = await admin.auth.admin.listUsers({ per_page: 1000 })
+    const { data } = await admin.auth.admin.listUsers({ perPage: 1000 })
     const users = data?.users ?? []
     const lastSignInById = new Map<string, string | null>()
     for (const u of users) {
@@ -96,6 +98,7 @@ export async function listProfiles(options?: {
         }
         const rows = ((fallback.data ?? []) as Record<string, unknown>[]).map((row) => ({
           ...row,
+          role: normalizeProfileRole(typeof row.role === 'string' ? row.role : null),
           last_sign_in_at: null as string | null,
           allowed_openai_models: null as string[] | null,
         })) as ProfileRow[]
@@ -106,7 +109,10 @@ export async function listProfiles(options?: {
       return { ok: false, error: msg }
     }
 
-    const rows = (data ?? []) as ProfileRow[]
+    const rows = ((data ?? []) as Record<string, unknown>[]).map((row) => ({
+      ...row,
+      role: normalizeProfileRole(typeof row.role === 'string' ? row.role : null),
+    })) as ProfileRow[]
     const nextOffset = rows.length === limit ? offset + limit : null
     const rowsWithAuth = await mergeLastSignInFromAuth(admin, rows)
     return { ok: true, data: rowsWithAuth, nextOffset }
@@ -129,7 +135,10 @@ export async function updateProfileRole(
   }
   try {
     const admin = createAdminClient()
-    const { error } = await admin.from('profiles').update({ role, updated_at: new Date().toISOString() }).eq('id', profileId)
+    const { error } = await admin
+      .from('profiles')
+      .update({ role: toDatabaseRole(role), updated_at: new Date().toISOString() })
+      .eq('id', profileId)
     if (error) {
       return { ok: false, error: error.message }
     }
@@ -147,17 +156,70 @@ export async function adminListDocumentStores() {
 }
 
 /** Create document store (admin only). */
-export async function adminCreateDocumentStore(body: { name: string; description?: string }) {
+export async function adminCreateDocumentStore(body: {
+  name: string
+  description?: string
+  /** If set, link the new store to this profile in flowise_user_document_stores (scope dojo). */
+  assignToProfileId?: string
+  scope?: string
+  displayName?: string
+}) {
   const auth = await requireAdmin()
   if (!auth.ok) throw new Error(auth.error)
-  return createDocumentStore(body)
+  const result = await createDocumentStore({ name: body.name, description: body.description })
+  const scope = body.scope ?? 'dojo'
+  if (body.assignToProfileId?.trim() && result?.id) {
+    const admin = createAdminClient()
+    await admin.from('flowise_user_document_stores').upsert(
+      {
+        profile_id: body.assignToProfileId.trim(),
+        flowise_store_id: result.id,
+        display_name: body.displayName?.trim() || body.name || null,
+        scope,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'profile_id,scope' }
+    )
+  }
+  revalidatePath('/admin/document-stores')
+  return result
+}
+
+/** Assign an existing Flowise document store to a user (admin only). */
+export async function adminAssignDocumentStoreToUser(
+  profileId: string,
+  flowiseStoreId: string,
+  options?: { scope?: string; displayName?: string }
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const auth = await requireAdmin()
+  if (!auth.ok) return { ok: false, error: auth.error }
+  try {
+    const admin = createAdminClient()
+    const scope = options?.scope ?? 'dojo'
+    const { error } = await admin.from('flowise_user_document_stores').upsert(
+      {
+        profile_id: profileId,
+        flowise_store_id: flowiseStoreId,
+        display_name: options?.displayName?.trim() || null,
+        scope,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'profile_id,scope' }
+    )
+    if (error) return { ok: false, error: error.message }
+    revalidatePath('/admin/document-stores')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to assign store' }
+  }
 }
 
 /** Delete document store (admin only). */
 export async function adminDeleteDocumentStore(id: string) {
   const auth = await requireAdmin()
   if (!auth.ok) throw new Error(auth.error)
-  return deleteDocumentStore(id)
+  await deleteDocumentStore(id)
+  revalidatePath('/admin/document-stores')
 }
 
 /** List chatflows (admin only). */

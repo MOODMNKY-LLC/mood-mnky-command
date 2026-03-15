@@ -56,6 +56,14 @@ class FlowiseService {
   private sessions: Map<string, FloWiseSession> = new Map()
   private defaultChatflowId: string | null = null
 
+  private async resolveChatflowId(explicitChatflowId?: string): Promise<string> {
+    const chatflowId = explicitChatflowId || this.defaultChatflowId || (await this.setDefaultChatflow())
+    if (!chatflowId) {
+      throw new Error('No chatflow ID available. Please check Flowise setup.')
+    }
+    return chatflowId
+  }
+
   /**
    * Get list of available chatflows
    */
@@ -103,17 +111,9 @@ class FlowiseService {
   /**
    * Stream prediction from Flowise
    */
-  async predictStreaming(request: FlowisePredictionRequest): Promise<ReadableStream<string>> {
+  async predictStreaming(request: FlowisePredictionRequest): Promise<ReadableStream<Uint8Array>> {
     const config = getValidatedConfig()
-    
-    let chatflowId = request.chatflowId || this.defaultChatflowId
-    if (!chatflowId) {
-      chatflowId = await this.setDefaultChatflow()
-    }
-
-    if (!chatflowId) {
-      throw new Error('No chatflow ID available. Please check Flowise setup.')
-    }
+    const chatflowId = await this.resolveChatflowId(request.chatflowId)
 
     const url = `${config.flowise.apiUrl}/prediction/${chatflowId}`
 
@@ -149,7 +149,7 @@ class FlowiseService {
       }
 
       console.log('[v0] Flowise streaming started')
-      return response.body.pipeThrough(new TextEncoderStream())
+      return response.body
     } catch (error) {
       console.error('[v0] Error calling Flowise streaming prediction:', error)
       throw error
@@ -161,15 +161,7 @@ class FlowiseService {
    */
   async predictSync(request: FlowisePredictionRequest): Promise<FlowisePredictionResponse> {
     const config = getValidatedConfig()
-    
-    let chatflowId = request.chatflowId || this.defaultChatflowId
-    if (!chatflowId) {
-      chatflowId = await this.setDefaultChatflow()
-    }
-
-    if (!chatflowId) {
-      throw new Error('No chatflow ID available. Please check Flowise setup.')
-    }
+    const chatflowId = await this.resolveChatflowId(request.chatflowId)
 
     const url = `${config.flowise.apiUrl}/prediction/${chatflowId}`
 
@@ -218,7 +210,9 @@ class FlowiseService {
    */
   async getHistory(sessionId: string): Promise<FlowisePredictionRequest['history']> {
     const config = getValidatedConfig()
-    const url = `${config.flowise.apiUrl}/prediction/${config.flowise.chatflowId}/history?sessionId=${sessionId}`
+    const session = this.getSession(sessionId)
+    const chatflowId = await this.resolveChatflowId(session?.chatflowId)
+    const url = `${config.flowise.apiUrl}/prediction/${chatflowId}/history?sessionId=${sessionId}`
 
     try {
       const response = await fetch(url, {
@@ -304,10 +298,9 @@ class FlowiseService {
     const now = new Date()
     const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000) // 24 hours
 
-    const config = getValidatedConfig()
     const session: FloWiseSession = {
       id: sessionId,
-      chatflowId: config.flowise.chatflowId,
+      chatflowId: this.defaultChatflowId ?? '',
       userId,
       createdAt: now,
       expiresAt,
@@ -400,4 +393,3 @@ export function getFlowiseService(): FlowiseService {
   return flowiseService
 }
 
-export type { FloWiseSession }

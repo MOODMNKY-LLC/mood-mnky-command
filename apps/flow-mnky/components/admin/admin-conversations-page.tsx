@@ -47,7 +47,7 @@ export function AdminConversationsPage() {
     await fetch('/api/admin/flowise/messages', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chatflowId: selectedChatflow }),
+      body: JSON.stringify({ chatflowId: selectedChatflow, sessionId: chatId }),
     })
     setMessages(prev => prev.filter(m => m.chatId !== chatId))
   }

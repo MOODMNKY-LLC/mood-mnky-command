@@ -38,7 +38,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-const ROLES: ProfileRole[] = ['admin', 'moderator', 'user', 'pending']
+const ROLES: ProfileRole[] = ['admin', 'moderator', 'user']
 const ACTIVE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour (last sign-in from Auth)
 
 function formatLastSignIn(iso: string | null | undefined): string {

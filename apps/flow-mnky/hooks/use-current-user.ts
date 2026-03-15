@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 
-import { createClient } from '@/lib/supabase/client'
+import { createOptionalClient } from '@/lib/supabase/client'
 
 export interface CurrentUser {
   name: string | null
@@ -18,11 +19,11 @@ export function useCurrentUser(): CurrentUser {
   })
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createOptionalClient()
     if (!supabase) return
 
     const updateFromSession = () => {
-      supabase.auth.getSession().then(({ data }) => {
+      supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
         const u = data.session?.user
         setUser({
           name: u?.user_metadata?.full_name ?? null,

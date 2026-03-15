@@ -8,10 +8,10 @@ import {
   authEmailProviderSchema,
   authFieldLabels,
   authGeneralSettingsSchema,
-  authGoogleProviderSchema,
+  authGoogleProviderObject,
   authPhoneProviderSchema,
   type AuthGeneralSettingsSchema,
-} from '../../lib/schemas/auth'
+} from '@/lib/auth'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -30,18 +30,16 @@ function ProviderSettingsView({
   onSuccess,
 }: {
   projectRef: string
-  schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>>
+  schema: z.ZodObject<any>
   title: string
   initialValues: any
   onSuccess: () => void
 }) {
   const { mutate: updateAuthConfig, isPending: isUpdatingConfig } = useUpdateAuthConfig()
 
-  const actualSchema = 'shape' in schema ? schema : (schema._def.schema as z.ZodObject<any>)
-
-  const handleUpdateAuthConfig = (formData: z.infer<typeof actualSchema>) => {
+  const handleUpdateAuthConfig = (formData: z.infer<typeof schema>) => {
     const payload = Object.fromEntries(
-      Object.entries(formData).filter(([_, value]) => value !== undefined)
+      Object.entries(formData as Record<string, unknown>).filter(([_, value]) => value !== undefined)
     )
 
     if (Object.keys(payload).length === 0) {
@@ -64,7 +62,7 @@ function ProviderSettingsView({
     if (!allInitialValues) {
       return undefined
     }
-    const schemaKeys = Object.keys(actualSchema.shape)
+    const schemaKeys = Object.keys(schema.shape)
     const result = schemaKeys.reduce(
       (acc, key) => {
         if (Object.prototype.hasOwnProperty.call(allInitialValues, key)) {
@@ -76,13 +74,13 @@ function ProviderSettingsView({
     )
 
     return result
-  }, [allInitialValues, actualSchema])
+  }, [allInitialValues, schema])
 
   return (
     <div className="w-full max-w-3xl mx-auto p-6 pt-4 lg:p-12 lg:pt-12">
       <h2 className="lg:text-xl font-semibold mb-2 lg:mb-4">{title}</h2>
       <DynamicForm
-        schema={actualSchema}
+        schema={schema}
         onSubmit={handleUpdateAuthConfig}
         isLoading={isUpdatingConfig}
         initialValues={formInitialValues}
@@ -122,7 +120,7 @@ export function AuthManager({ projectRef }: { projectRef: string }) {
     name: string
     icon: React.ReactNode
     description: string
-    schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>>
+    schema: z.ZodObject<any>
   }[] = [
     {
       icon: <Mail className="h-4 w-4 text-muted-foreground" />,
@@ -140,12 +138,12 @@ export function AuthManager({ projectRef }: { projectRef: string }) {
       icon: <User className="h-4 w-4 text-muted-foreground" />,
       name: 'Google',
       description: 'Sign in with Google',
-      schema: authGoogleProviderSchema,
+      schema: authGoogleProviderObject,
     },
   ]
 
   const handleProviderClick = useCallback(
-    (provider: { name: string; schema: z.ZodObject<any> | z.ZodEffects<z.ZodObject<any>> }) => {
+    (provider: { name: string; schema: z.ZodObject<any> }) => {
       push({
         title: `${provider.name} Provider Settings`,
         component: (

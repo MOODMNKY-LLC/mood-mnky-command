@@ -1,6 +1,7 @@
 import { requireUser } from '@/lib/auth/require-user'
 import { listChatflows } from '@/lib/flowise/client'
 import { getCurrentUserProfile } from '@/lib/chat/session-store'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
   const auth = await requireUser()
@@ -14,10 +15,23 @@ export async function GET() {
       listChatflows(),
     ])
 
+    let assignedIds: Set<string> | null = null
+    if (profile.role !== 'admin') {
+      const supabase = await createClient()
+      const { data } = await supabase
+        .from('flowise_chatflow_assignments')
+        .select('chatflow_id')
+        .eq('profile_id', auth.userId)
+      assignedIds = new Set((data ?? []).map((a) => a.chatflow_id))
+    }
     const visibleChatflows =
       profile.role === 'admin'
         ? chatflows
-        : chatflows.filter((chatflow) => chatflow.deployed ?? chatflow.isPublic ?? false)
+        : chatflows.filter(
+            (chatflow) =>
+              (chatflow.deployed ?? chatflow.isPublic ?? false) &&
+              (assignedIds === null || assignedIds.has(chatflow.id))
+          )
 
     const defaultChatflowId = visibleChatflows.some((chatflow) => chatflow.id === profile.defaultChatflowId)
       ? profile.defaultChatflowId

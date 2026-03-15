@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   ExternalLink,
   Users,
+  Workflow,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/chat/theme-toggle'
 
@@ -25,14 +26,20 @@ const navItems = [
   { href: '/admin/assistants',      label: 'Assistants',     icon: Bot },
   { href: '/admin/variables',       label: 'Variables',      icon: Variable },
   { href: '/admin/document-stores', label: 'Doc Stores',     icon: Database },
+  { href: '/admin/automations',     label: 'Automations',    icon: Workflow },
   { href: '/admin/conversations',   label: 'Conversations',  icon: MessagesSquare },
 ]
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  className?: string
+  onNavigate?: () => void
+}
+
+export function AdminSidebar({ className, onNavigate }: AdminSidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-56 flex flex-col shrink-0 glass-strong border-r border-border/50">
+    <aside className={cn('w-56 flex-col shrink-0 glass-strong border-r border-border/50', className)}>
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-border/50">
         <div className="w-7 h-7 rounded-lg bg-foreground flex items-center justify-center">
           <LayoutDashboard className="w-3.5 h-3.5 text-background" />
@@ -42,7 +49,7 @@ export function AdminSidebar() {
 
       <nav className="flex-1 p-3 space-y-0.5">
         {navItems.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href}>
+          <Link key={href} href={href} onClick={onNavigate}>
             <Button
               variant="ghost"
               className={cn(
@@ -60,7 +67,7 @@ export function AdminSidebar() {
       </nav>
 
       <div className="p-3 border-t border-border/50 space-y-1">
-        <Link href="/app/chat" target="_blank">
+        <Link href="/app/chat" target="_blank" onClick={onNavigate}>
           <Button variant="ghost" className="w-full justify-start gap-2.5 h-9 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50">
             <MessageSquare className="w-4 h-4" />
             Open Chat

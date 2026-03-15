@@ -3,8 +3,14 @@ import { getFlowiseService } from '@/lib/services/flowise.service'
 import { getMinIOService } from '@/lib/services/minio.service'
 import { getContext7MCPService } from '@/lib/services/context7-mcp.service'
 import { validateEnvironment } from '@/lib/env-validation'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 export async function GET(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     // Validate environment variables inside the handler, not at module level
     const config = validateEnvironment()
@@ -12,7 +18,7 @@ export async function GET(request: NextRequest) {
     const results = {
       timestamp: new Date().toISOString(),
       services: {
-        flowise: { status: 'unknown', message: '', chatflows: [] },
+        flowise: { status: 'unknown', message: '', chatflows: [] as unknown[] },
         minio: { status: 'unknown', message: '' },
         context7: { status: 'unknown', message: '' },
       },

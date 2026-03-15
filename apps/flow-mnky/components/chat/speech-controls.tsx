@@ -25,31 +25,43 @@ interface SpeechControlsProps {
 }
 
 type SpeechMode = 'stt' | 'tts' | 's2s'
+type BrowserSpeechRecognition = {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onresult: ((event: any) => void) | null
+  onerror: ((event: any) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  stop: () => void
+  abort?: () => void
+}
 
 export function SpeechControls({ onTranscription, messageToSpeak }: SpeechControlsProps) {
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechMode, setSpeechMode] = useState<SpeechMode>('stt')
   const [isSupported, setIsSupported] = useState(true)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   useEffect(() => {
     // Check for browser support
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
+    const SpeechRecognitionCtor =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognitionCtor) {
       setIsSupported(false)
       return
     }
 
-    const recognition = new SpeechRecognition()
+    const recognition = new SpeechRecognitionCtor() as BrowserSpeechRecognition
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
+        .map((result: any) => result[0].transcript)
         .join('')
 
       if (event.results[event.results.length - 1].isFinal) {
@@ -60,7 +72,7 @@ export function SpeechControls({ onTranscription, messageToSpeak }: SpeechContro
       }
     }
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
       setIsListening(false)
     }
@@ -72,7 +84,7 @@ export function SpeechControls({ onTranscription, messageToSpeak }: SpeechContro
     recognitionRef.current = recognition
 
     return () => {
-      recognition.abort()
+      recognition.abort?.()
     }
   }, [onTranscription, speechMode])
 
@@ -238,12 +250,4 @@ export function SpeechControls({ onTranscription, messageToSpeak }: SpeechContro
       </div>
     </TooltipProvider>
   )
-}
-
-// Add type declarations for Web Speech API
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
-  }
 }

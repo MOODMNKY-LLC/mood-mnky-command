@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
+
+const ALLOWED_PREFIXES = [
+  'v1/projects',
+  'v1/organizations',
+]
 
 async function forwardToSupabaseAPI(request: Request, method: string, params: { path: string[] }) {
+  const auth = await requireAdmin()
+  if (!auth.ok) {
+    return NextResponse.json({ message: auth.error }, { status: auth.status })
+  }
+
   // eslint-disable-next-line turbo/no-undeclared-env-vars
   if (!process.env.SUPABASE_MANAGEMENT_API_TOKEN) {
     console.error('Supabase Management API token is not configured.')
@@ -9,6 +20,14 @@ async function forwardToSupabaseAPI(request: Request, method: string, params: { 
 
   const { path } = params
   const apiPath = path.join('/')
+  const isAllowedPath = ALLOWED_PREFIXES.some((prefix) => apiPath.startsWith(prefix))
+
+  if (!isAllowedPath) {
+    return NextResponse.json(
+      { message: 'This Supabase Management API path is not allowed.' },
+      { status: 403 }
+    )
+  }
 
   const url = new URL(request.url)
   url.protocol = 'https'
@@ -18,8 +37,6 @@ async function forwardToSupabaseAPI(request: Request, method: string, params: { 
 
   const projectRef = path[2]
 
-  // Implement your permission check here (e.g. check if the user is a member of the project)
-  // In this example, everyone can access all projects
   const userHasPermissionForProject = Boolean(projectRef)
 
   if (!userHasPermissionForProject) {

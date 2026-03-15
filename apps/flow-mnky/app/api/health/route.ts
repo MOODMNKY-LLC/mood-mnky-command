@@ -8,6 +8,7 @@ import { getFlowiseService } from '@/lib/services/flowise.service'
 import { getMinIOService } from '@/lib/services/minio.service'
 import { getContext7MCPService } from '@/lib/services/context7-mcp.service'
 import { testServiceConnectivity, getValidatedConfig } from '@/lib/env-validation'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 interface ServiceStatus {
   available: boolean
@@ -29,6 +30,11 @@ interface HealthCheckResponse {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse<HealthCheckResponse>> {
+  const auth = await requireAdmin()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error } as never, { status: auth.status })
+  }
+
   const startTime = Date.now()
 
   try {

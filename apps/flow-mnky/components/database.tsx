@@ -15,7 +15,7 @@ import { useRunQuery } from '@/hooks/use-run-query'
 import { useListTables } from '@/hooks/use-tables'
 
 // Helper to generate a Zod schema from the table's column definitions
-function generateZodSchema(table: any): z.ZodObject<any, any, any> {
+function generateZodSchema(table: any): z.ZodObject<any> {
   if (!table || !table.columns) {
     return z.object({})
   }

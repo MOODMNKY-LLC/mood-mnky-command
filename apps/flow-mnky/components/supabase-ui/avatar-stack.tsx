@@ -18,7 +18,7 @@ export const AvatarStack = ({ users, maxVisible = 5 }: AvatarStackProps) => {
       {visible.map((user, i) => {
         const initials = user.name
           ?.split(' ')
-          ?.map(w => w[0])
+          ?.map((word: string) => word[0])
           ?.join('')
           ?.toUpperCase()
           ?.slice(0, 2) ?? '?'

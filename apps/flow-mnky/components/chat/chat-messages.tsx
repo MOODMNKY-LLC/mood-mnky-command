@@ -52,6 +52,8 @@ interface ChatMessage {
   sourceDocuments?: SourceDocument[]
   isStreaming?: boolean
   attachments?: ChatMessageAttachment[]
+  /** Streamed reasoning from Flowise detailed streaming (agent_trace); merged into content when stream ends. */
+  reasoningContent?: string
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -64,9 +66,15 @@ const DEFAULT_SUGGESTIONS = [
 interface ChatMessagesProps {
   messages: ChatMessage[]
   isStreaming: boolean
+  isRestoring?: boolean
   tempChat?: boolean
   onSuggestionClick?: (text: string) => void
+  /** Starter prompts shown when chat is empty (from Flowise chatflow config or default). */
   suggestionPrompts?: string[]
+  /** Follow-up prompts shown after assistant reply (from Flowise chatflow config; falls back to suggestionPrompts). */
+  followUpPrompts?: string[]
+  /** Welcome message when chat is empty (from Flowise chatflow config). */
+  welcomeMessage?: string | null
   /** Phase 3 Checkpoint: restore conversation to this message (truncate after it) */
   onRestoreToMessage?: (messageId: string) => void
 }
@@ -95,12 +103,11 @@ const LANG_MAP: Record<string, BundledLanguage> = {
   python: 'python',
   shell: 'shell',
   markdown: 'markdown',
-  text: 'text',
 }
 
 function toShikiLanguage(lang: string): BundledLanguage {
   const lower = lang.toLowerCase()
-  return (LANG_MAP[lower] ?? 'text') as BundledLanguage
+  return (LANG_MAP[lower] ?? 'plaintext') as BundledLanguage
 }
 
 /** Phase 2: parse optional reasoning block from assistant content (convention: ```reasoning or <think>) */
@@ -267,7 +274,11 @@ function ChatMessageItem({
   const isUser = message.role === 'user'
 
   return (
-    <div className={cn('group flex gap-2 sm:gap-3 py-3 sm:py-5 px-2 sm:px-4 animate-fade-in', isUser ? 'justify-end' : 'justify-start')}>
+    <div
+      className={cn('group flex gap-2 sm:gap-3 py-3 sm:py-5 px-2 sm:px-4 animate-fade-in', isUser ? 'justify-end' : 'justify-start')}
+      data-testid="chat-message"
+      data-role={message.role}
+    >
       {!isUser && (
         <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 border border-border/50 rounded-full mt-0.5 overflow-hidden flex items-center justify-center bg-background text-foreground">
           <AppLogo className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -282,6 +293,7 @@ function ChatMessageItem({
               ? 'bg-foreground text-background rounded-br-sm text-sm leading-relaxed whitespace-pre-wrap'
               : 'glass border border-border/40 rounded-bl-sm'
           )}
+          data-testid={isUser ? undefined : 'chat-message-content'}
         >
           {isUser ? (
             <>
@@ -298,7 +310,7 @@ function ChatMessageItem({
             </>
           ) : (
             <>
-              {message.isStreaming && !message.content ? (
+              {message.isStreaming && !message.content && !message.reasoningContent ? (
                 <Shimmer
                   className="text-sm text-muted-foreground"
                   duration={0.6}
@@ -309,11 +321,18 @@ function ChatMessageItem({
                   Thinking...
                 </Shimmer>
               ) : (() => {
-                const { reasoning, main } = parseReasoningBlock(message.content)
+                const hasStreamedReasoning = message.reasoningContent != null && message.reasoningContent !== ''
+                const { reasoning: parsedReasoning, main: parsedMain } = parseReasoningBlock(message.content)
+                const reasoning = hasStreamedReasoning ? message.reasoningContent! : parsedReasoning
+                const main = hasStreamedReasoning ? message.content : parsedMain
                 const contentNode = (
                   <>
                     {reasoning != null && reasoning !== '' && (
-                      <Reasoning isStreaming={false} defaultOpen={false} className="mb-3">
+                      <Reasoning
+                        isStreaming={message.isStreaming ?? false}
+                        defaultOpen={hasStreamedReasoning ? true : false}
+                        className="mb-3"
+                      >
                         <ReasoningTrigger />
                         <ReasoningContent>{reasoning}</ReasoningContent>
                       </Reasoning>
@@ -391,18 +410,40 @@ function ChatMessageItem({
 export function ChatMessages({
   messages,
   isStreaming,
+  isRestoring = false,
   tempChat,
   onSuggestionClick,
   suggestionPrompts = DEFAULT_SUGGESTIONS,
+  followUpPrompts,
+  welcomeMessage,
   onRestoreToMessage,
 }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const lastMessage = messages[messages.length - 1]
   const showSuggestionsAfterReply = lastMessage?.role === 'assistant' && !isStreaming && onSuggestionClick
+  const promptsForEmpty = suggestionPrompts
+  const promptsAfterReply =
+    followUpPrompts && followUpPrompts.length > 0 ? followUpPrompts : suggestionPrompts
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  if (isRestoring && messages.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-14 h-14 rounded-2xl bg-foreground/8 border border-border/40 flex items-center justify-center mb-5 text-foreground/40">
+          <AppLogo className="w-8 h-8 animate-pulse" />
+        </div>
+        <h2 className="text-2xl font-semibold text-foreground mb-2 text-balance text-center">
+          Restoring your workspace
+        </h2>
+        <p className="text-muted-foreground text-center max-w-sm text-sm text-balance leading-relaxed">
+          Loading chatflows, sessions, and saved messages.
+        </p>
+      </div>
+    )
+  }
 
   if (messages.length === 0) {
     return (
@@ -411,14 +452,15 @@ export function ChatMessages({
           <AppLogo className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground mb-2 text-balance text-center">
-          How can I help you today?
+          {welcomeMessage?.trim() ?? 'How can I help you today?'}
         </h2>
         <p className="text-muted-foreground text-center max-w-sm text-sm text-balance leading-relaxed mb-6">
-          Select a chatflow from the sidebar and start a conversation. Your messages are routed through your Flowise instance.
+          Select a chatflow from the sidebar and start a conversation.
+          {!welcomeMessage?.trim() && ' Your messages are routed through your Flowise instance.'}
         </p>
-        {onSuggestionClick && suggestionPrompts.length > 0 && (
+        {onSuggestionClick && promptsForEmpty.length > 0 && (
           <Suggestions className="w-full max-w-2xl justify-center mx-auto">
-            {suggestionPrompts.map((s) => (
+            {promptsForEmpty.map((s) => (
               <Suggestion key={s} suggestion={s} onClick={onSuggestionClick} />
             ))}
           </Suggestions>
@@ -450,7 +492,7 @@ export function ChatMessages({
           {showSuggestionsAfterReply && (
             <div className="px-2 sm:px-4 py-3 flex justify-center">
               <Suggestions className="w-full mx-auto justify-center">
-                {suggestionPrompts.map((s) => (
+                {promptsAfterReply.map((s) => (
                   <Suggestion key={s} suggestion={s} onClick={onSuggestionClick} />
                 ))}
               </Suggestions>

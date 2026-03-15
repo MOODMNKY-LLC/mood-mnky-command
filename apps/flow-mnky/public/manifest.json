@@ -27,22 +27,6 @@
       "type": "image/svg+xml"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/chat-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Chat Interface"
-    },
-    {
-      "src": "/screenshots/chat-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile Chat"
-    }
-  ],
   "categories": ["productivity", "utilities", "business"],
   "shortcuts": [
     {

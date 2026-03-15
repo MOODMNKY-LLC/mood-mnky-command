@@ -73,38 +73,52 @@ function ToolRow({
   const canToggle = !tool.requiresAuth || tool.enabled
 
   return (
-    <div className={cn('flex items-start gap-3 px-3 py-2.5 rounded-xl transition-all', tool.enabled ? 'bg-accent/40' : 'hover:bg-accent/20')}>
-      <div className={cn(
-        'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-all',
-        tool.enabled ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
-      )}>
+    <div
+      data-testid={`tool-row-${tool.id}`}
+      className={cn(
+        'flex items-start gap-3 px-3 py-2.5 rounded-xl transition-all border border-transparent',
+        tool.enabled ? 'bg-accent/40 border-border/30' : 'hover:bg-accent/20'
+      )}
+    >
+      <div
+        className={cn(
+          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-all',
+          tool.enabled ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
+        )}
+      >
         <Icon className="w-4 h-4" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium">{tool.name}</span>
+          {tool.enabled && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-foreground/15 text-foreground font-medium">
+              Active
+            </span>
+          )}
           {tool.requiresAuth && !tool.enabled && (
             <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground/70">
               <Lock className="w-2.5 h-2.5" /> Auth required
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground/70 mt-0.5 leading-snug">{tool.description}</p>
+        {tool.description ? (
+          <p className="text-xs text-muted-foreground/70 mt-0.5 leading-snug">{tool.description}</p>
+        ) : null}
       </div>
 
-      {/* Toggle */}
+      {/* Toggle: switch on = agent can use this tool */}
       <button
         onClick={() => {
           if (tool.requiresAuth && !tool.enabled) {
-            // In production: redirect to auth flow
             alert(`Authenticate to enable ${tool.name}`)
             return
           }
           onToggle(tool.id, !tool.enabled)
         }}
         className={cn(
-          'relative w-9 h-5 rounded-full shrink-0 mt-1.5 transition-all duration-200 focus-visible:outline-none',
+          'relative w-9 h-5 rounded-full shrink-0 mt-1.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           tool.enabled ? 'bg-foreground' : 'bg-muted border border-border/50'
         )}
         aria-label={tool.enabled ? `Disable ${tool.name}` : `Enable ${tool.name}`}
@@ -122,12 +136,23 @@ function ToolRow({
   )
 }
 
+// ── Flow tools from chatflow config ────────────────────────────────────────────
+export interface FlowToolEntry {
+  id: string
+  label: string
+  description?: string
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 interface ChatInputProps {
   onSubmit: (text: string, files?: File[], options?: { enabledTools: string[] }) => void
   isLoading: boolean
   disabled?: boolean
   placeholder?: string
+  /** When set, show these chatflow-derived tools instead of generic list; ids are sent in enabledTools. */
+  flowTools?: FlowToolEntry[]
+  /** Called when the number of enabled tools changes (for header status). */
+  onEnabledToolsChange?: (count: number) => void
 }
 
 interface AttachedFile {
@@ -146,17 +171,36 @@ function toAttachmentData(af: AttachedFile): AttachmentData {
   }
 }
 
-export function ChatInput({ onSubmit, isLoading, disabled, placeholder }: ChatInputProps) {
+function flowToolsToToolDefs(flowTools: FlowToolEntry[]): ToolDef[] {
+  return flowTools.map((t) => ({
+    id: t.id,
+    name: t.label,
+    description: t.description ?? '',
+    icon: Wrench,
+    requiresAuth: false,
+    enabled: true,
+    category: 'default' as const,
+  }))
+}
+
+export function ChatInput({ onSubmit, isLoading, disabled, placeholder, flowTools = [], onEnabledToolsChange }: ChatInputProps) {
   const [value, setValue] = useState('')
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
-  const [tools, setTools] = useState<ToolDef[]>(TOOLS)
+  const effectiveTools = flowTools.length > 0 ? flowToolsToToolDefs(flowTools) : TOOLS
+  const [tools, setTools] = useState<ToolDef[]>(effectiveTools)
+  useEffect(() => {
+    setTools(effectiveTools)
+  }, [flowTools])
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const enabledCount = tools.filter(t => t.enabled).length
+  useEffect(() => {
+    onEnabledToolsChange?.(enabledCount)
+  }, [enabledCount, onEnabledToolsChange])
 
   const toggleTool = useCallback((id: string, enabled: boolean) => {
     setTools(prev => prev.map(t => t.id === id ? { ...t, enabled } : t))
@@ -259,6 +303,7 @@ export function ChatInput({ onSubmit, isLoading, disabled, placeholder }: ChatIn
             disabled={disabled || isLoading}
             className="min-h-[56px] max-h-[200px] resize-none border-0 bg-transparent px-4 pt-3.5 pb-14 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 scrollbar-thin"
             rows={1}
+            data-testid="chat-input"
           />
 
           {/* Bottom toolbar */}
@@ -266,89 +311,93 @@ export function ChatInput({ onSubmit, isLoading, disabled, placeholder }: ChatIn
             <TooltipProvider delayDuration={300}>
               <div className="flex items-center gap-0">
 
-                {/* Attach */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-10 w-10 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground hover:bg-accent/50 touch-target"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={disabled || isLoading}
-                    >
-                      <Paperclip className="w-5 h-5 sm:w-4 sm:h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="glass-strong border-border/50 hidden sm:block">Attach file</TooltipContent>
-                </Tooltip>
+                {/* Attach — trigger not wrapped in Tooltip so click reliably opens file picker */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 sm:h-9 sm:w-9 text-muted-foreground hover:text-foreground hover:bg-accent/50 touch-target"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={disabled || isLoading}
+                  aria-label="Attach file"
+                  title="Attach file"
+                >
+                  <Paperclip className="w-5 h-5 sm:w-4 sm:h-4" />
+                </Button>
 
-                {/* Tools popover */}
+                {/* Tools popover — trigger must not be wrapped in Tooltip or click won't open popover */}
                 <Popover open={toolsOpen} onOpenChange={setToolsOpen}>
                   <PopoverTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost" size="icon"
-                          className={cn(
-                            'h-10 w-10 sm:h-9 sm:w-9 relative transition-all touch-target',
-                            toolsOpen
-                              ? 'bg-foreground text-background hover:bg-foreground/90'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                          )}
-                          disabled={disabled || isLoading}
-                          aria-label="Tools"
-                        >
-                          <Wrench className="w-5 h-5 sm:w-4 sm:h-4" />
-                          {enabledCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-foreground text-background text-[9px] font-bold flex items-center justify-center border-2 border-background leading-none">
-                              {enabledCount}
-                            </span>
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="glass-strong border-border/50 hidden sm:block">
-                        Tools &amp; integrations
-                      </TooltipContent>
-                    </Tooltip>
+                    <Button
+                      data-testid="tools-trigger"
+                      variant="ghost" size="icon"
+                      className={cn(
+                        'h-10 w-10 sm:h-9 sm:w-9 relative transition-all touch-target',
+                        toolsOpen
+                          ? 'bg-foreground text-background hover:bg-foreground/90'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                      )}
+                      disabled={disabled || isLoading}
+                      aria-label="Tools"
+                      title={`Choose which tools the agent can use (${enabledCount} on)`}
+                    >
+                      <Wrench className="w-5 h-5 sm:w-4 sm:h-4" />
+                      {enabledCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-foreground text-background text-[9px] font-bold flex items-center justify-center border-2 border-background leading-none">
+                          {enabledCount}
+                        </span>
+                      )}
+                    </Button>
                   </PopoverTrigger>
 
                   <PopoverContent
+                    data-testid="tools-popover"
                     side="top"
                     align="start"
                     sideOffset={10}
-                    className="w-80 p-0 border-border/50 shadow-xl"
+                    className="w-96 p-0 border-border/50 shadow-xl"
                   >
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-border/40">
                       <p className="text-sm font-semibold flex items-center gap-2">
                         <Wrench className="w-3.5 h-3.5 text-muted-foreground" />
-                        Tools
+                        {flowTools.length > 0 ? 'Tools for this flow' : 'Tools & integrations'}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Toggle which tools the agent can use. Auth-required tools need you to connect an integration first.
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Choose which tools the agent can use. Switch each on or off; only <strong>on</strong> tools are available for your next message.
                       </p>
                     </div>
 
-                    <div className="p-2 max-h-[60vh] overflow-y-auto scrollbar-thin space-y-1">
-                      {/* Default tools */}
-                      <p className="px-3 py-1.5 text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium">
-                        Built-in
-                      </p>
-                      {defaultTools.map(t => (
-                        <ToolRow key={t.id} tool={t} onToggle={toggleTool} />
-                      ))}
-
-                      {/* Integration tools */}
-                      <p className="px-3 pt-3 pb-1.5 text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium">
-                        Integrations
-                      </p>
-                      {integrationTools.map(t => (
-                        <ToolRow key={t.id} tool={t} onToggle={toggleTool} />
-                      ))}
+                    <div className="p-2 max-h-[50vh] overflow-y-auto scrollbar-thin space-y-1">
+                      {flowTools.length > 0 ? (
+                        <>
+                          <p className="px-3 py-1.5 text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium">
+                            Available tools
+                          </p>
+                          {tools.map(t => (
+                            <ToolRow key={t.id} tool={t} onToggle={toggleTool} />
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          <p className="px-3 py-1.5 text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium">
+                            Built-in
+                          </p>
+                          {defaultTools.map(t => (
+                            <ToolRow key={t.id} tool={t} onToggle={toggleTool} />
+                          ))}
+                          <p className="px-3 pt-3 pb-1.5 text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium">
+                            Integrations
+                          </p>
+                          {integrationTools.map(t => (
+                            <ToolRow key={t.id} tool={t} onToggle={toggleTool} />
+                          ))}
+                        </>
+                      )}
                     </div>
 
                     <div className="px-4 py-2.5 border-t border-border/40 bg-muted/20 rounded-b-lg">
-                      <p className="text-[11px] text-muted-foreground/60">
-                        {enabledCount} tool{enabledCount !== 1 ? 's' : ''} active · Tools are passed to Flowise as overrides
+                      <p className="text-[11px] text-muted-foreground/70 font-medium">
+                        {enabledCount} of {tools.length} on — these are sent with your next message
                       </p>
                     </div>
                   </PopoverContent>

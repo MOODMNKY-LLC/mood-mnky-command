@@ -9,8 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { MessageSquare, Code2, PenLine, BarChart3, Search } from 'lucide-react'
-import { AGENT_MODES } from '@/lib/types'
+import { MessageSquare } from 'lucide-react'
 import type { AgentModeId } from '@/lib/types'
 
 interface AgentModeSelectorProps {
@@ -20,17 +19,22 @@ interface AgentModeSelectorProps {
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   MessageSquare: <MessageSquare className="w-4 h-4" />,
-  Code2:         <Code2 className="w-4 h-4" />,
-  PenLine:       <PenLine className="w-4 h-4" />,
-  BarChart3:     <BarChart3 className="w-4 h-4" />,
-  Search:        <Search className="w-4 h-4" />,
 }
+
+const AGENT_MODES = [
+  {
+    id: 'default' as const,
+    name: 'Default',
+    description: 'Standard Flowise chat mode.',
+    icon: 'MessageSquare',
+  },
+]
 
 export function AgentModeSelector({ selectedMode, onModeChange }: AgentModeSelectorProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex items-center gap-1 p-1 glass rounded-xl border border-border/50">
-        {AGENT_MODES.map((mode) => (
+        {AGENT_MODES.map((mode: (typeof AGENT_MODES)[number]) => (
           <Tooltip key={mode.id}>
             <TooltipTrigger asChild>
               <Button

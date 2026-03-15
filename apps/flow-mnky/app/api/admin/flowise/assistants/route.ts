@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/auth/require-admin'
-import { listAssistants, createAssistant } from '@/lib/flowise/client'
+import { listAssistants, createAssistant, updateAssistant, deleteAssistant } from '@/lib/flowise/client'
 
 async function guardAdmin() {
   const auth = await requireAdmin()
@@ -25,6 +25,30 @@ export async function POST(req: Request) {
     const body = await req.json()
     const data = await createAssistant(body)
     return Response.json(data, { status: 201 })
+  } catch (err) {
+    return Response.json({ error: String(err) }, { status: 502 })
+  }
+}
+
+export async function PUT(req: Request) {
+  const guard = await guardAdmin()
+  if (guard) return guard
+  try {
+    const { id, ...body } = await req.json()
+    const data = await updateAssistant(id, body)
+    return Response.json(data)
+  } catch (err) {
+    return Response.json({ error: String(err) }, { status: 502 })
+  }
+}
+
+export async function DELETE(req: Request) {
+  const guard = await guardAdmin()
+  if (guard) return guard
+  try {
+    const { id } = await req.json()
+    await deleteAssistant(id)
+    return new Response(null, { status: 204 })
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 502 })
   }

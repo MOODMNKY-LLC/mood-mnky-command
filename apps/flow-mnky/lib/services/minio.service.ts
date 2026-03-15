@@ -86,7 +86,7 @@ class MinIOService {
 
       // Set object tags
       if (Object.keys(tags).length > 0) {
-        await client.setObjectTagging(bucket, objectName, tags)
+        await client.setObjectTagging(bucket, objectName, tags, {} as any)
       }
 
       console.log(`[v0] Uploaded file to MinIO: ${objectName}`)
@@ -210,7 +210,7 @@ class MinIOService {
     const client = this.getClient()
 
     try {
-      await client.setObjectTagging(bucket, objectName, tags)
+      await client.setObjectTagging(bucket, objectName, tags, {} as any)
       console.log(`[v0] Set tags on object: ${objectName}`)
     } catch (error) {
       console.error(`[v0] Error setting object tags:`, error)
@@ -250,7 +250,7 @@ class MinIOService {
     const client = this.getClient()
 
     try {
-      await client.copyObject(destBucket, destObject, `${sourceBucket}/${sourceObject}`)
+      await client.copyObject(destBucket, destObject, `/${sourceBucket}/${sourceObject}`, {} as any)
       console.log(`[v0] Copied object from ${sourceObject} to ${destObject}`)
     } catch (error) {
       console.error(`[v0] Error copying object:`, error)

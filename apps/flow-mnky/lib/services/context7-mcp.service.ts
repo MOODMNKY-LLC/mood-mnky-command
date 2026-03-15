@@ -361,5 +361,3 @@ export function getContext7MCPService(): Context7MCPService {
 
   return context7Service
 }
-
-export type { Context7Documentation, Context7Example }

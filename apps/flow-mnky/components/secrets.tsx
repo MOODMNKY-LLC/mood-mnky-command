@@ -5,7 +5,7 @@ import { AlertTriangle, Key, Minus, PlusIcon } from 'lucide-react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { secretsSchema } from '../../lib/schemas/secrets'
+import { secretsSchema } from '@/lib/secrets'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {

@@ -5,8 +5,13 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, PanelLeftClose, EyeOff, Settings, Sparkles, Flame, Hash, FileText } from 'lucide-react'
+import { Menu, PanelLeftClose, EyeOff, Settings, Sparkles, Flame, Hash, FileText, ChevronDown, Zap } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -19,10 +24,17 @@ import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { RealtimeAvatarStack } from '@/components/realtime-avatar-stack'
 import { useUserRole } from '@/hooks/use-user-role'
 import { AI_MODELS, type AgentModeId, type ChatSession, type ModelId, type SourceDocument } from '@/lib/types'
+import { extractMessageText } from '@/lib/chat/parse-flowise-response'
 
 export interface FlowiseChatflow {
   id: string
   name: string
+  description?: string
+}
+
+export interface ChatflowToolEntry {
+  id: string
+  label: string
   description?: string
 }
 
@@ -42,6 +54,8 @@ export interface ChatMessage {
   isStreaming?: boolean
   /** User message attachments (object URLs for display) */
   attachments?: ChatMessageAttachment[]
+  /** When Flowise detailed streaming is on: reasoning/chain-of-thought streamed separately; merged into content when stream ends. */
+  reasoningContent?: string
 }
 
 interface ChatflowsResponse {
@@ -115,6 +129,18 @@ export function ChatShell() {
   const [streamingEnabled, setStreamingEnabled] = useState(true)
   const [tempChat, setTempChat] = useState(false)
   const [allowedOpenAIModels, setAllowedOpenAIModels] = useState<string[] | null>(null)
+  const [flowTools, setFlowTools] = useState<ChatflowToolEntry[]>([])
+  const [enabledToolsCount, setEnabledToolsCount] = useState(0)
+  const [flowDetail, setFlowDetail] = useState<{
+    configuredModel: string | null
+    systemMessage: string | null
+    suggestedVars: string[]
+    starterPrompts: string[]
+    welcomeMessage: string | null
+    followUpPrompts: string[]
+  } | null>(null)
+  const [isBootstrapping, setIsBootstrapping] = useState(true)
+  const [isRestoringMessages, setIsRestoringMessages] = useState(false)
   const { isAdmin, userId } = useUserRole()
   const skipNextMessageLoadSessionIdRef = useRef<string | null>(null)
 
@@ -145,6 +171,7 @@ export function ChatShell() {
     let isCancelled = false
 
     async function loadInitialState() {
+      setIsBootstrapping(true)
       try {
         const [chatflowRes, sessionsRes] = await Promise.all([
           fetch('/api/chat/chatflows'),
@@ -178,10 +205,14 @@ export function ChatShell() {
         setSessions(nextSessions)
         setCurrentSession(nextSessions[0] ?? null)
         setConnectionStatus('healthy')
+        if (!nextSessions[0] || nextSessions[0].isTemporary || !nextSessions[0].isPersisted) {
+          setIsBootstrapping(false)
+        }
       } catch (err) {
         console.error('[ChatShell] Failed to load initial state:', err)
         if (!isCancelled) {
           setConnectionStatus('error')
+          setIsBootstrapping(false)
         }
       }
     }
@@ -201,6 +232,50 @@ export function ChatShell() {
   }, [allowedOpenAIModels, selectedModel])
 
   useEffect(() => {
+    if (!selectedChatflowId?.trim()) {
+      setFlowTools([])
+      setFlowDetail(null)
+      return
+    }
+    let isCancelled = false
+    async function loadChatflowDetail() {
+      try {
+        const res = await fetch(`/api/chat/chatflows/${encodeURIComponent(selectedChatflowId)}`)
+        if (!res.ok || isCancelled) return
+        const data = (await res.json()) as {
+          tools?: ChatflowToolEntry[]
+          configuredModel?: string | null
+          systemMessage?: string | null
+          suggestedVars?: string[]
+          starterPrompts?: string[]
+          welcomeMessage?: string | null
+          followUpPrompts?: string[]
+        }
+        if (isCancelled) return
+        setFlowTools(Array.isArray(data.tools) ? data.tools : [])
+        setFlowDetail({
+          configuredModel: data.configuredModel ?? null,
+          systemMessage: data.systemMessage ?? null,
+          suggestedVars: Array.isArray(data.suggestedVars) ? data.suggestedVars : [],
+          starterPrompts: Array.isArray(data.starterPrompts) ? data.starterPrompts : [],
+          welcomeMessage: data.welcomeMessage ?? null,
+          followUpPrompts: Array.isArray(data.followUpPrompts) ? data.followUpPrompts : [],
+        })
+        setSystemPrompt(typeof data.systemMessage === 'string' ? data.systemMessage : '')
+      } catch {
+        if (!isCancelled) {
+          setFlowTools([])
+          setFlowDetail(null)
+        }
+      }
+    }
+    loadChatflowDetail()
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedChatflowId])
+
+  useEffect(() => {
     if (!currentSession || currentSession.isTemporary || !currentSession.isPersisted) return
 
     let isCancelled = false
@@ -212,6 +287,7 @@ export function ChatShell() {
     }
 
     async function loadMessages() {
+      setIsRestoringMessages(true)
       try {
         const res = await fetch(`/api/chat/sessions/${sessionId}/messages`)
         if (!res.ok) {
@@ -227,12 +303,23 @@ export function ChatShell() {
         if (!isCancelled) {
           setMessages([])
         }
+      } finally {
+        if (!isCancelled) {
+          setIsRestoringMessages(false)
+          setIsBootstrapping(false)
+        }
       }
     }
 
     loadMessages()
     return () => {
       isCancelled = true
+    }
+  }, [currentSession?.id, currentSession?.isTemporary, currentSession?.isPersisted])
+
+  useEffect(() => {
+    if (!currentSession || currentSession.isTemporary || !currentSession.isPersisted) {
+      setIsRestoringMessages(false)
     }
   }, [currentSession?.id, currentSession?.isTemporary, currentSession?.isPersisted])
 
@@ -441,10 +528,9 @@ export function ChatShell() {
           overrideConfig: {
             temperature,
             maxTokens,
-            systemMessage: systemPrompt || undefined,
+            systemMessage: systemPrompt?.trim() ? systemPrompt.trim() : undefined,
             vars: {
               agentMode,
-              modelOverride: selectedModel,
               enabledTools: options?.enabledTools ?? [],
             },
           },
@@ -456,12 +542,33 @@ export function ChatShell() {
         const errBody = await res.text().catch(() => res.statusText)
         throw new Error(errBody ? `HTTP ${res.status}: ${errBody.slice(0, 200)}` : `HTTP ${res.status}`)
       }
+
+      const contentType = res.headers.get('Content-Type') ?? ''
+      let accumulated = ''
+      let accumulatedReasoning = ''
+      let flowise_chat_id = session.flowise_chat_id
+
+      if (contentType.includes('application/json')) {
+        const data = (await res.json()) as Record<string, unknown>
+        accumulated = extractMessageText(data)
+        if (!accumulated?.trim()) {
+          const preview = JSON.stringify(data).slice(0, 600)
+          console.warn('[flow-mnky:no-response] Client received JSON but extractMessageText was empty. Keys:', Object.keys(data), 'Preview:', preview)
+        }
+        const chatId = typeof data?.chatId === 'string' ? data.chatId : undefined
+        if (chatId) flowise_chat_id = chatId
+        if (accumulated) {
+          flushSync(() => {
+            setMessages(prev =>
+              prev.map(m => m.id === assistantId ? { ...m, content: accumulated } : m)
+            )
+          })
+        }
+      } else {
       if (!res.body) throw new Error('No response body')
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
-      let accumulated = ''
-      let flowise_chat_id = session.flowise_chat_id
       let rawBuffer = ''
       // Flowise SSE format per docs: separate "event: token" and "data: <raw text>" lines (not JSON in data)
       let currentEvent = ''
@@ -475,11 +582,17 @@ export function ChatShell() {
         }
         if (trimmed.startsWith('data:')) {
           const data = trimmed.slice(5).trim()
-          if (currentEvent === 'token') {
+          if (currentEvent === 'token' || currentEvent === 'message' || currentEvent === 'agentMessage') {
             if (data) {
               try {
                 const parsed = JSON.parse(data) as unknown
-                accumulated += typeof parsed === 'string' ? parsed : data
+                if (typeof parsed === 'string') {
+                  accumulated += parsed
+                } else {
+                  const str = extractMessageText(parsed)
+                  if (str) accumulated += str
+                  else accumulated += data
+                }
               } catch {
                 accumulated += data
               }
@@ -495,8 +608,29 @@ export function ChatShell() {
             }
             return
           }
+          if (currentEvent === 'agent_trace' && data) {
+            try {
+              const trace = JSON.parse(data) as Record<string, unknown>
+              const step = trace.step as string | undefined
+              const msg =
+                typeof trace.message === 'string'
+                  ? trace.message
+                  : typeof trace.content === 'string'
+                    ? trace.content
+                    : typeof trace.text === 'string'
+                      ? trace.text
+                      : undefined
+              if (msg?.trim()) {
+                accumulatedReasoning += msg.trim() + '\n'
+              } else if (step) {
+                accumulatedReasoning += `[${step}]\n`
+              }
+            } catch {
+              // ignore malformed agent_trace
+            }
+            return
+          }
           if (currentEvent === 'end') return
-          // Fallback: some Flowise versions send data as JSON {"event":"token","data":"..."}
           if (!data || data === '[DONE]') return
           try {
             const frame = JSON.parse(data) as Record<string, unknown>
@@ -510,13 +644,18 @@ export function ChatShell() {
             } else if (innerEvent === 'metadata' && typeof innerData === 'object' && innerData && !flowise_chat_id) {
               const meta = innerData as { chatId?: string }
               if (meta.chatId) flowise_chat_id = meta.chatId
+            } else {
+              const str = extractMessageText(frame)
+              if (str) accumulated += str
             }
           } catch {
-            if (currentEvent === 'token') accumulated += data
-            else if (!accumulated) {
+            if (currentEvent === 'token' || currentEvent === 'message' || currentEvent === 'agentMessage') {
+              accumulated += data
+            } else if (!accumulated) {
               try {
-                const obj = JSON.parse(data) as { text?: string }
-                if (typeof obj?.text === 'string') accumulated += obj.text
+                const str = extractMessageText(JSON.parse(data))
+                if (str) accumulated += str
+                else if (data) accumulated += data
               } catch {
                 if (data) accumulated += data
               }
@@ -524,8 +663,8 @@ export function ChatShell() {
           }
         } else if (trimmed && !accumulated) {
           try {
-            const obj = JSON.parse(trimmed) as { text?: string }
-            if (typeof obj?.text === 'string') accumulated += obj.text
+            const str = extractMessageText(JSON.parse(trimmed))
+            if (str) accumulated += str
           } catch {
             // ignore
           }
@@ -540,10 +679,18 @@ export function ChatShell() {
 
         for (const line of lines) processSSELine(line)
 
-        if (accumulated) {
+        if (accumulated || accumulatedReasoning) {
           flushSync(() => {
             setMessages(prev =>
-              prev.map(m => m.id === assistantId ? { ...m, content: accumulated } : m)
+              prev.map(m =>
+                m.id === assistantId
+                  ? {
+                      ...m,
+                      content: accumulated,
+                      ...(accumulatedReasoning ? { reasoningContent: accumulatedReasoning } : {}),
+                    }
+                  : m
+              )
             )
           })
         }
@@ -554,14 +701,72 @@ export function ChatShell() {
 
       if (!accumulated && rawBuffer.trim()) {
         try {
-          const obj = JSON.parse(rawBuffer.trim()) as { text?: string }
-          if (typeof obj?.text === 'string') accumulated = obj.text
+          accumulated = extractMessageText(JSON.parse(rawBuffer.trim())) || rawBuffer.trim()
         } catch {
-          // ignore
+          accumulated = rawBuffer.trim()
+        }
+      }
+      if (!accumulated?.trim()) {
+        const preview = rawBuffer.trim().slice(0, 600)
+        console.warn('[flow-mnky:no-response] Stream path finished with no accumulated text. rawBuffer length:', rawBuffer.length, 'Preview:', preview)
+      }
+      }
+
+      const mergedMain = accumulated?.trim() || '(no response)'
+      let finalContent =
+        accumulatedReasoning.trim()
+          ? `\`\`\`reasoning\n${accumulatedReasoning.trim()}\n\`\`\`\n\n${mergedMain}`
+          : mergedMain
+
+      // When stream path returned no data (e.g. Flowise agent returned buffered JSON or empty stream), retry without streaming
+      if (finalContent === '(no response)' && streamingEnabled) {
+        try {
+          const fallbackRes = await fetch('/api/chat/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chatflowId: selectedChatflowId,
+              question: questionForApi,
+              chatId: flowise_chat_id,
+              streaming: false,
+              overrideConfig: {
+                temperature,
+                maxTokens,
+                systemMessage: systemPrompt?.trim() ? systemPrompt.trim() : undefined,
+                vars: {
+                  agentMode,
+                  enabledTools: options?.enabledTools ?? [],
+                },
+              },
+              ...(uploads?.length ? { uploads } : {}),
+            }),
+          })
+          if (fallbackRes.ok) {
+            const fallbackData = (await fallbackRes.json()) as Record<string, unknown>
+            const fallbackText = extractMessageText(fallbackData)
+            if (fallbackText?.trim()) {
+              finalContent = fallbackText
+              const chatId = typeof fallbackData?.chatId === 'string' ? fallbackData.chatId : undefined
+              if (chatId) {
+                flowise_chat_id = chatId
+                setSession(prev => (prev ? { ...prev, flowise_chat_id: chatId } : prev))
+              }
+              flushSync(() => {
+                setMessages(prev =>
+                  prev.map(m =>
+                    m.id === assistantId
+                      ? { ...m, content: finalContent, reasoningContent: undefined }
+                      : m
+                  )
+                )
+              })
+            }
+          }
+        } catch {
+          // keep "(no response)"
         }
       }
 
-      const finalContent = accumulated || '(no response)'
       const useTypewriter =
         !streamingEnabled &&
         finalContent !== '(no response)' &&
@@ -591,7 +796,7 @@ export function ChatShell() {
             setMessages(prev =>
               prev.map(m =>
                 m.id === assistantId
-                  ? { ...m, isStreaming: false, content: finalContent }
+                  ? { ...m, isStreaming: false, content: finalContent, reasoningContent: undefined }
                   : m
               )
             )
@@ -603,7 +808,7 @@ export function ChatShell() {
         setMessages(prev =>
           prev.map(m =>
             m.id === assistantId
-              ? { ...m, isStreaming: false, content: finalContent }
+              ? { ...m, isStreaming: false, content: finalContent, reasoningContent: undefined }
               : m
           )
         )
@@ -661,7 +866,6 @@ export function ChatShell() {
     maxTokens,
     persistSessionPatch,
     selectedChatflowId,
-    selectedModel,
     sessions,
     streamingEnabled,
     systemPrompt,
@@ -684,9 +888,18 @@ export function ChatShell() {
         chatflows={chatflows}
         selectedChatflowId={selectedChatflowId}
         onSelectChatflow={setSelectedChatflowId}
+        currentFlowSummary={
+          selectedChatflowId && chatflows.find(c => c.id === selectedChatflowId)
+            ? {
+                name: chatflows.find(c => c.id === selectedChatflowId)!.name ?? selectedChatflowId,
+                toolCount: flowTools.length,
+              }
+            : undefined
+        }
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         connectionStatus={connectionStatus}
+        isLoading={isBootstrapping}
         isAdmin={isAdmin}
       />
 
@@ -707,10 +920,9 @@ export function ChatShell() {
           <ChatHeaderSelectors
             chatflows={chatflows}
             selectedChatflowId={selectedChatflowId}
+            isLoading={isBootstrapping}
             onChatflowChange={setSelectedChatflowId}
-            allowedModelIds={allowedOpenAIModels}
-            selectedModel={selectedModel}
-            onModelChange={setSelectedModel}
+            configuredModelName={flowDetail?.configuredModel ?? null}
             selectedMode={agentMode}
             onModeChange={setAgentMode}
             temperature={temperature}
@@ -764,6 +976,11 @@ export function ChatShell() {
               <PopoverContent align="end" className="w-72 p-4">
                 <div className="space-y-4">
                   <h3 className="font-semibold text-sm">Chat Configuration</h3>
+                  {flowDetail?.suggestedVars?.length ? (
+                    <p className="text-[11px] text-muted-foreground/80">
+                      This flow supports: {flowDetail.suggestedVars.join(', ')}
+                    </p>
+                  ) : null}
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
@@ -786,13 +1003,16 @@ export function ChatShell() {
                   <div className="space-y-2">
                     <Label className="text-xs font-medium flex items-center gap-2">
                       <FileText className="w-3 h-3" />
-                      System Prompt
+                      System prompt
                     </Label>
+                    <p className="text-[11px] text-muted-foreground/80">
+                      Shown from the flow by default. Edit to override; clear the box to use the flow&apos;s default again.
+                    </p>
                     <textarea
                       value={systemPrompt}
                       onChange={e => setSystemPrompt(e.target.value)}
-                      placeholder="Custom system instructions..."
-                      className="w-full h-24 px-2 py-1.5 text-xs bg-muted border border-border/50 rounded-md focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+                      placeholder="Flow default or your override…"
+                      className="w-full h-32 px-2 py-1.5 text-xs bg-muted border border-border/50 rounded-md focus:outline-none focus:ring-1 focus:ring-ring resize-y min-h-24"
                     />
                   </div>
 
@@ -805,6 +1025,19 @@ export function ChatShell() {
                       <Switch checked={streamingEnabled} onCheckedChange={setStreamingEnabled} />
                     </div>
                   </div>
+
+                  <Collapsible className="group pt-1 border-t border-border/40">
+                    <CollapsibleTrigger className="flex items-center gap-2 py-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full">
+                      <Zap className="w-3 h-3" />
+                      Advanced
+                      <ChevronDown className="w-3.5 h-3.5 ml-auto transition-transform group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <p className="text-[11px] text-muted-foreground/80 pb-2">
+                        Flow-specific overrides (e.g. reasoning effort) can be added here when your Flowise flow exposes them.
+                      </p>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </PopoverContent>
             </Popover>
@@ -816,15 +1049,26 @@ export function ChatShell() {
         <ChatMessages
           messages={messages}
           isStreaming={isStreaming}
+          isRestoring={isBootstrapping || isRestoringMessages}
           tempChat={tempChat}
           onSuggestionClick={(s) => handleSubmit(s)}
           onRestoreToMessage={handleRestoreToMessage}
+          suggestionPrompts={flowDetail?.starterPrompts?.length ? flowDetail.starterPrompts : undefined}
+          welcomeMessage={flowDetail?.welcomeMessage ?? undefined}
+          followUpPrompts={flowDetail?.followUpPrompts?.length ? flowDetail.followUpPrompts : undefined}
         />
 
         <ChatInput
           onSubmit={handleSubmit}
           isLoading={isStreaming}
-          disabled={!selectedChatflowId}
+          disabled={isBootstrapping || isRestoringMessages || !selectedChatflowId}
+          placeholder={
+            isBootstrapping || isRestoringMessages
+              ? 'Loading your workspace...'
+              : undefined
+          }
+          flowTools={flowTools}
+          onEnabledToolsChange={setEnabledToolsCount}
         />
       </div>
 

@@ -100,9 +100,12 @@ export interface ChatSidebarProps {
   chatflows: Chatflow[]
   selectedChatflowId: string
   onSelectChatflow: (id: string) => void
+  /** When set, show current flow name and tool count in the sidebar. */
+  currentFlowSummary?: { name: string; toolCount: number }
   isOpen: boolean
   onClose: () => void
   connectionStatus: 'unknown' | 'healthy' | 'error'
+  isLoading?: boolean
   isAdmin?: boolean
   onNavigateImages?: () => void
 }
@@ -145,6 +148,14 @@ const MARQUEE_ITEMS = [
   'Custom AI workflows',
   'Semantic search',
 ]
+
+function PreviewBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full border border-border/50 px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground/70">
+      Preview
+    </span>
+  )
+}
 
 function SidebarMarquee() {
   // Duplicate items so the loop is seamless
@@ -673,9 +684,14 @@ export function ChatSidebar({
   onRenameSession,
   onPinSession,
   onArchiveSession,
+  chatflows,
+  selectedChatflowId,
+  onSelectChatflow,
+  currentFlowSummary,
   isOpen,
   onClose,
   connectionStatus,
+  isLoading = false,
   isAdmin,
   onNavigateImages,
 }: ChatSidebarProps) {
@@ -837,7 +853,18 @@ export function ChatSidebar({
             New chat
           </button>
 
-          {/* 2. Images — left click = gallery dialog, chevron = inline strip */}
+          {/* Current flow summary */}
+          {currentFlowSummary && (
+            <div className="mt-2 px-2 py-2 rounded-lg bg-sidebar-accent/40 border border-sidebar-border/40">
+              <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium mb-1">Current flow</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{currentFlowSummary.name}</p>
+              {currentFlowSummary.toolCount > 0 && (
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5">{currentFlowSummary.toolCount} tool{currentFlowSummary.toolCount !== 1 ? 's' : ''} available</p>
+              )}
+            </div>
+          )}
+
+          {/* 2. Images preview */}
           <div className="mt-0.5">
             <div className="flex items-center gap-0.5 rounded-lg hover:bg-sidebar-accent/60 transition-all duration-100 pr-0.5">
               <button
@@ -845,8 +872,9 @@ export function ChatSidebar({
                 className="flex items-center gap-3 flex-1 px-2 py-2.5 text-sm text-sidebar-foreground/80 hover:text-sidebar-foreground"
               >
                 <ImageIcon className="w-4 h-4 shrink-0" />
-                Images
+                Media preview
               </button>
+              <PreviewBadge />
               <button
                 onClick={() => setImagesExpanded(v => !v)}
                 className="p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors"
@@ -855,11 +883,18 @@ export function ChatSidebar({
                 <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', imagesExpanded && 'rotate-180')} />
               </button>
             </div>
+            <p className="px-2 pb-2 text-[11px] text-muted-foreground/50">
+              Placeholder media gallery. Uploaded asset browsing is not wired to storage yet.
+            </p>
             {imagesExpanded && <ImageThumbnailStrip onViewAll={() => setGalleryOpen(true)} />}
           </div>
 
-          {/* 3. Integrations */}
-          <SidebarSection label="Integrations" icon={Plug} defaultOpen={false} trailing={
+          {/* 3. Tools for this flow / Integrations (Preview) */}
+          <SidebarSection
+            label={currentFlowSummary && currentFlowSummary.toolCount > 0 ? `Tools (${currentFlowSummary.toolCount} available)` : 'Integrations (Preview)'}
+            icon={Plug}
+            defaultOpen={false}
+            trailing={
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground/50 hover:text-muted-foreground" onClick={e => e.stopPropagation()} aria-label="Integrations menu">
@@ -873,7 +908,26 @@ export function ChatSidebar({
             </DropdownMenu>
           }>
             <div className="space-y-0.5 pt-0.5">
-              {MOCK_INTEGRATIONS.map(int => (
+              {currentFlowSummary && currentFlowSummary.toolCount > 0 ? (
+                <div className="px-2 py-3 space-y-2">
+                  <p className="text-xs text-sidebar-foreground/80">
+                    This flow has <strong>{currentFlowSummary.toolCount} tools</strong>. To choose which ones the agent can use:
+                  </p>
+                  <ol className="text-[11px] text-muted-foreground/70 space-y-1 list-decimal list-inside">
+                    <li>Click the <strong>wrench</strong> in the message bar (next to the paperclip).</li>
+                    <li>Turn each tool on or off with its switch.</li>
+                    <li>Only tools that are on are sent with your next message.</li>
+                  </ol>
+                  <p className="text-[11px] text-muted-foreground/50 pt-1">
+                    The header shows how many tools are currently on.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="px-2 pb-2 text-[11px] text-muted-foreground/50">
+                    These are roadmap placeholders. To choose which tools the agent can use, open the wrench in the message bar.
+                  </p>
+                  {MOCK_INTEGRATIONS.map(int => (
                 <div
                   key={int.id}
                   className="group/int flex items-center gap-3 px-2 py-2 rounded-lg text-sm hover:bg-sidebar-accent/60 transition-all duration-100 cursor-pointer"
@@ -904,18 +958,20 @@ export function ChatSidebar({
                   </DropdownMenu>
                 </div>
               ))}
-              <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg text-sm text-muted-foreground/60 hover:bg-sidebar-accent/60 hover:text-foreground transition-all duration-100 text-left">
-                <div className="w-6 h-6 rounded-md border border-dashed border-sidebar-border/50 flex items-center justify-center shrink-0">
-                  <Plus className="w-3 h-3" />
-                </div>
-                Explore integrations
-              </button>
+                  <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg text-sm text-muted-foreground/60 hover:bg-sidebar-accent/60 hover:text-foreground transition-all duration-100 text-left">
+                    <div className="w-6 h-6 rounded-md border border-dashed border-sidebar-border/50 flex items-center justify-center shrink-0">
+                      <Plus className="w-3 h-3" />
+                    </div>
+                    Explore integrations
+                  </button>
+                </>
+              )}
             </div>
           </SidebarSection>
 
           {/* 4. Projects */}
           <SidebarSection
-            label="Projects"
+            label="Projects preview"
             icon={Folder}
             defaultOpen={false}
             trailing={
@@ -934,6 +990,9 @@ export function ChatSidebar({
             }
           >
             <div className="space-y-0.5 pt-0.5">
+              <p className="px-2 pb-2 text-[11px] text-muted-foreground/50">
+                Project grouping is a UI preview only. Chats are not assigned to projects in the current backend.
+              </p>
               {projects.map(p => (
                 <div key={p.id} className="group/proj flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm hover:bg-sidebar-accent/60 transition-all duration-100 cursor-pointer">
                   <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{ background: p.color }}>
@@ -969,9 +1028,12 @@ export function ChatSidebar({
             </div>
           </SidebarSection>
 
-          {/* 5. Group chats — presence room per group so participants show via RealtimeAvatarStack */}
-          <SidebarSection label="Group chats" icon={Users2} defaultOpen={false}>
+          {/* 5. Group chats — preview only */}
+          <SidebarSection label="Group chats preview" icon={Users2} defaultOpen={false}>
             <div className="space-y-0.5 pt-0.5">
+              <p className="px-2 pb-2 text-[11px] text-muted-foreground/50">
+                Collaboration rooms are not backed by shared chat persistence yet. Presence shown here is illustrative.
+              </p>
               {MOCK_GROUP_CHATS.map(gc => (
                 <button key={gc.id} className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/60 transition-all duration-100 text-left">
                   <span className="flex-1 truncate">{gc.name}</span>
@@ -990,7 +1052,7 @@ export function ChatSidebar({
           <SidebarSection label="Your chats" icon={MessageSquare} defaultOpen={true}>
             {filteredSessions.length === 0 ? (
               <p className="text-xs text-muted-foreground/40 px-2 py-4 text-center">
-                {searchQuery ? 'No matching chats' : 'Start a conversation above'}
+                {isLoading ? 'Loading conversations...' : searchQuery ? 'No matching chats' : 'Start a conversation above'}
               </p>
             ) : (
               <div className="pt-0.5">

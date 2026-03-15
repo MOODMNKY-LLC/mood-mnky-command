@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import type { z, ZodTypeAny } from 'zod'
+import type { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -34,10 +34,10 @@ interface DynamicFormProps<T extends z.ZodRawShape = z.ZodRawShape> {
   columnInfo?: Record<string, { data_type: string; is_nullable: boolean }>
 }
 
-const getZodDef = (schema: ZodTypeAny): Record<string, any> =>
-  (schema as any)._def || (schema as any).def
+const getZodDef = (schema: any): Record<string, any> =>
+  schema?._def || schema?.def || {}
 
-const unwrapZodType = (fieldSchema: ZodTypeAny): ZodTypeAny => {
+const unwrapZodType = (fieldSchema: any): any => {
   if (
     !fieldSchema ||
     typeof getZodDef(fieldSchema) !== 'object' ||
@@ -85,7 +85,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
 
   const defaultValues = Object.keys(schema.shape).reduce(
     (acc, key) => {
-      const originalFieldSchema = schema.shape[key]
+      const originalFieldSchema = schema.shape[key] as any
       if (typeof originalFieldSchema === 'undefined') {
         throw new Error(
           `Schema error: schema.shape['${key}'] is undefined. Check schema definition.`
@@ -148,11 +148,13 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
       const schemaKeys = Object.keys(schema.shape)
       const processedInitialValues = schemaKeys.reduce(
         (acc, key) => {
-          const fieldDefFromSchema = schema.shape[key]
+          const fieldDefFromSchema = schema.shape[key] as any
           if (typeof fieldDefFromSchema === 'undefined') {
             throw new Error(`Schema error in useEffect: schema.shape['${key}'] is undefined.`)
           }
-          const value = initialValues.hasOwnProperty(key) ? initialValues[key] : undefined
+          const value = Object.prototype.hasOwnProperty.call(initialValues, key)
+            ? (initialValues as Record<string, unknown>)[key]
+            : undefined
           const baseFieldType = unwrapZodType(fieldDefFromSchema)
 
           // Support both old (typeName) and new (type) Zod formats
@@ -212,7 +214,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
     }
   }, [initialValues, form, schema])
 
-  const renderField = (fieldName: string, fieldSchema: ZodTypeAny) => {
+  const renderField = (fieldName: string, fieldSchema: any) => {
     const baseType = unwrapZodType(fieldSchema)
     // Support both old (typeName) and new (type) Zod formats
     const getTypeName = (def: Record<string, any>) => def.typeName || def.type
@@ -234,7 +236,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
             case 'string':
               return (
                 <FormItem className="py-6 border-b">
-                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
+                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
                     <div className="flex-1 pr-4">
                       <FormLabel>{label}</FormLabel>
                       <div className="text-sm text-muted-foreground mt-1">{typeDisplay}</div>
@@ -257,7 +259,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
             case 'number':
               return (
                 <FormItem className="py-6 border-b">
-                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
+                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
                     <div className="flex-1 pr-4">
                       <FormLabel>{label}</FormLabel>
                       <div className="text-sm text-muted-foreground">{typeDisplay}</div>
@@ -303,7 +305,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
               const optionLabels = typeof labelConfig === 'object' ? labelConfig.options : undefined
               return (
                 <FormItem className="py-6 border-b">
-                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
+                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
                     <div className="flex-1 pr-4">
                       <FormLabel>{label}</FormLabel>
                       <div className="text-sm text-muted-foreground">{typeDisplay}</div>
@@ -405,7 +407,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         {Object.keys(schema.shape).map((fieldName) =>
-          renderField(fieldName, schema.shape[fieldName])
+          renderField(fieldName, schema.shape[fieldName] as any)
         )}
         <div className="pt-6">
           <Button type="submit" disabled={isLoading}>

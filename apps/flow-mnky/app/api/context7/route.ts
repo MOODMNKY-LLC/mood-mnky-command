@@ -5,8 +5,15 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getContext7MCPService } from '@/lib/services/context7-mcp.service'
+import { requireUser } from '@/lib/auth/require-user'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 export async function GET(request: NextRequest) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 
@@ -33,6 +40,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 

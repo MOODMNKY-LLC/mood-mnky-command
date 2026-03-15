@@ -5,6 +5,7 @@
  */
 
 import { FlowiseClient } from 'flowise-sdk'
+import { extractMessageText } from '@/lib/chat/parse-flowise-response'
 
 export interface FlowiseChatflow {
   id: string
@@ -16,6 +17,8 @@ export interface FlowiseChatflow {
   apikeyid?: string
   chatbotConfig?: string
   apiConfig?: string
+  /** JSON array of follow-up prompt strings (Flowise chatflow config). */
+  followUpPrompts?: string
   category?: string
   type?: 'CHATFLOW' | 'MULTIAGENT'
   createdDate?: string
@@ -25,9 +28,31 @@ export interface FlowiseChatflow {
 export interface FlowiseAssistant {
   id: string
   details: string // JSON string containing name, description, instructions, model, tools
+  credential?: string
   iconSrc?: string
   createdDate?: string
   updatedDate?: string
+}
+
+export interface FlowiseCredential {
+  id: string
+  name?: string
+  credentialName?: string
+  createdDate?: string
+  updatedDate?: string
+}
+
+interface FlowiseAssistantDetailsPayload {
+  id?: string
+  name?: string
+  description?: string
+  model?: string
+  instructions?: string
+  temperature?: number
+  top_p?: number
+  tools?: unknown[]
+  tool_resources?: Record<string, unknown>
+  [key: string]: unknown
 }
 
 export interface FlowiseVariable {
@@ -267,22 +292,52 @@ export async function getAssistant(id: string): Promise<FlowiseAssistant> {
   return flowiseFetch<FlowiseAssistant>(`/assistants/${id}`)
 }
 
-export async function createAssistant(data: { details: string; iconSrc?: string }): Promise<FlowiseAssistant> {
-  return flowiseFetch<FlowiseAssistant>('/assistants', {
-    method: 'POST',
-    body: JSON.stringify(data),
+function normalizeAssistantDetails(
+  details: string | FlowiseAssistantDetailsPayload
+) {
+  const parsedDetails =
+    typeof details === 'string'
+      ? (JSON.parse(details) as FlowiseAssistantDetailsPayload)
+      : details
+
+  return JSON.stringify({
+    ...parsedDetails,
+    tools: Array.isArray(parsedDetails?.tools) ? parsedDetails.tools : [],
+    tool_resources:
+      parsedDetails?.tool_resources && typeof parsedDetails.tool_resources === 'object'
+        ? parsedDetails.tool_resources
+        : {},
   })
 }
 
-export async function updateAssistant(id: string, data: { details: string; iconSrc?: string }): Promise<FlowiseAssistant> {
+export async function createAssistant(data: { details: string | FlowiseAssistantDetailsPayload; iconSrc?: string; credential?: string }): Promise<FlowiseAssistant> {
+  return flowiseFetch<FlowiseAssistant>('/assistants', {
+    method: 'POST',
+    body: JSON.stringify({
+      credential: data.credential ?? '',
+      iconSrc: data.iconSrc ?? '',
+      details: normalizeAssistantDetails(data.details),
+    }),
+  })
+}
+
+export async function updateAssistant(id: string, data: { details: string | FlowiseAssistantDetailsPayload; iconSrc?: string; credential?: string }): Promise<FlowiseAssistant> {
   return flowiseFetch<FlowiseAssistant>(`/assistants/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      credential: data.credential ?? '',
+      iconSrc: data.iconSrc ?? '',
+      details: normalizeAssistantDetails(data.details),
+    }),
   })
 }
 
 export async function deleteAssistant(id: string): Promise<void> {
   return flowiseFetch<void>(`/assistants/${id}`, { method: 'DELETE' })
+}
+
+export async function listCredentials(): Promise<FlowiseCredential[]> {
+  return flowiseFetch<FlowiseCredential[]>('/credentials')
 }
 
 // ── Variables ─────────────────────────────────────────────────────────────────
@@ -429,6 +484,7 @@ export async function streamPredictionWithSDK(
     question: payload.question,
     streaming: true,
     ...(payload.chatId && { chatId: payload.chatId }),
+    ...(payload.overrideConfig && { overrideConfig: payload.overrideConfig }),
     ...(payload.history?.length && {
       history: payload.history.map((m) => ({
         message: m.content,
@@ -506,12 +562,17 @@ export async function streamPrediction(
 
   const contentType = res.headers.get('Content-Type') ?? ''
   if (contentType.includes('application/json')) {
-    const data = (await res.json()) as { text?: string }
-    const text = typeof data?.text === 'string' ? data.text : ''
-    const payloadStr = JSON.stringify({ event: 'token', data: text })
+    const data = (await res.json()) as Record<string, unknown>
+    const text = extractMessageText(data)
+    if (!text?.trim()) {
+      const preview = JSON.stringify(data).slice(0, 600)
+      console.warn('[flow-mnky:no-response] Flowise returned JSON but extractMessageText was empty. Keys:', Object.keys(data), 'Preview:', preview)
+    }
+    const encoder = new TextEncoder()
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
-        controller.enqueue(new TextEncoder().encode(`data: ${payloadStr}\n\n`))
+        controller.enqueue(encoder.encode('event: token\n'))
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(text)}\n\n`))
         controller.close()
       },
     })

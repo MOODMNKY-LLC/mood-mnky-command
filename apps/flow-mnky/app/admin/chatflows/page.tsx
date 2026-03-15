@@ -1,10 +1,10 @@
-import { listChatflows } from '@/lib/flowise/client'
+import { adminListChatflows } from '@/lib/actions/admin'
 import { ChatflowsList } from '@/components/admin/chatflows-list'
 
 export default async function AdminChatflowsPage() {
-  let chatflows: Awaited<ReturnType<typeof listChatflows>> = []
+  let chatflows: Awaited<ReturnType<typeof adminListChatflows>> = []
   try {
-    chatflows = await listChatflows()
+    chatflows = await adminListChatflows()
   } catch {
     // Flowise unreachable or not configured
   }

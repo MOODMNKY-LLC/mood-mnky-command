@@ -1,0 +1,36 @@
+---
+description: Flowise chatflow integration in flow-mnky — inspection, run API, history, overrideConfig, and UI
+---
+
+# Flowise Chatflow Integration (flow-mnky)
+
+When working on the **flow-mnky** app’s chat or Flowise-backed features, follow these conventions so behaviour stays consistent and secure.
+
+## Inspection and config
+
+- **Chatflow config summary** is provided by `getChatflowConfigSummary()` in [`apps/flow-mnky/lib/flowise/flow-config.ts`](apps/flow-mnky/lib/flowise/flow-config.ts). It parses `flowData` and returns `{ type, nodeCount, nodeTypes, nodeIds, suggestedVars }` only — **never expose raw `flowData`** to the client.
+- **Config API**: `GET /api/chat/chatflows/[id]` returns the config summary for a chatflow the user is allowed to see (same visibility as chatflow list). Response: `{ id, name, type, flowSummary, suggestedVars, starterPrompts?, welcomeMessage?, followUpPrompts? }`. Never expose raw `flowData`, `chatbotConfig`, or `followUpPrompts` string to the client. Used by the chat UI to show flow type (e.g. “Agent” badge) and for starter/follow-up prompts and welcome message.
+- **Starter and follow-up prompts**: Flowise chatflows can define starter prompts (empty state) and follow-up prompts (after assistant reply) in the chatflow config; stored in `chatbotConfig` and `followUpPrompts`. `getChatflowChatbotUIConfig()` in `flow-config.ts` parses these; the config API returns UI-ready arrays. `ChatMessages` uses them when present; otherwise falls back to app defaults. Do not overwrite Flowise config when the chatflow defines its own.
+
+## Run API and payload
+
+- **Run route**: `POST /api/chat/run` in [`apps/flow-mnky/app/api/chat/run/route.ts`](apps/flow-mnky/app/api/chat/run/route.ts). Body: `chatflowId`, `question`, optional `chatId`, `streaming`, `history`, `overrideConfig`, `uploads`.
+- **History**: Array of `{ role: 'userMessage' | 'apiMessage', content: string }`. The chat UI sends the current thread (before appending the new user message) so Flowise receives full conversation context.
+- **overrideConfig**: Passed through to Flowise; typically includes `temperature`, `maxTokens`, `systemMessage`, and `vars` (e.g. `agentMode`, `modelOverride`, `enabledTools`). Flow-specific vars can be merged from `suggestedVars` when building the payload.
+- **Streaming vs non-streaming**: The route calls `getChatflowStreamingStatus(chatflowId)`. If `isStreaming === false`, it uses the fetch-based `streamPrediction` (which converts JSON responses to SSE) so agent flows (e.g. code-mnky) work without SDK errors.
+
+## Client behaviour
+
+- **Chat shell** ([`apps/flow-mnky/components/chat/chat-shell.tsx`](apps/flow-mnky/components/chat/chat-shell.tsx)): Sends `history` from current `messages`; fetches flow config when `selectedChatflowId` changes and shows “Agent” badge when `type === 'MULTIAGENT'`.
+- **SSE handling**: Supports `event: token`, `event: message`, `event: agentMessage`; token data may be a string or JSON with `text` / `data` / `result` / `message` / `output` / `response`. Single-block long replies use the typewriter reveal.
+
+## Security and visibility
+
+- Chatflow config and run endpoints require an authenticated user (`requireUser`).
+- Config and list visibility: same as chatflow list (admin sees all; non-admin sees deployed/public). Never return full `flowData` or internal Flowise keys to the client.
+
+## Supabase and schema (flow-mnky)
+
+- **Tables**: `profiles` (role, default_chatflow_id, allowed_openai_models, is_admin), `chat_sessions`, `chat_messages` (session_id), `flowise_user_document_stores` (profile_id, flowise_store_id, scope). Types live in [`apps/flow-mnky/lib/supabase/types.ts`](apps/flow-mnky/lib/supabase/types.ts) and must stay aligned with migrations.
+- **When changing chat sessions, chat messages, profiles, or Flowise-related Supabase tables**: use **supabase-local MCP** (when local Supabase is running at `http://127.0.0.1:54521/mcp`) to verify schema and indexes; add and run migrations under `supabase/migrations/`; keep `apps/flow-mnky/lib/supabase/types.ts` in sync with those migrations. Prefer the **Supabase plugin** (and MCP) for schema and RLS work.
+- **Document store assignments**: `flowise_user_document_stores` links a profile to a Flowise document store per scope. Admin can assign stores when creating (assignToProfileId) or via `adminAssignDocumentStoreToUser`. Current user’s assignments: `GET /api/chat/document-stores/assignments`.

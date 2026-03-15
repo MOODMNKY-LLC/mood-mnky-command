@@ -14,7 +14,7 @@ export const AI_MODELS = [
 ] as const
 
 export type ModelId = (typeof AI_MODELS)[number]['id']
-export type AgentModeId = 'default'
+export type AgentModeId = 'default' | 'coder'
 
 // -----------------------------------------------------------------------------
 // Chat / Flowise (Flow-mnky)

@@ -1,9 +1,9 @@
-// Chat header with model/chatflow selector
+// Chat header: chatflow selector + configured model (read-only) + agent mode / tools status
 'use client'
 
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,30 +13,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
-import { Sparkles, Brain, Zap, ChevronDown, Bot, Check } from 'lucide-react'
-import { AI_MODELS } from '@/lib/types'
-import type { ModelId, AgentModeId } from '@/lib/types'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { ChevronDown, Bot, Check, Code, MessageSquare, Sparkles } from 'lucide-react'
+import type { AgentModeId } from '@/lib/types'
 import type { FlowiseChatflow } from './chat-shell'
 
-const PROVIDER_ICONS: Record<string, React.ReactNode> = {
-  OpenAI:    <Sparkles className="w-3 h-3" />,
-  Anthropic: <Brain className="w-3 h-3" />,
-  Google:    <Zap className="w-3 h-3" />,
-}
-
 const AGENT_MODES = [
-  { id: 'default', label: 'Default', description: 'Standard agent mode' },
-] as const
+  { id: 'default' as const, label: 'Default', description: 'Standard agent mode', icon: MessageSquare },
+  { id: 'coder' as const, label: 'Coder', description: 'Code help with Context7 docs', icon: Code },
+]
 
 interface ChatHeaderSelectorsProps {
   chatflows: FlowiseChatflow[]
   selectedChatflowId: string
+  flowType?: 'CHATFLOW' | 'MULTIAGENT' | null
+  isLoading?: boolean
   onChatflowChange: (id: string) => void
-  allowedModelIds?: string[] | null
-  selectedModel: ModelId
-  onModelChange: (id: ModelId) => void
+  /** Read-only display; model is configured in Flowise or admin. */
+  configuredModelName?: string | null
   selectedMode: AgentModeId
   onModeChange: (id: AgentModeId) => void
+  /** Number of tools currently enabled/activated for this flow (for status indicator). */
+  enabledToolsCount?: number
   temperature: number
   onTemperatureChange: (temp: number) => void
   maxTokens: number
@@ -52,12 +50,13 @@ interface ChatHeaderSelectorsProps {
 export function ChatHeaderSelectors({
   chatflows,
   selectedChatflowId,
+  flowType = null,
+  isLoading = false,
   onChatflowChange,
-  allowedModelIds,
-  selectedModel,
-  onModelChange,
+  configuredModelName = null,
   selectedMode,
   onModeChange,
+  enabledToolsCount = 0,
   temperature,
   onTemperatureChange,
   maxTokens,
@@ -69,15 +68,9 @@ export function ChatHeaderSelectors({
   tempChat,
   onTempChatChange,
 }: ChatHeaderSelectorsProps) {
-  const availableModels = AI_MODELS.filter((model) => !allowedModelIds?.length || allowedModelIds.includes(model.id))
-  const currentModel = availableModels.find(m => m.id === selectedModel) ?? availableModels[0] ?? AI_MODELS[0]
   const currentMode = AGENT_MODES.find(m => m.id === selectedMode) ?? AGENT_MODES[0]
   const currentChatflow = chatflows.find(c => c.id === selectedChatflowId)
-
-  const byProvider = availableModels.reduce<Record<string, typeof AI_MODELS[number][]>>((acc, m) => {
-    ;(acc[m.provider] ??= []).push(m)
-    return acc
-  }, {})
+  const ModeIcon = currentMode.icon
 
   return (
     <div className="flex items-center gap-2 min-w-0">
@@ -86,19 +79,29 @@ export function ChatHeaderSelectors({
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
+            disabled={isLoading}
             className="h-8 gap-1.5 px-2.5 rounded-lg border border-border/30 bg-transparent hover:bg-accent/50 text-sm font-medium max-w-48 min-w-0"
           >
             <Bot className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
             <span className="truncate">
-              {currentChatflow?.name ?? 'Select chatflow'}
+              {isLoading ? 'Loading chatflows...' : currentChatflow?.name ?? 'Select chatflow'}
             </span>
+            {flowType === 'MULTIAGENT' && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium shrink-0">
+                Agent
+              </Badge>
+            )}
             <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuLabel>Flowise Chatflows</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {chatflows.length === 0 ? (
+          {isLoading ? (
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              Loading chatflows...
+            </DropdownMenuItem>
+          ) : chatflows.length === 0 ? (
             <DropdownMenuItem disabled className="text-xs text-muted-foreground">
               No chatflows available
             </DropdownMenuItem>
@@ -123,42 +126,62 @@ export function ChatHeaderSelectors({
 
       <Separator orientation="vertical" className="h-4" />
 
-      {/* Model override dropdown */}
+      {/* Configured model (read-only; change in Flowise or admin) */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/30 bg-muted/30 text-sm text-muted-foreground max-w-40 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{configuredModelName || (isLoading ? '…' : '—')}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-xs">
+          <p>Model is set in Flowise or the admin panel. It cannot be changed from the chat.</p>
+        </TooltipContent>
+      </Tooltip>
+
+      <Separator orientation="vertical" className="h-4" />
+
+      {/* Agent mode + tools activated status */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             className="h-8 gap-1.5 px-2.5 rounded-lg border border-border/30 bg-transparent hover:bg-accent/50 text-sm font-medium"
           >
-            {PROVIDER_ICONS[currentModel.provider]}
-            <span className="hidden sm:inline">{currentModel.name}</span>
-            <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            <ModeIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+            <span className="truncate max-w-24 sm:max-w-none">{currentMode.label}</span>
+            {enabledToolsCount > 0 && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium shrink-0">
+                {enabledToolsCount} tool{enabledToolsCount !== 1 ? 's' : ''} on
+              </Badge>
+            )}
+            <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuLabel>Model Override</DropdownMenuLabel>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>Agent mode</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {Object.entries(byProvider).map(([provider, models]) => (
-            <div key={provider}>
-              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground py-1.5">
-                {provider}
-              </DropdownMenuLabel>
-              {models.map(m => (
-                <DropdownMenuItem
-                  key={m.id}
-                  onClick={() => onModelChange(m.id)}
-                  className={cn(selectedModel === m.id && 'bg-accent')}
-                >
-                  <div className="flex flex-col gap-0.5 flex-1">
-                    <span className="font-medium text-sm">{m.name}</span>
-                    <span className="text-xs text-muted-foreground">{m.description}</span>
-                  </div>
-                  {selectedModel === m.id && <Check className="w-4 h-4 ml-2" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-            </div>
-          ))}
+          {AGENT_MODES.map(mode => {
+            const Icon = mode.icon
+            return (
+              <DropdownMenuItem
+                key={mode.id}
+                onClick={() => onModeChange(mode.id)}
+                className={cn(selectedMode === mode.id && 'bg-accent')}
+              >
+                <Icon className="w-4 h-4 shrink-0 mr-2 text-muted-foreground" />
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <span className="font-medium text-sm">{mode.label}</span>
+                  <span className="text-xs text-muted-foreground">{mode.description}</span>
+                </div>
+                {selectedMode === mode.id && <Check className="w-4 h-4 ml-2 shrink-0" />}
+              </DropdownMenuItem>
+            )
+          })}
+          <DropdownMenuSeparator />
+          <div className="px-2 py-1.5 text-[11px] text-muted-foreground">
+            {enabledToolsCount} tool{enabledToolsCount !== 1 ? 's' : ''} on · Use the wrench in the message bar to change
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

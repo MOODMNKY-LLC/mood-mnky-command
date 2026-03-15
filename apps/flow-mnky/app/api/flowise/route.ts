@@ -7,8 +7,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFlowiseService } from '@/lib/services/flowise.service'
 import { getMinIOService } from '@/lib/services/minio.service'
 import { getValidatedConfig } from '@/lib/env-validation'
+import { requireUser } from '@/lib/auth/require-user'
 
 export async function POST(request: NextRequest) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 
@@ -31,6 +37,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const auth = await requireUser()
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
   try {
     const action = request.nextUrl.searchParams.get('action')
 
@@ -74,9 +85,9 @@ async function handlePredict(request: NextRequest): Promise<NextResponse> {
 
     // Format messages for Flowise
     const question = messages[messages.length - 1]?.content || ''
-    const history = messages.slice(0, -1).map((msg: any) => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.content,
+    const history = messages.slice(0, -1).map((msg: { role?: string; content?: unknown }) => ({
+      role: msg.role === 'user' ? ('user' as const) : ('assistant' as const),
+      content: typeof msg.content === 'string' ? msg.content : '',
     }))
 
     console.log(`[v0] Flowise prediction request - Session: ${session.id}, Streaming: ${streaming}`)
@@ -201,7 +212,7 @@ async function handleKnowledge(request: NextRequest): Promise<NextResponse> {
         fileId,
         bucket,
         objectName,
-        knowledgeBaseId: knowledgeBaseId || config.flowise.chatflowId,
+        knowledgeBaseId: knowledgeBaseId || null,
         indexedAt: new Date().toISOString(),
       },
       { status: 200 }
