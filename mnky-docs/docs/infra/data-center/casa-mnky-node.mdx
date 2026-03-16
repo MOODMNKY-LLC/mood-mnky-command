@@ -1,0 +1,133 @@
+---
+title: CASA-MNKY Node Deep Dive
+description: Detailed hardware, storage, and network profile of the CASA-MNKY node in the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+`CASA-MNKY` is a general-purpose node in the MOOD MNKY Proxmox cluster, providing additional compute capacity and local storage while participating in shared NFS (`hyper-mnky-shared`).
+
+This deep dive is based on the hardware snapshot collected at:
+
+```bash
+/root/hardware-snapshots/CASA-MNKY/20260316T152857Z/
+```
+
+---
+
+## System identity
+
+From `dmidecode -t system`:
+
+- **Manufacturer**: Gigabyte Technology Co., Ltd.
+- **Product Name**: `A520I AC`
+- **Version**: `-CF`
+- **Family**: `A520 MB`
+- **SMBIOS**: 3.3.0
+- **UUID**: `03560274-043c-05bf-ca06-990700080009`
+- **OS / kernel**: Proxmox VE 8.4.17 on `6.8.12-19-pve`
+
+This indicates a consumer/SMB-class AM4 platform (Gigabyte A520I AC). Use `dmidecode-baseboard.txt` for board-level identifiers and BIOS details when planning upgrades.
+
+---
+
+## CPU topology
+
+From `lscpu.txt`:
+
+- **CPU model**: AMD Ryzen 5 4600G with Radeon Graphics
+- **Sockets**: 1
+- **Cores / threads**: 6 / 12
+- **Max MHz**: ~4308 MHz
+- **Virtualization**: AMD-V
+- **Caches**:
+  - L1d/L1i: 192 KiB (6 instances each)
+  - L2: 3 MiB (6 instances)
+  - L3: 8 MiB (2 instances)
+- **NUMA**: 1 node (node0)
+
+This is the same CPU class as CODE-MNKY, but without a dedicated Tesla GPU (no `nvidia-smi` output in the snapshot set).
+
+---
+
+## Memory configuration
+
+From `dmidecode-memory.txt`, `meminfo.txt`, and `free-h.txt`:
+
+- **Installed memory**: ~62 GiB (cluster summary)
+- **DIMM layout**: recorded in `dmidecode-memory.txt` (slot population, speeds, vendor, part numbers)
+- **NUMA**: single node
+
+---
+
+## Storage layout (ZFS and block)
+
+From `zpool-list.txt`, `zpool-status-rpool.txt`, `zfs-list.txt`, `lsblk.txt`, and `df-h.txt`:
+
+### ZFS pools
+
+`CASA-MNKY` currently exposes:
+
+- **`rpool`**:
+  - Size: ~1.81 TiB
+  - Allocation: ~700 GiB used, ~1.13 TiB free
+  - Backing device: NVMe (see `zpool-list.txt` for full device ID)
+
+This node’s root pool is significantly more utilized than DATA/STUD at time of snapshot. Use `zfs-list.txt` to identify the dataset/zvol breakdown and confirm which workloads or volumes are consuming capacity.
+
+### Block devices
+
+Use `lsblk.txt` to confirm:
+
+- NVMe model and serial
+- partition layout feeding ZFS
+- any additional drives and mountpoints
+
+---
+
+## Network configuration
+
+From `ip-link.txt`, `ip-addr.txt`, `ip-route.txt`, and `ethtool-summary.txt`:
+
+- Bridge and NIC hierarchy captured (baseline for troubleshooting).
+- Per-interface link speed/offload settings captured in `ethtool-summary.txt`.
+- Routing baseline captured in `ip-route.txt`.
+
+---
+
+## PCI and USB topology
+
+From `lspci-nnvv.txt`, `lspci-tree.txt`, `lsusb.txt`, and `lsusb-tree.txt`:
+
+- Full PCI device inventory (chipset, NICs, storage controllers, any add-in cards).
+- USB host controllers and attached devices.
+
+---
+
+## Proxmox view (node + cluster)
+
+From `pvesh-node-status.txt` and `pvesh-node-storage.txt`:
+
+- Node resource utilization baseline at capture time.
+- Proxmox storage definitions active on CASA-MNKY (including `local-zfs`, `local`, and `hyper-mnky-shared`).
+
+From `pvesh-cluster-nodes.txt`:
+
+- Confirms online status and cluster membership.
+
+---
+
+## Refresh procedure
+
+To refresh this deep dive after changes:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+Then update this page using the newest snapshot directory under:
+
+```bash
+/root/hardware-snapshots/CASA-MNKY/<timestamp>/
+```
+

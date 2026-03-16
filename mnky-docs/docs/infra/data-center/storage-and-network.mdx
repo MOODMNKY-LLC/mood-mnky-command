@@ -1,0 +1,158 @@
+---
+title: Storage and Network Topology
+description: ZFS pools, shared storage, and network layout across the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+Storage and networking define what the MOOD MNKY cluster can safely and efficiently run. This page documents:
+
+- ZFS pools on each node and their roles.
+- The shared NFS export used by LXCs and VMs.
+- Network topology across nodes and to external services like TrueNAS and Cloudflare.
+
+Underlying data comes from:
+
+- `proxmox-terraform/CLUSTER-NODES-HARDWARE.md`
+- Proxmox API outputs (`pvesh get /nodes/*/storage`, `/cluster/resources`)
+- Hardware snapshots in `/root/hardware-snapshots/<node>/<timestamp>/` (currently detailed for CODE-MNKY)
+
+---
+
+## ZFS pools per node
+
+### CODE-MNKY
+
+From `zpool list -v` and `zpool status -v`:
+
+- **`CODE-MAIN-zfs`**:
+  - ~3.62 TiB total, NVMe-backed.
+  - Primary pool for high-performance LXCs and VMs.
+- **`CODE-BKP-zfs`**:
+  - ~464 GiB total, HDD-backed.
+  - Backup/secondary pool for snapshots and archives.
+- **`rpool`**:
+  - ~472 GiB total, SSD-backed.
+  - Contains the Proxmox root filesystem (`rpool/ROOT/pve-1`).
+
+### CASA-MNKY
+
+From `CLUSTER-NODES-HARDWARE.md` and Proxmox storage config:
+
+- `local-zfs` and `local`:
+  - ~1.11 TiB root filesystem and ZFS pool.
+  - Used for VMs/LXCs and system data.
+- Access to `hyper-mnky-shared` NFS.
+
+### DATA-MNKY
+
+- Root filesystem ~1.72 TiB.
+- `local-zfs` and `local` pools for compute workloads.
+- Access to `hyper-mnky-shared` NFS.
+
+### STUD-MNKY
+
+- **`STUD-zfs`**:
+  - Dedicated ZFS pool specific to STUD-MNKY.
+  - Used for node-local workloads, experiments, or replicas.
+- `local-zfs` and `local`.
+- Access to `hyper-mnky-shared` NFS.
+
+### PRO-MNKY
+
+- ZFS pool configuration to be documented when node is online and a snapshot has been collected.
+
+---
+
+## Shared storage: hyper-mnky-shared
+
+All four online nodes mount a shared NFS export:
+
+- **Name**: `hyper-mnky-shared`
+- **Role**:
+  - Centralized storage for shared datasets.
+  - Source/destination for backups, media, and cross-node artifacts.
+- **Consumers**:
+  - LXCs and VMs across all nodes.
+  - TrueNAS integration providing the backing storage.
+
+The exact mount details (server address, path, and mount options) are visible in:
+
+- Proxmox storage configuration (`pvesh get /nodes/<node>/storage`).
+- `df -hT` and `mount` outputs on each node.
+
+---
+
+## Storage usage patterns
+
+Recommended guidelines:
+
+- **High-IOPS / latency-sensitive**:
+  - Use `CODE-MAIN-zfs` on CODE-MNKY for AI stacks, databases, and time-sensitive automation workloads.
+- **Cold data / backups**:
+  - Use `CODE-BKP-zfs` on CODE-MNKY or the equivalent on other nodes.
+- **Experimentation**:
+  - Use `STUD-zfs` for isolated experiments, test stacks, or data that can be safely lost.
+- **Shared datasets**:
+  - Use `hyper-mnky-shared` for data that must be visible to multiple nodes.
+
+When expanding storage:
+
+1. Update or add disks on the appropriate node.
+2. Run the hardware snapshot collector.
+3. Adjust ZFS vdevs and datasets as needed.
+4. Update this page and `CLUSTER-NODES-HARDWARE.md` to reflect new capacity.
+
+---
+
+## Network topology
+
+### Node-level networking
+
+Each node has:
+
+- One or more physical NICs connected to the cluster LAN.
+- Linux bridges (e.g. `vmbr0`) that connect LXCs and VMs to the LAN.
+- Routes configured via `ip route show`.
+
+CODE-MNKY snapshot highlights:
+
+- `ip -d link show`: bridge and NIC hierarchy with flags and offload settings.
+- `ip addr show`: IPs attached to physical interfaces and bridges.
+- `ip route show`: default route and any dedicated routes to storage or management networks.
+- `ethtool` output: link speeds, duplex modes, and offload features per interface.
+
+Other nodes follow a similar pattern, with differences in IP addressing and VLAN/tagging as configured.
+
+### External integrations
+
+The cluster connects to several external services:
+
+- **TrueNAS**:
+  - Provides NFS exports (including `hyper-mnky-shared` and per-VM datashare).
+  - Accessed via dedicated storage network or the main LAN, depending on configuration.
+- **Cloudflare**:
+  - Cloudflare tunnels configured via Proxmox Ansible roles.
+  - Used for secure external access to services without direct inbound port exposure.
+
+Detailed tunnel and TrueNAS integration docs live in:
+
+- `proxmox-ansible/docs/TRUENAS-INTEGRATION.md`
+- `proxmox-ansible/docs/CLOUDFLARE-TUNNEL-AND-NOTION.md`
+
+---
+
+## Troubleshooting and verification
+
+When diagnosing storage or network issues:
+
+1. **Compare snapshots vs. live state**:
+   - Re-run `collect-node-hardware.sh` on the affected node.
+   - Diff `zpool-*`, `ip-*`, and `ethtool-summary` against previous snapshots.
+2. **Validate Proxmox view**:
+   - Use `pvesh get /nodes/<node>/storage` and `/cluster/resources` to confirm Proxmox’s understanding of storage.
+3. **Check shared storage**:
+   - Validate NFS mounts and permissions for `hyper-mnky-shared`.
+4. **Update this page**:
+   - Reflect any structural changes in pools, mounts, or bridges so future incidents start from correct assumptions.
+

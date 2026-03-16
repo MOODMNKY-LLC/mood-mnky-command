@@ -272,6 +272,20 @@
             ]
           },
           {
+            "group": "Data Center (Proxmox)",
+            "pages": [
+              "docs/infra/data-center/overview",
+              "docs/infra/data-center/nodes",
+              "docs/infra/data-center/code-mnky-node",
+              "docs/infra/data-center/casa-mnky-node",
+              "docs/infra/data-center/data-mnky-node",
+              "docs/infra/data-center/stud-mnky-node",
+              "docs/infra/data-center/mnky-hq-node",
+              "docs/infra/data-center/storage-and-network",
+              "docs/infra/data-center/runbooks"
+            ]
+          },
+          {
             "group": "Development Guides",
             "pages": [
               "developer-resources/environment-setup",

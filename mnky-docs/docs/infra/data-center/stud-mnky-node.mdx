@@ -1,0 +1,132 @@
+---
+title: STUD-MNKY Node Deep Dive
+description: Detailed hardware, storage, and network profile of the STUD-MNKY node in the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+`STUD-MNKY` is a compute node with its own dedicated data pool (`STUD-zfs`). It is well-suited for isolated stacks, experiments, and workloads that benefit from a separate ZFS pool from the main CODE-MNKY environment.
+
+This deep dive is based on the hardware snapshot collected at:
+
+```bash
+/root/hardware-snapshots/STUD-MNKY/20260316T152852Z/
+```
+
+---
+
+## System identity
+
+From `dmidecode -t system`:
+
+- **Manufacturer**: System manufacturer
+- **Product Name**: System Product Name
+- **SMBIOS**: 3.3.0
+- **UUID**: `140213db-16aa-e2fb-397a-5811224d3173`
+- **OS / kernel**: Proxmox VE 8.4.17 on `6.8.12-19-pve`
+
+Note: this node’s SMBIOS strings are generic; use `dmidecode-baseboard.txt` and `dmidecode-processor.txt` for deeper identification.
+
+---
+
+## CPU topology
+
+From `lscpu.txt`:
+
+- **CPU model**: AMD Ryzen 7 5700G with Radeon Graphics
+- **Sockets**: 1
+- **Cores / threads**: 8 / 16
+- **Max MHz**: ~4673 MHz
+- **Virtualization**: AMD-V
+- **Caches**:
+  - L1d/L1i: 256 KiB (8 instances each)
+  - L2: 4 MiB (8 instances)
+  - L3: 16 MiB (1 instance)
+- **NUMA**: 1 node (node0)
+
+Security note (from `lscpu` vulnerability section): similar to DATA-MNKY, this node reports “no microcode” for certain mitigations. Treat firmware/microcode updates as part of cluster hygiene.
+
+---
+
+## Memory configuration
+
+From `dmidecode-memory.txt`, `meminfo.txt`, and `free-h.txt`:
+
+- **Installed memory**: ~62 GiB (cluster summary)
+- **DIMM layout**: recorded in `dmidecode-memory.txt` (slot population, speeds, vendor, part numbers)
+- **NUMA**: single node
+
+---
+
+## Storage layout (ZFS and block)
+
+From `zpool-list.txt`, `zpool-status-*.txt`, `zfs-list.txt`, `lsblk.txt`, and `df-h.txt`:
+
+### ZFS pools
+
+`STUD-MNKY` currently exposes:
+
+- **`STUD-zfs`** (dedicated data pool):
+  - Size: ~3.62 TiB (Samsung SSD 870 EVO 4TB)
+  - Allocation: ~1.74 TiB used, ~1.89 TiB free
+  - Fragmentation: high (reported ~44%); monitor over time and plan dataset organization accordingly.
+- **`rpool`** (root):
+  - Size: ~460 GiB (Samsung SSD 840 EVO 500GB)
+  - Allocation: ~42.9 GiB used, ~417 GiB free
+
+The `STUD-zfs` pool is a primary differentiator for this node; it enables heavier local data workloads without competing with the root pool.
+
+### Block devices
+
+Use `lsblk.txt` to confirm:
+
+- device models/serials
+- partition mappings into ZFS
+- mountpoints and any attached external storage
+
+---
+
+## Network configuration
+
+From `ip-link.txt`, `ip-addr.txt`, `ip-route.txt`, and `ethtool-summary.txt`:
+
+- Interfaces and bridges are captured in detail for baseline troubleshooting.
+- Link characteristics and offload parameters are recorded per interface.
+
+---
+
+## PCI and USB topology
+
+From `lspci-nnvv.txt`, `lspci-tree.txt`, `lsusb.txt`, and `lsusb-tree.txt`:
+
+- Full PCI inventory including storage controllers and NICs.
+- USB topology for host controllers and attached devices.
+
+---
+
+## Proxmox view (node + cluster)
+
+From `pvesh-node-status.txt` and `pvesh-node-storage.txt`:
+
+- Node resource utilization baseline and active storage backends (including `STUD-zfs` and `hyper-mnky-shared`).
+
+From `pvesh-cluster-nodes.txt`:
+
+- Confirms cluster membership and online status.
+
+---
+
+## Refresh procedure
+
+To refresh this deep dive after changes:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+Then update this page using the newest snapshot directory under:
+
+```bash
+/root/hardware-snapshots/STUD-MNKY/<timestamp>/
+```
+

@@ -1,0 +1,147 @@
+---
+title: MNKY-HQ Node Deep Dive (Networking Edge)
+description: Standalone Proxmox node responsible for cluster networking (pfSense VM) and network segmentation.
+---
+
+## Overview
+
+`MNKY-HQ` is a **standalone Proxmox VE node** (not a member of the main MOOD MNKY cluster) that anchors networking for the environment via a **pfSense VM** and bridge-based segmentation.
+
+This deep dive is based on the hardware snapshot collected at:
+
+```bash
+/root/hardware-snapshots/MNKY-HQ/20260316T153321Z/
+```
+
+---
+
+## Proxmox identity and role
+
+From the snapshot and live `ip addr` output:
+
+- **Proxmox VE**: `pve-manager/8.4.17` (kernel `6.8.12-19-pve`)
+- **Primary management IP**: `101.0.0.100/24` on `vmbr0`
+- **Role**: Network edge / segmentation host; pfSense VM uplinks to multiple bridges
+
+The collector run logged that storage `hyper-mnky-shared` is **not online** on this node at capture time. This is expected if MNKY-HQ is network-edge focused and does not mount the shared NFS export.
+
+---
+
+## CPU topology
+
+From `lscpu.txt`:
+
+- **CPU model**: AMD Ryzen 9 7900X3D 12-Core Processor
+- **Sockets**: 1
+- **Cores / threads**: 12 / 24
+- **Max MHz**: ~5660 MHz
+- **Virtualization**: AMD-V
+- **Caches**:
+  - L1d/L1i: 384 KiB (12 instances each)
+  - L2: 12 MiB (12 instances)
+  - L3: 128 MiB (2 instances)
+
+This is a very capable CPU for high-throughput routing/firewall workloads, IDS/IPS processing, and additional network services, assuming NIC and driver support match the traffic profile.
+
+---
+
+## Memory configuration
+
+From `pvesh-node-status.txt`:
+
+- **Total memory**: ~125 GiB
+- **Used (at capture)**: ~105 GiB
+
+Use `dmidecode-memory.txt`, `meminfo.txt`, and `free-h.txt` for the full DIMM layout and OS-level breakdown.
+
+---
+
+## Storage layout (ZFS and block)
+
+From `zpool-list.txt`:
+
+- **`rpool`**:
+  - Size: ~928 GiB
+  - Layout: mirror over two Samsung 870 EVO 1TB SSDs
+  - Allocation: ~870 GiB used, ~58 GiB free
+  - Fragmentation: ~78%, capacity ~93%
+
+Operational guidance:
+
+- This pool is **very full** at time of capture. Plan capacity relief (dataset cleanup, add a dedicated data pool, or expand storage) before adding additional services or large VM disks.
+- Use `zfs-list.txt` and `zpool-status-rpool.txt` to identify what is consuming space and verify mirror health.
+
+---
+
+## Network configuration (bridge-centric)
+
+From the snapshot and `ip addr show` excerpt:
+
+- Physical NICs `eno1`/`eno2` are bridged into `vmbr0`/`vmbr1`.
+- Additional NICs `enp5s0`–`enp8s0` are bridged into `vmbr2`–`vmbr5`.
+- Numerous `tap*` interfaces are present, consistent with VMs attached to bridges (pfSense and other VMs).
+
+Key points:
+
+- `vmbr0` holds the management address `101.0.0.100/24`.
+- `vmbr1`–`vmbr5` act as segmented networks (WAN/LAN/DMZ/cluster backplanes as designed).
+- The presence of `tap1000i*`, `tap1003i*`, etc., suggests multiple multi-NIC VMs (likely including pfSense) attached across these bridges.
+
+### pfSense VM mapping (authoritative wiring)
+
+pfSense is running as **VM `1000`** (`qm list` shows `1000 pfSense running`).
+
+From `qm config 1000` on `MNKY-HQ`:
+
+| pfSense NIC | Proxmox net* | MAC | Bridge | Host bridge uplink (physical NIC) |
+| --- | --- | --- | --- | --- |
+| NIC 0 | `net0` | `BC:24:11:F3:27:FC` | `vmbr0` | `eno1` |
+| NIC 1 | `net1` | `BC:24:11:74:50:67` | `vmbr1` | `eno2` |
+| NIC 2 | `net2` | `BC:24:11:EA:E8:E7` | `vmbr2` | `enp8s0` *(link down at capture)* |
+| NIC 3 | `net3` | `BC:24:11:AB:A2:57` | `vmbr3` | `enp5s0` |
+| NIC 4 | `net4` | `BC:24:11:72:C5:0D` | `vmbr4` | `enp6s0` |
+| NIC 5 | `net5` | `BC:24:11:EE:FE:6B` | `vmbr5` | `enp7s0` |
+
+Corroboration (bridge membership):
+
+- `ip link show master vmbrX` shows each `vmbr` contains its physical uplink plus `tap1000iX` (the pfSense tap).
+- `bridge link show` confirms each physical NIC is enslaved to the intended `vmbr`.
+
+This gives you a stable “hardware truth table” for pfSense routing and firewall policy: pfSense interface assignment should be anchored to **MAC addresses** above, and each MAC maps to a specific `vmbr` and physical port on MNKY-HQ.
+
+To fully document pfSense responsibilities beyond wiring, pair this host snapshot with:
+
+- Proxmox VM config for the pfSense VM (`qm config <vmid>` on MNKY-HQ)
+- pfSense interface map (WAN/LAN/OPT VLANs) and firewall rule sets
+
+---
+
+## PCI and USB topology
+
+See:
+
+- `lspci-nnvv.txt` and `lspci-tree.txt` for NIC models, chipset, and controller layout.
+- `lsusb.txt` and `lsusb-tree.txt` for USB devices (if any relevant hardware dongles exist).
+
+This is essential when validating:
+
+- which NIC is mapped to which physical port
+- driver and link capabilities for high-throughput routing
+- IOMMU group constraints if passthrough is ever needed
+
+---
+
+## Refresh procedure
+
+To refresh this deep dive after changes:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+Then update this page using the newest snapshot directory under:
+
+```bash
+/root/hardware-snapshots/MNKY-HQ/<timestamp>/
+```
+

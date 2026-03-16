@@ -1,0 +1,241 @@
+---
+title: Data Center Runbooks
+description: Operational runbooks for capturing hardware snapshots, onboarding nodes, expanding storage, and handling node or GPU incidents in the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+These runbooks capture common operational workflows for the MOOD MNKY data center:
+
+- Capturing or refreshing hardware snapshots.
+- Onboarding a new node at the hardware and Proxmox levels.
+- Expanding storage.
+- Handling node failures or GPU replacement.
+
+They assume root-level access to the Proxmox nodes and familiarity with ZFS and Linux networking.
+
+---
+
+## Runbook: Capture or refresh hardware snapshots
+
+### Purpose
+
+Collect a comprehensive hardware and Proxmox snapshot on any node, suitable for auditing, troubleshooting, and documentation.
+
+### Prerequisites
+
+- Root SSH or console access to the node.
+- The collector script present on the node:
+
+```bash
+/root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+### Steps
+
+1. **SSH into the target node**:
+
+   ```bash
+   ssh root@<NODE-IP>
+   ```
+
+2. **Run the collector script**:
+
+   ```bash
+   cd /root
+   chmod +x /root/proxmox-ansible/scripts/collect-node-hardware.sh
+   sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+   ```
+
+3. **Confirm snapshot creation**:
+
+   ```bash
+   ls -R /root/hardware-snapshots
+   ```
+
+   You should see a path like:
+
+   ```text
+   /root/hardware-snapshots/<NODE>/<TIMESTAMP>/
+   ```
+
+4. **Record location**:
+
+   - Use this path when updating node or storage/network documentation.
+   - Optionally, archive the directory for long-term historical records.
+
+---
+
+## Runbook: Onboard a new node
+
+### Purpose
+
+Add a new physical node to the cluster and capture its initial hardware profile.
+
+### Steps (high level)
+
+1. **Install Proxmox VE**:
+   - Install Proxmox VE 8.x from ISO.
+   - Configure EFI boot; disable Secure Boot.
+   - Ensure networking reaches the existing cluster.
+
+2. **Join the Proxmox cluster**:
+   - From an existing node, generate cluster join information via the Proxmox UI or CLI.
+   - On the new node, join the cluster using the provided command.
+   - Verify with:
+
+     ```bash
+     pvesh get /nodes
+     ```
+
+3. **Configure storage**:
+   - Create ZFS pools as needed (e.g. local pool, dedicated data pool).
+   - Add storage entries in Proxmox (`Datacenter -> Storage` or via `pvesh`).
+
+4. **Run the hardware collector**:
+   - Use the snapshot runbook above.
+   - Store the resulting snapshot under `/root/hardware-snapshots/<NODE>/<TIMESTAMP>/`.
+
+5. **Update documentation**:
+   - Add the node to the table in `/infra/data-center/nodes`.
+   - Document new pools and mounts in `/infra/data-center/storage-and-network`.
+
+---
+
+## Runbook: Expand storage on a node
+
+### Purpose
+
+Increase storage capacity on a node and reflect the change in both ZFS and documentation.
+
+### Steps
+
+1. **Plan the expansion**:
+   - Decide which pool (e.g. `CODE-MAIN-zfs`, `STUD-zfs`) to expand.
+   - Confirm free drive bays, SATA/NVMe slots, and power constraints.
+
+2. **Install new disk(s)**:
+   - Power down if required.
+   - Install the disk(s) and boot.
+
+3. **Create or extend ZFS vdevs**:
+   - Use `zpool add` or similar commands to add new vdevs.
+   - Verify with:
+
+     ```bash
+     zpool list -v
+     zpool status -v <pool>
+     ```
+
+4. **Run the hardware collector**:
+   - Capture a fresh snapshot.
+
+5. **Update docs**:
+   - Adjust pool sizes and layout in `/infra/data-center/storage-and-network`.
+   - Update node summary in `/infra/data-center/nodes`.
+
+---
+
+## Runbook: Handle node failure
+
+### Purpose
+
+Provide a structured response when a node becomes unavailable or unstable.
+
+### Steps (outline)
+
+1. **Confirm failure**:
+   - Use Proxmox UI, `pvesh get /nodes`, and physical inspection.
+2. **Identify impact**:
+   - Determine which LXCs/VMs or services are affected (use `cluster/resources` and your LXC runbooks).
+3. **Mitigation**:
+   - Migrate or restart affected workloads on other nodes, respecting storage constraints.
+4. **Root cause**:
+   - Once the node is reachable:
+     - Run `collect-node-hardware.sh`.
+     - Check ZFS health, SMART status, and logs.
+5. **Update docs**:
+   - Document the incident in an internal log or appendix.
+   - Note any permanent hardware changes in the relevant node and storage sections.
+
+---
+
+## Runbook: MNKY-HQ rpool capacity monitoring and relief
+
+### Purpose
+
+MNKY-HQ’s root pool (`rpool`) was ~93% full at last capture. This runbook helps monitor usage and plan capacity relief so the standalone node remains stable for pfSense and other VMs.
+
+### Prerequisites
+
+- Root SSH or console access to MNKY-HQ (`101.0.0.100`).
+
+### Steps
+
+1. **Check current pool and dataset usage**:
+
+   ```bash
+   zpool list -v rpool
+   zfs list -r rpool -o name,used,avail,refer
+   ```
+
+2. **Identify large consumers**:
+
+   - Use `zfs list` output and `du` on key datasets (e.g. `rpool/ROOT/pve-1`, VM disk paths) to find what is using space.
+   - Check Proxmox VM/LXC disk locations and sizes in the UI or via `qm list` / `pct list` and `qm config` / `pct config`.
+
+3. **Relief options** (choose as appropriate):
+
+   - **Cleanup**: Remove old snapshots, ISO/images, or logs; trim VM disks if over-provisioned.
+   - **Offload data**: Move large VM disks or backups to another pool or node if MNKY-HQ has additional storage.
+   - **Expand storage**: Add disk(s) and extend the pool (e.g. mirror expansion) or create a dedicated data pool and migrate VM storage; then run the hardware collector and update [MNKY-HQ node](/docs/infra/data-center/mnky-hq-node) and [Storage and network](/docs/infra/data-center/storage-and-network) docs.
+
+4. **Re-run snapshot and update docs**:
+
+   - Run `collect-node-hardware.sh` on MNKY-HQ.
+   - Update the MNKY-HQ node page and runbooks if layout or capacity guidance changes.
+
+---
+
+## Runbook: GPU replacement on CODE-MNKY
+
+### Purpose
+
+Safely replace or upgrade the GPU on CODE-MNKY while preserving documentation and minimizing downtime.
+
+### Steps
+
+1. **Pre-change state capture**:
+   - Run `nvidia-smi -q` and `collect-node-hardware.sh`.
+   - Save the latest snapshot path.
+
+2. **Drain GPU workloads**:
+   - Stop or migrate GPU-dependent LXCs/VMs.
+   - Confirm no critical GPU jobs are running.
+
+3. **Perform the hardware change**:
+   - Power down the node.
+   - Replace or add the GPU.
+   - Boot and confirm the new GPU is recognized.
+
+4. **Install drivers if needed**:
+   - Ensure the appropriate NVIDIA driver and CUDA version are installed and compatible.
+
+5. **Post-change snapshot**:
+   - Run `collect-node-hardware.sh` again.
+   - Confirm `nvidia-smi -q` reflects the new GPU.
+
+6. **Update documentation**:
+   - Refresh `/infra/data-center/code-mnky-node` GPU section.
+   - If capabilities changed significantly (e.g. memory size, architecture), note any constraints or new use cases.
+
+---
+
+## Keeping runbooks in sync
+
+When you discover a better approach, an additional safety check, or a new edge case:
+
+1. Update the relevant runbook steps here.
+2. Cross-link to any detailed how-to docs in `proxmox-ansible/docs/` or elsewhere.
+3. Consider capturing before/after snapshots as examples for future incidents.
+

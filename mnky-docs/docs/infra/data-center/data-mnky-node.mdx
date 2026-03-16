@@ -1,0 +1,148 @@
+---
+title: DATA-MNKY Node Deep Dive
+description: Detailed hardware, storage, and network profile of the DATA-MNKY node in the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+`DATA-MNKY` is the cluster node optimized for CPU core count and disk capacity. It is a strong candidate for CPU-bound workloads, larger VM/LXC footprints, and storage-heavy services that do not require GPU acceleration.
+
+This deep dive is based on the hardware snapshot collected at:
+
+```bash
+/root/hardware-snapshots/DATA-MNKY/20260316T152848Z/
+```
+
+---
+
+## System identity
+
+From `dmidecode -t system`:
+
+- **Manufacturer**: To Be Filled By O.E.M.
+- **Product Name**: `X570D4U`
+- **SMBIOS**: 3.3.0
+- **UUID**: `7533e379-96c4-49d9-f452-a8a159c72074`
+- **Boot**: EFI, Secure Boot disabled (cluster standard)
+- **OS / kernel**: Proxmox VE 8.4.17 on `6.8.12-19-pve`
+
+The `X570D4U` platform suggests a server-oriented AM4 motherboard configuration; use the full `dmidecode-*` outputs for board, BIOS, and DIMM slot details.
+
+---
+
+## CPU topology
+
+From `lscpu.txt`:
+
+- **CPU model**: AMD Ryzen 7 5700X 8-Core Processor
+- **Sockets**: 1
+- **Cores / threads**: 8 / 16
+- **Boost**: enabled
+- **Max MHz**: ~4663 MHz
+- **Virtualization**: AMD-V
+- **Caches**:
+  - L1d/L1i: 256 KiB (8 instances each)
+  - L2: 4 MiB (8 instances)
+  - L3: 32 MiB (1 instance)
+- **NUMA**: 1 node (node0)
+
+Security note (from `lscpu` vulnerability section): this node reports “no microcode” for some mitigations (e.g. Spec rstack overflow, TSA). Treat BIOS/microcode updates as a first-class maintenance task for this node.
+
+---
+
+## Memory configuration
+
+From `dmidecode-memory.txt`, `meminfo.txt`, and `free-h.txt`:
+
+- **Installed memory**: ~62.7 GiB (cluster summary)
+- **DIMM layout**: recorded in `dmidecode-memory.txt` (slot population, speeds, vendor, part numbers)
+- **NUMA**: single node, no cross-node memory penalties
+
+For upgrade planning, use `dmidecode-memory.txt` to identify free slots and module uniformity (mixing ranks/speeds can affect stability).
+
+---
+
+## Storage layout (ZFS and block)
+
+From `zpool-list.txt`, `zpool-status-rpool.txt`, `zfs-list.txt`, `lsblk.txt`, and `df-h.txt`:
+
+### ZFS pools
+
+`DATA-MNKY` currently exposes:
+
+- **`rpool`**:
+  - Size: ~1.81 TiB
+  - Layout: `mirror-0` over two NVMe devices (`CT2000P3PSSD8_*`)
+  - Allocation: ~45.1 GiB used, ~1.77 TiB free
+
+This mirrored NVMe root pool is a strong reliability baseline and supports both Proxmox OS and additional datasets/zvols. The full dataset and zvol hierarchy is documented in `zfs-list.txt`.
+
+### Block devices
+
+Use `lsblk.txt` to map:
+
+- NVMe models and serials
+- partitioning (especially `part3` used by ZFS)
+- filesystem mounts and zvol mappings
+
+Operational guidance:
+
+- Keep OS and core Proxmox services healthy on `rpool`.
+- If you add a dedicated data pool later, document its vdev layout and intended workloads here.
+
+---
+
+## Network configuration
+
+From `ip-link.txt`, `ip-addr.txt`, `ip-route.txt`, and `ethtool-summary.txt`:
+
+- Linux bridges provide VM/LXC attachment to the cluster LAN.
+- Interface link speeds, duplex, and offload are captured in `ethtool-summary.txt`.
+- Routing is captured in `ip-route.txt` (default gateway plus any storage/management routes).
+
+Use this snapshot set as the baseline for diagnosing node-level connectivity or throughput issues.
+
+---
+
+## PCI and USB topology
+
+From `lspci-nnvv.txt`, `lspci-tree.txt`, `lsusb.txt`, and `lsusb-tree.txt`:
+
+- Full PCI device inventory (chipset, NICs, storage controllers, any add-in cards).
+- USB host controllers and attached devices.
+
+These are most useful for:
+
+- IOMMU/passthrough planning
+- verifying device IDs after hardware changes
+- confirming storage controller topology when expanding pools
+
+---
+
+## Proxmox view (node + cluster)
+
+From `pvesh-node-status.txt` and `pvesh-node-storage.txt`:
+
+- Node CPU/load/memory usage baseline at the time of capture.
+- Proxmox storage definitions active on `DATA-MNKY` (local pools + `hyper-mnky-shared` NFS).
+
+From `pvesh-cluster-nodes.txt`:
+
+- Confirms online status and cluster membership alongside CODE-MNKY, CASA-MNKY, and STUD-MNKY.
+
+---
+
+## Refresh procedure
+
+To refresh this deep dive after changes:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+Then update this page using the newest snapshot directory under:
+
+```bash
+/root/hardware-snapshots/DATA-MNKY/<timestamp>/
+```
+

@@ -1,0 +1,178 @@
+---
+title: Cluster Nodes
+description: Detailed hardware and capability profiles for each node in the MOOD MNKY Proxmox cluster.
+---
+
+## Summary
+
+This page documents each node in the MOOD MNKY Proxmox cluster from a hardware and capability perspective.
+
+Source of truth:
+
+- Proxmox API snapshots summarized in `proxmox-terraform/CLUSTER-NODES-HARDWARE.md`.
+- Per-node hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host (collected for CODE-MNKY, CASA-MNKY, DATA-MNKY, and STUD-MNKY; PRO-MNKY pending while offline).
+- LXC and service mappings from the homelab “as code” docs and runbooks.
+
+### Node table
+
+| Node        | Status  | CPU model                    | Cores / threads | RAM (approx) | Root storage (approx) | Primary local storage (active)                                       |
+| ----------- | ------- | --------------------------- | --------------- | ------------ | --------------------- | --------------------------------------------------------------------- |
+| CODE-MNKY   | Online  | AMD Ryzen 5 4600G (Radeon)  | 6 / 12          | 125 GiB      | ~457 GiB              | CODE-MAIN-zfs, CODE-BKP-zfs, local, local-zfs, hyper-mnky-shared (NFS) |
+| CASA-MNKY   | Online  | AMD Ryzen 5 4600G (Radeon)  | 6 / 12          | 62 GiB       | ~1.11 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
+| DATA-MNKY   | Online  | AMD Ryzen 7 5700X           | 8 / 16          | 62.7 GiB     | ~1.72 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
+| STUD-MNKY   | Online  | AMD Ryzen 7 5700G (Radeon)  | 8 / 16          | 62 GiB       | ~445 GiB              | STUD-zfs, local-zfs, local, hyper-mnky-shared (NFS)                  |
+| PRO-MNKY    | Offline | (captured when online)      | —               | —            | —                     | (to be filled when node is online)                                   |
+
+All online nodes run Proxmox VE 8.4.17 on kernel `6.8.12-19-pve`, with EFI boot and Secure Boot off.
+
+---
+
+## CODE-MNKY
+
+CODE-MNKY is the primary GPU and stack host and the main focus for deep introspection.
+
+### Role
+
+- Hosts the main LXC stack (VMIDs 3099–3104) including:
+  - GPU dev LXC (3099) with Codex CLI and dev tooling.
+  - Automation stack (3100) with AWX and Semaphore.
+  - AI stack (3101) with Ollama, Flowise, n8n, MinIO, and self-hosted Supabase.
+  - Gaming and Sunshine stack (3102).
+  - Media stack (3103) with Jellyfin, *arr suite, and qBittorrent.
+  - Dedicated Supabase stack (3104) backing AI workloads as needed.
+- Target node for most Terraform-created LXCs (`target_node = "CODE-MNKY"`).
+
+### Hardware profile (snapshot-based)
+
+Based on `/root/hardware-snapshots/CODE-MNKY/20260316T152000Z/`:
+
+- **CPU**:
+  - AMD Ryzen 5 4600G, 6 cores / 12 threads, single socket.
+  - AVX2, AES-NI, AMD-V virtualization, extensive CPU mitigations.
+- **Memory**:
+  - ~125 GiB installed; single NUMA node (`node0`).
+  - DIMM layout, speeds, and vendors in `dmidecode-memory.txt`.
+- **Storage**:
+  - `CODE-MAIN-zfs` (~3.6 TiB, NVMe-backed) – main data pool for LXCs/VMs.
+  - `CODE-BKP-zfs` (~464 GiB, HDD-backed) – backup/secondary pool.
+  - `rpool` (~472 GiB, SSD-backed) – root filesystem.
+- **GPU**:
+  - NVIDIA Tesla P40 (Pascal), driver 560.35.03, CUDA 12.6.
+  - Full details in `nvidia-smi-q.txt`.
+- **Network**:
+  - Multiple physical NICs and bridges, with offload and link details in `ethtool-summary.txt`.
+  - Routes and addressing in `ip-addr.txt` and `ip-route.txt`.
+- **PCI/USB**:
+  - Full bus layout in `lspci-nnvv.txt`, `lspci-tree.txt`, `lsusb.txt`, `lsusb-tree.txt`.
+
+For a full narrative deep dive, see `/infra/data-center/code-mnky-node`.
+
+---
+
+## CASA-MNKY
+
+CASA-MNKY provides additional general-purpose capacity and shared storage access.
+
+### Role
+
+- General-purpose compute and storage node.
+- Participates fully in Proxmox quorum and shared NFS (`hyper-mnky-shared`).
+- Suitable for migrating LXCs and VMs off CODE-MNKY if needed.
+
+### Hardware profile (snapshot-based)
+
+Based on `/root/hardware-snapshots/CASA-MNKY/20260316T152857Z/` (plus cluster summary):
+
+- **CPU**: AMD Ryzen 5 4600G (6 cores, 12 threads).
+- **Memory**: ~62 GiB.
+- **Root filesystem**: ~1.11 TiB.
+- **Storage (active)**:
+  - `local-zfs` (zfspool).
+  - `local` (dir).
+  - `hyper-mnky-shared` (NFS).
+
+For a full narrative deep dive, see `/infra/data-center/casa-mnky-node`.
+
+---
+
+## DATA-MNKY
+
+DATA-MNKY is optimized for core count and disk capacity.
+
+### Role
+
+- High-core-count node suited for CPU-bound workloads.
+- Larger root disk (~1.72 TiB) for data-heavy tasks.
+
+### Hardware profile (snapshot-based)
+
+Based on `/root/hardware-snapshots/DATA-MNKY/20260316T152848Z/` (plus cluster summary):
+
+- **CPU**: AMD Ryzen 7 5700X (8 cores, 16 threads), 1 socket, AMD-V.
+- **Memory**: ~62.7 GiB.
+- **Root pool**: `rpool` (~1.81 TiB) mirrored over two NVMe devices.
+- **Storage (active)**: local ZFS + shared NFS (`hyper-mnky-shared`).
+
+For a full narrative deep dive, see `/infra/data-center/data-mnky-node`.
+
+---
+
+## STUD-MNKY
+
+STUD-MNKY provides additional compute and its own dedicated ZFS pool.
+
+### Role
+
+- Additional compute node with a dedicated ZFS pool (`STUD-zfs`).
+- Useful for isolating particular stacks or experiments.
+
+### Hardware profile (snapshot-based)
+
+Based on `/root/hardware-snapshots/STUD-MNKY/20260316T152852Z/` (plus cluster summary):
+
+- **CPU**: AMD Ryzen 7 5700G (8 cores, 16 threads), 1 socket, AMD-V.
+- **Memory**: ~62 GiB.
+- **Pools**:
+  - `STUD-zfs` (~3.62 TiB) – dedicated data pool.
+  - `rpool` (~460 GiB) – root pool.
+- **Storage (active)**: local ZFS + shared NFS (`hyper-mnky-shared`).
+
+For a full narrative deep dive, see `/infra/data-center/stud-mnky-node`.
+
+---
+
+## PRO-MNKY
+
+PRO-MNKY is currently offline from the perspective of detailed hardware documentation.
+
+### Role
+
+- Additional node in the cluster; hardware details to be captured once the node is brought online.
+
+### Next steps
+
+When PRO-MNKY is online:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+This will produce:
+
+```bash
+/root/hardware-snapshots/PRO-MNKY/<timestamp>/
+```
+
+You can then mirror the structure above (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete PRO-MNKY’s profile.
+
+---
+
+## Keeping node docs current
+
+When hardware changes on any node:
+
+1. Run the collector on that node.
+2. Update the summary row in the table at the top of this page.
+3. Refresh the relevant per-node section with details from the latest snapshot.
+4. If CODE-MNKY changed significantly, also revisit `/infra/data-center/code-mnky-node`.
+

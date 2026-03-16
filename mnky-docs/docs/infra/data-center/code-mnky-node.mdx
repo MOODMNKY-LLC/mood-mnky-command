@@ -1,0 +1,210 @@
+---
+title: CODE-MNKY Node Deep Dive
+description: Detailed hardware, storage, GPU, and network profile of the CODE-MNKY node in the MOOD MNKY Proxmox cluster.
+---
+
+## Overview
+
+`CODE-MNKY` is the primary GPU and stack host in the MOOD MNKY Proxmox cluster. It concentrates the AI, automation, gaming, and media stacks, and is the main target for Terraform and Ansible provisioning.
+
+This page consolidates low-level hardware and Proxmox details for CODE-MNKY, based on the hardware snapshots located at:
+
+```bash
+/root/hardware-snapshots/CODE-MNKY/20260316T132332Z/
+/root/hardware-snapshots/CODE-MNKY/20260316T152000Z/
+```
+
+Use this as the reference point for hardware upgrades, troubleshooting, and node-level design decisions.
+
+---
+
+## System identity
+
+Key system metadata (`uname`, `pveversion`, and `dmidecode -t system`):
+
+- **Manufacturer**: ASUS  
+- **Product**: System Product Name  
+- **SMBIOS**: 3.3.0  
+- **UUID**: `bbc84485-2759-3bda-0936-107c611e6e44`  
+- **OS**: Proxmox VE 8.4.17  
+- **Kernel**: `6.8.12-19-pve` (x86_64)  
+- **Boot**: EFI, Secure Boot disabled  
+
+---
+
+## CPU topology
+
+From the `lscpu` snapshot:
+
+```text
+Model name:       AMD Ryzen 5 4600G with Radeon Graphics
+CPU(s):           12
+Socket(s):        1
+Core(s) per socket: 6
+Thread(s) per core: 2
+L1d cache:        192 KiB (6 instances)
+L1i cache:        192 KiB (6 instances)
+L2 cache:         3 MiB (6 instances)
+L3 cache:         8 MiB (2 instances)
+NUMA node(s):     1
+NUMA node0 CPU(s): 0-11
+Virtualization:   AMD-V
+```
+
+Highlights:
+
+- Single-socket, 6-core / 12-thread CPU with SMT enabled.
+- Full support for AVX2, AES-NI, AMD-V, and related instruction sets.
+- Single NUMA node simplifies LXC and VM placement decisions.
+
+The `Flags` list confirms extensive mitigation coverage for CPU vulnerabilities, which is relevant when considering kernel and microcode updates.
+
+---
+
+## Memory configuration
+
+From `dmidecode -t memory`, `/proc/meminfo`, and `free -h`:
+
+- **Installed memory**: ~125 GiB total.
+- **Layout**: Multiple DIMMs; exact slot count, manufacturer, and speed are encoded in `dmidecode-memory.txt`.
+- **NUMA**: Single node; all memory is attached to NUMA node 0.
+- **OS view**: `MemTotal` ≈ 125 GiB with swap configured.
+
+Use cases:
+
+- Supports multiple large LXC workloads (AI models, database caches, media indexing) concurrently.
+- When planning expansions, check `dmidecode-memory.txt` for which slots are populated and maximum supported capacity.
+
+---
+
+## Storage layout
+
+Storage is a combination of three ZFS pools plus the Proxmox root filesystem.
+
+From `zpool list -v` and `zpool status -v`:
+
+- **`CODE-MAIN-zfs`**:
+  - ~3.62 TiB total, NVMe-backed.
+  - Primary pool for high-performance LXCs and VMs.
+- **`CODE-BKP-zfs`**:
+  - ~464 GiB total, HDD-backed.
+  - Backup/secondary pool for snapshots and archives.
+- **`rpool`**:
+  - ~472 GiB total, SSD-backed.
+  - Contains the Proxmox root filesystem (`rpool/ROOT/pve-1`).
+
+From `lsblk` and `df -hT`:
+
+- All three pools map to underlying block devices and expose standard ZFS datasets and zvols.
+- ZFS datasets for individual LXCs and VMs are enumerated in `zfs-list.txt` and can be cross-referenced with LXC/VM IDs.
+
+Operational guidance:
+
+- Use `CODE-MAIN-zfs` for performance-sensitive stacks (AI, databases, media transcodes).
+- Use `CODE-BKP-zfs` for backup, snapshots, or less-critical data.
+- Keep `rpool` usage conservative to avoid impacting Proxmox itself.
+
+---
+
+## GPU profile
+
+From `nvidia-smi -q`:
+
+- **GPU**: NVIDIA Tesla P40 (Pascal)
+- **Driver version**: 560.35.03
+- **CUDA version**: 12.6
+- **PCIe**:
+  - Bus: `00000000:01:00.0`
+  - Link width: x16
+  - Maximum PCIe generation: 3
+
+This GPU underpins GPU-enabled LXC workloads, including:
+
+- Ollama and related model hosts.
+- Any container using `nvidia-container-toolkit` integration.
+- GPU-accelerated transcoding for media (if configured).
+
+When planning GPU changes (swap or add):
+
+1. Snapshot current GPU state with `nvidia-smi -q` and confirm health.
+2. Update this page with new device and driver information after the change.
+
+---
+
+## Network configuration
+
+From `ip -d link show`, `ip addr show`, `ip route show`, and `ethtool-summary`:
+
+- **Interfaces**:
+  - One or more physical NICs connected to the cluster LAN.
+  - Linux bridges (e.g. `vmbr0`) that connect LXCs and VMs to the LAN.
+- **Routing**:
+  - Default route to the cluster gateway.
+  - Routes to storage or management networks as configured.
+- **Offload and MTU**:
+  - For each interface, `ethtool` captures offload settings and link parameters used when diagnosing throughput and latency.
+
+When debugging cluster or LXC connectivity issues, use these snapshots as the baseline and compare against live state.
+
+---
+
+## PCI and USB topology
+
+From `lspci -nnvv`, `lspci -tv`, `lsusb`, and `lsusb -t`:
+
+- **PCI**:
+  - Root ports and chipset devices.
+  - GPU (`01:00.0`) with vendor and device IDs: `0x1B3810DE` (P40).
+  - NVMe and SATA controllers backing the ZFS pools.
+- **USB**:
+  - Host controllers and any connected peripherals (HIDs, storage, dongles).
+
+These details are primarily used when:
+
+- Configuring PCI passthrough to VMs.
+- Assessing IOMMU groups for security or isolation.
+- Verifying that hardware is still enumerated as expected after changes.
+
+---
+
+## Proxmox and cluster view
+
+From `pvesh get /nodes/CODE-MNKY/status` and `pvesh get /cluster/resources`:
+
+- **Node-level**:
+  - CPU utilization, memory usage, uptime, and load for CODE-MNKY.
+  - Active storage backends (`CODE-MAIN-zfs`, `CODE-BKP-zfs`, `local`, `local-zfs`, `hyper-mnky-shared`).
+- **Cluster-level**:
+  - All five nodes (CODE-MNKY, CASA-MNKY, DATA-MNKY, STUD-MNKY, PRO-MNKY) and their online/offline state.
+  - Resource distribution across nodes.
+
+This confirms CODE-MNKY’s role as a primary capacity and GPU node within the cluster.
+
+---
+
+## Refresh procedure for this page
+
+Whenever CODE-MNKY’s hardware or Proxmox configuration changes:
+
+1. SSH into CODE-MNKY (or open a root console).
+2. Run:
+
+   ```bash
+   sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+   ```
+
+3. Note the new timestamped directory under:
+
+   ```bash
+   /root/hardware-snapshots/CODE-MNKY/<timestamp>/
+   ```
+
+4. Update each section in this page based on the new snapshot:
+   - CPU and memory (from `lscpu` and `dmidecode-*`).
+   - Storage (from `zpool-*`, `zfs-list`, `lsblk`, `df -hT`).
+   - GPU (from `nvidia-smi-q`).
+   - Network (from `ip-*` and `ethtool-summary`).
+   - Proxmox/cluster status (from `pvesh-*`).
+
+This keeps the CODE-MNKY deep dive authoritative and in sync with reality.
+

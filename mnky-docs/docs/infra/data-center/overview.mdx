@@ -1,0 +1,83 @@
+---
+title: MOOD MNKY Data Center
+description: Overview of the MOOD MNKY Proxmox cluster, its nodes, capabilities, and how the rest of the data center documentation is organized.
+---
+
+## Overview
+
+The **MOOD MNKY Data Center** is built on a five-node Proxmox VE 8.4 cluster designed to host AI workloads, automation stacks, media services, and experimental homelab environments.
+
+This page provides a high-level view of the cluster, its hardware profile, and how the rest of the documentation set is organized. It is written for internal SRE and DevOps engineers who already understand Linux, Proxmox, ZFS, and LXC.
+
+For deeper detail, refer to:
+
+- `/infra/data-center/nodes` – node profiles
+- `/infra/data-center/code-mnky-node` – CODE-MNKY hardware deep dive
+- `/infra/data-center/casa-mnky-node` – CASA-MNKY hardware deep dive
+- `/infra/data-center/data-mnky-node` – DATA-MNKY hardware deep dive
+- `/infra/data-center/stud-mnky-node` – STUD-MNKY hardware deep dive
+- `/infra/data-center/mnky-hq-node` – MNKY-HQ standalone networking Proxmox deep dive
+- `/infra/data-center/storage-and-network` – storage and network topology
+- `/infra/data-center/runbooks` – operational runbooks
+
+## Cluster at a glance
+
+The Proxmox cluster consists of the following nodes:
+
+| Node        | Role / notes                                      | CPU                        | Cores / Threads | RAM (approx) | Status   |
+| ----------- | ------------------------------------------------- | -------------------------- | --------------- | ------------ | -------- |
+| CODE-MNKY   | Primary GPU host, LXCs 3099–3104, AI & stacks     | AMD Ryzen 5 4600G          | 6 / 12          | 125 GiB      | Online  |
+| CASA-MNKY   | General-purpose capacity                          | AMD Ryzen 5 4600G          | 6 / 12          | 62 GiB       | Online  |
+| DATA-MNKY   | High-core-capacity node                           | AMD Ryzen 7 5700X          | 8 / 16          | 62.7 GiB     | Online  |
+| STUD-MNKY   | Additional compute & storage (STUD-zfs)           | AMD Ryzen 7 5700G          | 8 / 16          | 62 GiB       | Online  |
+| PRO-MNKY    | Additional node, currently offline for introspect | (Specs captured when up)   | —               | —            | Offline |
+
+Core characteristics:
+
+- **Hypervisor**: Proxmox VE 8.4.17, kernel `6.8.12-19-pve`, EFI boot, Secure Boot disabled.
+- **Workloads**:
+  - GPU-accelerated AI workloads (Ollama, LLM services) on CODE-MNKY.
+  - Automation (AWX, Semaphore) on LXC 3100.
+  - Media stack (Jellyfin, *arr, qBittorrent) on LXC 3103.
+  - Self-hosted Supabase, Flowise, n8n, and related services on LXCs 3101 and 3104.
+- **Storage**:
+  - Node-local ZFS pools (`CODE-MAIN-zfs`, `CODE-BKP-zfs`, `STUD-zfs`, `rpool` on each node).
+  - Shared NFS export `hyper-mnky-shared` mounted across nodes.
+- **Networking**:
+  - Linux bridges for LXC connectivity to the cluster LAN.
+  - Integration with TrueNAS for NFS and per-VM datashare.
+  - Optional Cloudflare tunnels for external access.
+
+Full node-level hardware snapshots are captured under `/root/hardware-snapshots/<node>/<timestamp>/` on each Proxmox host.
+
+## Documentation layout
+
+The Data Center documentation is split into five logical pages:
+
+- **Overview** (this page): global view of the cluster and doc set.
+- **Nodes**: summarized and per-node hardware/service profiles.
+- **CODE-MNKY deep dive**: detailed hardware and capabilities of the main GPU node.
+- **Storage & network**: ZFS, NFS, and network topology across the cluster.
+- **Runbooks**: repeatable procedures for snapshots, expansion, and incident response.
+
+These pages are intended to be kept in sync with:
+
+- Terraform and Ansible definitions under `proxmox-terraform/` and `proxmox-ansible/`.
+- The homelab “as code” docs and final report.
+- Actual hardware snapshots collected on the nodes.
+
+## Intended usage
+
+Typical scenarios for these docs:
+
+- Capacity planning before placing new workloads.
+- Verifying hardware details before upgrades or replacements.
+- Using runbooks during node, storage, or GPU incidents.
+- Onboarding new SREs to the internal topology.
+
+Whenever you change hardware (RAM, disks, GPU) or add/remove nodes:
+
+1. Re-run the hardware snapshot collector on each affected node.
+2. Refresh per-node sections in the Nodes and CODE-MNKY pages.
+3. Update cluster summaries here and in **Storage & network**.
+
