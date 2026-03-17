@@ -15,8 +15,8 @@ This document is the single source of truth for the MOODMNKY 5-node Proxmox VE c
 
 **Nodes and primary roles:**
 
-- **PRO-MNKY** (nodeid 1): Production — CLOUD-MNKY, SRVR-MNKY; PRO-zfs.
-- **STUD-MNKY** (nodeid 2): Studio / lab — SAGE-MNKY-AI, TrueNAS-SAGE, SAGE-MNKY-SERVER, GIRTH; STUD-zfs.
+- **MOOD-MNKY** (nodeid 1): Production — CLOUD-MNKY, SRVR-MNKY; PRO-zfs.
+- **SAGE-MNKY** (nodeid 2): Studio / lab — SAGE-MNKY-AI, TrueNAS-SAGE, SAGE-MNKY-SERVER, GIRTH; STUD-zfs.
 - **CODE-MNKY** (nodeid 3): Development / AI / game — CODE-MNKY-AI, POKE-MNKY, Palworld-CODE, LXC (redis, app-gods-work, Slades-Server); CODE-MAIN-zfs, CODE-BKP-zfs.
 - **CASA-MNKY** (nodeid 4): Home / lab — CASA-MNKY-AI, TrueNAS-CASA; local-zfs; ACME (CASA-MNKY.moodmnky.com).
 - **DATA-MNKY** (nodeid 5): Infra / gateway / storage — pfSense, TrueNAS-DATA, MNKY-MIND; local-zfs; ACME (DATA-MNKY.moodmnky.com).
@@ -30,8 +30,8 @@ This document is the single source of truth for the MOODMNKY 5-node Proxmox VE c
 ```mermaid
 flowchart LR
   subgraph cluster [MOODMNKY Cluster]
-    PRO["PRO-MNKY\nnodeid 1\n10.1.0.10"]
-    STUD["STUD-MNKY\nnodeid 2\n10.2.0.10"]
+    PRO["MOOD-MNKY\nnodeid 1\n10.1.0.10"]
+    STUD["SAGE-MNKY\nnodeid 2\n10.2.0.10"]
     CODE["CODE-MNKY\nnodeid 3\n10.3.0.10"]
     CASA["CASA-MNKY\nnodeid 4\n10.4.0.10"]
     DATA["DATA-MNKY\nnodeid 5\n10.0.0.10"]
@@ -46,11 +46,11 @@ flowchart TB
   subgraph shared [Shared]
     NFS["hyper-mnky-shared\nNFS 10.0.0.5\nvztmpl, iso, snippets"]
   end
-  subgraph PRO [PRO-MNKY]
+  subgraph PRO [MOOD-MNKY]
     PROzfs["PRO-zfs"]
     PROlocal["local\nlocal-zfs"]
   end
-  subgraph STUD [STUD-MNKY]
+  subgraph STUD [SAGE-MNKY]
     STUDzfs["STUD-zfs"]
     STUDlocal["local\nlocal-zfs"]
   end
@@ -94,23 +94,23 @@ Logging: `debug: off`, `to_syslog: yes`.
 
 | Hostname | Node ID | Quorum votes | Ring0 address | Role summary |
 |----------|----------|--------------|---------------|--------------|
-| PRO-MNKY | 1 | 1 | 10.1.0.10 | Production VMs (CLOUD-MNKY, SRVR-MNKY) |
-| STUD-MNKY | 2 | 1 | 10.2.0.10 | Studio / lab VMs (SAGE, TrueNAS-SAGE, GIRTH) |
+| MOOD-MNKY | 1 | 1 | 10.1.0.10 | Production VMs (CLOUD-MNKY, SRVR-MNKY) |
+| SAGE-MNKY | 2 | 1 | 10.2.0.10 | Studio / lab VMs (SAGE, TrueNAS-SAGE, GIRTH) |
 | CODE-MNKY | 3 | 1 | 10.3.0.10 | Dev / AI / game VMs and LXC |
 | CASA-MNKY | 4 | 1 | 10.4.0.10 | Home lab (CASA-MNKY-AI, TrueNAS-CASA) |
 | DATA-MNKY | 5 | 1 | 10.0.0.10 | Gateway / storage (pfSense, TrueNAS-DATA, MNKY-MIND) |
 
-*Note: Node membership and online status are in `/etc/pve/.members`; PRO-MNKY was offline at last documentation snapshot.*
+*Note: Node membership and online status are in `/etc/pve/.members`; MOOD-MNKY was offline at last documentation snapshot.*
 
 ---
 
 ## 4. Per-Node Detail
 
-### 4.1 PRO-MNKY
+### 4.1 MOOD-MNKY
 
 | Attribute | Value |
 |-----------|--------|
-| Hostname | PRO-MNKY |
+| Hostname | MOOD-MNKY |
 | Node ID | 1 |
 | Corosync ring0 | 10.1.0.10 |
 | Role | Production: primary workstations/servers (CLOUD-MNKY, SRVR-MNKY) |
@@ -124,7 +124,7 @@ Logging: `debug: off`, `to_syslog: yes`.
 | 100 | CLOUD-MNKY | qemu | 16 | 32768 | PRO-zfs 500G | UEFI, hostpci (Intel Arc + extra), USB passthrough, TPM |
 | 101 | SRVR-MNKY | qemu | 8 | 16384 | PRO-zfs 500G | UEFI, hostpci (x-vga), firewall |
 
-**Network:** Node-local; not in replicated config. Run `cat /etc/network/interfaces` on PRO-MNKY to document bridges and VLANs.
+**Network:** Node-local; not in replicated config. Run `cat /etc/network/interfaces` on MOOD-MNKY to document bridges and VLANs.
 
 **Node-level config:** No ACME in config; standard PVE.
 
@@ -132,11 +132,11 @@ Logging: `debug: off`, `to_syslog: yes`.
 
 ---
 
-### 4.2 STUD-MNKY
+### 4.2 SAGE-MNKY
 
 | Attribute | Value |
 |-----------|--------|
-| Hostname | STUD-MNKY |
+| Hostname | SAGE-MNKY |
 | Node ID | 2 |
 | Corosync ring0 | 10.2.0.10 |
 | Role | Studio / lab: SAGE-MNKY-AI, TrueNAS-SAGE, SAGE-MNKY-SERVER, GIRTH |
@@ -152,7 +152,7 @@ Logging: `debug: off`, `to_syslog: yes`.
 | 2001 | SAGE-MNKY-SERVER | qemu | 6 | 16384 | STUD-zfs 1T | replicate=0 |
 | 2014 | GIRTH | qemu | 6 | 16384 | STUD-zfs 256G | replicate=0 |
 
-**Network:** Node-local; document via `cat /etc/network/interfaces` on STUD-MNKY.
+**Network:** Node-local; document via `cat /etc/network/interfaces` on SAGE-MNKY.
 
 **Node-level config:** Standard PVE.
 
@@ -257,10 +257,10 @@ Logging: `debug: off`, `to_syslog: yes`.
 |--------------|------|-------------|---------|--------|---------|
 | local | dir | /var/lib/vz | iso, backup, vztmpl | all | — |
 | local-zfs | zfspool | rpool/data | rootdir, images | per-node (rpool) | sparse 1 |
-| STUD-zfs | zfspool | STUD-zfs | rootdir, images | STUD-MNKY | sparse 1 |
+| STUD-zfs | zfspool | STUD-zfs | rootdir, images | SAGE-MNKY | sparse 1 |
 | CODE-BKP-zfs | zfspool | CODE-BKP-zfs | images, rootdir | CODE-MNKY | sparse 1 |
 | CODE-MAIN-zfs | zfspool | CODE-MAIN-zfs | images, rootdir | CODE-MNKY | sparse 1 |
-| PRO-zfs | zfspool | PRO-zfs | rootdir, images | PRO-MNKY | sparse 1 |
+| PRO-zfs | zfspool | PRO-zfs | rootdir, images | MOOD-MNKY | sparse 1 |
 | hyper-mnky-shared | nfs | /mnt/pve/hyper-mnky-shared | vztmpl, iso, snippets | all | server 10.0.0.5, export /mnt/HYPER-MNKY/proxmox/shared, vers=4 |
 
 **Strategy:** Node-local ZFS pools per host for VM/CT images and rootdirs; shared NFS (10.0.0.5) for templates, ISOs, and snippets. No Ceph or cluster-wide shared block storage.
@@ -289,12 +289,12 @@ Each node has its own `/etc/network/interfaces`; it is not replicated. Corosync 
 
 | VMID | Name | Node | Type | Cores | Memory (MB) | Primary storage | Role / notes |
 |------|------|------|------|-------|-------------|-----------------|---------------|
-| 100 | CLOUD-MNKY | PRO-MNKY | qemu | 16 | 32768 | PRO-zfs | Workstation; PCIe passthrough, USB, TPM |
-| 101 | SRVR-MNKY | PRO-MNKY | qemu | 8 | 16384 | PRO-zfs | Server; GPU passthrough |
-| 200 | SAGE-MNKY-AI | STUD-MNKY | qemu | 8 | 16384 | STUD-zfs | AI workload |
-| 205 | TrueNAS-SAGE | STUD-MNKY | qemu | 4 | 8192 | STUD-zfs | NAS |
-| 2001 | SAGE-MNKY-SERVER | STUD-MNKY | qemu | 6 | 16384 | STUD-zfs | Server |
-| 2014 | GIRTH | STUD-MNKY | qemu | 6 | 16384 | STUD-zfs | — |
+| 100 | CLOUD-MNKY | MOOD-MNKY | qemu | 16 | 32768 | PRO-zfs | Workstation; PCIe passthrough, USB, TPM |
+| 101 | SRVR-MNKY | MOOD-MNKY | qemu | 8 | 16384 | PRO-zfs | Server; GPU passthrough |
+| 200 | SAGE-MNKY-AI | SAGE-MNKY | qemu | 8 | 16384 | STUD-zfs | AI workload |
+| 205 | TrueNAS-SAGE | SAGE-MNKY | qemu | 4 | 8192 | STUD-zfs | NAS |
+| 2001 | SAGE-MNKY-SERVER | SAGE-MNKY | qemu | 6 | 16384 | STUD-zfs | Server |
+| 2014 | GIRTH | SAGE-MNKY | qemu | 6 | 16384 | STUD-zfs | — |
 | 305 | redis | CODE-MNKY | lxc | 8 | 16384 | CODE-MAIN-zfs | Redis LXC |
 | 313 | CODE-MNKY-AI | CODE-MNKY | qemu | 12 | 65536 | CODE-MAIN-zfs | AI workload; GPU |
 | 3019 | POKE-MNKY | CODE-MNKY | qemu | 6 | 24576 | CODE-MAIN-zfs | — |
@@ -375,8 +375,8 @@ pveversion -v
 
 | Node | VMID range | Observed VMIDs |
 |------|------------|----------------|
-| PRO-MNKY | 100–199 | 100, 101 |
-| STUD-MNKY | 200–299 | 200, 205, 2001, 2014 |
+| MOOD-MNKY | 100–199 | 100, 101 |
+| SAGE-MNKY | 200–299 | 200, 205, 2001, 2014 |
 | CODE-MNKY | 300–399 | 305, 313, 3019, 3053, 3054, 3112 |
 | CASA-MNKY | 400–499 | 400, 405 |
 | DATA-MNKY | 500–599 (and 5111) | 500, 505, 5111 |

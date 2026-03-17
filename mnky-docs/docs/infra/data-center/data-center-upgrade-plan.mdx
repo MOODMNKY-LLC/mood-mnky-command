@@ -1,0 +1,118 @@
+---
+title: Data Center Upgrade Plan
+description: Living roadmap for the MOOD MNKY homelab—phased upgrades, PBS and TrueNAS, GitLab and Docker registry, workload rebalance, and persona-guided implementation. Updated as phases complete.
+---
+
+This document is the **living roadmap** for the MOOD MNKY Proxmox datacenter. It is updated as phases are completed and as new decisions (e.g. PBS placement, GitLab VMID) are made. For the current cluster topology and full node/VM/LXC inventory, see the [Data Center Map](/docs/infra/data-center/data-center-map).
+
+---
+
+## Knowledge development
+
+The analysis followed five themes: (1) cluster and node inventory, (2) mnky-docs datacenter alignment, (3) Proxmox features and backup strategy, (4) topology optimization and persona perspectives, and (5) unified management and tooling. Sources included Terraform and Ansible definitions, CLUSTER-NODES-HARDWARE.md, STORAGE-ASSESSMENT.md, VMID-AND-NAMING.md, mnky-docs data-center pages, Proxmox and PBS documentation (official wiki and forums), and web research on PBS with TrueNAS and Proxmox templates/cloning. The main finding is that the cluster is well documented and consistent with mnky-docs, but all workloads are concentrated on CODE-MNKY, there is no Proxmox Backup Server or self-hosted GitLab/registry, and template/ISO management is only partially automated. Uncertainties include whether live cluster state will be refreshed via Proxmox API in the future and the exact placement of PBS (VM on DATA-MNKY vs. elsewhere) and PBS datastore (local vs. NFS on TrueNAS), with two valid approaches documented below.
+
+---
+
+## Current state summary
+
+The MOOD MNKY Proxmox cluster has five nodes (CODE-MNKY, CASA-MNKY, DATA-MNKY, SAGE-MNKY, MOOD-MNKY), of which four are online. CODE-MNKY is the only node running VMs/LXCs today: six LXCs (3099–3104) host the dev workstation, automation stack (AWX, Semaphore), AI stack (Ollama, Flowise, n8n), gaming stack, media stack, and Supabase stack. Strengths include a clear Terraform and Ansible setup, shared NFS (hyper-mnky-shared) from TrueNAS at 10.0.0.5, per-LXC datashare on TrueNAS, and alignment between mnky-docs and the actual topology. Main risks are single-node concentration (CODE-MNKY is a single point of failure), dependence on a single TrueNAS for NFS, no centralized backup solution (PBS), and no self-hosted GitLab or Docker registry for homelab-as-code and image hosting.
+
+---
+
+## Persona perspectives
+
+### MOOD MNKY (brand and experience)
+
+The datacenter topology and documentation should read as one coherent story with the same clarity and restraint used in product and UI. Names (CODE-MNKY, CASA-MNKY, hyper-mnky-shared) already carry the MNKY identity; documentation should reinforce that. The Data Center Map and mnky-docs should feel like a single, calm reference: minimal visual noise and only a few deliberate accents (e.g. status, critical paths). Every node, LXC, and shared resource should have a clear role and a short, consistent description. To align with "one brand" and minimalist elegance, rebalance with intent: assign each node a focused role and document it in one sentence per node; call out MOOD-MNKY explicitly as offline or reserved. When PBS, GitLab, and the Docker registry are added, treat them as first-class parts of the same story: in the Data Center Map give each a single block (name, one-line purpose, where it runs), and in mnky-docs and any portal use the same visual language—minimal layout, clear labels, status at a glance.
+
+### SAGE MNKY (architecture and trade-offs)
+
+The main architectural risk is concentration: CODE-MNKY is the only node running VMs/LXCs and the only one with a GPU, so it is a single point of failure. Dependence on a single TrueNAS for NFS adds another SPOF. A sound approach is to separate roles by capability and criticality: keep GPU workloads on CODE-MNKY, spread general compute across two or more nodes, and use DATA-MNKY (largest disk, 1.72 TiB) for storage-heavy or backup-related roles. Move 2–3 non-GPU LXCs to CASA-MNKY, SAGE-MNKY, or DATA-MNKY so one node reboot does not take out the whole stack. On PBS and TrueNAS: SAGE recommends **against** using TrueNAS NFS as the primary PBS datastore, because PBS is chunk-based and benefits from low-latency storage; NFS adds another hop and ties backup operations to TrueNAS and the network. SAGE recommends **for** using TrueNAS as a *backup destination*: run PBS with its datastore on local fast disk on the PBS node, and use PBS copy/sync or a separate job to send backup copies to an NFS mount on TrueNAS. That keeps PBS performant and resilient while still using TrueNAS for capacity and off-node retention. For GitLab and the Docker registry: run them on DATA-MNKY (most RAM and disk); back up GitLab with `gitlab-backup create` and store backup files on PBS-backed storage and optionally copy to TrueNAS; back up the registry storage directory via PBS or a scheduled copy to NFS, with retention and garbage collection documented.
+
+### CODE MNKY (implementation and ops)
+
+**Terraform:** Keep a single `target_node` for current LXCs but make node placement overridable. Add optional resources: a PBS VM (e.g. on DATA-MNKY), a GitLab LXC/VM (e.g. VMID 3105), and a Docker registry LXC (e.g. VMID 3106), each with its own `create_*` and node variable. For rebalancing, introduce per-stack `target_node` (e.g. `automation_target_node`, `media_stack_target_node`) in variables and use them in each container resource; set which stack runs on which node in terraform.tfvars. Document VMID ranges and node mapping in VMID-AND-NAMING.md and this Upgrade Plan.
+
+**Ansible:** Add four roles under proxmox-ansible/roles/: **pbs_client** (install proxmox-backup-client, configure PBS server and datastore, optional cron/timer for backup jobs); **gitlab** (install GitLab CE, set external_url and backup dir); **docker_registry** (Registry v2 in Docker with volume and optional TLS, fixed port, document registry URL); **template_iso** (ensure hyper-mnky-shared is mounted on the Proxmox host, run pveam for LXC templates and wget/curl for ISOs into hyper-mnky-shared/iso/, idempotent). Add playbooks that use these roles (e.g. pbs_client.yml, gitlab.yml, docker_registry.yml, template_iso.yml); template_iso targets the Proxmox host(s). Reuse vars pattern like truenas-vars-hyper-mnky.yml for NFS paths.
+
+**ISO and template management:** Use pveam for LXC templates (download to local or to the NFS path that backs hyper-mnky-shared/template); for ISOs, use wget or Ansible get_url into hyper-mnky-shared/iso/. Document in mnky-docs runbooks a new runbook "Add or refresh ISOs and LXC templates" and cross-reference TEMPLATE_OPTIONS.md; ensure Terraform template_id and gaming_template_id point at a path visible to the node (e.g. hyper-mnky-shared:vztmpl/... when shared storage is configured for template content).
+
+---
+
+## Proxmox features and backup strategy
+
+### Templates and cloning
+
+- **LXC:** Terraform uses `template_id` (e.g. local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst). List with `pveam list local`; download with `pveam download local <name>`. For cluster-wide use, store templates on hyper-mnky-shared (NFS) so all nodes can use the same template; configure the NFS storage for "Container template" content.
+- **VM (QEMU):** The portal provisioning playbook (proxmox_create_vm.yml) clones a VM template via community.general.proxmox_kvm. For cluster-wide VM templates, use shared storage so templates and clones are visible across nodes; linked clones require the template's disks on shared storage.
+- **PegaProx:** TEMPLATE_OPTIONS.md documents downloading a PegaProx VM template (vzdump) to VMID 9000 and cloning with `qm clone 9000 <vmid> --name <name>`.
+
+### Shared storage and volumes
+
+- **hyper-mnky-shared (NFS):** Backed by TrueNAS 10.0.0.5:/mnt/HYPER-MNKY/proxmox/shared; used for ISO, snippets, template, scripts across nodes. Per-LXC datashare: lxc-private/<vmid> on TrueNAS, mounted in each LXC as ~/truenas-data.
+- **Node-local:** CODE-MAIN-zfs (primary LXC disk), CODE-BKP-zfs (backup/secondary), STUD-zfs on SAGE-MNKY.
+
+### Proxmox Backup Server (PBS) and TrueNAS
+
+**Option A — PBS datastore on TrueNAS NFS (simpler):** Install PBS in a VM (e.g. on DATA-MNKY or CASA-MNKY). On the PBS host, mount a TrueNAS NFS share (e.g. /mnt/HYPER-MNKY/backups/pbs) and create the PBS datastore with that path. Proxmox nodes register with PBS and send backups to that datastore. Pros: one backup stack, deduplication, restore from Proxmox UI, centralized storage on TrueNAS. Cons: NFS adds latency; PBS maintenance tasks can run longer on HDD-backed NFS; backup user (UID 34) must have write access (maproot or no_squash_root as per Proxmox/TrueNAS docs).
+
+**Option B — PBS datastore local, sync to TrueNAS (SAGE-recommended):** Run PBS with its datastore on local fast disk (or dedicated fast storage) on the PBS node. Use PBS copy/sync or a separate job to send backup copies to an NFS mount on TrueNAS for capacity and off-node retention. Pros: PBS remains performant and resilient; TrueNAS is used for secondary copies. Cons: two-step backup flow and slightly more operational complexity.
+
+**Recommendation:** Either Option A (if simplicity and single-datastore backup to TrueNAS is preferred) or Option B (if performance and resilience of the primary PBS datastore are prioritized). Document the chosen approach in mnky-docs and runbooks; add an Ansible role (pbs_client) to configure Proxmox nodes to use PBS for backup jobs, and add a runbook "Restore VM/LXC from PBS."
+
+---
+
+## Unified management
+
+- **Single source of truth:** Terraform state = which LXCs/VMs exist and where; Ansible vars (or group_vars) = which playbooks apply to which VMID; mnky-docs = human-readable topology and runbooks. Keep VMID ranges and naming in one place (e.g. VMID-AND-NAMING.md) and reference from Terraform and Ansible.
+- **GitLab and Ansible/Terraform:** Store proxmox-terraform and proxmox-ansible in self-hosted GitLab; use GitLab CI or AWX to run terraform plan/apply and Ansible playbooks on change (with approval gates). That ties "what we run" to "what we commit."
+- **Docker registry:** Use the self-hosted registry for custom images (e.g. portal, internal tools). Point Coolify and other deploy flows at this registry; document the registry URL and TLS in mnky-docs and Ansible.
+- **Backup and restore:** PBS (with datastore per chosen option above); schedule backup jobs per VM/LXC from Proxmox; document restore steps in mnky-docs runbooks.
+- **Portal and visibility:** Keep the existing Proxmox back office in the portal for cluster/node/LXC view; optionally add "last backup" or "PBS status" once PBS is in place.
+
+---
+
+## Phased upgrade plan
+
+### Phase 1: Documentation and consistency (no hardware change)
+
+- Refresh mnky-docs data-center pages from current CLUSTER-NODES-HARDWARE.md and hardware snapshots; add a short "Backup and CI/CD" subsection (placeholder for PBS and GitLab).
+- Ensure Terraform descriptions and tags match PROXMOX-NOTES.md and mnky-docs; maintain one runbook for "add new LXC" (Terraform + Ansible + TrueNAS lxc-private).
+- Publish and link the Data Center Map and this Upgrade Plan from mnky-docs.
+
+### Phase 2: Templates and ISO management
+
+- Add an Ansible role or script to download LXC templates and ISOs to hyper-mnky-shared (or node-local) and document in TEMPLATE_OPTIONS.md.
+- Standardize template_id and VM template names in Terraform and the portal provisioning playbook; add a runbook "Add or refresh ISOs and LXC templates" in mnky-docs.
+
+### Phase 3: Proxmox Backup Server and TrueNAS
+
+- Deploy PBS in a VM (e.g. on DATA-MNKY); either (A) create PBS datastore on a TrueNAS NFS mount, or (B) create PBS datastore on local fast disk and configure copy/sync to TrueNAS NFS.
+- Register the Proxmox cluster with PBS; configure backup jobs for critical LXCs (e.g. 3099, 3101, 3104).
+- Add runbook "Restore VM/LXC from PBS" in mnky-docs; add pbs_client Ansible role to configure nodes for PBS backup.
+
+### Phase 4: GitLab and Docker registry
+
+- Deploy GitLab (and optionally Docker registry) in an LXC or VM—e.g. on DATA-MNKY (VMIDs 3105, 3106); use Ansible roles for install and config.
+- Migrate or mirror proxmox-terraform and proxmox-ansible to GitLab; document CI/AWX integration for apply/playbook runs.
+- Document registry URL and usage in mnky-docs and link from portal/Coolify docs; define backup strategy for GitLab and registry (PBS and/or copy to TrueNAS).
+
+### Phase 5: Workload rebalance and optional HA
+
+- Evaluate moving one or two non-GPU LXCs (e.g. 3100 automation, 3104 supabase) to CASA-MNKY or DATA-MNKY to reduce single-node dependency; implement via Terraform per-stack target_node and re-run Ansible.
+- Optionally explore Proxmox HA for critical VMs/LXCs once storage and networking are stable; document in storage-and-network and runbooks.
+- When MOOD-MNKY is online, capture hardware snapshot, add to Data Center Map, and assign a clear role (e.g. secondary compute or dedicated PBS/backup host).
+
+---
+
+## Risks and limitations
+
+- **MOOD-MNKY offline:** Capacity and failover are reduced until the node is back; document and plan for its role when it returns.
+- **API vs. docs drift:** The Data Center Map is derived from Terraform and static docs; if the Proxmox API is used for live state, periodic refresh or a small automation to compare API vs. docs can reduce drift.
+- **Resource constraints:** CODE-MAIN-zfs has ~3.03 TiB free after current LXC allocations; monitor with `zfs list CODE-MAIN-zfs` and resize or rebalance as needed.
+- **PBS and NFS:** If Option A (PBS datastore on TrueNAS NFS) is chosen, NFS latency and TrueNAS availability directly affect backup and restore performance; Option B mitigates this at the cost of a two-step backup flow.
+- **Single TrueNAS:** The cluster depends on TrueNAS at 10.0.0.5 for hyper-mnky-shared and per-LXC datashare; document recovery steps if that host or path is unavailable.
+
+---
+
+This roadmap is kept in sync with the [Data Center Map](/docs/infra/data-center/data-center-map), [Cluster Nodes](/docs/infra/data-center/nodes), [Storage and network](/docs/infra/data-center/storage-and-network), and [Runbooks](/docs/infra/data-center/runbooks). Update this page when phases are completed or when decisions (PBS option, GitLab VMID, etc.) are finalized.

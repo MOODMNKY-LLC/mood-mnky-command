@@ -1,0 +1,204 @@
+---
+title: Data Center Map
+description: Comprehensive first-principles map of the MOOD MNKY Proxmox cluster—nodes, hardware, capabilities, storage, and every VM and LXC. The single source of truth for cluster topology.
+---
+
+The **Data Center Map** is the comprehensive, first-principles reference for the MOOD MNKY Proxmox cluster. It documents every node (hardware, capabilities, storage), every running VM and LXC, shared storage and network topology, and a topology diagram. Use it as the single source of truth for “what runs where” and for capacity planning. Keep it updated when hardware or workloads change; the [Data Center Upgrade Plan](/docs/infra/data-center/data-center-upgrade-plan) is the living roadmap for improvements.
+
+---
+
+## Cluster summary
+
+| Attribute | Value |
+|-----------|--------|
+| **Name** | MOOD MNKY Proxmox cluster |
+| **Hypervisor** | Proxmox VE 8.4.17 |
+| **Kernel** | 6.8.12-19-pve (x86_64) |
+| **Boot** | EFI; Secure Boot off |
+| **Quorum** | 5 nodes (4 online, 1 offline) |
+| **Node count** | 5 (CODE-MNKY, CASA-MNKY, DATA-MNKY, SAGE-MNKY, MOOD-MNKY) |
+
+**High-level roles:** CODE-MNKY is the primary GPU and workload host (all six LXCs). CASA-MNKY, DATA-MNKY, and SAGE-MNKY provide additional compute and storage capacity and share NFS. MOOD-MNKY is offline.
+
+---
+
+## Per-node detail
+
+### CODE-MNKY
+
+| Attribute | Value |
+|-----------|--------|
+| **Status** | Online |
+| **Role** | GPU host; LXCs 3099–3104; Terraform `target_node` |
+| **CPU** | AMD Ryzen 5 4600G with Radeon Graphics |
+| **Cores / threads** | 6 / 12 (1 socket, ~3566 MHz) |
+| **Memory** | 125 GiB (134,322,823,168 bytes) |
+| **Root storage** | ~457 GiB (ZFS/local) |
+| **PVE** | pve-manager/8.4.17 |
+
+**Storage (active):** CODE-MAIN-zfs (zfspool), CODE-BKP-zfs (zfspool), local (dir), local-zfs (zfspool), hyper-mnky-shared (nfs).
+
+**Capabilities:** NVIDIA Tesla P40 (Pascal), driver 560.35.03, CUDA 12.6. Primary LXC rootfs on CODE-MAIN-zfs (~3.62 TiB total; ~3.03 TiB free after current allocations).
+
+#### VMs and LXCs (CODE-MNKY)
+
+| VMID | Hostname | Purpose | Cores | RAM | Disk | Tags (examples) |
+|------|----------|---------|-------|-----|------|-----------------|
+| 3099 | code-mnky-dev | Dev workstation, Docker, NVIDIA, TrueNAS mount | 4 | 8 GiB | 128 GiB | docker, terraform |
+| 3100 | mnky-automation-stack | AWX, Semaphore | 4 | 8 GiB | 128 GiB | awx, semaphore, mnky-automation-stack |
+| 3101 | mnky-ai-stack | Ollama, Flowise, n8n, Supabase, MinIO; P40 | 8 | 32 GiB | 2 TiB | ollama, flowise, n8n, mnky-ai-stack |
+| 3102 | mnky-gaming-stack | Sunshine, Moonlight, Steam | 4 | 16 GiB | 500 GiB | gaming, sunshine, steam |
+| 3103 | mnky-media-stack | Jellyfin, *arr, qBittorrent | 4 | 16 GiB | 200 GiB | jellyfin, *arr, mnky-media-stack |
+| 3104 | mnky-supabase-stack | Self-hosted Supabase Docker | 4 | 8 GiB | 200 GiB | supabase, mnky-supabase-stack |
+
+**Total allocated rootfs (CODE-MNKY):** 128 + 128 + 2000 + 500 + 200 + 200 = 3,156 GiB (~3.1 TiB).
+
+---
+
+### CASA-MNKY
+
+| Attribute | Value |
+|-----------|--------|
+| **Status** | Online |
+| **Role** | General-purpose compute; migration target |
+| **CPU** | AMD Ryzen 5 4600G with Radeon Graphics |
+| **Cores / threads** | 6 / 12 (1 socket, ~3667 MHz) |
+| **Memory** | 62 GiB |
+| **Root storage** | ~1.11 TiB |
+| **PVE** | 8.4.17 |
+
+**Storage (active):** local-zfs (zfspool), local (dir), hyper-mnky-shared (nfs).
+
+**VMs and LXCs:** None defined in Terraform or current docs. Available for workload migration, PBS, or new services (e.g. GitLab, registry).
+
+---
+
+### DATA-MNKY
+
+| Attribute | Value |
+|-----------|--------|
+| **Status** | Online |
+| **Role** | High-core, large disk; TrueNAS/PBS host candidate |
+| **CPU** | AMD Ryzen 7 5700X 8-Core Processor |
+| **Cores / threads** | 8 / 16 (1 socket, ~3713 MHz) |
+| **Memory** | ~62.7 GiB |
+| **Root storage** | ~1.72 TiB |
+| **PVE** | 8.4.17 |
+
+**Storage (active):** local-zfs (zfspool), local (dir), hyper-mnky-shared (nfs).
+
+**VMs and LXCs:** None defined in Terraform or current docs. Suited for PBS VM, GitLab, or other data-heavy workloads.
+
+---
+
+### SAGE-MNKY
+
+| Attribute | Value |
+|-----------|--------|
+| **Status** | Online |
+| **Role** | Additional compute; dedicated STUD-zfs pool |
+| **CPU** | AMD Ryzen 7 5700G with Radeon Graphics |
+| **Cores / threads** | 8 / 16 (1 socket) |
+| **Memory** | 62 GiB |
+| **Root storage** | ~445 GiB |
+| **PVE** | 8.4.17 |
+
+**Storage (active):** STUD-zfs (zfspool), local-zfs (zfspool), local (dir), hyper-mnky-shared (nfs).
+
+**VMs and LXCs:** None defined in Terraform or current docs. STUD-zfs (~3.62 TiB) available for experiments or replicas.
+
+---
+
+### MOOD-MNKY
+
+| Attribute | Value |
+|-----------|--------|
+| **Status** | Offline |
+| **Role** | Additional node; specs to be captured when online |
+| **CPU** | — |
+| **Memory** | — |
+| **Root storage** | — |
+
+**VMs and LXCs:** Not applicable until node is online. When MOOD-MNKY is brought up, run the hardware snapshot collector and add a row to this map.
+
+---
+
+## Storage and network
+
+### ZFS pools per node
+
+- **CODE-MNKY:** CODE-MAIN-zfs (~3.62 TiB, NVMe) — primary LXC/VM disk; CODE-BKP-zfs (~464 GiB, HDD) — backup/secondary; rpool — root.
+- **CASA-MNKY:** local-zfs, local; rpool — root (~1.11 TiB).
+- **DATA-MNKY:** local-zfs, local; rpool — root (~1.72 TiB).
+- **SAGE-MNKY:** STUD-zfs (~3.62 TiB), local-zfs, local; rpool — root (~445 GiB).
+- **MOOD-MNKY:** To be documented when online.
+
+### Shared storage: hyper-mnky-shared
+
+| Attribute | Value |
+|-----------|--------|
+| **Type** | NFS |
+| **Backing** | TrueNAS Scale at 10.0.0.5 |
+| **Path (TrueNAS)** | `/mnt/HYPER-MNKY/proxmox/shared` |
+| **Content** | iso, scripts, snippets, template, templates |
+| **Mounted on** | All four online nodes (e.g. `/mnt/pve/hyper-mnky-shared`) |
+| **Size (approx)** | ~3.9 TiB |
+
+Used for ISOs, LXC templates, snippets, and scripts across the cluster.
+
+### Per-LXC datashare (TrueNAS)
+
+Each LXC can have a private NFS path on TrueNAS: `lxc-private/<vmid>` under the same export, mounted in the container as `~/truenas-data` (e.g. `/home/moodmnky/truenas-data`). Directories 3099–3104 are created as needed; adding a new LXC requires creating the corresponding `lxc-private/<vmid>` on TrueNAS and running the TrueNAS mounts playbook.
+
+### Network
+
+- Linux bridges (e.g. vmbr0) connect LXCs and VMs to the cluster LAN.
+- TrueNAS is reached at 10.0.0.5; cluster nodes use the same LAN for NFS and management.
+- Cloudflare tunnels can be used for external access (see proxmox-ansible docs).
+
+---
+
+## Topology diagram
+
+```mermaid
+flowchart LR
+  subgraph cluster [Proxmox cluster]
+    CODE[CODE-MNKY GPU]
+    CASA[CASA-MNKY]
+    DATA[DATA-MNKY]
+    STUD[SAGE-MNKY]
+    PRO[MOOD-MNKY offline]
+  end
+  subgraph lxc [LXCs on CODE-MNKY]
+    L3099["3099 dev"]
+    L3100["3100 automation"]
+    L3101["3101 ai"]
+    L3102["3102 gaming"]
+    L3103["3103 media"]
+    L3104["3104 supabase"]
+  end
+  CODE --> L3099
+  CODE --> L3100
+  CODE --> L3101
+  CODE --> L3102
+  CODE --> L3103
+  CODE --> L3104
+  subgraph shared [Shared]
+    NFS[hyper-mnky-shared NFS]
+  end
+  cluster --> NFS
+  subgraph external [External]
+    TrueNAS[TrueNAS 10.0.0.5]
+  end
+  TrueNAS --> NFS
+```
+
+---
+
+## Data source note
+
+This map is derived from Terraform state and definitions (proxmox-terraform/main.tf, terraform.tfvars, variables.tf), CLUSTER-NODES-HARDWARE.md, STORAGE-ASSESSMENT.md, VMID-AND-NAMING.md (in proxmox-terraform), and mnky-docs data-center pages. When available, live state from the Proxmox API (e.g. via the portal back office) can be used to confirm or refresh VM/LXC and node status. Hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host provide detailed hardware introspection for CODE-MNKY, CASA-MNKY, DATA-MNKY, and SAGE-MNKY.
+
+---
+
+For the phased upgrade plan, persona perspectives, and implementation roadmap, see the [Data Center Upgrade Plan](/docs/infra/data-center/data-center-upgrade-plan). For per-node deep dives and runbooks, see [Cluster Nodes](/docs/infra/data-center/nodes), [Storage and network](/docs/infra/data-center/storage-and-network), and [Runbooks](/docs/infra/data-center/runbooks).

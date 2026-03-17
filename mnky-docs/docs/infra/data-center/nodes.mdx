@@ -10,7 +10,7 @@ This page documents each node in the MOOD MNKY Proxmox cluster from a hardware a
 Source of truth:
 
 - Proxmox API snapshots summarized in `proxmox-terraform/CLUSTER-NODES-HARDWARE.md`.
-- Per-node hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host (collected for CODE-MNKY, CASA-MNKY, DATA-MNKY, and STUD-MNKY; PRO-MNKY pending while offline).
+- Per-node hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host (collected for CODE-MNKY, CASA-MNKY, DATA-MNKY, and SAGE-MNKY; MOOD-MNKY pending while offline).
 - LXC and service mappings from the homelab “as code” docs and runbooks.
 
 ### Node table
@@ -20,8 +20,8 @@ Source of truth:
 | CODE-MNKY   | Online  | AMD Ryzen 5 4600G (Radeon)  | 6 / 12          | 125 GiB      | ~457 GiB              | CODE-MAIN-zfs, CODE-BKP-zfs, local, local-zfs, hyper-mnky-shared (NFS) |
 | CASA-MNKY   | Online  | AMD Ryzen 5 4600G (Radeon)  | 6 / 12          | 62 GiB       | ~1.11 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
 | DATA-MNKY   | Online  | AMD Ryzen 7 5700X           | 8 / 16          | 62.7 GiB     | ~1.72 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
-| STUD-MNKY   | Online  | AMD Ryzen 7 5700G (Radeon)  | 8 / 16          | 62 GiB       | ~445 GiB              | STUD-zfs, local-zfs, local, hyper-mnky-shared (NFS)                  |
-| PRO-MNKY    | Offline | (captured when online)      | —               | —            | —                     | (to be filled when node is online)                                   |
+| SAGE-MNKY   | Online  | AMD Ryzen 7 5700G (Radeon)  | 8 / 16          | 62 GiB       | ~445 GiB              | STUD-zfs, local-zfs, local, hyper-mnky-shared (NFS)                  |
+| MOOD-MNKY    | Offline | (captured when online)      | —               | —            | —                     | (to be filled when node is online)                                   |
 
 All online nodes run Proxmox VE 8.4.17 on kernel `6.8.12-19-pve`, with EFI boot and Secure Boot off.
 
@@ -117,9 +117,9 @@ For a full narrative deep dive, see `/infra/data-center/data-mnky-node`.
 
 ---
 
-## STUD-MNKY
+## SAGE-MNKY
 
-STUD-MNKY provides additional compute and its own dedicated ZFS pool.
+SAGE-MNKY provides additional compute and its own dedicated ZFS pool.
 
 ### Role
 
@@ -128,7 +128,7 @@ STUD-MNKY provides additional compute and its own dedicated ZFS pool.
 
 ### Hardware profile (snapshot-based)
 
-Based on `/root/hardware-snapshots/STUD-MNKY/20260316T152852Z/` (plus cluster summary):
+Based on `/root/hardware-snapshots/SAGE-MNKY/20260316T152852Z/` (plus cluster summary):
 
 - **CPU**: AMD Ryzen 7 5700G (8 cores, 16 threads), 1 socket, AMD-V.
 - **Memory**: ~62 GiB.
@@ -137,13 +137,13 @@ Based on `/root/hardware-snapshots/STUD-MNKY/20260316T152852Z/` (plus cluster su
   - `rpool` (~460 GiB) – root pool.
 - **Storage (active)**: local ZFS + shared NFS (`hyper-mnky-shared`).
 
-For a full narrative deep dive, see `/infra/data-center/stud-mnky-node`.
+For a full narrative deep dive, see `/infra/data-center/sage-mnky-node`.
 
 ---
 
-## PRO-MNKY
+## MOOD-MNKY
 
-PRO-MNKY is currently offline from the perspective of detailed hardware documentation.
+MOOD-MNKY is currently offline from the perspective of detailed hardware documentation.
 
 ### Role
 
@@ -151,7 +151,7 @@ PRO-MNKY is currently offline from the perspective of detailed hardware document
 
 ### Next steps
 
-When PRO-MNKY is online:
+When MOOD-MNKY is online:
 
 ```bash
 sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
@@ -160,10 +160,10 @@ sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
 This will produce:
 
 ```bash
-/root/hardware-snapshots/PRO-MNKY/<timestamp>/
+/root/hardware-snapshots/MOOD-MNKY/<timestamp>/
 ```
 
-You can then mirror the structure above (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete PRO-MNKY’s profile.
+You can then mirror the structure above (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete MOOD-MNKY's profile. See [MOOD-MNKY node deep dive](/docs/infra/data-center/mood-mnky-node).
 
 ---
 

@@ -1,17 +1,19 @@
 ---
-title: STUD-MNKY Node Deep Dive
-description: Detailed hardware, storage, and network profile of the STUD-MNKY node in the MOOD MNKY Proxmox cluster.
+title: SAGE-MNKY Node Deep Dive
+description: Detailed hardware, storage, and network profile of the SAGE-MNKY node (formerly STUD-MNKY) in the MOOD MNKY Proxmox cluster.
 ---
 
 ## Overview
 
-`STUD-MNKY` is a compute node with its own dedicated data pool (`STUD-zfs`). It is well-suited for isolated stacks, experiments, and workloads that benefit from a separate ZFS pool from the main CODE-MNKY environment.
+`SAGE-MNKY` (formerly STUD-MNKY) is a compute node with its own dedicated data pool (`STUD-zfs`). It is well-suited for isolated stacks, experiments, and workloads that benefit from a separate ZFS pool from the main CODE-MNKY environment.
 
 This deep dive is based on the hardware snapshot collected at:
 
 ```bash
-/root/hardware-snapshots/STUD-MNKY/20260316T152852Z/
+/root/hardware-snapshots/SAGE-MNKY/<timestamp>/
 ```
+
+(Historical snapshots may exist under `STUD-MNKY` before the node was renamed.)
 
 ---
 
@@ -25,7 +27,7 @@ From `dmidecode -t system`:
 - **UUID**: `140213db-16aa-e2fb-397a-5811224d3173`
 - **OS / kernel**: Proxmox VE 8.4.17 on `6.8.12-19-pve`
 
-Note: this node’s SMBIOS strings are generic; use `dmidecode-baseboard.txt` and `dmidecode-processor.txt` for deeper identification.
+Note: this node's SMBIOS strings are generic; use `dmidecode-baseboard.txt` and `dmidecode-processor.txt` for deeper identification.
 
 ---
 
@@ -44,7 +46,7 @@ From `lscpu.txt`:
   - L3: 16 MiB (1 instance)
 - **NUMA**: 1 node (node0)
 
-Security note (from `lscpu` vulnerability section): similar to DATA-MNKY, this node reports “no microcode” for certain mitigations. Treat firmware/microcode updates as part of cluster hygiene.
+Security note (from `lscpu` vulnerability section): similar to DATA-MNKY, this node reports "no microcode" for certain mitigations. Treat firmware/microcode updates as part of cluster hygiene.
 
 ---
 
@@ -64,7 +66,7 @@ From `zpool-list.txt`, `zpool-status-*.txt`, `zfs-list.txt`, `lsblk.txt`, and `d
 
 ### ZFS pools
 
-`STUD-MNKY` currently exposes:
+`SAGE-MNKY` currently exposes:
 
 - **`STUD-zfs`** (dedicated data pool):
   - Size: ~3.62 TiB (Samsung SSD 870 EVO 4TB)
@@ -127,6 +129,5 @@ sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
 Then update this page using the newest snapshot directory under:
 
 ```bash
-/root/hardware-snapshots/STUD-MNKY/<timestamp>/
+/root/hardware-snapshots/SAGE-MNKY/<timestamp>/
 ```
-

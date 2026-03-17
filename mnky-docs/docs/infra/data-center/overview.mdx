@@ -15,7 +15,7 @@ For deeper detail, refer to:
 - `/infra/data-center/code-mnky-node` – CODE-MNKY hardware deep dive
 - `/infra/data-center/casa-mnky-node` – CASA-MNKY hardware deep dive
 - `/infra/data-center/data-mnky-node` – DATA-MNKY hardware deep dive
-- `/infra/data-center/stud-mnky-node` – STUD-MNKY hardware deep dive
+- `/infra/data-center/sage-mnky-node` – SAGE-MNKY hardware deep dive
 - `/infra/data-center/mnky-hq-node` – MNKY-HQ standalone networking Proxmox deep dive
 - `/infra/data-center/storage-and-network` – storage and network topology
 - `/infra/data-center/runbooks` – operational runbooks
@@ -29,8 +29,8 @@ The Proxmox cluster consists of the following nodes:
 | CODE-MNKY   | Primary GPU host, LXCs 3099–3104, AI & stacks     | AMD Ryzen 5 4600G          | 6 / 12          | 125 GiB      | Online  |
 | CASA-MNKY   | General-purpose capacity                          | AMD Ryzen 5 4600G          | 6 / 12          | 62 GiB       | Online  |
 | DATA-MNKY   | High-core-capacity node                           | AMD Ryzen 7 5700X          | 8 / 16          | 62.7 GiB     | Online  |
-| STUD-MNKY   | Additional compute & storage (STUD-zfs)           | AMD Ryzen 7 5700G          | 8 / 16          | 62 GiB       | Online  |
-| PRO-MNKY    | Additional node, currently offline for introspect | (Specs captured when up)   | —               | —            | Offline |
+| SAGE-MNKY   | Additional compute & storage (STUD-zfs)           | AMD Ryzen 7 5700G          | 8 / 16          | 62 GiB       | Online  |
+| MOOD-MNKY    | Additional node, currently offline for introspect | (Specs captured when up)   | —               | —            | Offline |
 
 Core characteristics:
 
@@ -52,8 +52,10 @@ Full node-level hardware snapshots are captured under `/root/hardware-snapshots/
 
 ## Documentation layout
 
-The Data Center documentation is split into five logical pages:
+The Data Center documentation is organized as follows:
 
+- **Data Center Map**: comprehensive first-principles map of the cluster—every node, VM, LXC, storage, and topology. Use it as the single source of truth for "what runs where."
+- **Data Center Upgrade Plan**: living roadmap for phased upgrades (PBS, GitLab, Docker registry, workload rebalance). Updated as phases complete.
 - **Overview** (this page): global view of the cluster and doc set.
 - **Nodes**: summarized and per-node hardware/service profiles.
 - **CODE-MNKY deep dive**: detailed hardware and capabilities of the main GPU node.

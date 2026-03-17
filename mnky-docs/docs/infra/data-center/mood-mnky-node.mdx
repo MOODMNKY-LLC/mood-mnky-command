@@ -1,0 +1,36 @@
+---
+title: MOOD-MNKY Node Deep Dive
+description: Hardware and storage profile of the MOOD-MNKY node (formerly PRO-MNKY) in the MOOD MNKY Proxmox cluster. Specs to be captured when the node is online.
+---
+
+## Overview
+
+`MOOD-MNKY` (formerly PRO-MNKY) is an additional node in the cluster. It is currently offline from the perspective of detailed hardware documentation; hardware details will be captured once the node is brought online.
+
+---
+
+## Role
+
+- Additional node in the cluster; hardware details to be captured once the node is brought online.
+
+---
+
+## Next steps
+
+When MOOD-MNKY is online:
+
+1. Run the hardware snapshot collector on the node:
+
+```bash
+sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
+```
+
+2. This will produce a snapshot under:
+
+```bash
+/root/hardware-snapshots/MOOD-MNKY/<timestamp>/
+```
+
+3. Mirror the structure used for other nodes (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete MOOD-MNKY's profile.
+
+4. Update the [Cluster Nodes](/docs/infra/data-center/nodes) summary table and the [Data Center Map](/docs/infra/data-center/data-center-map) with the new node specs.
