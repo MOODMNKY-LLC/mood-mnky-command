@@ -22,20 +22,26 @@ Redundant, overlapping **SSH**-named policies were **removed** from the dashboar
 
 The **`pfsense-net access`** group could not be deleted via API because it is **linked to a setup key** (`pfsense`). Remove that link under **Setup keys** in the dashboard if you want to delete the empty group.
 
-## Future: policy tightening (without killing access)
+## Role groups (implemented, 2026-03-26)
+
+Flat tags (no subgroups): **Hypervisors**, **Infra-Edge**, **Monitoring**, **Apps**, **Remote-Operators**, **BreakGlass** (empty), plus **`Datacenter`** and **`External`**. **Remote-Operators** stay in **`Datacenter`** so **classic LAN routes** are unchanged; tightening is via **policies** and **DNS**, not by removing route membership.
+
+Additive policies (still redundant while **`Default`** is on): **Remote-Operators → Monitoring** (common web/metrics ports), **Remote-Operators → Infra-Edge** (80/443), **NetBird SSH → Hypervisors**.
+
+## Next: retire Default safely
 
 <Steps>
-  <Step title="Split identity groups">
-    Separate **people / laptops** (e.g. **RemoteUsers**) from **servers** (**Datacenter**). Avoid putting hypervisors in the same group as phones if you later narrow routes.
+  <Step title="BreakGlass">
+    Add emergency admin peers to **`BreakGlass`** and create an explicit **BreakGlass** policy **before** disabling **`Default`** — peer visibility in the mesh follows **policy group membership**.
   </Step>
-  <Step title="Scope who receives routes">
-    On **classic routes**, change **distribution / access** from **`All`** to **`RemoteUsers`** (and **Admins** if needed). **pfSense** stays the routing peer; only **which peers install** the route changes.
+  <Step title="Verify explicit coverage">
+    Confirm ICMP, DNS, **`netbird-ssh`**, and required TCP/UDP paths are covered without **`Default`**.
   </Step>
-  <Step title="Revisit Default">
-    Either narrow **`Default`** to a small **admin** group or replace it with **explicit** allows (ICMP, **`netbird-ssh`**, required ports only).
+  <Step title="Logging">
+    Turn on **activity / traffic logs** briefly; validate from **Remote-Operators** and **Apps** peers.
   </Step>
-  <Step title="Validate">
-    After each change, test from a **non-admin** peer and review **`GET /api/policies`** / **`GET /api/routes`**.
+  <Step title="API snapshot">
+    After each change, **`GET /api/policies`** and **`GET /api/routes`**; update internal **`docs/network/05`** if IDs change.
   </Step>
 </Steps>
 

@@ -54,7 +54,11 @@ Values below are **stable identifiers** from the management API (not secrets). R
 | `10.4.0.0/24` | 50 | yes | CASA VLAN | `d721017ljorc73cnd3gg` |
 | `10.0.13.0/24` | 50 | yes | DATA internal segment (vmbr1 on DATA-MNKY) | `d721507ljorc73cnfnhg` |
 
-**`network_id`:** `mnky-datacenter`. Distribution group at snapshot: **`All`** (`d6uq5qs2h96c73dgi71g`) — tighten for zero-trust segmentation when policies are ready.
+**`network_id`:** `mnky-datacenter`. **Distribution / access control** on each enabled classic route: **`Datacenter`** only (peers not in that group do not install `10.x` routes).
+
+### Role groups (2026-03-26)
+
+NetBird groups are **flat** (no nested subgroups). Peers can belong to **multiple** groups. Besides **`All`** and **`Datacenter`**, operators use **Hypervisors**, **Infra-Edge**, **Monitoring**, **Apps**, **Remote-Operators**, **BreakGlass** (empty), and **`External`** (untrusted). **Remote-Operators** remain in **`Datacenter`** so **LAN routes** stay available; segmentation is layered with **access policies** and **DNS** nameserver groups. See internal **`docs/network/05`** and **`07`** for the matrix and automation script.
 
 ### De-duplication
 
@@ -74,9 +78,9 @@ Duplicate **`10.0.0.0/24`** routes that previously pointed at Proxmox nodes or T
   </Step>
 </Steps>
 
-## Policies & SSH (streamlined)
+## Policies, DNS & SSH
 
-After the **pfSense** hub rollout, deprecated **Networks** entries (**`192.168.1.0/24`**, **traefik** router) were removed; **`ssh_enabled`** is on for all peers; **`Default`** (`All`, **`protocol: all`**) provides **universal NetBird SSH** plus other protocols. See [NetBird policies & universal SSH](/docs/infra/edge-network/netbird-policies-ssh) and the tightening primer for later zero-trust steps.
+**`Default`** (`All`, **`protocol: all`**) still provides full mesh while **additive** policies document **Remote-Operators → Monitoring / Infra-Edge** (TCP) and **NetBird SSH → Hypervisors**. **Split DNS:** nameserver group **`Internal mnky.internal (pfSense)`** sends **`mnky.internal`** to **`10.0.0.1`** for peers in **Remote-Operators** and **Datacenter** — add **Unbound** overrides on pfSense for real records. Details: [NetBird policies & universal SSH](/docs/infra/edge-network/netbird-policies-ssh) and internal **`docs/network/07`**.
 
 ## Related documentation
 

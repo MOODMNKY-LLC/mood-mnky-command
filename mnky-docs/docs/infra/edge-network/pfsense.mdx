@@ -75,9 +75,9 @@ See [Alignment & validation](/docs/infra/edge-network/alignment-and-validation) 
 
 Only **one** `unbound` instance should listen on `*:53`. A duplicate listener on `127.0.0.1:53` from a second config has caused confusion; fix in **Services > DNS Resolver** if it recurs after upgrades.
 
-### Optional hardening
+### NETBIRD interface (assigned)
 
-- Assign **`wt0`** under **Interfaces > Assignments** (e.g. **OPT**) for explicit **firewall rules** on the NetBird interface.
+**`wt0`** is configured as a named **NETBIRD** interface in **`config.xml`** (enabled) so rules can target overlay traffic explicitly. During NetBird policy changes, enable **Log** on selected **NETBIRD** ↔ **LAN/VLAN** rules to trace drops.
 - **UDP / QUIC buffers:** If NetBird logs **`failed to increase receive buffer size`**, set **`kern.ipc.maxsockbuf`** to **`8441037`** (BSD, ~7.5 MiB per [quic-go UDP buffer sizes](https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes)). On pfSense use **System → Advanced → System Tunables** so it survives reboots (same OID/value as the live firewall).
 
 ### SSH over NetBird
