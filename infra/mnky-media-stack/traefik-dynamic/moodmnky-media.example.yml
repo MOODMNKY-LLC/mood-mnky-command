@@ -1,0 +1,56 @@
+# Traefik **file** provider — Jellyfin + Jellyseerr (two hostnames on the same wildcard cert).
+# Copy to the Traefik host (e.g. 10.0.0.25): /etc/traefik/dynamic/moodmnky-media.yml
+# Then: systemctl reload traefik   OR   docker kill -s HUP <traefik-container>
+#
+# Hostnames (adjust if you use different DNS labels):
+#   - https://media.moodmnky.com      → Jellyfin (LXC :8096)
+#   - https://request.moodmnky.com    → Jellyseerr (LXC :5055)
+#
+# Why not https://media.moodmnky.com/request ?
+#   Stock Jellyseerr is a Next.js app built for URL path "/". Static assets load from "/_next/…".
+#   On the same host as Jellyfin, those paths would hit the wrong backend unless Jellyseerr were
+#   rebuilt with next.config basePath (custom image). Use a subdomain instead.
+#
+# DNS (public): A/AAAA for media + request → WAN (or Cloudflare proxy).
+# pfSense Unbound overrides (LAN, avoid hairpin):
+#   media.moodmnky.com   → 10.0.0.25
+#   request.moodmnky.com → 10.0.0.25
+#
+# MOOD-MNKY firewall: TCP 8096 and TCP 5055 from 10.0.0.25 → media LXC (e.g. 10.1.0.120).
+#
+# LXC:
+#   python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart
+#   JELLYFIN_URL + JELLYSEERR_PUBLIC_URL in .env.secrets → python3 scripts/bootstrap-media-integrations.py
+#
+# Replace websecure + letsencrypt with your static Traefik config names.
+
+http:
+  routers:
+    jellyfin-media:
+      rule: Host(`media.moodmnky.com`)
+      entryPoints:
+        - websecure
+      service: jellyfin-media
+      tls:
+        certResolver: letsencrypt
+
+    jellyseerr-request:
+      rule: Host(`request.moodmnky.com`)
+      entryPoints:
+        - websecure
+      service: jellyseerr-request
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    jellyfin-media:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://10.1.0.120:8096"
+
+    jellyseerr-request:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://10.1.0.120:5055"

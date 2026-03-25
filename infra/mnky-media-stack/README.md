@@ -187,22 +187,26 @@ With VPN + Proton forwarded port, **WAN NAT to `6881` is optional** (your home I
 
 **Cleanup:** When the old **TrueNAS Scale** qBittorrent instance is retired, **remove or disable** the matching **WAN port forward(s)** so traffic is not sent to a dead host.
 
-### Public HTTPS (Traefik → `media.moodmnky.com`)
+### Public HTTPS (Traefik → `media.moodmnky.com` + `request.moodmnky.com`)
 
-TLS terminates at **Traefik** on **`10.0.0.25`**; Jellyfin stays on plain HTTP inside the LAN (`http://<media-lxc>:8096`).
+TLS terminates at **Traefik** on **`10.0.0.25`**. **Jellyfin** and **Jellyseerr** stay on plain HTTP on the media LXC (`:8096` and `:5055`).
 
-1. **DNS (public):** Point **`media.moodmnky.com`** at your edge (A/AAAA to WAN, or Cloudflare proxy — match how other `*.moodmnky.com` names work).
-2. **pfSense Unbound (LAN):** Add a **host override** so internal clients resolve **`media.moodmnky.com` → `10.0.0.25`** (same pattern as **`netbird.moodmnky.com`** in **`mnky-docs/docs/infra/edge-network/pfsense.mdx`**), avoiding **hairpin** via the public IP.
-3. **Traefik:** Copy and adapt **`traefik-dynamic/jellyfin-media.example.yml`** into your file-provider directory on **`10.0.0.25`**, fix **`entryPoints`** / **`certResolver`** names, set the **`servers`** URL to your media LXC IP (e.g. **`http://10.1.0.120:8096`**), then reload Traefik.
-4. **Firewall:** Allow **TCP 8096** from **`10.0.0.25`** to the media LXC on MOOD-MNKY (and return traffic as usual).
-5. **Jellyfin (on the LXC):**
+Use **`traefik-dynamic/moodmnky-media.example.yml`**: **`media.moodmnky.com`** → Jellyfin, **`request.moodmnky.com`** → Jellyseerr (two hostnames; same cert resolver / entrypoint).
+
+**Why not `https://media.moodmnky.com/request`?** Traefik can path-route, but **stock Jellyseerr** (Next.js) serves assets from **`/_next/…`** at the **site root**. On the same hostname as Jellyfin, those requests would hit the wrong backend unless you **rebuilt Jellyseerr** with a **`basePath`** (custom image). Use **`request.moodmnky.com`** (or another subdomain) instead.
+
+1. **DNS (public):** **`media.moodmnky.com`** and **`request.moodmnky.com`** → edge (A/AAAA or Cloudflare), same as your other subdomains.
+2. **pfSense Unbound (LAN):** Host overrides **`media`** and **`request`** under **`moodmnky.com` → `10.0.0.25`** (avoid hairpin), same idea as **`netbird.moodmnky.com`** in **`mnky-docs/docs/infra/edge-network/pfsense.mdx`**.
+3. **Traefik:** Copy/adapt **`traefik-dynamic/moodmnky-media.example.yml`** to the Traefik host, fix **`entryPoints`** / **`certResolver`**, set **`servers`** URLs to your media LXC IP, reload Traefik. From a workstation with SSH: **`scripts/deploy-traefik-moodmnky-media.sh`** (see script header).
+4. **Firewall:** Allow **TCP 8096** and **TCP 5055** from **`10.0.0.25`** → media LXC.
+5. **Jellyfin (LXC):**
 
 ```bash
 cd /opt/mnky-media-stack
 python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart
 ```
 
-6. **Jellyseerr / scripts:** Set **`JELLYFIN_URL=https://media.moodmnky.com`** in **`.env.secrets`**, then re-run **`python3 scripts/bootstrap-media-integrations.py`** so **`settings.json`** gets the correct **`externalHostname`** / **`applicationUrl`**.
+6. **`.env.secrets`:** **`JELLYFIN_URL=https://media.moodmnky.com`**, **`JELLYSEERR_PUBLIC_URL=https://request.moodmnky.com`** (optional; default in script is `https://request.moodmnky.com`). Then **`python3 scripts/bootstrap-media-integrations.py`** (sets Jellyfin **`externalHostname`** and Jellyseerr **`main.applicationUrl`**).
 
 [Jellyfin reverse-proxy notes](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy) (known proxies + forwarded headers).
 

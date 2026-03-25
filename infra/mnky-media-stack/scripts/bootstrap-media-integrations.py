@@ -7,7 +7,9 @@ Secrets (never commit):
 
 Required in those files:
   JELLYFIN_API_KEY
-  JELLYFIN_URL          e.g. http://10.1.0.120:8096 (for applicationUrl / external)
+  JELLYFIN_URL          Public https URL for Jellyfin (e.g. https://media.moodmnky.com) for Jellyseerr → Jellyfin
+  JELLYSEERR_PUBLIC_URL Public https URL for Jellyseerr itself (e.g. https://request.moodmnky.com).
+                        Sets settings.json main.applicationUrl (links, OAuth). Default: https://request.moodmnky.com
   Optional internal URL for Docker-to-Docker (default):
   JELLYFIN_INTERNAL_HOST=jellyfin
   JELLYFIN_INTERNAL_PORT=8096
@@ -54,6 +56,7 @@ def load_env_files() -> dict[str, str]:
         ("JELLYSEER_ADMIN_PASSWORD", "JELLYSEERR_ADMIN_PASSWORD"),
         ("JELLYSEER_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
         ("JELLYSEERR_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
+        ("JELLYSEER_PUBLIC_URL", "JELLYSEERR_PUBLIC_URL"),
     ):
         if bad in out and good not in out:
             out[good] = out[bad]
@@ -226,6 +229,7 @@ def jellyseerr_patch_settings_json(
     env: dict[str, str],
     jf_key: str,
     jf_url: str,
+    seerr_public_url: str,
     internal_host: str,
     internal_port: int,
     rkey: str,
@@ -288,10 +292,15 @@ def jellyseerr_patch_settings_json(
         }
     ]
     data.setdefault("public", {})["initialized"] = True
-    data.setdefault("main", {})["applicationUrl"] = jf_url.rstrip("/")
+    # Jellyseerr's own public base URL (not Jellyfin — used for invites, redirects, OAuth).
+    data.setdefault("main", {})["applicationUrl"] = seerr_public_url.rstrip("/")
 
     path.write_text(json.dumps(data, indent=1) + "\n")
-    print("Jellyseerr: wrote settings.json (Jellyfin + Radarr + Sonarr + initialized)")
+    print(
+        "Jellyseerr: wrote settings.json (Jellyfin + Radarr + Sonarr + initialized; applicationUrl="
+        + seerr_public_url.rstrip("/")
+        + ")",
+    )
 
 
 def main() -> int:
@@ -314,6 +323,14 @@ def main() -> int:
     if not admin_pass:
         print("Set JELLYSEERR_ADMIN_PASSWORD or JELLYFIN_PASSWORD for Jellyseerr admin.", file=sys.stderr)
         return 1
+
+    seerr_public = (
+        env.get("JELLYSEERR_PUBLIC_URL")
+        or env.get("JELLYSEERR_URL_PUBLIC")
+        or ""
+    ).strip()
+    if not seerr_public:
+        seerr_public = "https://request.moodmnky.com"
 
     # --- Prowlarr ---
     pkey = api_key_xml("prowlarr")
@@ -343,6 +360,7 @@ def main() -> int:
         env=env,
         jf_key=jf_key,
         jf_url=jf_url,
+        seerr_public_url=seerr_public,
         internal_host=internal_host,
         internal_port=internal_port,
         rkey=rkey,

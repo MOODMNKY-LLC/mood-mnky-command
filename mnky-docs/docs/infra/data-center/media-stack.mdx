@@ -106,13 +106,16 @@ Use these from any **NetBird peer in a group that receives routes** (e.g. **`Dat
 
 Re-check the **FQDN** and **NetBird IP** with `netbird status` on the LXC if the peer is reinstalled — they can change.
 
-### Public HTTPS (`media.moodmnky.com` via Traefik)
+### Public HTTPS (Traefik: `media.moodmnky.com` + `request.moodmnky.com`)
 
-Browser traffic is **`https://media.moodmnky.com`** → **Traefik** (`10.0.0.25`, TLS) → **Jellyfin** on the media LXC (`10.1.0.120:8096` HTTP). Repo template: `infra/mnky-media-stack/traefik-dynamic/jellyfin-media.example.yml`.
+- **`https://media.moodmnky.com`** → Traefik (`10.0.0.25`) → Jellyfin on the media LXC (`10.1.0.120:8096` HTTP).
+- **`https://request.moodmnky.com`** → Traefik → **Jellyseerr** (`10.1.0.120:5055` HTTP).
 
-**pfSense:** Unbound **host override** `media` / `moodmnky.com` → **`10.0.0.25`** so LAN clients do not hairpin to WAN. **MOOD-MNKY:** allow **TCP 8096** from **`10.0.0.25`** to the LXC.
+Repo template: **`infra/mnky-media-stack/traefik-dynamic/moodmnky-media.example.yml`**. A path like **`/request` on the media hostname** is **not** supported on the stock Jellyseerr image (Next.js **`/_next`** assets at root); use the **`request`** subdomain unless you maintain a **custom build** with **`basePath`**.
 
-**Jellyfin:** On the LXC run `python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart` so **Known proxies** trusts Traefik and published URLs follow the browser host. Set **`JELLYFIN_URL=https://media.moodmnky.com`** in `.env.secrets` and re-run `bootstrap-media-integrations.py` for Jellyseerr’s external hostname.
+**pfSense:** Unbound overrides **`media`** and **`request`** under **`moodmnky.com` → `10.0.0.25`**. **MOOD-MNKY:** allow **TCP 8096** and **TCP 5055** from **`10.0.0.25`** to the LXC.
+
+**LXC:** `configure-jellyfin-reverse-proxy.py --restart`; **`.env.secrets`:** `JELLYFIN_URL`, `JELLYSEERR_PUBLIC_URL` (default `https://request.moodmnky.com` in bootstrap); **`bootstrap-media-integrations.py`**.
 
 ### pfSense cleanup (legacy torrent WAN rule)
 
