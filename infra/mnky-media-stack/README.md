@@ -131,6 +131,22 @@ With VPN + Proton forwarded port, **WAN NAT to `6881` is optional** (your home I
 - **TrueNAS NFS:** `10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media` mounted in the LXC at **`/mnt/media`** (see `/etc/fstab`).
 - **App config:** `./config/*` on the LXC root disk (not on NFS), alongside this `docker-compose.yml` (typically `/opt/mnky-media-stack`).
 
+### TrueNAS NFS permissions (multi-server / future stacks)
+
+The **parent** share for the Media dataset used **`maproot_user: root`**, but **per-subfolder** NFS exports (`Movies`, `Shows`, `Music`, `Books`, `Downloads`, `Private`) had **no `maproot`**, so remote `root` from clients could be **squashed** differently than on the parent mount. That breaks **LinuxServer** containers that run as **`PUID=0`** (root) and can make libraries look empty in the Jellyfin UI even when the OS can list files.
+
+**On TrueNAS:** every NFS export for this dataset should set **`Map root user` = `root`** and **`Map root group` = `root`** (or an equivalent service account with full read on the dataset). Example:
+
+```bash
+sudo midclt call sharing.nfs.update '<id>' '{"maproot_user": "root", "maproot_group": "root"}'
+```
+
+Repeat for each sub-share under `PRO-MNKY/Media` (or remove redundant sub-shares and use only the parent export).
+
+**On clients:** mount **only** the **parent** `/Media` path once (e.g. `/mnt/media`). Docker bind mounts like `/mnt/media/Movies` then see normal subdirectories — **do not** mount each subfolder as its own NFS client mount unless every export has `maproot` set consistently.
+
+The dataset ACL is already **`drwxrwxrwx`** on the Media root; NFS `maproot` alignment is the usual fix for “empty” Jellyfin libraries.
+
 ### NFS folder layout vs Docker (verified against the live share)
 
 On **TrueNAS** and **LXC `/mnt/media`**, the dataset currently has these **top-level directories:** `Books`, `Downloads`, `Movies`, `Music`, `Private`, `Shows`, plus `MOOD_MNKY` (misc) and a migration backup. There is **no** top-level **`Videos`** folder; home/personal video is usually under **Movies**, **Private**, or a path you add on the NAS.
@@ -147,7 +163,7 @@ On **TrueNAS** and **LXC `/mnt/media`**, the dataset currently has these **top-l
 
 **Prowlarr** only uses **`./config/prowlarr`** (SQLite + definitions). It does **not** map library folders; indexers talk to sites, and Sonarr/Radarr/Lidarr use the paths above.
 
-**Jellyfin wizard:** Add libraries pointing at **`/data/movies`**, **`/data/tvshows`**, **`/data/music`**, **`/data/books`**. For “Home videos” or mixed content, either create e.g. `Videos/` on TrueNAS and add a compose volume, or point a **Mixed** library at **`/data/movies`** / `/mnt/media/Private` (after adding a bind mount for `Private` if you want it in Jellyfin).
+**Jellyfin libraries (required):** Nothing appears in the UI until you **Dashboard → Libraries → Add Media Library** and set content paths to **`/data/movies`**, **`/data/tvshows`**, **`/data/music`**, **`/data/books`** (exact paths from `docker-compose.yml`). If folders looked empty before, fix NFS **`maproot`** (above) and **Scan Library**. For “Home videos” or mixed content, add e.g. `Videos/` on TrueNAS + a compose volume, or use **Mixed** and point at **`/data/movies`** or add a bind mount for `Private`.
 
 ## Proxmox LXC (GPU)
 
