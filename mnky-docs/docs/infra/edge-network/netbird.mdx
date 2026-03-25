@@ -1,0 +1,86 @@
+---
+title: NetBird (self-hosted control plane)
+description: NetBird management stack on MOOD MNKY—Docker services on 10.0.0.20, public URLs, reverse proxy trust, and dashboard route inventory (hub peer on pfSense).
+---
+
+NetBird provides **zero-trust style** remote access: WireGuard data plane, coordination via **management** and **signal**, optional **relay** and **STUN**, and **network routes** into private RFC1918 prefixes. MOOD MNKY runs the **control plane self-hosted** on the DATA LAN; **pfSense** is the **single authoritative subnet-routing peer** for site VLANs.
+
+## Runtime location
+
+| Item | Value |
+| ---- | ----- |
+| **Host** | LXC **102** on MNKY-HQ (`10.0.0.20` on DATA / `vmbr1`) |
+| **Orchestration** | Docker Compose (`dashboard` + combined `netbird-server`) |
+| **Published ports (host)** | `8080` (dashboard UI), `8081` (management stack), `3478/udp` (STUN) |
+
+<Note>
+  Exact Compose paths and image tags live in your infrastructure repo (`docker-compose.yml` on the NetBird host). Prefer pinning image digests in production.
+</Note>
+
+## User-facing URLs
+
+- **Dashboard / API (public hostname):** `https://netbird.moodmnky.com`
+- **Management gRPC/API:** same host; TLS terminated at **Traefik** (`10.0.0.25`)
+- **Embedded IdP / OAuth:** issuer under the same hostname (see server `config.yaml` on the LXC)
+
+Internal clients should resolve `netbird.moodmnky.com` to the **internal proxy** so traffic does not **hairpin** via the WAN IP.
+
+## Server configuration themes
+
+The management process listens on **:80** inside the container; **`trustedHTTPProxies`** must include the reverse proxy (e.g. **`10.0.0.25/32`**) so `X-Forwarded-*` headers are trusted.
+
+Sensitive keys (`authSecret`, `encryptionKey`, etc.) belong only in **private** config — never in Mintlify or public git.
+
+## Control plane inventory (API snapshot, 2026-03-25)
+
+Values below are **stable identifiers** from the management API (not secrets). Re-verify with `GET /api/routes` and `GET /api/peers` after changes.
+
+### Hub peer (subnet router)
+
+| Field | Value |
+| ----- | ----- |
+| **Peer name** | `pfSense.mnkylab.moodmnky.com` |
+| **DNS label** | `pfsense.netbird.moodmnky.com` |
+| **Peer ID** | `d6vgvoc2h96c73a46nrg` |
+
+### Enabled network routes (via pfSense)
+
+| Network | Metric | Masquerade | Description | Route ID |
+| ------- | ------ | ---------- | ----------- | -------- |
+| `10.0.0.0/24` | 50 | yes | DATA LAN via pfSense hub | `d6uqt842h96c73dgjj1g` |
+| `10.1.0.0/24` | 50 | yes | MOOD VLAN | `d72100vljorc73cnd3dg` |
+| `10.2.0.0/24` | 50 | yes | SAGE VLAN | `d72100vljorc73cnd3eg` |
+| `10.3.0.0/24` | 50 | yes | CODE VLAN | `d72100vljorc73cnd3fg` |
+| `10.4.0.0/24` | 50 | yes | CASA VLAN | `d721017ljorc73cnd3gg` |
+| `10.0.13.0/24` | 50 | yes | DATA internal segment (vmbr1 on DATA-MNKY) | `d721507ljorc73cnfnhg` |
+
+**`network_id`:** `mnky-datacenter`. Distribution group at snapshot: **`All`** (`d6uq5qs2h96c73dgi71g`) — tighten for zero-trust segmentation when policies are ready.
+
+### De-duplication
+
+Duplicate **`10.0.0.0/24`** routes that previously pointed at Proxmox nodes or Traefik were **disabled** so only **pfSense** advertises DATA. See internal doc `docs/network/05-netbird-control-plane-inventory.md` for the full disabled route ID table.
+
+## API access (operators)
+
+<Steps>
+  <Step title="Set environment">
+    Export **`NETBIRD_MANAGEMENT_URL`** (e.g. `https://netbird.moodmnky.com`) and a **Personal Access Token** from your secrets store — not from git.
+  </Step>
+  <Step title="Call the API">
+    Use header **`Authorization: Token &lt;PAT&gt;`** on endpoints such as `GET /api/peers`, `GET /api/routes`, `GET /api/networks`, `GET /api/groups`.
+  </Step>
+  <Step title="Log safely">
+    Redact tokens in logs; peer and route IDs are fine to record.
+  </Step>
+</Steps>
+
+## Policies & SSH (streamlined)
+
+After the **pfSense** hub rollout, deprecated **Networks** entries (**`192.168.1.0/24`**, **traefik** router) were removed; **`ssh_enabled`** is on for all peers; **`Default`** (`All`, **`protocol: all`**) provides **universal NetBird SSH** plus other protocols. See [NetBird policies & universal SSH](/docs/infra/edge-network/netbird-policies-ssh) and the tightening primer for later zero-trust steps.
+
+## Related documentation
+
+- [Edge network overview](/docs/infra/edge-network/overview) — full stack breakdown
+- [NetBird policies & universal SSH](/docs/infra/edge-network/netbird-policies-ssh) — cleanup + SSH + future tightening
+- [pfSense edge](/docs/infra/edge-network/pfsense) — port forwards and `wt0`
+- [Alignment & validation](/docs/infra/edge-network/alignment-and-validation) — paths and checklist

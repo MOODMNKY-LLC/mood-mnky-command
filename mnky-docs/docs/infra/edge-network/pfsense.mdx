@@ -1,0 +1,98 @@
+---
+title: pfSense edge (WAN + LAN + NetBird)
+description: pfSense placement on MNKY-HQ, interface and VLAN map, NAT/port forwards for NetBird, NetBird client packages on the firewall, and DNS/hairpin notes.
+---
+
+**pfSense** is the **default gateway** for the MOOD MNKY DATA LAN and for **inter-site VLANs** trunked over `vtnet6`. It is also the **NetBird subnet-routing peer** that advertises on-prem RFC1918 prefixes to remote NetBird clients.
+
+## Placement
+
+| Item | Value |
+| ---- | ----- |
+| **Hypervisor** | MNKY-HQ (standalone Proxmox) |
+| **VMID** | 1000 |
+| **DATA address** | `10.0.0.1/24` on `vtnet1` |
+
+**vNIC mapping (conceptual):**
+
+- `net0` → HQ management / WAN path (`101.x` uplink)
+- `net1` → DATA `10.0.0.0/24`
+- `net2`–`net5` → per-site bridges
+- `net6` → **trunk** to remote Proxmox sites (VLANs 10/20/30/40 → site segments)
+
+## Interfaces (snapshot)
+
+| Interface | Role | IPv4 (typical) |
+| --------- | ---- | -------------- |
+| `vtnet0` | WAN | ISP / public |
+| `vtnet1` | DATA | `10.0.0.1/24` |
+| `vtnet6` | Trunk parent | — |
+| `vtnet6.10` | MOOD | `10.1.0.1/24` |
+| `vtnet6.20` | SAGE | `10.2.0.1/24` |
+| `vtnet6.30` | CODE | `10.3.0.1/24` |
+| `vtnet6.40` | CASA | `10.4.0.1/24` |
+| **`wt0`** | NetBird overlay | Address in **`100.64.0.0/10`** |
+
+## Routing highlights
+
+- Default route via **WAN**.
+- Connected routes for DATA and each site VLAN.
+- Static route **`10.0.13.0/24` → `10.0.0.10`** (DATA segment / internal network).
+- **`100.64.0.0/10`** toward **`wt0`** (overlay return path).
+
+## NAT and port forwards (NetBird-related)
+
+Themes observed on the live firewall:
+
+- **Outbound NAT:** UDP from **`100.64.0.0/10`** → WAN with **static port** (helps STUN / WireGuard behavior).
+- **Outbound NAT:** UDP from **`10.0.0.20`** (NetBird LXC) → WAN static port.
+- **Port forwards:** WAN UDP **3478** and **51820** → **`10.0.0.20`** (STUN / WireGuard to Docker host).
+- **HTTP(S):** WAN **80/443** → reverse proxy tier (**`10.0.0.25`**) for `netbird.moodmnky.com` and other services.
+- **Hairpin / reflection NAT** on DATA for internal clients hitting public VIPs for internal services.
+
+<Tip>
+  After **WAN IP**, **multi-WAN**, or **NAT** changes, re-test NetBird client connectivity from **inside** and **outside** the LAN.
+</Tip>
+
+## NetBird client on pfSense
+
+| Topic | Detail |
+| ----- | ------ |
+| **Packages (post-upgrade, 2026-03-25)** | `netbird` **0.67.0**, `pfSense-pkg-NetBird` **0.2.2** ([upstream releases](https://github.com/netbirdio/pfsense-netbird/releases)) |
+| **Install note** | May require `IGNORE_OSVERSION=yes pkg add -f …` when package OS version lags pfSense’s FreeBSD |
+| **Overlay** | Interface **`wt0`**, MTU often **1280** |
+| **Dashboard** | Subnet routes for `10.0.0.0/24`, `10.0.13.0/24`, and `10.1`–`10.4` attached to this peer — [NetBird platform](/docs/infra/edge-network/netbird) |
+
+### DNS and management URL
+
+Ensure **`netbird.moodmnky.com`** (the **apex** name used by the management URL) resolves to **Traefik** (`10.0.0.25`) on pfSense. Overriding only **`stun.netbird.moodmnky.com`** is **not** enough: Unbound will still resolve the apex via upstream DNS to your **WAN** IP, and the NetBird client will show **Management/Signal disconnected** with errors like **`dial tcp &lt;WAN&gt;:443: connection refused`**.
+
+Use **Services → DNS Resolver → Host Override**: host **`netbird`**, domain **`moodmnky.com`**, IP **`10.0.0.25`**. Optional **`/etc/hosts`** line: `10.0.0.25 netbird.moodmnky.com` (FQDN only — do not add a second **`netbird`** short name if it already maps to **`10.0.0.20`** for **`netbird.mnkylab.moodmnky.com`**).
+
+See [Alignment & validation](/docs/infra/edge-network/alignment-and-validation) for the full checklist.
+
+### Resolver hygiene
+
+Only **one** `unbound` instance should listen on `*:53`. A duplicate listener on `127.0.0.1:53` from a second config has caused confusion; fix in **Services > DNS Resolver** if it recurs after upgrades.
+
+### Optional hardening
+
+- Assign **`wt0`** under **Interfaces > Assignments** (e.g. **OPT**) for explicit **firewall rules** on the NetBird interface.
+- **UDP / QUIC buffers:** If NetBird logs **`failed to increase receive buffer size`**, set **`kern.ipc.maxsockbuf`** to **`8441037`** (BSD, ~7.5 MiB per [quic-go UDP buffer sizes](https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes)). On pfSense use **System → Advanced → System Tunables** so it survives reboots (same OID/value as the live firewall).
+
+### SSH over NetBird
+
+Newer NetBird builds may show **SSH Server: Disabled** in `netbird status`. Re-enable in policy if you rely on NetBird’s integrated SSH feature.
+
+## Firewall checklist
+
+- Align **`<vpn_networks>`** (or equivalent aliases) with **`100.64.0.0/10`**.
+- Allow **NetBird overlay → internal VLANs** only as needed; keep **anti-spoof** rules consistent.
+- Prefer **tighter** than `10.0.0.0/8` where possible.
+
+## Related documentation
+
+- [Edge network overview](/docs/infra/edge-network/overview)
+- [NetBird platform](/docs/infra/edge-network/netbird)
+- [Alignment & validation](/docs/infra/edge-network/alignment-and-validation)
+- [Storage and network](/docs/infra/data-center/storage-and-network) — cluster LAN context

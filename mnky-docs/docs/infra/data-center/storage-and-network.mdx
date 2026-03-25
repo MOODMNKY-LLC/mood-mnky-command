@@ -124,6 +124,10 @@ CODE-MNKY snapshot highlights:
 
 Other nodes follow a similar pattern, with differences in IP addressing and VLAN/tagging as configured.
 
+### Edge access (pfSense + NetBird)
+
+Site **RFC1918** networks are reachable from the internet through **NetBird** (overlay `100.64.0.0/10`) with **pfSense** as the **authoritative subnet-routing peer**. The **self-hosted NetBird control plane** runs on **LXC 102** (`10.0.0.20`); **WAN** UDP **3478/51820** are forwarded from pfSense to that host. For architecture, route inventory, and validation steps, see the [Edge network overview](/docs/infra/edge-network/overview) and related pages under **Development & DevOps → Edge network (pfSense + NetBird)**.
+
 ### External integrations
 
 The cluster connects to several external services:

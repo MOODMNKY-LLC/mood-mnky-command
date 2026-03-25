@@ -1,0 +1,46 @@
+---
+title: NetBird policies & universal SSH
+description: Streamlined NetBird access control after pfSense hub rollout—removed 192.x network and Traefik router, universal SSH via Default policy and peer SSH flags, plus a primer for future tightening.
+---
+
+This page mirrors internal notes in `docs/network/07-netbird-policy-streamlining.md` (Markdown repo). It reflects the **2026-03-25** control-plane cleanup.
+
+## What we standardized on
+
+- **LAN reachability:** **Classic network routes** on peer **`pfSense.mnkylab.moodmnky.com`** ( **`/api/routes`** ) for **`10.0.0.0/24`**, **`10.0.13.0/24`**, and **`10.1.0.0/24`–`10.4.0.0/24`** — see [NetBird platform](/docs/infra/edge-network/netbird).
+- **Removed:** NetBird **Networks** object for **`192.168.1.0/24`**, the **`main subnet Access`** policy, the **traefik** network **router**, and the **`10.0.0.22/32`** host resource on the main network (Traefik is still on the LAN; it is no longer a NetBird routing peer).
+
+## Universal SSH
+
+1. **`Default`** policy remains **`All` ↔ `All`** with **`protocol: all`** (includes **NetBird SSH** and other traffic the client allows).
+2. **`ssh_enabled`** was turned **on** for **all peers** in the management API so **`netbird ssh &lt;peer&gt;`** can target any compatible client.
+3. The **target** must still run **`sshd`** (or equivalent) and allow the connection on the **OS firewall**; NetBird provides overlay connectivity only.
+
+Redundant, overlapping **SSH**-named policies were **removed** from the dashboard to reduce confusion.
+
+## Group cleanup note
+
+The **`pfsense-net access`** group could not be deleted via API because it is **linked to a setup key** (`pfsense`). Remove that link under **Setup keys** in the dashboard if you want to delete the empty group.
+
+## Future: policy tightening (without killing access)
+
+<Steps>
+  <Step title="Split identity groups">
+    Separate **people / laptops** (e.g. **RemoteUsers**) from **servers** (**Datacenter**). Avoid putting hypervisors in the same group as phones if you later narrow routes.
+  </Step>
+  <Step title="Scope who receives routes">
+    On **classic routes**, change **distribution / access** from **`All`** to **`RemoteUsers`** (and **Admins** if needed). **pfSense** stays the routing peer; only **which peers install** the route changes.
+  </Step>
+  <Step title="Revisit Default">
+    Either narrow **`Default`** to a small **admin** group or replace it with **explicit** allows (ICMP, **`netbird-ssh`**, required ports only).
+  </Step>
+  <Step title="Validate">
+    After each change, test from a **non-admin** peer and review **`GET /api/policies`** / **`GET /api/routes`**.
+  </Step>
+</Steps>
+
+## Related
+
+- [NetBird platform](/docs/infra/edge-network/netbird) — routes and inventory IDs.  
+- [pfSense edge](/docs/infra/edge-network/pfsense) — DNS, NAT, `wt0`.  
+- [Alignment & validation](/docs/infra/edge-network/alignment-and-validation) — runbooks.

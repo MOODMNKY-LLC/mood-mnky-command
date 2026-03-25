@@ -1,0 +1,93 @@
+---
+title: NetBird ↔ pfSense alignment & validation
+description: Address roles, traffic paths, DNS split-horizon, masquerade tradeoffs, operational ownership, and a post-change validation checklist for MOOD MNKY.
+---
+
+This page ties **routing**, **NAT**, **firewall aliases**, and **DNS** together so a change on one plane does not silently break remote access or internal dashboard use.
+
+## Address space roles
+
+| Range | Role | Where it appears |
+| ----- | ---- | ---------------- |
+| `10.0.0.0/24` | DATA LAN + path to NetBird LXC | pfSense `vtnet1`, MNKY-HQ `vmbr1`, DATA `vmbr0` |
+| `10.1.0.0/24` – `10.4.0.0/24` | Site VLANs | pfSense `vtnet6.{10,20,30,40}`; Proxmox `vmbr0.<vlan>` per site |
+| `10.0.13.0/24` | Internal segment on DATA | Routed via pfSense toward `10.0.0.10` |
+| `100.64.0.0/10` | NetBird overlay (CGNAT) | `wt0` on peers; NAT on pfSense for static-port UDP |
+| `101.0.0.0/24` | HQ management / WAN-side leg | MNKY-HQ `vmbr0` ↔ pfSense `vtnet0` |
+
+<Warning>
+  **Overlap risk:** If a remote user’s **home LAN** uses the same RFC1918 range as a **routed** corporate prefix, routing or SNAT exceptions may be required. Document any exceptions in the NetBird dashboard and here.
+</Warning>
+
+## Path: Internet → NetBird
+
+1. **UDP 3478** (STUN) and **UDP 51820** (WireGuard) hit **WAN**.
+2. pfSense **NAT / port forward** delivers STUN/WireGuard to **`10.0.0.20`** (Docker host).
+3. Outbound UDP from **`100.64.0.0/10`** uses **static-port NAT** on WAN where configured — important for hole punching and relay behavior.
+
+## Path: LAN → dashboard / API
+
+- Internal users use **`https://netbird.moodmnky.com`** via **Traefik** (`10.0.0.25`).
+- **Hairpin NAT** may apply when using the **public** hostname from inside DATA; compare behavior for `10.0.0.0/24` vs `10.0.13.0/24` if something works on one subnet only.
+
+## DNS
+
+- **Split-horizon:** `*.moodmnky.local` and similar may differ for VPN vs LAN resolvers.
+- **OAuth / IdP** URLs use the public hostname — internal DNS should return the **proxy** or internal VIP when you want traffic to stay on-LAN.
+
+## MTU / MSS
+
+NetBird **WireGuard** often uses **1280** MTU on `wt0`. Stacked **VLAN + PPPoE + VPN** may need **MSS clamping** on WAN or VPN interfaces if you see **PMTUD black holes**.
+
+## Subnet routing hub
+
+- **Authoritative peer:** **pfSense** owns **network routes** for DATA and site VLANs; remote peers reach on-prem RFC1918 through the **edge router**.
+- **Return path:** Kernel route **`100.64.0.0/10` → `wt0`** on pfSense, plus firewall rules allowing overlay sources to internal destinations.
+- **Masquerade (dashboard route flag):**
+  - **`true`:** simpler; internal servers often see **pfSense** as source on forwarded traffic.
+  - **`false`:** preserves **original NetBird client IPs** on LAN when **symmetric routing** is verified.
+
+## Operational ownership
+
+| Change | pfSense | NetBird dashboard |
+| ------ | ------- | ----------------- |
+| New site VLAN | `vtnet6.X`, DHCP, rules, NAT | Add/update **network routes**; attach to **pfSense** peer |
+| New exposed service | NAT / proxy / ACME | Usually none |
+| New VPN segment / group | NAT + rules | **Groups**, **routes**, **DNS** |
+| Move NetBird LXC | Port forwards + proxy | **`trustedHTTPProxies`** in server config |
+
+## Validation checklist
+
+<Steps>
+  <Step title="Control plane (any trusted host)">
+    `GET /api/routes` with a PAT must return **HTTP 200**. Confirm enabled routes for **`10.0.0.0/24`**, **`10.0.13.0/24`**, **`10.1.0.0/24`–`10.4.0.0/24`** use the **pfSense** peer only (no duplicate DATA routes on hypervisors).
+  </Step>
+  <Step title="pfSense client">
+    `netbird status`: **Management** and **Signal** **Connected**; **Networks** lists the prefixes above; **`wt0`** has a **100.64.x.x** address.
+  </Step>
+  <Step title="Remote peer (requires a real NetBird device)">
+    From a laptop or phone on NetBird: ping/traceroute **`10.0.0.1`**, **`10.0.0.25`**, a site node (e.g. **`10.1.0.10`**), and **`10.0.13.x`** if you use that segment. Log outcomes in internal doc **`docs/network/06-validation-checklist.md`** (remote client table).
+  </Step>
+  <Step title="Optional LAN → overlay">
+    From an on-prem host, verify path to a chosen **`100.64.x.x`** peer if bidirectional semantics matter.
+  </Step>
+</Steps>
+
+### Split DNS on pfSense
+
+If internal queries for **`netbird.moodmnky.com`** still return the **public** IP, add **Services → DNS Resolver → Host Override**: host **`netbird`**, domain **`moodmnky.com`**, IP **`10.0.0.25`** (Traefik). Re-test with `drill` or `dig` from pfSense and a LAN client.
+
+### PAT rotation
+
+If **`datacenter.env`** or tokens may have been exposed: issue a **new** NetBird PAT, update automation env, confirm **200** on `GET /api/routes`, then **revoke** the old PAT. Never commit env files; keep them in `.gitignore`.
+
+<Tip>
+  For failing flows, use **state table** and **packet capture** on **`wt0`** and the relevant **VLAN** interface on pfSense.
+</Tip>
+
+## Related documentation
+
+- [Edge network overview](/docs/infra/edge-network/overview)
+- [NetBird platform](/docs/infra/edge-network/netbird)
+- [pfSense edge](/docs/infra/edge-network/pfsense)
+- [Runbooks](/docs/infra/data-center/runbooks)

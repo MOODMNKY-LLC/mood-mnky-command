@@ -289,6 +289,16 @@
             ]
           },
           {
+            "group": "Edge network (pfSense + NetBird)",
+            "pages": [
+              "docs/infra/edge-network/overview",
+              "docs/infra/edge-network/netbird",
+              "docs/infra/edge-network/netbird-policies-ssh",
+              "docs/infra/edge-network/pfsense",
+              "docs/infra/edge-network/alignment-and-validation"
+            ]
+          },
+          {
             "group": "Development Guides",
             "pages": [
               "developer-resources/environment-setup",
