@@ -51,6 +51,25 @@ python3 scripts/bootstrap-arr-apps.py
 
 This adds **root folders** (`/tv`, `/movies`, `/music` per compose mounts) and a **qBittorrent** download client pointing at host **`qbittorrent`**, port **8080**, with default categories (`tv-sonarr`, `radarr`, `lidarr`). Safe to re-run; it skips what already exists.
 
+### Prowlarr ↔ *arr + Jellyseerr (API + `settings.json`)
+
+After **Jellyfin** has at least one API key and libraries, put secrets in **`.env.secrets`** next to `docker-compose.yml` (see **`.env.example`**). Copy `JELLYFIN_*` (and optional `JELLYSEERR_*`) from your private `datacenter.env` — **never commit** `.env.secrets`.
+
+```bash
+cd /opt/mnky-media-stack
+chmod 600 .env.secrets
+python3 scripts/bootstrap-media-integrations.py
+```
+
+This script:
+
+1. Ensures **Prowlarr** has **Sonarr**, **Radarr**, and **Lidarr** application links (Docker hostnames) and runs **ApplicationIndexerSync**.
+2. Creates a **Jellyseerr** local admin (once) if the user table is empty (`JELLYSEERR_ADMIN_EMAIL` / password from `JELLYSEERR_ADMIN_PASSWORD` or **`JELLYFIN_PASSWORD`**).
+3. Merges **Jellyseerr `settings.json`**: Jellyfin (libraries pulled live from Jellyfin), **Radarr**, **Sonarr**, **`public.initialized`**, and **`main.applicationUrl`**.  
+   (The Jellyseerr HTTP API for `/settings/*` is protected by CSRF; the file merge avoids that.)
+
+**Lidarr** is linked in **Prowlarr** only; **Jellyseerr** does not support Lidarr as a request target in current versions.
+
 ## Jackett + Prowlarr (Torznab “all”)
 
 **Jackett** exposes many tracker definitions as Torznab. **Prowlarr** can use a single **Generic Torznab** indexer pointed at Jackett’s **all** feed: `http://jackett:9117/api/v2.0/indexers/all/results/torznab/` (inside Docker).
@@ -111,7 +130,8 @@ Add an **Indexer proxy** in Prowlarr: **Settings → Indexers → Indexer proxie
 | Gluetun / Proton | **Yes** | Keys in `.env` |
 | Jellyfin admin | No | First-run wizard |
 | Sonarr / Radarr / Lidarr root folders + download client | Volumes in compose; **`scripts/bootstrap-arr-apps.py`** | Run once after `.env` has qBittorrent password; then only **Prowlarr indexers / sync** and **Jellyfin** need UI |
-| Prowlarr indexers + app sync | **`bootstrap-prowlarr-jackett.py`** for Jackett “all” | **Sync Apps** to *arr in UI |
+| Prowlarr apps + indexer sync + Jellyseerr | **`bootstrap-media-integrations.py`** + `.env.secrets` | Jellyfin API key + URL; see section above |
+| Prowlarr Jackett “all” indexer | **`bootstrap-prowlarr-jackett.py`** | After Jackett config import |
 | Jackett config from TrueNAS | **`apply-truenas-jackett-config.sh`** | Rsync export to `_truenas-export/jackett/` first |
 | Prowlarr FlareSolverr (indexer proxy) | **API** (`POST /api/v1/indexerProxy`) or UI | One-time; see FlareSolverr section |
 | Jellyseerr | No | Wizard + Jellyfin URL |

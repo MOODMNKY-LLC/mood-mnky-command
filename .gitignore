@@ -47,3 +47,5 @@ apps/web/certificates/
 
 # TrueNAS raw rsync exports (API keys, Jackett cookies, qBittorrent secrets)
 infra/mnky-media-stack/_truenas-export/
+# Media stack secrets copied from datacenter (Jellyfin API key, etc.)
+infra/mnky-media-stack/.env.secrets
