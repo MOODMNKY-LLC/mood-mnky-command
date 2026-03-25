@@ -74,8 +74,9 @@ This script:
 
 Jellyseerr uses a **local** account in its SQLite DB (not your Jellyfin password unless you chose to match them).
 
-- **Email:** `JELLYSEERR_ADMIN_EMAIL` or default **`jellyseerr-admin@local.moodmnky`**
-- **Password:** `JELLYSEERR_ADMIN_PASSWORD`, or **`JELLYFIN_PASSWORD`** if the dedicated variable is unset (as when the admin row was first created).
+- **Email (sign-in field in the UI):** `JELLYSEERR_ADMIN_EMAIL` or default **`simeon.bowman@moodmnky.com`**
+- **Username (stored on the user row):** `JELLYSEERR_ADMIN_USERNAME` or default **`admin`**
+- **Password:** `JELLYSEERR_ADMIN_PASSWORD`, or **`JELLYFIN_PASSWORD`** if the dedicated variable is unset.
 
 If you **cannot log in** after changing Jellyfin’s password, run a one-time reset (stops Jellyseerr briefly):
 

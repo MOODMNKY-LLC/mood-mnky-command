@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
-Reset the Jellyseerr local admin password in SQLite (bcrypt).
+Sync the Jellyseerr local admin row in SQLite: email, username, bcrypt password.
 
-Use when login fails after rotating JELLYFIN_PASSWORD or when the DB was created
-with a different password than you expect.
+Use when login fails, you changed Jellyfin password, or you need a new email/username.
 
-Loads the same env as bootstrap-media-integrations (.env.secrets, .env).
-Stops jellyseerr briefly to write the DB safely.
+Loads .env.secrets then .env (same as bootstrap-media-integrations).
 
-  JELLYSEERR_ADMIN_EMAIL   default jellyseerr-admin@local.moodmnky
-  JELLYSEERR_ADMIN_PASSWORD or JELLYFIN_PASSWORD (required)
+  JELLYSEERR_ADMIN_EMAIL     default simeon.bowman@moodmnky.com
+  JELLYSEERR_ADMIN_USERNAME  default admin
+  JELLYSEERR_ADMIN_PASSWORD  or JELLYFIN_PASSWORD (required)
+
+Stops jellyseerr briefly to write the DB safely. Updates the first user row (lowest id),
+which is the usual single local admin.
 """
 from __future__ import annotations
 
@@ -20,6 +22,9 @@ import time
 from pathlib import Path
 
 STACK = Path("/opt/mnky-media-stack")
+
+DEFAULT_EMAIL = "simeon.bowman@moodmnky.com"
+DEFAULT_USERNAME = "admin"
 
 
 def load_env_files() -> dict[str, str]:
@@ -36,10 +41,11 @@ def load_env_files() -> dict[str, str]:
             k, v = k.strip(), v.strip().strip('"').strip("'")
             if k:
                 out[k] = v
-    # datacenter typo: single R in JELLYSEER
     aliases = (
         ("JELLYSEER_ADMIN_EMAIL", "JELLYSEERR_ADMIN_EMAIL"),
         ("JELLYSEER_ADMIN_PASSWORD", "JELLYSEERR_ADMIN_PASSWORD"),
+        ("JELLYSEER_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
+        ("JELLYSEERR_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
     )
     for bad, good in aliases:
         if bad in out and good not in out:
@@ -79,7 +85,8 @@ def jellyseerr_compose(*args: str) -> None:
 
 def main() -> int:
     env = load_env_files()
-    email = env.get("JELLYSEERR_ADMIN_EMAIL", "jellyseerr-admin@local.moodmnky")
+    email = env.get("JELLYSEERR_ADMIN_EMAIL", DEFAULT_EMAIL)
+    username = env.get("JELLYSEERR_ADMIN_USERNAME", DEFAULT_USERNAME)
     pw = env.get("JELLYSEERR_ADMIN_PASSWORD") or env.get("JELLYFIN_PASSWORD")
     if not pw:
         print(
@@ -105,23 +112,26 @@ def main() -> int:
 
     con = sqlite3.connect(str(db_path))
     try:
-        cur = con.execute("SELECT id, email FROM user WHERE email = ?", (email,))
-        row = cur.fetchone()
+        row = con.execute("SELECT id FROM user ORDER BY id ASC LIMIT 1").fetchone()
         if not row:
-            print(
-                f"No user with email {email!r}. Known users:",
-                [r[0] for r in con.execute("SELECT email FROM user").fetchall()],
-                file=sys.stderr,
-            )
+            print("No rows in user table; run bootstrap-media-integrations.py first.", file=sys.stderr)
             jellyseerr_compose("start", "jellyseerr")
             return 1
-        con.execute("UPDATE user SET password = ?, updatedAt = datetime('now') WHERE email = ?", (h, email))
+        uid = row[0]
+        con.execute(
+            """
+            UPDATE user
+            SET email = ?, username = ?, password = ?, updatedAt = datetime('now')
+            WHERE id = ?
+            """,
+            (email, username, h, uid),
+        )
         con.commit()
     finally:
         con.close()
 
     jellyseerr_compose("start", "jellyseerr")
-    print(f"Jellyseerr: password reset for {email}")
+    print(f"Jellyseerr: synced local user id={uid} email={email!r} username={username!r}")
     return 0
 
 

@@ -13,7 +13,8 @@ Required in those files:
   JELLYFIN_INTERNAL_PORT=8096
 
 Jellyseerr local admin (created if no users exist):
-  JELLYSEERR_ADMIN_EMAIL   default: jellyseerr-admin@local.moodmnky
+  JELLYSEERR_ADMIN_EMAIL   default: simeon.bowman@moodmnky.com
+  JELLYSEERR_ADMIN_USERNAME default: admin
   JELLYSEERR_ADMIN_PASSWORD default: JELLYFIN_PASSWORD if set, else required
 
 Idempotent where possible: skips Prowlarr apps that already exist; skips Jellyseerr user insert if users exist.
@@ -51,6 +52,8 @@ def load_env_files() -> dict[str, str]:
     for bad, good in (
         ("JELLYSEER_ADMIN_EMAIL", "JELLYSEERR_ADMIN_EMAIL"),
         ("JELLYSEER_ADMIN_PASSWORD", "JELLYSEERR_ADMIN_PASSWORD"),
+        ("JELLYSEER_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
+        ("JELLYSEERR_USERNAME", "JELLYSEERR_ADMIN_USERNAME"),
     ):
         if bad in out and good not in out:
             out[good] = out[bad]
@@ -182,7 +185,7 @@ def jellyseerr_compose(*args: str) -> None:
     )
 
 
-def jellyseerr_insert_admin_row(email: str, password_hash: str) -> None:
+def jellyseerr_insert_admin_row(email: str, username: str, password_hash: str) -> None:
     import sqlite3
 
     db = STACK / "config/jellyseerr/db/db.sqlite3"
@@ -193,12 +196,12 @@ def jellyseerr_insert_admin_row(email: str, password_hash: str) -> None:
             INSERT INTO user (email, username, permissions, password, userType, avatar, createdAt, updatedAt)
             VALUES (?, ?, ?, ?, 1, '', datetime('now'), datetime('now'))
             """,
-            (email, email.split("@")[0], 1610612734, password_hash),
+            (email, username, 1610612734, password_hash),
         )
         con.commit()
     finally:
         con.close()
-    print(f"Jellyseerr: created local admin user {email}")
+    print(f"Jellyseerr: created local admin user {email} (username={username!r})")
 
 
 def jellyfin_docker_api(path: str, jf_api_key: str) -> dict:
@@ -305,7 +308,8 @@ def main() -> int:
     internal_host = env.get("JELLYFIN_INTERNAL_HOST", "jellyfin")
     internal_port = int(env.get("JELLYFIN_INTERNAL_PORT", "8096"))
 
-    admin_email = env.get("JELLYSEERR_ADMIN_EMAIL", "jellyseerr-admin@local.moodmnky")
+    admin_email = env.get("JELLYSEERR_ADMIN_EMAIL", "simeon.bowman@moodmnky.com")
+    admin_user = env.get("JELLYSEERR_ADMIN_USERNAME", "admin")
     admin_pass = env.get("JELLYSEERR_ADMIN_PASSWORD") or env.get("JELLYFIN_PASSWORD")
     if not admin_pass:
         print("Set JELLYSEERR_ADMIN_PASSWORD or JELLYFIN_PASSWORD for Jellyseerr admin.", file=sys.stderr)
@@ -331,7 +335,7 @@ def main() -> int:
         pw_hash = bcrypt_hash(admin_pass)
         jellyseerr_compose("stop", "jellyseerr")
         time.sleep(2)
-        jellyseerr_insert_admin_row(admin_email, pw_hash)
+        jellyseerr_insert_admin_row(admin_email, admin_user, pw_hash)
     else:
         print("Jellyseerr: users already exist — skipping admin insert")
 
@@ -347,7 +351,7 @@ def main() -> int:
     jellyseerr_compose("start", "jellyseerr")
     time.sleep(6)
 
-    print("Done. Log in to Jellyseerr with:", admin_email)
+    print("Done. Log in to Jellyseerr with email:", admin_email, "| username:", admin_user)
     return 0
 
 
