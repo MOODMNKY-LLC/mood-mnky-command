@@ -185,6 +185,27 @@ The `gluetun` service has a Docker network alias **`qbittorrent`**, so Sonarr/Ra
 
 With VPN + Proton forwarded port, **WAN NAT to `6881` is optional** (your home IP is no longer the BitTorrent source). If you keep legacy rules, they do not provide inbound peers on the Proton IP; inbound peers use the **forwarded port on the VPN exit IP**.
 
+**Cleanup:** When the old **TrueNAS Scale** qBittorrent instance is retired, **remove or disable** the matching **WAN port forward(s)** so traffic is not sent to a dead host.
+
+### Public HTTPS (Traefik → `media.moodmnky.com`)
+
+TLS terminates at **Traefik** on **`10.0.0.25`**; Jellyfin stays on plain HTTP inside the LAN (`http://<media-lxc>:8096`).
+
+1. **DNS (public):** Point **`media.moodmnky.com`** at your edge (A/AAAA to WAN, or Cloudflare proxy — match how other `*.moodmnky.com` names work).
+2. **pfSense Unbound (LAN):** Add a **host override** so internal clients resolve **`media.moodmnky.com` → `10.0.0.25`** (same pattern as **`netbird.moodmnky.com`** in **`mnky-docs/docs/infra/edge-network/pfsense.mdx`**), avoiding **hairpin** via the public IP.
+3. **Traefik:** Copy and adapt **`traefik-dynamic/jellyfin-media.example.yml`** into your file-provider directory on **`10.0.0.25`**, fix **`entryPoints`** / **`certResolver`** names, set the **`servers`** URL to your media LXC IP (e.g. **`http://10.1.0.120:8096`**), then reload Traefik.
+4. **Firewall:** Allow **TCP 8096** from **`10.0.0.25`** to the media LXC on MOOD-MNKY (and return traffic as usual).
+5. **Jellyfin (on the LXC):**
+
+```bash
+cd /opt/mnky-media-stack
+python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart
+```
+
+6. **Jellyseerr / scripts:** Set **`JELLYFIN_URL=https://media.moodmnky.com`** in **`.env.secrets`**, then re-run **`python3 scripts/bootstrap-media-integrations.py`** so **`settings.json`** gets the correct **`externalHostname`** / **`applicationUrl`**.
+
+[Jellyfin reverse-proxy notes](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy) (known proxies + forwarded headers).
+
 ## Storage
 
 - **TrueNAS NFS:** `10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media` mounted in the LXC at **`/mnt/media`** (see `/etc/fstab`).

@@ -106,6 +106,24 @@ Use these from any **NetBird peer in a group that receives routes** (e.g. **`Dat
 
 Re-check the **FQDN** and **NetBird IP** with `netbird status` on the LXC if the peer is reinstalled — they can change.
 
+### Public HTTPS (`media.moodmnky.com` via Traefik)
+
+Browser traffic is **`https://media.moodmnky.com`** → **Traefik** (`10.0.0.25`, TLS) → **Jellyfin** on the media LXC (`10.1.0.120:8096` HTTP). Repo template: `infra/mnky-media-stack/traefik-dynamic/jellyfin-media.example.yml`.
+
+**pfSense:** Unbound **host override** `media` / `moodmnky.com` → **`10.0.0.25`** so LAN clients do not hairpin to WAN. **MOOD-MNKY:** allow **TCP 8096** from **`10.0.0.25`** to the LXC.
+
+**Jellyfin:** On the LXC run `python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart` so **Known proxies** trusts Traefik and published URLs follow the browser host. Set **`JELLYFIN_URL=https://media.moodmnky.com`** in `.env.secrets` and re-run `bootstrap-media-integrations.py` for Jellyseerr’s external hostname.
+
+### pfSense cleanup (legacy torrent WAN rule)
+
+When **TrueNAS qBittorrent** is turned off, **delete or disable** the old **WAN → TrueNAS** BitTorrent port forward. It does not help the **Gluetun + Proton** path (peers use the **VPN exit IP** and Proton’s forwarded port). See `infra/mnky-media-stack/README.md` (UPnP / WAN).
+
+### Production readiness (where you stand)
+
+**In good shape for “friends & family” production:** stack on dedicated LXC, NFS libraries, Gluetun + Proton port-forward, Prowlarr ↔ *arr, qBittorrent clients, Jellyseerr wired to Jellyfin, NetBird for remote admin, smoke tests via `verify-media-connectivity.py`, Jellyseerr login standardized.
+
+**Typical next steps before calling it “hardened production”:** scheduled **config + DB backups** (Jellyfin `config`, each `config/*arr`, Jellyseerr `db`, `settings.json`), **DHCP reservation** for the media LXC (Traefik and firewall rules point at a stable IP), **monitoring/alerting** (container health, NFS mount, Gluetun forward), **retire legacy TrueNAS qBittorrent** and its **pfSense** NAT rule, optional **access policy** in front of public Jellyfin (Authelia, VPN-only, or GeoIP/rate limits on Traefik), **transcode limits** and library **CDN/off-peak** policy if CPU is tight, and **image update cadence** (`docker compose pull`).
+
 ### Reachability validation (evidence)
 
 From the MOOD-MNKY host, Jellyfin’s web root was reachable over NetBird to the workload’s overlay IP/hostname (returns a redirect to the Jellyfin web UI).
@@ -143,6 +161,7 @@ From `/opt/mnky-media-stack` (see repo `infra/mnky-media-stack/README.md`):
 - **`python3 scripts/verify-media-connectivity.py`** — smoke-test Jellyfin, *arr, Prowlarr, Jellyseerr, qBittorrent, and qBittorrent download clients in Sonarr/Radarr/Lidarr.
 - **`python3 scripts/reset-jellyseerr-admin-password.py`** — reset the local Jellyseerr admin password from `.env.secrets` when login drifts from Jellyfin.
 - **`./scripts/ensure-netbird-peer.sh`** — idempotent `netbird up` using `NETBIRD_SETUP_TOKEN` / `NETBIRD_MANAGEMENT_URL` from env files.
+- **`python3 scripts/configure-jellyfin-reverse-proxy.py`** — Jellyfin `network.xml` **Known proxies** + published URI for Traefik.
 
 ### Start/stop and updates
 
