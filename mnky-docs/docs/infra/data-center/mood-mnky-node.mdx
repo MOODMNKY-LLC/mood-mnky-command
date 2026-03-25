@@ -1,36 +1,38 @@
 ---
 title: MOOD-MNKY Node Deep Dive
-description: Hardware and storage profile of the MOOD-MNKY node (formerly PRO-MNKY) in the MOOD MNKY Proxmox cluster. Specs to be captured when the node is online.
+description: Hardware and storage profile of the MOOD-MNKY node (formerly PRO-MNKY), including its Intel iGPU media stack role.
 ---
 
 ## Overview
 
-`MOOD-MNKY` (formerly PRO-MNKY) is an additional node in the cluster. It is currently offline from the perspective of detailed hardware documentation; hardware details will be captured once the node is brought online.
+`MOOD-MNKY` (formerly PRO-MNKY) is an additional node in the cluster. It is now online and hosts the target **media stack** (ARR + Jellyfin + qBittorrent) using the node’s **Intel iGPU** for VA-API/QSV transcoding.
+
+Hardware highlights observed on the host:
+
+- CPU: Intel Core i9-13900KS
+- iGPU device nodes: `/dev/dri/card1` and `/dev/dri/renderD128`
+- Host memory: ~125 GiB
 
 ---
 
 ## Role
 
-- Additional node in the cluster; hardware details to be captured once the node is brought online.
+- Target compute + GPU/iGPU node for the MOOD MNKY **media stack**.
+- Runs LXC **120** (`mnky-media-stack`) which provides:
+  - Jellyfin media playback and hardware transcoding
+  - qBittorrent download ingestion
+  - Prowlarr + Sonarr/Radarr/Lidarr orchestration
+  - Jellyseerr requests/discovery
+- Storage access: TrueNAS shared media NFS dataset (mounted into the LXC as `/mnt/media`)
+
+See: [`Media Stack (ARR + Jellyfin + qBittorrent)](/docs/infra/data-center/media-stack)`.
 
 ---
 
 ## Next steps
 
-When MOOD-MNKY is online:
+If you change MOOD-MNKY’s hardware (CPU, iGPU, or storage pools), re-capture the node profile by updating these facts and re-verifying:
 
-1. Run the hardware snapshot collector on the node:
-
-```bash
-sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
-```
-
-2. This will produce a snapshot under:
-
-```bash
-/root/hardware-snapshots/MOOD-MNKY/<timestamp>/
-```
-
-3. Mirror the structure used for other nodes (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete MOOD-MNKY's profile.
-
-4. Update the [Cluster Nodes](/docs/infra/data-center/nodes) summary table and the [Data Center Map](/docs/infra/data-center/data-center-map) with the new node specs.
+1. The iGPU devices visible to containers (e.g. `/dev/dri/renderD128`)
+2. TrueNAS NFS media mounts
+3. The media-stack LXC’s Docker/Compose health

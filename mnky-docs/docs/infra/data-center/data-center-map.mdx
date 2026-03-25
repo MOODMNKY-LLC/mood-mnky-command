@@ -113,13 +113,13 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 
 | Attribute | Value |
 |-----------|--------|
-| **Status** | Offline |
-| **Role** | Additional node; specs to be captured when online |
-| **CPU** | — |
-| **Memory** | — |
-| **Root storage** | — |
+| **Status** | Online (media-stack target) |
+| **Role** | Additional node; Intel iGPU media workloads for VA-API transcoding |
+| **CPU** | Intel Core i9-13900KS (Intel iGPU / VA-API capable) |
+| **Memory** | ~125 GiB (host) |
+| **Root storage** | rpool (~2.7 TiB) |
 
-**VMs and LXCs:** Not applicable until node is online. When MOOD-MNKY is brought up, run the hardware snapshot collector and add a row to this map.
+**VMs and LXCs:** LXC `120` (`mnky-media-stack`) runs the target **ARR + Jellyfin + qBittorrent** media stack with TrueNAS NFS mounts and NetBird access.
 
 ---
 
@@ -167,7 +167,7 @@ flowchart LR
     CASA[CASA-MNKY]
     DATA[DATA-MNKY]
     STUD[SAGE-MNKY]
-    PRO[MOOD-MNKY offline]
+    PRO[MOOD-MNKY media-stack (LXC 120)]
   end
   subgraph lxc [LXCs on CODE-MNKY]
     L3099["3099 dev"]

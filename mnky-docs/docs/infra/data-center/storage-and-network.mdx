@@ -81,6 +81,20 @@ The exact mount details (server address, path, and mount options) are visible in
 - Proxmox storage configuration (`pvesh get /nodes/<node>/storage`).
 - `df -hT` and `mount` outputs on each node.
 
+### Media stack mounts
+
+The MOOD MNKY media stack mounts the shared TrueNAS media dataset at `/mnt/media` inside the LXC.
+
+Expected mapping:
+
+- **TrueNAS export:** `10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media`
+- **LXC mount point:** `/mnt/media`
+- **Jellyfin libraries and *arr roots:**
+  - `/mnt/media/Movies` -> Jellyfin `/data/movies` and Radarr `/movies`
+  - `/mnt/media/Shows` -> Jellyfin `/data/tvshows` and Sonarr `/tv`
+  - `/mnt/media/Music` -> Jellyfin `/data/music` and Lidarr `/music`
+  - `/mnt/media/Downloads` -> qBittorrent `/downloads` and *arr download ingestion
+
 ---
 
 ## Storage usage patterns

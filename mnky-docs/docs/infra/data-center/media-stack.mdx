@@ -1,0 +1,193 @@
+---
+title: Media Stack (ARR + Jellyfin + qBittorrent)
+description: MOOD-MNKY media workloads on Intel iGPU (VA-API/QSV) with TrueNAS NFS mounts and NetBird access.
+---
+
+## Overview
+
+This page documents the **target** media-stack architecture for the MOOD MNKY Proxmox data center: a Docker-based **Jellyfin** + **qBittorrent** + **Prowlarr** + **Sonarr/Radarr/Lidarr** + **Jellyseerr** stack running inside an LXC on **`MOOD-MNKY`**.
+
+The stack is wired to:
+
+- **TrueNAS NFS** for libraries and downloads (the shared media dataset).
+- **NetBird** so “Datacenter” peers can reach the workload over the overlay network without depending on WAN exposure.
+
+## Current vs planned deployment
+
+Per the cluster documentation, **CODE-MNKY** currently hosts the legacy media stack (VMID **3103** per `data-center-map.mdx`).
+
+The **planned** new home is **MOOD-MNKY**, using LXC **120** (`mnky-media-stack`) with an Intel iGPU device pass-through for Jellyfin hardware acceleration.
+
+Cutover is your operational decision; this document describes how MOOD-MNKY should be provisioned and validated when it becomes the primary media host.
+
+## Target deployment details
+
+| Item | Value |
+| ---- | ----- |
+| **Proxmox node** | `MOOD-MNKY` |
+| **LXC** | `mnky-media-stack` (VMID `120`) |
+| **Host IP (LAN)** | `10.1.0.x` (DHCP on VLAN `10.1.0.0/24`) |
+| **iGPU device for Jellyfin** | `/dev/dri/renderD128` (passed through to the LXC) |
+| **Docker stack** | `qBittorrent` (via Gluetun), `Jellyfin`, `Jackett`, `Jellyseerr`, `Prowlarr`, `Sonarr`, `Radarr`, `Lidarr` |
+
+## Storage layout (TrueNAS NFS)
+
+The LXC mounts the TrueNAS media dataset at:
+
+- **Mount point in LXC:** `/mnt/media`
+- **TrueNAS export:** `10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media`
+
+The docker-compose binds those subpaths into each service. The intended logical mapping is:
+
+- `/mnt/media/Movies` -> Jellyfin `/data/movies` and Radarr `/movies`
+- `/mnt/media/Shows` -> Jellyfin `/data/tvshows` and Sonarr `/tv`
+- `/mnt/media/Music` -> Jellyfin `/data/music` and Lidarr `/music`
+- `/mnt/media/Downloads` -> qBittorrent `/downloads` and *arr download ingestion
+
+See also: [`Storage and Network Topology`](/docs/infra/data-center/storage-and-network) for the shared NFS model.
+
+## Transcoding (Intel iGPU via VA-API/QSV)
+
+Jellyfin hardware acceleration is validated by confirming that FFmpeg can access VA-API and that an encode can be performed via `h264_vaapi`.
+
+### Validation done (evidence)
+
+- Jellyfin container sees `/dev/dri/renderD128`.
+- A short VAAPI encode test using the Jellyfin ffmpeg binary at `/usr/lib/jellyfin-ffmpeg/ffmpeg` completed successfully and produced an H.264 MP4 output using `h264_vaapi`.
+
+### What to configure in Jellyfin
+
+In the Jellyfin UI, enable playback/transcoding acceleration using either:
+
+- **VA-API**, or
+- **Intel QSV**
+
+Then select the corresponding render node (commonly exposed as `renderD128`) and verify:
+
+- direct play works as expected
+- transcodes move to the hardware encoder path (check Jellyfin logs during playback/transcode)
+
+## qBittorrent VPN (Proton + Gluetun)
+
+The stack routes **qBittorrent** through **Gluetun** (ProtonVPN **WireGuard**) with **VPN port forwarding** enabled. The qBittorrent Web UI is published on the LXC on **`8081`** (mapped via Gluetun). Torrent **listen port** is driven by Proton’s forwarded port (synced into qBittorrent via Gluetun’s `VPN_PORT_FORWARDING_UP_COMMAND`).
+
+**Required:** In qBittorrent’s Web UI, enable **“Bypass authentication for clients on localhost”** so Gluetun can call the local API to set `listen_port`.
+
+**Firewall:** Set **`GLUETUN_FIREWALL_OUTBOUND_SUBNETS`** to specific LAN/NFS CIDRs only. Avoid broad ranges that overlap Proton’s WireGuard tunnel (often `10.2.0.0/…`), or NAT-PMP port forwarding can fail.
+
+**\*arr hostname:** The `gluetun` service advertises the hostname **`qbittorrent`** on the Docker network so download clients can still use `qbittorrent:8080`.
+
+## NetBird access (Datacenter routing)
+
+NetBird is installed **inside** the LXC so the media workload is a first-class peer.
+
+### Join (what to use, not the secrets)
+
+- `NETBIRD_MANAGEMENT_URL` (from your private env / secrets store)
+- a **NetBird setup token** created for the peer (stored in your secrets store; do not commit it)
+
+### Routing behavior
+
+Assign this peer to the **`Datacenter`** group, so the classic RFC1918 routes (including `10.1.0.0/24`) are installed for peers in that group.
+
+### Install / join (official flow)
+
+Aligned with NetBird’s Linux install docs: install the agent (`curl -fsSL https://pkgs.netbird.io/install.sh | sh`), then register with **`netbird up --setup-key &lt;SETUP_KEY&gt;`**. For self-hosted management, pass **`--management-url &lt;your URL&gt;`** (your deployment uses `NETBIRD_MANAGEMENT_URL` / the dashboard URL from secrets). Verify with **`netbird status`** and **`ip addr show wt0`**. See [NetBird — Install on Linux](https://docs.netbird.io/get-started/install/linux) and [Install (setup key + management URL)](https://docs.netbird.io/get-started/install#running-net-bird-with-a-setup-key).
+
+### Access hostnames (next setup steps)
+
+Use these from any **NetBird peer in a group that receives routes** (e.g. **`Datacenter`**) once Magic DNS / your resolver can reach the peer’s **FQDN**. You can always use the **NetBird IP** or **MOOD LAN IP** as a fallback.
+
+| Access | Jellyfin | qBittorrent Web UI (Gluetun) |
+| ------ | -------- | ------------------------------ |
+| **NetBird FQDN** (from `netbird status`) | `http://mnky-media-stack-185-25.netbird.moodmnky.com:8096` | `http://mnky-media-stack-185-25.netbird.moodmnky.com:8081` |
+| **NetBird IP** (`wt0`) | `http://100.117.185.25:8096` | `http://100.117.185.25:8081` |
+| **MOOD LAN** (VLAN `10.1.0.0/24`) | `http://10.1.0.120:8096` | `http://10.1.0.120:8081` |
+
+Re-check the **FQDN** and **NetBird IP** with `netbird status` on the LXC if the peer is reinstalled — they can change.
+
+### Reachability validation (evidence)
+
+From the MOOD-MNKY host, Jellyfin’s web root was reachable over NetBird to the workload’s overlay IP/hostname (returns a redirect to the Jellyfin web UI).
+
+## Services and ports (LXC host ports)
+
+These ports are published on the LXC network interface:
+
+- Jellyfin: `8096`
+- qBittorrent WebUI: `8081`
+- Prowlarr: `9696`
+- Sonarr: `8989`
+- Radarr: `7878`
+- Lidarr: `8686`
+- Jellyseerr: `5055`
+
+Note: service UIs may return `401` until you complete each application’s initial setup workflow.
+
+## Operational notes
+
+### Docker compose location
+
+On the LXC, configs live under the local disk path:
+
+- `/opt/mnky-media-stack/config`
+
+The compose file is:
+
+- `/opt/mnky-media-stack/docker-compose.yml`
+
+### Start/stop and updates
+
+When updating images:
+
+1. `docker compose pull`
+2. `docker compose up -d`
+
+For troubleshooting, use:
+
+1. `docker compose logs -f <service>`
+2. inspect the corresponding `/opt/mnky-media-stack/config/<service>` directory
+
+### Upgrade order (recommended)
+
+If you are upgrading the whole stack, keep stateful services aligned by order:
+
+- **Prowlarr** (indexer manager)
+- **Sonarr/Radarr/Lidarr** (app download management)
+- **qBittorrent** (download client)
+- **Jellyfin** (media playback + transcoding)
+
+## Architecture diagram
+
+```mermaid
+flowchart LR
+  subgraph truenas [TrueNAS 10.0.0.5]
+    NFS[hyper + media NFS export]
+  end
+
+  subgraph mood [MOOD-MNKY]
+    LXC[LXC 120 mnky-media-stack]
+  end
+
+  subgraph docker [Docker inside LXC]
+    JF[Jellyfin (VA-API/QSV)]
+    GT[Gluetun + Proton VPN]
+    QB[qBittorrent]
+    JS[Jellyseerr]
+    PRO[Prowlarr]
+    S[Sonarr]
+    R[Radarr]
+    L[Lidarr]
+  end
+
+  NFS -->|/mnt/media| LXC
+  LXC --> JF
+  LXC --> GT
+  GT --> QB
+  LXC --> JS
+  LXC --> PRO
+  LXC --> S
+  LXC --> R
+  LXC --> L
+```
+

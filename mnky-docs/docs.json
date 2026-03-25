@@ -285,6 +285,7 @@
               "docs/infra/data-center/mood-mnky-node",
               "docs/infra/data-center/mnky-hq-node",
               "docs/infra/data-center/storage-and-network",
+              "docs/infra/data-center/media-stack",
               "docs/infra/data-center/runbooks"
             ]
           },

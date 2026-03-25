@@ -44,3 +44,6 @@ mnky-docs/env-management/
 # Local TLS certs (mkcert-generated for Supabase)
 certs/
 apps/web/certificates/
+
+# TrueNAS raw rsync exports (API keys, Jackett cookies, qBittorrent secrets)
+infra/mnky-media-stack/_truenas-export/
