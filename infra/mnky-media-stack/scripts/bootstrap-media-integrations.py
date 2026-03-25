@@ -47,8 +47,15 @@ def load_env_files() -> dict[str, str]:
             k, v = k.strip(), v.strip().strip('"').strip("'")
             if k:
                 out[k] = v
+    # datacenter typo: JELLYSEER_* (one R) → JELLYSEERR_*
+    for bad, good in (
+        ("JELLYSEER_ADMIN_EMAIL", "JELLYSEERR_ADMIN_EMAIL"),
+        ("JELLYSEER_ADMIN_PASSWORD", "JELLYSEERR_ADMIN_PASSWORD"),
+    ):
+        if bad in out and good not in out:
+            out[good] = out[bad]
     for k, v in os.environ.items():
-        if k.startswith("JELLYFIN_") or k.startswith("JELLYSEERR_") or k.startswith("QB_"):
+        if k.startswith("JELLYFIN_") or k.startswith("JELLYSEERR_") or k.startswith("JELLYSEER_") or k.startswith("QB_"):
             if v:
                 out[k] = v
     return out

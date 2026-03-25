@@ -70,6 +70,44 @@ This script:
 
 **Lidarr** is linked in **Prowlarr** only; **Jellyseerr** does not support Lidarr as a request target in current versions.
 
+### Jellyseerr login (local user)
+
+Jellyseerr uses a **local** account in its SQLite DB (not your Jellyfin password unless you chose to match them).
+
+- **Email:** `JELLYSEERR_ADMIN_EMAIL` or default **`jellyseerr-admin@local.moodmnky`**
+- **Password:** `JELLYSEERR_ADMIN_PASSWORD`, or **`JELLYFIN_PASSWORD`** if the dedicated variable is unset (as when the admin row was first created).
+
+If you **cannot log in** after changing Jellyfin’s password, run a one-time reset (stops Jellyseerr briefly):
+
+```bash
+cd /opt/mnky-media-stack
+python3 scripts/reset-jellyseerr-admin-password.py
+```
+
+Ensure `.env.secrets` has the password you want (`JELLYSEERR_ADMIN_PASSWORD` or `JELLYFIN_PASSWORD`). A typo in `datacenter.env` (`JELLYSEER_*` with one **R**) is accepted and mapped to `JELLYSEERR_*` in the scripts.
+
+### Connectivity + qBittorrent clients (smoke test)
+
+After `.env` / `.env.secrets` include `JELLYFIN_API_KEY`, `QB_WEBUI_*`, and optional `SONARR_API_KEY` / `RADARR_API_KEY` / `LIDARR_API_KEY` (else keys are read from each app’s `config.xml`):
+
+```bash
+cd /opt/mnky-media-stack
+python3 scripts/verify-media-connectivity.py
+```
+
+This checks Jellyfin, Sonarr, Radarr, Lidarr, Prowlarr, Jellyseerr, qBittorrent login + API, and that each *arr lists a **qBittorrent** download client.
+
+### NetBird on the LXC
+
+Install the agent per [NetBird Linux install](https://docs.netbird.io/get-started/install/linux), then join with your setup key and (for self-hosted) management URL. Idempotent helper (reads `NETBIRD_SETUP_TOKEN` and `NETBIRD_MANAGEMENT_URL` from `.env.secrets` / `.env`):
+
+```bash
+chmod +x scripts/ensure-netbird-peer.sh
+./scripts/ensure-netbird-peer.sh
+```
+
+Verify with `netbird status` and (if needed) `ip addr show wt0`.
+
 ## Jackett + Prowlarr (Torznab “all”)
 
 **Jackett** exposes many tracker definitions as Torznab. **Prowlarr** can use a single **Generic Torznab** indexer pointed at Jackett’s **all** feed: `http://jackett:9117/api/v2.0/indexers/all/results/torznab/` (inside Docker).

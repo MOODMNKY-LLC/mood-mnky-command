@@ -136,6 +136,14 @@ The compose file is:
 
 - `/opt/mnky-media-stack/docker-compose.yml`
 
+### Automation scripts (on the LXC)
+
+From `/opt/mnky-media-stack` (see repo `infra/mnky-media-stack/README.md`):
+
+- **`python3 scripts/verify-media-connectivity.py`** — smoke-test Jellyfin, *arr, Prowlarr, Jellyseerr, qBittorrent, and qBittorrent download clients in Sonarr/Radarr/Lidarr.
+- **`python3 scripts/reset-jellyseerr-admin-password.py`** — reset the local Jellyseerr admin password from `.env.secrets` when login drifts from Jellyfin.
+- **`./scripts/ensure-netbird-peer.sh`** — idempotent `netbird up` using `NETBIRD_SETUP_TOKEN` / `NETBIRD_MANAGEMENT_URL` from env files.
+
 ### Start/stop and updates
 
 When updating images:

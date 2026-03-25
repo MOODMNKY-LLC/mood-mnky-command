@@ -22,18 +22,22 @@ from pathlib import Path
 STACK = Path("/opt/mnky-media-stack")
 
 
-def load_env(path: Path) -> dict[str, str]:
+def load_env_files() -> dict[str, str]:
+    """Merge `.env.secrets` then `.env` (same order as bootstrap-media-integrations; later wins)."""
     out: dict[str, str] = {}
-    if not path.is_file():
-        return out
-    for line in path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    for name in (".env.secrets", ".env"):
+        path = STACK / name
+        if not path.is_file():
             continue
-        k, _, v = line.partition("=")
-        k = k.strip()
-        v = v.strip().strip('"').strip("'")
-        out[k] = v
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if k:
+                out[k] = v
     return out
 
 
@@ -160,7 +164,7 @@ def ensure_qbit(
 
 
 def main() -> int:
-    env = load_env(STACK / ".env")
+    env = load_env_files()
     user = env.get("QB_WEBUI_USERNAME", "admin")
     password = env.get("QB_WEBUI_PASSWORD")
     if not password:
