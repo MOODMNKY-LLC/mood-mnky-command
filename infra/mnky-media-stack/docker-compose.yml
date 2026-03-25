@@ -44,9 +44,11 @@ services:
       TZ: UTC
     volumes:
       - ./config/jellyfin:/config
+      # Paths mirror TrueNAS: 10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media → LXC /mnt/media
       - /mnt/media/Movies:/data/movies
       - /mnt/media/Shows:/data/tvshows
       - /mnt/media/Music:/data/music
+      - /mnt/media/Books:/data/books
     devices:
       - /dev/dri:/dev/dri
     group_add:

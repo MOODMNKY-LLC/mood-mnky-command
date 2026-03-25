@@ -129,8 +129,25 @@ With VPN + Proton forwarded port, **WAN NAT to `6881` is optional** (your home I
 ## Storage
 
 - **TrueNAS NFS:** `10.0.0.5:/mnt/HYPER-MNKY/PRO-MNKY/Media` mounted in the LXC at **`/mnt/media`** (see `/etc/fstab`).
-- **Layout:** `Movies`, `Shows`, `Music`, `Downloads`, `Books`, `Private` — Compose binds these for *arr and Jellyfin.
 - **App config:** `./config/*` on the LXC root disk (not on NFS), alongside this `docker-compose.yml` (typically `/opt/mnky-media-stack`).
+
+### NFS folder layout vs Docker (verified against the live share)
+
+On **TrueNAS** and **LXC `/mnt/media`**, the dataset currently has these **top-level directories:** `Books`, `Downloads`, `Movies`, `Music`, `Private`, `Shows`, plus `MOOD_MNKY` (misc) and a migration backup. There is **no** top-level **`Videos`** folder; home/personal video is usually under **Movies**, **Private**, or a path you add on the NAS.
+
+| NFS path (`/mnt/media/...`) | Jellyfin (in container) | Sonarr | Radarr | Lidarr | qBittorrent |
+| --- | --- | --- | --- | --- | --- |
+| `Movies/` | `/data/movies` | — | `/movies` | — | — |
+| `Shows/` | `/data/tvshows` | `/tv` | — | — | — |
+| `Music/` | `/data/music` | — | — | `/music` | — |
+| `Books/` | `/data/books` | — | — | — | — |
+| `Downloads/` | *(add in UI if desired)* | `/downloads` | `/downloads` | `/downloads` | `/downloads` |
+| `Private/` | *(not mounted; add volume if needed)* | — | — | — | — |
+| `Videos/` | **N/A** — not on share | — | — | — | — |
+
+**Prowlarr** only uses **`./config/prowlarr`** (SQLite + definitions). It does **not** map library folders; indexers talk to sites, and Sonarr/Radarr/Lidarr use the paths above.
+
+**Jellyfin wizard:** Add libraries pointing at **`/data/movies`**, **`/data/tvshows`**, **`/data/music`**, **`/data/books`**. For “Home videos” or mixed content, either create e.g. `Videos/` on TrueNAS and add a compose volume, or point a **Mixed** library at **`/data/movies`** / `/mnt/media/Private` (after adding a bind mount for `Private` if you want it in Jellyfin).
 
 ## Proxmox LXC (GPU)
 
