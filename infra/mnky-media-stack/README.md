@@ -196,7 +196,7 @@ Use **`traefik-dynamic/moodmnky-media.example.yml`**: **`media.moodmnky.com`** �
 **Why not `https://media.moodmnky.com/request`?** Traefik can path-route, but **stock Jellyseerr** (Next.js) serves assets from **`/_next/…`** at the **site root**. On the same hostname as Jellyfin, those requests would hit the wrong backend unless you **rebuilt Jellyseerr** with a **`basePath`** (custom image). Use a **separate subdomain** (e.g. **`media-request.moodmnky.com`**) instead.
 
 1. **DNS (public):** **`media.moodmnky.com`** and **`media-request.moodmnky.com`** → edge (A/AAAA or Cloudflare), same as your other subdomains.
-2. **pfSense Unbound (LAN):** Host overrides **`media`** and **`media-request`** under **`moodmnky.com` → `10.0.0.25`** (avoid hairpin), same idea as **`netbird.moodmnky.com`** in **`mnky-docs/docs/infra/edge-network/pfsense.mdx`**.
+2. **pfSense Unbound (LAN):** Host overrides **`media.moodmnky.com`** and **`media-request.moodmnky.com`** → **`10.0.0.25`** (split DNS; same pattern as **`netbird.moodmnky.com`**). After XML edits, regenerate Unbound (**Save/Apply** on DNS Resolver, or **`services_unbound_configure`** + **`unbound` restart**) so **`host_entries.conf`** updates.
 3. **Traefik:** **`10.0.0.25`** uses **`/etc/traefik/conf.d/`** with resolver **`cloudflare`** and **`websecure`**. Deploy **`traefik-dynamic/moodmnky-media.example.yml`** as **`moodmnky-media.yaml`** (routers use **priority 15** so **`media` / `media-request`** are not caught by Coolify’s **`*.moodmnky.com`** catch-all at **-1**). Reload: **`systemctl reload traefik`**. From a workstation with SSH: **`scripts/deploy-traefik-moodmnky-media.sh`**.
 4. **Firewall:** Allow **TCP 8096** and **TCP 5055** from **`10.0.0.25`** → media LXC.
 5. **Jellyfin (LXC):**
