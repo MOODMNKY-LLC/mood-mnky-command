@@ -8,8 +8,9 @@ Secrets (never commit):
 Required in those files:
   JELLYFIN_API_KEY
   JELLYFIN_URL          Public https URL for Jellyfin (e.g. https://media.moodmnky.com) for Jellyseerr → Jellyfin
+  JELLYFIN_USERNAME     Jellyfin account name to link Jellyseerr admin (id=1) for "Sign in with Jellyfin" (default admin).
   JELLYSEERR_PUBLIC_URL Public https URL for Jellyseerr itself (e.g. https://media-request.moodmnky.com).
-                        Sets settings.json main.applicationUrl (links, OAuth). Default: https://media-request.moodmnky.com
+                        Sets settings.json main.applicationUrl (invites, OIDC redirects). Default: https://media-request.moodmnky.com
   Optional internal URL for Docker-to-Docker (default):
   JELLYFIN_INTERNAL_HOST=jellyfin
   JELLYFIN_INTERNAL_PORT=8096
@@ -197,14 +198,57 @@ def jellyseerr_insert_admin_row(email: str, username: str, password_hash: str) -
         con.execute(
             """
             INSERT INTO user (email, username, permissions, password, userType, avatar, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, 1, '', datetime('now'), datetime('now'))
+            VALUES (?, ?, ?, ?, 2, '', datetime('now'), datetime('now'))
             """,
             (email, username, 1610612734, password_hash),
         )
         con.commit()
     finally:
         con.close()
+    # userType 2 = LOCAL (see Jellyseerr UserType enum; 1 was PLEX and breaks Jellyfin login UX).
     print(f"Jellyseerr: created local admin user {email} (username={username!r})")
+
+
+def jellyseerr_link_admin_to_jellyfin(jf_key: str, jellyfin_login_name: str) -> None:
+    """Bind Jellyseerr user id=1 to the matching Jellyfin account for unified Jellyfin sign-in."""
+    import sqlite3
+
+    users = jellyfin_docker_api("/Users", jf_key)
+    if not isinstance(users, list):
+        print("Jellyseerr: Jellyfin /Users response unexpected; skipping admin link", file=sys.stderr)
+        return
+    match = next(
+        (u for u in users if (u.get("Name") or "").lower() == jellyfin_login_name.lower()),
+        None,
+    )
+    if not match or not match.get("Id"):
+        print(
+            f"Jellyseerr: no Jellyfin user named {jellyfin_login_name!r}; skipping admin link",
+            file=sys.stderr,
+        )
+        return
+    jid = str(match["Id"])
+    jname = str(match.get("Name") or jellyfin_login_name)
+    db = STACK / "config/jellyseerr/db/db.sqlite3"
+    con = sqlite3.connect(str(db))
+    try:
+        row = con.execute("SELECT id, jellyfinUserId FROM user WHERE id = 1").fetchone()
+        if not row:
+            return
+        if row[1] == jid:
+            print(f"Jellyseerr: admin already linked to Jellyfin user {jname!r}")
+            return
+        con.execute(
+            """
+            UPDATE user SET jellyfinUserId = ?, jellyfinUsername = ?, userType = 3, updatedAt = datetime('now')
+            WHERE id = 1
+            """,
+            (jid, jname),
+        )
+        con.commit()
+        print(f"Jellyseerr: linked admin (id=1) to Jellyfin user {jname!r} ({jid})")
+    finally:
+        con.close()
 
 
 def jellyfin_docker_api(path: str, jf_api_key: str) -> dict:
@@ -292,8 +336,15 @@ def jellyseerr_patch_settings_json(
         }
     ]
     data.setdefault("public", {})["initialized"] = True
-    # Jellyseerr's own public base URL (not Jellyfin — used for invites, redirects, OAuth).
-    data.setdefault("main", {})["applicationUrl"] = seerr_public_url.rstrip("/")
+    # Jellyseerr's own public base URL (not Jellyfin — used for invites, redirects, OIDC/OAuth).
+    main = data.setdefault("main", {})
+    main["applicationUrl"] = seerr_public_url.rstrip("/")
+    # Jellyfin/Emby sign-in: allow "Sign in with Jellyfin" and auto-provision Jellyseerr users (newPlexLogin name is legacy).
+    main.setdefault("mediaServerLogin", True)
+    main.setdefault("localLogin", True)
+    main.setdefault("newPlexLogin", True)
+    # MediaServerType: 1=PLEX, 2=JELLYFIN, 3=EMBY, 4=NOT_CONFIGURED (must be 2 for Jellyfin auth paths).
+    main["mediaServerType"] = 2
 
     path.write_text(json.dumps(data, indent=1) + "\n")
     print(
@@ -365,6 +416,10 @@ def main() -> int:
         internal_port=internal_port,
         rkey=rkey,
         skey=skey,
+    )
+    jellyseerr_link_admin_to_jellyfin(
+        jf_key,
+        env.get("JELLYFIN_USERNAME", "admin").strip() or "admin",
     )
     jellyseerr_compose("start", "jellyseerr")
     time.sleep(6)

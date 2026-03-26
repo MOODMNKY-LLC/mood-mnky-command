@@ -272,6 +272,17 @@ In Jellyfin **Dashboard → Playback**, enable **Intel QuickSync (QSV)** or **VA
 2. **Download client:** point Sonarr/Radarr/Lidarr at host **`qbittorrent`**, port **8080** (Docker alias → Gluetun; see Gluetun section above).
 3. **Jellyseerr:** connect to Jellyfin URL (e.g. `http://jellyfin:8096` or the LAN IP).
 
+### Jellyseerr login (Jellyfin accounts)
+
+Jellyseerr is **not** the same user database as Jellyfin. You can:
+
+- **Sign in with Jellyfin** (recommended for users): uses Jellyfin’s username/password against the server URL in settings (`jellyfin.ip` / port, usually Docker hostname `jellyfin`). Requires **Settings → Users → Enable Jellyfin/Emby sign-in** (`mediaServerLogin`, set by **`bootstrap-media-integrations.py`**). **Allow new Jellyfin/Emby users** (`newPlexLogin`, legacy name) controls whether a Jellyfin user who has no Jellyseerr row yet gets a Jellyseerr account on first login.
+- **Local sign-in**: email/username + password stored in Jellyseerr’s SQLite (the bootstrap-created admin). **`bootstrap-media-integrations.py`** links **user id 1** to the Jellyfin user named **`JELLYFIN_USERNAME`** (default `admin`) so the same person can use **either** tab without creating a duplicate account.
+
+**OIDC / SSO:** Jellyseerr can use **OpenID Connect** with an external provider (e.g. [Authelia](https://www.authelia.com/integration/openid-connect/clients/jellyseerr/)); that is separate from “Sign in with Jellyfin” and is optional.
+
+If Jellyfin login fails, confirm Jellyfin is reachable from the Jellyseerr container (`docker exec jellyseerr wget -qO- http://jellyfin:8096/System/Info/Public`) and that **Dashboard → Networking → Known proxies** includes your reverse proxy (see **`configure-jellyfin-reverse-proxy.py`**).
+
 **Jackett** is included in **`docker-compose.yml`**; use **`bootstrap-prowlarr-jackett.py`** after importing configs so Prowlarr gets the **all-indexers** Torznab feed.
 
 ## NetBird
