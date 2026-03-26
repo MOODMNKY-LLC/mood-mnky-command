@@ -296,6 +296,19 @@ On the **host**, the CT config includes:
 
 In Jellyfin **Dashboard → Playback**, enable **Intel QuickSync (QSV)** or **VA-API** and select the render device. Confirm with a transcode test and inspect logs for hardware encode.
 
+### HDR tone-mapping and the LinuxServer image
+
+Per [Jellyfin Intel HWA](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/intel/), **hardware HDR → SDR tone-mapping** can use **OpenCL** (Dolby Vision P5, etc.) or **QSV VPP** on Linux. The **`linuxserver/jellyfin`** image ships **`jellyfin-ffmpeg`** with VA-API/QSV drivers but **does not include an OpenCL ICD** by default. If you enable **Tone mapping** and **VPP tone mapping** in Jellyfin, FFmpeg may try `-init_hw_device opencl=ocl@va` and fail with:
+
+`Failed to get number of OpenCL platforms` / `FFmpeg exited with code 237`
+
+That breaks **playback** for HDR/Dolby Vision titles that need transcoding.
+
+**Mitigations:**
+
+1. **Disable** (in **Dashboard → Playback**) **Enable tone mapping** and **Enable VPP tone mapping** until OpenCL is available — restores typical QSV/H.264 transcodes for most content. Jellyfin may fall back to **software** tone-mapping for some HDR (higher CPU) or you may still see issues with **Dolby Vision** remuxes; prefer **HDR10** or **SDR** sources for problematic files.
+2. **Advanced:** install the Intel OpenCL runtime **inside the container** (e.g. Debian/Ubuntu `intel-opencl-icd` + dependencies) and mount `/dev/dri` as you already do — only if you need GPU HDR tonemapping; document any custom image or `Dockerfile` in your fork.
+
 ## *arr wiring
 
 1. **Prowlarr:** add indexers, then **Sync App** to Sonarr, Radarr, Lidarr. Optional: add **FlareSolverr** as an **indexer proxy** (see FlareSolverr section above).
