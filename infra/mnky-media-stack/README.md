@@ -124,6 +124,34 @@ Then **Settings → Apps → Sync App Indexers** (or full sync) so Sonarr/Radarr
 
 **Jellyfin** has **no** standard Docker env vars for an initial admin user/password on the LinuxServer image. Complete the **first-run wizard** in the UI (typically `http://<LXC-IP>:8096`) and choose the admin account there.
 
+### Plugin repositories & catalog (automated)
+
+Official and vetted third-party plugin feeds are listed in [Jellyfin’s plugin documentation](https://jellyfin.org/docs/general/server/plugins/). To register those feeds and install a **curated** set (TMDb Box Sets, Subtitle Extract, Open Subtitles, Playback Reporting, Trakt, SSO, Merge Versions, plus optional extras), run on the LXC:
+
+```bash
+cd /opt/mnky-media-stack
+# Requires JELLYFIN_API_KEY in .env.secrets (Dashboard → API Keys)
+python3 scripts/configure-jellyfin-plugin-catalog.py
+# Optional: Skin Manager, Themerr, Ani-Sync
+python3 scripts/configure-jellyfin-plugin-catalog.py --with-extras
+# Reload Jellyfin after new plugins
+python3 scripts/configure-jellyfin-plugin-catalog.py --restart
+```
+
+The script calls Jellyfin’s **`POST /Repositories`** and **`POST /Packages/Installed/{name}`** APIs (see [`PackageController`](https://github.com/jellyfin/jellyfin/blob/master/Jellyfin.Api/Controllers/PackageController.cs)). Repositories added by default:
+
+| Name | Manifest |
+| ---- | -------- |
+| Jellyfin Stable | `https://repo.jellyfin.org/files/plugin/manifest.json` |
+| 9p4 SSO | `https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json` |
+| danieladov Utilities | `https://raw.githubusercontent.com/danieladov/JellyfinPluginManifest/master/manifest.json` |
+| LizardByte | `https://app.lizardbyte.dev/jellyfin-plugin-repo/manifest.json` |
+| Ani-Sync | `https://raw.githubusercontent.com/vosmiic/jellyfin-ani-sync/master/manifest.json` |
+
+**Open Subtitles**, **Trakt**, and **SSO** still need credentials or provider settings in **Dashboard → Plugins** after install.
+
+If `JELLYFIN_URL` in `.env.secrets` is a public `https://` host, the script defaults API calls to **`http://127.0.0.1:8096`**. Override with **`JELLYFIN_CONFIGURE_URL`** or **`JELLYFIN_LOCAL_URL`** if your layout differs.
+
 ## qBittorrent + ProtonVPN (Gluetun)
 
 Torrent traffic runs through **[Gluetun](https://github.com/qdm12/gluetun)** (`qmcgaw/gluetun`) using **ProtonVPN WireGuard** and **provider port forwarding**. The `qbittorrent` container uses `network_mode: service:gluetun`, so only Gluetun has published ports for the Web UI (`8081` → `8080` inside the stack).
