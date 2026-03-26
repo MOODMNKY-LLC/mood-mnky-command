@@ -9,6 +9,10 @@ This page is the **internal source of truth** for how remote access and site rou
   Operational detail also lives in the private repo under `docs/network/` (Markdown). These Mintlify pages are the **published** mirror for engineers using **docs.moodmnky.com**. Keep both in sync when topology or route IDs change.
 </Note>
 
+<Note>
+  **Split DNS (NetBird → pfSense):** the nameserver group **`Internal mnky.internal (pfSense)`** forwards **`mnky.internal`**, **`moodmnky.local`**, and **`mnkylab.moodmnky.com`** to **`10.0.0.1`**. LAN-style monitoring and infra names are typically **`*.mnkylab.moodmnky.com`** (e.g. `grafana.mnkylab.moodmnky.com`). Public apps stay on **`moodmnky.com`** via Traefik/Coolify/Cloudflare.
+</Note>
+
 ## What we have now (summary)
 
 | Layer | Role | Location / anchor |

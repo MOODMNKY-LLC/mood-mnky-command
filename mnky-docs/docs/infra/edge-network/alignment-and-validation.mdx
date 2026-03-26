@@ -34,7 +34,9 @@ This page ties **routing**, **NAT**, **firewall aliases**, and **DNS** together 
 
 - **Split-horizon:** `*.moodmnky.local` and similar may differ for VPN vs LAN resolvers.
 - **OAuth / IdP** URLs use the public hostname — internal DNS should return the **proxy** or internal VIP when you want traffic to stay on-LAN.
-- **NetBird nameserver group (2026-03-26):** **`mnky.internal`** is forwarded to **pfSense** **`10.0.0.1`** for **Remote-Operators** and **Datacenter** peers — add **Unbound Host Overrides** (or a zone) for each hostname (e.g. **`grafana.mnky.internal`** → LAN IP). Until then, queries may **NXDOMAIN**.
+- **NetBird nameserver group:** **`Internal mnky.internal (pfSense)`** forwards **`mnky.internal`**, **`moodmnky.local`**, and **`mnkylab.moodmnky.com`** to **pfSense** **`10.0.0.1`** for **Remote-Operators** and **Datacenter** peers. Add **Unbound Host Overrides** for each hostname you need (e.g. **`grafana.mnkylab.moodmnky.com`** for LAN-style names, or **`grafana.mnky.internal`** if you use that zone).
+- **Namespace rule:** use **`*.mnky.internal`** for NetBird-oriented internal names; use **`*.mnkylab.moodmnky.com`** for pfSense LAN/DHCP identity and existing LAN overrides — both are served by **pfSense Unbound**, but keep zones separate to avoid split-horizon confusion.
+- **Ports:** resolving a name does **not** imply **:80** or **:443** in the browser. Internal tools (Grafana **:3000**, Prometheus **:9090**, etc.) still need the port in the URL unless you expose them on standard ports or behind a proxy.
 
 ## MTU / MSS
 
@@ -73,7 +75,7 @@ NetBird **WireGuard** often uses **1280** MTU on `wt0`. Stacked **VLAN + PPPoE +
     From an on-prem host, verify path to a chosen **`100.64.x.x`** peer if bidirectional semantics matter.
   </Step>
   <Step title="Role groups & split DNS">
-    **`GET /api/groups`** includes **Hypervisors**, **Remote-Operators**, etc. **`GET /api/dns/nameservers`** includes **`Internal mnky.internal (pfSense)`**. On pfSense, add **Unbound** records for **`mnky.internal`**; test with **`dig`** from a NetBird client.
+    **`GET /api/groups`** includes **Hypervisors**, **Remote-Operators**, etc. **`GET /api/dns/nameservers`** includes **`Internal mnky.internal (pfSense)`** with domains **`mnky.internal`**, **`moodmnky.local`**, **`mnkylab.moodmnky.com`**. On pfSense, add **Unbound** records as needed; test with **`dig`** from a NetBird client (e.g. **`dig @10.0.0.1 grafana.mnkylab.moodmnky.com`**).
   </Step>
 </Steps>
 
