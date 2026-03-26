@@ -2,11 +2,11 @@
 #
 # Hosts:
 #   https://media.moodmnky.com   → Jellyfin (10.1.0.120:8096)
-#   https://media-request.moodmnky.com → Jellyseerr (10.1.0.120:5055)
+#   https://mediarequest.moodmnky.com → Jellyseerr (10.1.0.120:5055)
 #
 # MOOD MNKY static Traefik uses entryPoint websecure + certResolver cloudflare (DNS-01).
 # coolify.yaml has HostRegexp(`*.moodmnky.com`) at priority -1 — these routers use priority 15
-# so media + media-request are not sent to Coolify.
+# so media + mediarequest are not sent to Coolify.
 #
 # If Let's Encrypt logs a transient "No such authorization" on first deploy, reload Traefik again
 # after a minute or hit the hostnames from outside to trigger a fresh order.
@@ -22,11 +22,11 @@ http:
       tls:
         certResolver: cloudflare
 
-    jellyseerr-media-request:
-      rule: Host(`media-request.moodmnky.com`)
+    jellyseerr-mediarequest:
+      rule: Host(`mediarequest.moodmnky.com`)
       entryPoints:
         - websecure
-      service: jellyseerr-media-request
+      service: jellyseerr-mediarequest
       priority: 15
       tls:
         certResolver: cloudflare
@@ -38,7 +38,7 @@ http:
         servers:
           - url: "http://10.1.0.120:8096"
 
-    jellyseerr-media-request:
+    jellyseerr-mediarequest:
       loadBalancer:
         passHostHeader: true
         servers:

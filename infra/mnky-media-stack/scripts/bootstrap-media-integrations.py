@@ -8,8 +8,8 @@ Secrets (never commit):
 Required in those files:
   JELLYFIN_API_KEY
   JELLYFIN_URL          Public https URL for Jellyfin (e.g. https://media.moodmnky.com) for Jellyseerr → Jellyfin
-  JELLYSEERR_PUBLIC_URL Public https URL for Jellyseerr itself (e.g. https://media-request.moodmnky.com).
-                        Sets settings.json main.applicationUrl (links, OAuth). Default: https://media-request.moodmnky.com
+  JELLYSEERR_PUBLIC_URL Public https URL for Jellyseerr itself (e.g. https://mediarequest.moodmnky.com).
+                        Sets settings.json main.applicationUrl (links, OAuth). Default: https://mediarequest.moodmnky.com
   Optional internal URL for Docker-to-Docker (default):
   JELLYFIN_INTERNAL_HOST=jellyfin
   JELLYFIN_INTERNAL_PORT=8096
@@ -330,7 +330,7 @@ def main() -> int:
         or ""
     ).strip()
     if not seerr_public:
-        seerr_public = "https://media-request.moodmnky.com"
+        seerr_public = "https://mediarequest.moodmnky.com"
 
     # --- Prowlarr ---
     pkey = api_key_xml("prowlarr")
