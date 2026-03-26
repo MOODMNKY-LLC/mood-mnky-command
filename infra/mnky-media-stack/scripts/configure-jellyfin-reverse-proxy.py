@@ -6,7 +6,8 @@ Sets:
   - KnownProxies: trust X-Forwarded-* from the proxy LAN IP
   - EnablePublishedServerUriByRequest: use Host / forwarded host for published URLs
 
-Does not set BaseUrl (Jellyfin stays at site root https://media.example.com/).
+Does not set BaseUrl for path-based hosting (Jellyfin stays at site root https://media.example.com/).
+If BaseUrl mistakenly contains a full URL (e.g. /https://...), clears it — that misconfiguration breaks iOS/Android clients.
 
 Restart Jellyfin after changes (optional --restart).
 
@@ -53,6 +54,14 @@ def patch_network_xml(path: Path, proxy_ips: list[str], published_by_request: bo
     if (pub.text or "").lower() != want:
         pub.text = want
         changed = True
+
+    bu = root.find("BaseUrl")
+    if bu is not None and bu.text:
+        t = (bu.text or "").strip()
+        # Invalid UI mistake: full URL or "/https://host" — must be empty at root or a path like /jellyfin only.
+        if "://" in t or t.startswith("/http"):
+            bu.text = ""
+            changed = True
 
     if changed:
         tree.write(path, encoding="utf-8", xml_declaration=True)

@@ -234,6 +234,8 @@ cd /opt/mnky-media-stack
 python3 scripts/configure-jellyfin-reverse-proxy.py --proxy-ip 10.0.0.25 --restart
 ```
 
+**`BaseUrl` (critical):** For Jellyfin at the **site root** (`https://media.moodmnky.com/` with no path prefix), **`config/jellyfin/network.xml`** must have **`BaseUrl` empty**. Do **not** put a full URL or `/https://…` in `BaseUrl` (that breaks web and **iOS/Android** clients). If you ever served Jellyfin under a subpath, `BaseUrl` would be only that path (e.g. `/jellyfin`), not the hostname.
+
 6. **`.env.secrets`:** **`JELLYFIN_URL=https://media.moodmnky.com`**, **`JELLYSEERR_PUBLIC_URL=https://media-request.moodmnky.com`** (optional; default in script matches). Then **`python3 scripts/bootstrap-media-integrations.py`** (sets Jellyfin **`externalHostname`** and Jellyseerr **`main.applicationUrl`**).
 
 [Jellyfin reverse-proxy notes](https://jellyfin.org/docs/general/post-install/networking/reverse-proxy) (known proxies + forwarded headers).
