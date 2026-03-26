@@ -35,7 +35,11 @@ services:
           - qbittorrent
 
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
+    # Custom image: Intel OpenCL ICD for GPU HDR tone-mapping (see Dockerfile.jellyfin + README).
+    build:
+      context: .
+      dockerfile: Dockerfile.jellyfin
+    image: mnky-jellyfin:opencl-local
     container_name: jellyfin
     restart: unless-stopped
     environment:

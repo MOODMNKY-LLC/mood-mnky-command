@@ -298,16 +298,28 @@ In Jellyfin **Dashboard → Playback**, enable **Intel QuickSync (QSV)** or **VA
 
 ### HDR tone-mapping and the LinuxServer image
 
-Per [Jellyfin Intel HWA](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/intel/), **hardware HDR → SDR tone-mapping** can use **OpenCL** (Dolby Vision P5, etc.) or **QSV VPP** on Linux. The **`linuxserver/jellyfin`** image ships **`jellyfin-ffmpeg`** with VA-API/QSV drivers but **does not include an OpenCL ICD** by default. If you enable **Tone mapping** and **VPP tone mapping** in Jellyfin, FFmpeg may try `-init_hw_device opencl=ocl@va` and fail with:
+Per [Jellyfin Intel HWA](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/intel/), **hardware HDR → SDR tone-mapping** can use **OpenCL** (Dolby Vision P5, etc.) or **QSV VPP** on Linux. The **`linuxserver/jellyfin`** image ships **`jellyfin-ffmpeg`** with VA-API/QSV drivers but **does not include an OpenCL ICD** by default. If you enable **Tone mapping** and **VPP tone mapping** in Jellyfin without OpenCL, FFmpeg may try `-init_hw_device opencl=ocl@va` and fail with:
 
 `Failed to get number of OpenCL platforms` / `FFmpeg exited with code 237`
 
-That breaks **playback** for HDR/Dolby Vision titles that need transcoding.
+**Is GPU HDR tone-mapping worth it?**
 
-**Mitigations:**
+- **Often yes** if you stream **HDR10 / DV** to **phones, tablets, or SDR TVs** that force transcoding: GPU tone-mapping is usually **much lower CPU** than full **software** tone-mapping, and keeps more work on the iGPU you already pass through.
+- **Optional** if you almost always **Direct Play** or your library is mostly **SDR**: leaving tone-mapping off is simpler and avoids this stack entirely.
+- **Trade-off:** a **custom image** (below) to maintain when rebasing on new `linuxserver/jellyfin` tags, plus occasional Intel driver quirks.
 
-1. **Disable** (in **Dashboard → Playback**) **Enable tone mapping** and **Enable VPP tone mapping** until OpenCL is available — restores typical QSV/H.264 transcodes for most content. Jellyfin may fall back to **software** tone-mapping for some HDR (higher CPU) or you may still see issues with **Dolby Vision** remuxes; prefer **HDR10** or **SDR** sources for problematic files.
-2. **Advanced:** install the Intel OpenCL runtime **inside the container** (e.g. Debian/Ubuntu `intel-opencl-icd` + dependencies) and mount `/dev/dri` as you already do — only if you need GPU HDR tonemapping; document any custom image or `Dockerfile` in your fork.
+**This stack:** `Dockerfile.jellyfin` extends `lscr.io/linuxserver/jellyfin` and installs **`intel-opencl-icd`** + **`ocl-icd-libopencl1`** (Ubuntu 24.04 packages per [Jellyfin docs](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/intel/)). Compose builds **`mnky-jellyfin:opencl-local`**.
+
+```bash
+cd /opt/mnky-media-stack
+docker compose build jellyfin
+docker compose up -d jellyfin
+docker exec jellyfin clinfo -l   # should list an Intel OpenCL platform
+```
+
+Then in **Dashboard → Playback**, re-enable **Tone mapping** / **VPP tone mapping** as desired and restart Jellyfin if prompted.
+
+**Without OpenCL:** keep **tone mapping** and **VPP tone mapping** **disabled** — Jellyfin falls back to **software** tone-mapping for some HDR (higher CPU) or transcoding may still fail on difficult **Dolby Vision** remuxes.
 
 ## *arr wiring
 

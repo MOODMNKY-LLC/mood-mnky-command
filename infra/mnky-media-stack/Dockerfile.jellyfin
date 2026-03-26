@@ -1,0 +1,16 @@
+# Extend linuxserver/jellyfin with Intel OpenCL so FFmpeg can use `-init_hw_device opencl=ocl@va`
+# for hardware HDR → SDR tone-mapping (HDR10 / some Dolby Vision paths). See README § Jellyfin transcoding.
+#
+# Build: docker compose build jellyfin
+FROM lscr.io/linuxserver/jellyfin:latest
+
+USER root
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       intel-opencl-icd \
+       ocl-icd-libopencl1 \
+       clinfo \
+  && rm -rf /var/lib/apt/lists/*
+
+# linuxserver entrypoint / PUID handling unchanged
+USER root
