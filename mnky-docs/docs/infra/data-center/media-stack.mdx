@@ -106,16 +106,16 @@ Use these from any **NetBird peer in a group that receives routes** (e.g. **`Dat
 
 Re-check the **FQDN** and **NetBird IP** with `netbird status` on the LXC if the peer is reinstalled — they can change.
 
-### Public HTTPS (Traefik: `media.moodmnky.com` + `request.moodmnky.com`)
+### Public HTTPS (Traefik: `media.moodmnky.com` + `media-request.moodmnky.com`)
 
 - **`https://media.moodmnky.com`** → Traefik (`10.0.0.25`) → Jellyfin on the media LXC (`10.1.0.120:8096` HTTP).
-- **`https://request.moodmnky.com`** → Traefik → **Jellyseerr** (`10.1.0.120:5055` HTTP).
+- **`https://media-request.moodmnky.com`** → Traefik → **Jellyseerr** (`10.1.0.120:5055` HTTP).
 
-Repo template: **`infra/mnky-media-stack/traefik-dynamic/moodmnky-media.example.yml`**. A path like **`/request` on the media hostname** is **not** supported on the stock Jellyseerr image (Next.js **`/_next`** assets at root); use the **`request`** subdomain unless you maintain a **custom build** with **`basePath`**.
+Repo template: **`infra/mnky-media-stack/traefik-dynamic/moodmnky-media.example.yml`**. A path like **`/request` on the media hostname** is **not** supported on the stock Jellyseerr image (Next.js **`/_next`** assets at root); use **`media-request.moodmnky.com`** (or another subdomain) unless you maintain a **custom build** with **`basePath`**.
 
-**pfSense:** Unbound overrides **`media`** and **`request`** under **`moodmnky.com` → `10.0.0.25`**. **MOOD-MNKY:** allow **TCP 8096** and **TCP 5055** from **`10.0.0.25`** to the LXC.
+**pfSense:** Unbound overrides **`media`** and **`media-request`** under **`moodmnky.com` → `10.0.0.25`**. **MOOD-MNKY:** allow **TCP 8096** and **TCP 5055** from **`10.0.0.25`** to the LXC.
 
-**LXC:** `configure-jellyfin-reverse-proxy.py --restart`; **`.env.secrets`:** `JELLYFIN_URL`, `JELLYSEERR_PUBLIC_URL` (default `https://request.moodmnky.com` in bootstrap); **`bootstrap-media-integrations.py`**.
+**LXC:** `configure-jellyfin-reverse-proxy.py --restart`; **`.env.secrets`:** `JELLYFIN_URL`, `JELLYSEERR_PUBLIC_URL` (default `https://media-request.moodmnky.com` in bootstrap); **`bootstrap-media-integrations.py`**.
 
 ### pfSense cleanup (legacy torrent WAN rule)
 

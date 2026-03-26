@@ -3,18 +3,18 @@
 #
 # Usage:
 #   export TRAEFIK_SSH=root@10.0.0.25
-#   export TRAEFIK_REMOTE_PATH=/etc/traefik/dynamic/moodmnky-media.yml   # optional
+#   export TRAEFIK_REMOTE_PATH=/etc/traefik/conf.d/moodmnky-media.yaml   # optional
 #   ./scripts/deploy-traefik-moodmnky-media.sh
 #
 # Or full destination in one var:
-#   TRAEFIK_DEPLOY=root@10.0.0.25:/etc/traefik/dynamic/moodmnky-media.yml ./scripts/deploy-traefik-moodmnky-media.sh
+#   TRAEFIK_DEPLOY=root@10.0.0.25:/etc/traefik/conf.d/moodmnky-media.yaml ./scripts/deploy-traefik-moodmnky-media.sh
 #
 # Then reload Traefik on the host (systemctl reload traefik, or docker kill -s HUP <container>).
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STACK_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SRC="${TRAEFIK_SRC:-$STACK_DIR/traefik-dynamic/moodmnky-media.example.yml}"
-REMOTE_PATH="${TRAEFIK_REMOTE_PATH:-/etc/traefik/dynamic/moodmnky-media.yml}"
+REMOTE_PATH="${TRAEFIK_REMOTE_PATH:-/etc/traefik/conf.d/moodmnky-media.yaml}"
 if [[ -n "${TRAEFIK_DEPLOY:-}" ]]; then
   DEST="$TRAEFIK_DEPLOY"
 else
