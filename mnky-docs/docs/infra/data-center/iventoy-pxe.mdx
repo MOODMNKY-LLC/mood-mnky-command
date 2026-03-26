@@ -1,0 +1,107 @@
+---
+title: iVentoy PXE (network install)
+description: Centralized PXE/iPXE installs from hyper-mnky-shared ISOs on MNKY-HQ, with pfSense DHCP and optional NetBird admin access.
+---
+
+## Overview
+
+**iVentoy** (Ventoy over the network) serves a boot menu of **installer ISOs** to bare-metal hosts and Proxmox VMs. In this environment it replaces the previous **netboot.xyz** Docker stack on **`MNKY-HQ`**, while **pfSense** remains the **authoritative DHCP** server on every VLAN.
+
+ISOs are **not** copied into iVentoy separately: they are read from the same **NFS-backed Proxmox ISO library** (`hyper-mnky-shared`) that you use in the Proxmox GUI. Uploading an ISO to that storage updates the iVentoy menu automatically.
+
+For shared storage context, see [Storage and network topology](/docs/infra/data-center/storage-and-network). For the edge host, see [MNKY-HQ node](/docs/infra/data-center/mnky-hq-node). For overlay access to the LAN, see [NetBird](/docs/infra/edge-network/netbird) and the [Edge network overview](/docs/infra/edge-network/overview).
+
+---
+
+## Roles and addresses
+
+| Item | Value |
+| ---- | ----- |
+| **PXE / TFTP / HTTP host** | `MNKY-HQ` — Data LAN **`10.0.0.100`** (also management **`101.0.0.100`** on `vmbr0`) |
+| **ISO source (TrueNAS NFS)** | `10.0.0.5:/mnt/HYPER-MNKY/proxmox/shared` → Proxmox storage **`hyper-mnky-shared`** |
+| **ISO directory on host** | `/mnt/pve/hyper-mnky-shared/template/iso` (bind-mounted into the iVentoy container as `/app/iso`, typically read-only) |
+| **DHCP / boot options** | **pfSense** (Kea) — `next-server` + boot filenames per firmware type |
+| **Rollback** | Stopped **`netbootxyz`** container on `MNKY-HQ`; old bootfile names documented below |
+
+---
+
+## How traffic flows
+
+Clients perform **PXE boot**: DHCP gives them an IP plus **option 66** (next server) and **option 67** (bootfile). They **TFTP** the iVentoy loader from **`10.0.0.100:69/udp`**, then the loader uses iVentoy’s **PXE HTTP** service on **`10.0.0.100:16000/tcp`** to present the ISO menu and stream boot assets. Some paths also use **NBD** on **`10.0.0.100:10809/tcp`**.
+
+Because DHCP lives on **pfSense** and clients may be on **different VLANs** than `MNKY-HQ`, iVentoy runs in **ExternalNet** mode: it **does not** answer DHCP on the LAN (no conflict with pfSense). pfSense must hand out **different bootfile names** for legacy BIOS vs UEFI.
+
+---
+
+## pfSense DHCP settings (per interface)
+
+Keep **next-server** (TFTP server / siaddr) pointed at:
+
+- **`10.0.0.100`**
+
+Set boot filenames (option 67) to iVentoy’s **ExternalNet** names (port suffix **`16000`** matches the default PXE HTTP port):
+
+| Client type | Bootfile |
+| ----------- | -------- |
+| Legacy BIOS | `iventoy_loader_16000_bios` |
+| UEFI x64 | `iventoy_loader_16000_uefi` |
+| UEFI IA32 (rare) | `iventoy_loader_16000_ia32` |
+| UEFI ARM64 (rare) | `iventoy_loader_16000_aa64` |
+
+If you change iVentoy’s PXE HTTP port in the UI, the **`16000`** suffix in these names must match the new port.
+
+---
+
+## Ports to allow (firewall)
+
+From any VLAN where you want PXE to work, toward **`10.0.0.100`**:
+
+- **UDP 69** — TFTP  
+- **TCP 16000** — PXE HTTP  
+- **TCP 10809** — NBD (when required by the selected ISO path)  
+- **TCP 26000** — iVentoy **admin UI** (restrict to admin networks / NetBird peers as appropriate)
+
+---
+
+## Populating ISOs (single source of truth)
+
+1. In **Proxmox**, upload ISOs to storage **`hyper-mnky-shared`** (or use any workflow that writes under that storage’s ISO path).  
+2. On the Proxmox nodes, files appear under **`…/template/iso`** on the NFS mount (e.g. `/mnt/pve/hyper-mnky-shared/template/iso`).  
+3. On **`MNKY-HQ`**, the same path is exposed to the **iVentoy** container; iVentoy rescans and lists new files in the boot menu.
+
+**Constraints:** follow [Ventoy/iVentoy naming rules](https://www.iventoy.com/en/doc_start.html): avoid spaces and non-ASCII characters in ISO paths and filenames.
+
+---
+
+## Deployment notes (MNKY-HQ)
+
+Operational deployment uses **Docker** on `MNKY-HQ` (host networking is typical so TFTP/DHCP sniffing and binding to **`10.0.0.100`** work as expected):
+
+- Image: community **`ziggyds/iventoy`** (privileged container; see image README).  
+- Persist **`/app/data`** and **`/app/log`** on the host (e.g. under `/opt/iventoy/`).  
+- After first boot, enable **ExternalNet** in iVentoy and **start the PXE service** from the UI (`http://10.0.0.100:26000` or `http://101.0.0.100:26000` from allowed networks), or automate via the documented **`/iventoy/json`** API.
+
+Canonical infra notes in-repo: `mood-mnky-command/infra/pxe/iventoy.md` (operator checklist, rollback).
+
+---
+
+## NetBird and remote admin
+
+**PXE/DHCP/TFTP are underlay services:** machines boot using **RFC1918** routes on the LAN. **NetBird** is for **remote access** into the datacenter; it does not replace DHCP for PXE.
+
+Peers with routes to **`10.0.0.0/24`** (and other site VLANs) can open the iVentoy **GUI** at **`http://10.0.0.100:26000`** if policy allows. On hosts that also run NetBird, ensure **policy routing** does not send return traffic for those subnets over **`wt0`** in ways that break LAN services (same class of issue as other dual-homed servers—validate with `ip route get` to a VLAN client IP).
+
+---
+
+## Rollback to netboot.xyz
+
+1. On **pfSense**, restore boot filenames to **`netboot.xyz.kpxe`** (BIOS) and **`netboot.xyz.efi`** (UEFI) with **next-server** still **`10.0.0.100`**.  
+2. On **`MNKY-HQ`**, stop **iVentoy** and start the **`netbootxyz`** container again.
+
+---
+
+## Related documentation
+
+- [Data center map](/docs/infra/data-center/data-center-map) — `hyper-mnky-shared` and ISO usage  
+- [Storage and network topology](/docs/infra/data-center/storage-and-network)  
+- [Alignment and validation](/docs/infra/edge-network/alignment-and-validation) — route and DNS checks  

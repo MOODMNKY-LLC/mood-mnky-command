@@ -81,6 +81,10 @@ The exact mount details (server address, path, and mount options) are visible in
 - Proxmox storage configuration (`pvesh get /nodes/<node>/storage`).
 - `df -hT` and `mount` outputs on each node.
 
+### ISO library and network boot (iVentoy)
+
+The same **`hyper-mnky-shared`** export includes the Proxmox **ISO** tree (under `template/iso` on the mount). **`MNKY-HQ`** can mount this export and run **iVentoy** so PXE clients get an install menu sourced directly from those ISOs—upload ISOs in the Proxmox GUI to **`hyper-mnky-shared`** and they appear in iVentoy without a second copy step. See [iVentoy PXE (network install)](/docs/infra/data-center/iventoy-pxe).
+
 ### Media stack mounts
 
 The MOOD MNKY media stack mounts the shared TrueNAS media dataset at `/mnt/media` inside the LXC.

@@ -25,6 +25,8 @@ From the snapshot and live `ip addr` output:
 
 The collector run logged that storage `hyper-mnky-shared` is **not online** on this node at capture time. This is expected if MNKY-HQ is network-edge focused and does not mount the shared NFS export.
 
+**Operational note:** For centralized **PXE / iVentoy**, `MNKY-HQ` is configured to mount **`hyper-mnky-shared`** and serve ISOs from the same path as cluster nodes (`template/iso`). That may differ from an older snapshot; confirm with `pvesm status` and `mount` on the live host. See [iVentoy PXE](/docs/infra/data-center/iventoy-pxe).
+
 ---
 
 ## CPU topology
