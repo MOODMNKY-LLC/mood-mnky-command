@@ -106,18 +106,18 @@ Use these from any **NetBird peer in a group that receives routes** (e.g. **`Dat
 
 Re-check the **FQDN** and **NetBird IP** with `netbird status` on the LXC if the peer is reinstalled — they can change.
 
-### Public HTTPS (Traefik: `media.moodmnky.com` + `mediarequest.moodmnky.com`)
+### Public HTTPS (Traefik: `media.moodmnky.com` + `media-request.moodmnky.com`)
 
 - **`https://media.moodmnky.com`** → Traefik (`10.0.0.25`) → Jellyfin on the media LXC (`10.1.0.120:8096` HTTP).
-- **`https://mediarequest.moodmnky.com`** → Traefik → **Jellyseerr** (`10.1.0.120:5055` HTTP).
+- **`https://media-request.moodmnky.com`** → Traefik → **Jellyseerr** (`10.1.0.120:5055` HTTP).
 
-Repo template: **`infra/mnky-media-stack/traefik-dynamic/moodmnky-media.example.yml`**. A path like **`/request` on the media hostname** is **not** supported on the stock Jellyseerr image (Next.js **`/_next`** assets at root); use **`mediarequest.moodmnky.com`** (or another subdomain) unless you maintain a **custom build** with **`basePath`**.
+Repo template: **`infra/mnky-media-stack/traefik-dynamic/moodmnky-media.example.yml`**. A path like **`/request` on the media hostname** is **not** supported on the stock Jellyseerr image (Next.js **`/_next`** assets at root); use **`media-request.moodmnky.com`** (or another subdomain) unless you maintain a **custom build** with **`basePath`**.
 
-**pfSense:** Unbound host overrides **`media.moodmnky.com`** and **`mediarequest.moodmnky.com`** → **`10.0.0.25`** (split DNS; LAN clients avoid hairpinning to WAN). After editing **`config.xml`**, run **`services_unbound_configure`** (or **Services → DNS Resolver → Save/Apply**) and **restart Unbound** so **`/var/unbound/host_entries.conf`** picks up **`local-data`** lines.
+**pfSense:** Unbound host overrides **`media.moodmnky.com`** and **`media-request.moodmnky.com`** → **`10.0.0.25`** (split DNS; LAN clients avoid hairpinning to WAN). After editing **`config.xml`**, run **`services_unbound_configure`** (or **Services → DNS Resolver → Save/Apply**) and **restart Unbound** so **`/var/unbound/host_entries.conf`** picks up **`local-data`** lines.
 
-**Public DNS (Cloudflare):** **`A`** records **`media`** / **`mediarequest`** on **`moodmnky.com`** should point at the site **WAN IPv4** (same as other Traefik frontends). If they already exist and match WAN, no change is required.
+**Public DNS (Cloudflare):** **`A`** records **`media`** / **`media-request`** on **`moodmnky.com`** should point at the site **WAN IPv4** (same as other Traefik frontends). If they already exist and match WAN, no change is required.
 
-**LXC:** `configure-jellyfin-reverse-proxy.py --restart`; **`.env.secrets`:** `JELLYFIN_URL`, `JELLYSEERR_PUBLIC_URL` (default `https://mediarequest.moodmnky.com` in bootstrap); **`bootstrap-media-integrations.py`**.
+**LXC:** `configure-jellyfin-reverse-proxy.py --restart`; **`.env.secrets`:** `JELLYFIN_URL`, `JELLYSEERR_PUBLIC_URL` (default `https://media-request.moodmnky.com` in bootstrap); **`bootstrap-media-integrations.py`**.
 
 ### pfSense cleanup (legacy torrent WAN rule)
 
