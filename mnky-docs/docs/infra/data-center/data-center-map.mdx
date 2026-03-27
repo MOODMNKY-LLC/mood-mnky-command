@@ -15,10 +15,10 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 | **Hypervisor** | Proxmox VE 8.4.17 |
 | **Kernel** | 6.8.12-19-pve (x86_64) |
 | **Boot** | EFI; Secure Boot off |
-| **Quorum** | 5 nodes (4 online, 1 offline) |
+| **Quorum** | 5 nodes (typically all online; verify with `pvecm status`) |
 | **Node count** | 5 (CODE-MNKY, CASA-MNKY, DATA-MNKY, SAGE-MNKY, MOOD-MNKY) |
 
-**High-level roles:** CODE-MNKY is the primary GPU and workload host (all six LXCs). CASA-MNKY, DATA-MNKY, and SAGE-MNKY provide additional compute and storage capacity and share NFS. MOOD-MNKY is offline.
+**High-level roles:** CODE-MNKY is the primary GPU and workload host (LXCs + QEMU VMs). CASA-MNKY, DATA-MNKY, and SAGE-MNKY provide additional compute and storage capacity and share NFS. MOOD-MNKY hosts the Intel iGPU media stack (LXC 120). For a live CODE-MNKY LXC breakdown, see [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory).
 
 ---
 
@@ -29,7 +29,7 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online |
-| **Role** | GPU host; LXCs 3099–3104; Terraform `target_node` |
+| **Role** | GPU host; LXCs 300, 301, 3001 + VMs 3055–3056 (live); Terraform `target_node` may lag |
 | **CPU** | AMD Ryzen 5 4600G with Radeon Graphics |
 | **Cores / threads** | 6 / 12 (1 socket, ~3566 MHz) |
 | **Memory** | 125 GiB (134,322,823,168 bytes) |
@@ -40,18 +40,28 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 
 **Capabilities:** NVIDIA Tesla P40 (Pascal), driver 560.35.03, CUDA 12.6. Primary LXC rootfs on CODE-MAIN-zfs (~3.62 TiB total; ~3.03 TiB free after current allocations).
 
-#### VMs and LXCs (CODE-MNKY)
+#### VMs and LXCs (CODE-MNKY) — live inventory (2026-03)
 
-| VMID | Hostname | Purpose | Cores | RAM | Disk | Tags (examples) |
-|------|----------|---------|-------|-----|------|-----------------|
-| 3099 | code-mnky-dev | Dev workstation, Docker, NVIDIA, TrueNAS mount | 4 | 8 GiB | 128 GiB | docker, terraform |
-| 3100 | mnky-automation-stack | AWX, Semaphore | 4 | 8 GiB | 128 GiB | awx, semaphore, mnky-automation-stack |
-| 3101 | mnky-ai-stack | Ollama, Flowise, n8n, Supabase, MinIO; P40 | 8 | 32 GiB | 2 TiB | ollama, flowise, n8n, mnky-ai-stack |
-| 3102 | mnky-gaming-stack | Sunshine, Moonlight, Steam | 4 | 16 GiB | 500 GiB | gaming, sunshine, steam |
-| 3103 | mnky-media-stack | Jellyfin, *arr, qBittorrent | 4 | 16 GiB | 200 GiB | jellyfin, *arr, mnky-media-stack |
-| 3104 | mnky-supabase-stack | Self-hosted Supabase Docker | 4 | 8 GiB | 200 GiB | supabase, mnky-supabase-stack |
+Older documentation used VMIDs **3099–3104**; **live on CODE-MNKY** the following are present. **Supabase** and **n8n** run as **QEMU VMs**, not inside LXC 301.
 
-**Total allocated rootfs (CODE-MNKY):** 128 + 128 + 2000 + 500 + 200 + 200 = 3,156 GiB (~3.1 TiB).
+**QEMU VMs**
+
+| VMID | Hostname | Purpose | Cores | RAM | Boot disk | Notes |
+|------|----------|---------|-------|-----|-----------|--------|
+| 3055 | mnky-supabase-prod | Self-hosted Supabase (Docker on VM) | 8 | 24 GiB | 512 GiB | Canonical Supabase for production URLs |
+| 3056 | mnky-n8n-prod | n8n workflow automation | 6 | 16 GiB | 64 GiB | Canonical n8n; uses Redis sidecar on VM |
+
+**LXCs**
+
+| VMID | Hostname | Purpose | Cores | RAM | Rootfs | Notes |
+|------|----------|---------|-------|-----|--------|--------|
+| 300 | mnky-automation-stack | AWX + Semaphore (intended) | 4 | 8 GiB | 128 GiB | **No Docker stack running** — empty shell until playbooks re-applied |
+| 301 | mnky-ai-stack | Ollama, Flowise, MinIO, etc. (intended) | 8 | 32 GiB | 2 TiB | **No Docker stack running** — services moved to VMs / elsewhere; huge disk mostly unused |
+| 3001 | pegaprox | PegaProx (Proxmox cluster management UI) | 4 | 4 GiB | 16 GiB | Python services on ports **5000–5002** |
+
+**Total allocated rootfs (LXCs on CODE-MNKY):** 128 + 2000 + 16 ≈ **2,144 GiB** plus VM disks above.
+
+See [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) for redundancy analysis and redesign options.
 
 ---
 
@@ -148,7 +158,7 @@ Used for ISOs, LXC templates, snippets, and scripts across the cluster. **Networ
 
 ### Per-LXC datashare (TrueNAS)
 
-Each LXC can have a private NFS path on TrueNAS: `lxc-private/<vmid>` under the same export, mounted in the container as `~/truenas-data` (e.g. `/home/moodmnky/truenas-data`). Directories 3099–3104 are created as needed; adding a new LXC requires creating the corresponding `lxc-private/<vmid>` on TrueNAS and running the TrueNAS mounts playbook.
+Each LXC can have a private NFS path on TrueNAS: `lxc-private/<vmid>` under the same export, mounted in the container as `~/truenas-data` (e.g. `/home/moodmnky/truenas-data`). Create `lxc-private/<vmid>` for each active VMID (e.g. **300**, **301**, **MOOD LXC 120**, etc.); adding a new LXC requires creating the corresponding path on TrueNAS and running the TrueNAS mounts playbook.
 
 ### Network
 
@@ -169,20 +179,20 @@ flowchart LR
     STUD[SAGE-MNKY]
     PRO[MOOD-MNKY media-stack (LXC 120)]
   end
-  subgraph lxc [LXCs on CODE-MNKY]
-    L3099["3099 dev"]
-    L3100["3100 automation"]
-    L3101["3101 ai"]
-    L3102["3102 gaming"]
-    L3103["3103 media"]
-    L3104["3104 supabase"]
+  subgraph codeVms [CODE-MNKY VMs]
+    V3055["3055 Supabase"]
+    V3056["3056 n8n"]
   end
-  CODE --> L3099
-  CODE --> L3100
-  CODE --> L3101
-  CODE --> L3102
-  CODE --> L3103
-  CODE --> L3104
+  subgraph codeLxc [CODE-MNKY LXCs]
+    L300["300 automation"]
+    L301["301 ai-stack"]
+    L3001["3001 PegaProx"]
+  end
+  CODE --> V3055
+  CODE --> V3056
+  CODE --> L300
+  CODE --> L301
+  CODE --> L3001
   subgraph shared [Shared]
     NFS[hyper-mnky-shared NFS]
   end
@@ -197,7 +207,7 @@ flowchart LR
 
 ## Data source note
 
-This map is derived from Terraform state and definitions (proxmox-terraform/main.tf, terraform.tfvars, variables.tf), CLUSTER-NODES-HARDWARE.md, STORAGE-ASSESSMENT.md, VMID-AND-NAMING.md (in proxmox-terraform), and mnky-docs data-center pages. When available, live state from the Proxmox API (e.g. via the portal back office) can be used to confirm or refresh VM/LXC and node status. Hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host provide detailed hardware introspection for CODE-MNKY, CASA-MNKY, DATA-MNKY, and SAGE-MNKY.
+This map is derived from Terraform state and definitions when present in-repo, CLUSTER-NODES-HARDWARE.md, STORAGE-ASSESSMENT.md, VMID-AND-NAMING.md, mnky-docs data-center pages, and **live Proxmox** checks. **VMIDs and placement can drift** from Terraform if resources were created manually or imported late — use [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) for a recent CODE-MNKY-specific snapshot. Hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host provide detailed hardware introspection for CODE-MNKY, CASA-MNKY, DATA-MNKY, and SAGE-MNKY.
 
 ---
 

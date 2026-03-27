@@ -1,0 +1,101 @@
+---
+title: CODE-MNKY LXC inventory and redesign notes
+description: Live inventory of LXCs 300, 301, and 3001 on CODE-MNKY; redundancy vs dedicated Supabase/n8n VMs and MOOD media; same-node redesign options.
+---
+
+This page records a **live inventory** (via Proxmox on `CODE-MNKY`) of the three LXCs called out for review: **300** (`mnky-automation-stack`), **301** (`mnky-ai-stack`), and **3001** (`pegaprox`). Use it with the [Data Center Map](/docs/infra/data-center/data-center-map) and [CODE-MNKY node](/docs/infra/data-center/code-mnky-node) pages.
+
+## Executive summary
+
+| LXC | Name | Runtime state | Finding |
+|-----|------|----------------|---------|
+| **300** | `mnky-automation-stack` | **Empty** — no Docker/containerd; only base OS (SSH, systemd, postfix) | Intended AWX + Semaphore **not installed/running**. Tags and description are aspirational or left after migration. |
+| **301** | `mnky-ai-stack` | **Empty** — no Docker; ~381 MiB used on **2 TiB** rootfs | Intended Ollama, Flowise, n8n, Supabase, MinIO **not present**. **Supabase** and **n8n** run on **QEMU VMs 3055/3056** on the same node instead — see redundancy section. |
+| **3001** | `pegaprox` | **Active** — Python **PegaProx** v0.7.0 (Proxmox cluster UI / management) | Listens on **5000**, **5001**, **5002**; user `pegaprox`. Not redundant with Traefik/Coolify; different purpose (Proxmox helper UI). |
+
+**Media:** None of these LXCs run Jellyfin, *arr, or torrent clients. Production media is on **MOOD-MNKY LXC 120** ([Media stack](/docs/infra/data-center/media-stack)).
+
+---
+
+## Proxmox resource summary
+
+From `pct config` (CODE VLAN `tag=30`, bridge `vmbr0`):
+
+### LXC 300 — `mnky-automation-stack`
+
+- **Resources:** 4 vCPU, 8 GiB RAM, **128 GiB** rootfs on `CODE-MAIN-zfs`
+- **Features:** `nesting`, `keyctl`, `fuse`
+- **Tags:** `awx`, `docker`, `mnky-automation-stack`, `semaphore`, `terraform`
+- **Live services:** No application stack; **docker.service inactive**; `/opt` empty
+
+### LXC 301 — `mnky-ai-stack`
+
+- **Resources:** 8 vCPU, 32 GiB RAM, **2000 GiB** rootfs on `CODE-MAIN-zfs`
+- **Features:** `nesting`, `keyctl`, `fuse`
+- **Tags:** `docker`, `flowise`, `minio`, `mnky-ai-stack`, `n8n`, `ollama`, `supabase`, `terraform`
+- **GPU:** Not visible in `pct config` at inventory time (no `lxc.cgroup2.devices` / passthrough lines); description text mentions P40 — **verify before assuming GPU workloads**
+- **Live services:** No Docker stack; disk almost entirely **unused**
+
+### LXC 3001 — `pegaprox`
+
+- **Resources:** 4 vCPU, 4 GiB RAM, **16 GiB** rootfs, **unprivileged**, `nesting=1`
+- **Processes:** `/opt/PegaProx/venv/bin/python … pegaprox_multi_cluster.py` and `pegaprox/api/.ssh_ws_server.py`
+- **Ports:** **5000**, **5001**, **5002** (TCP), SSH 22
+
+---
+
+## Redundancy vs current architecture
+
+| Capability | Old intent (tags / mnky-docs 31xx) | Current live placement |
+|------------|-----------------------------------|-------------------------|
+| **Supabase** | Tagged on LXC 301 | **VM 3055** `mnky-supabase-prod` (QEMU on CODE-MNKY) |
+| **n8n** | Tagged on LXC 301 | **VM 3056** `mnky-n8n-prod` (QEMU on CODE-MNKY) |
+| **Ollama / Flowise / MinIO** | Tagged on LXC 301 | **Not running** in LXC 301 at inventory time — confirm Coolify/other hosts or decommissioned |
+| **Automation (AWX / Semaphore)** | LXC 300 | **Not running** in LXC 300 |
+| **Media** | Historically “media stack” in old doc VMIDs | **MOOD-MNKY LXC 120** `mnky-media-stack` |
+
+**Documentation drift:** Older mnky-docs tables used VMIDs **3099–3104**. Live CODE-MNKY currently exposes **LXCs 300, 301, 3001** and **VMs 3055, 3056** only — Terraform/docs should be reconciled or marked “manual drift.”
+
+---
+
+## Same-node redesign options (CODE-MNKY only)
+
+These are **options**, not mandates:
+
+1. **Decommission or repurpose LXC 300/301**  
+   If automation and AI stacks are permanently elsewhere, **snapshot**, then **destroy** or **shrink** rootfs to reclaim `CODE-MAIN-zfs` and RAM. Alternatively **re-run Ansible** to actually install AWX/Semaphore (300) and/or GPU Ollama+Flowise (301) if you still want them on this node.
+
+2. **Keep 301 as dedicated GPU host**  
+   If you bring back Ollama on-node, provision **one** clear stack (compose + GPU passthrough in `pct config`), and **do not** duplicate Supabase/n8n (keep **3055/3056** canonical).
+
+3. **Keep PegaProx (3001)**  
+   Continue if operators use it for Proxmox cluster management; document URLs and firewall. If replaced by portal/another tool, plan migration before shutdown.
+
+4. **Granular LXCs on the same node**  
+   Split into e.g. `lxc-ollama-gpu`, `lxc-flowise`, `lxc-automation` — each with smaller disks and pinned compose — **after** you decide what must stay on CODE-MNKY vs VMs.
+
+---
+
+## Media teardown (300 / 301 / 3001)
+
+**No action required** on these three LXCs for media: **no** media containers or images were found. Media removal work belongs under **MOOD-MNKY LXC 120** and legacy references only.
+
+---
+
+## Verification commands (operators)
+
+On `CODE-MNKY` as root:
+
+```bash
+pct config 300 && pct config 301 && pct config 3001
+pct exec 300 -- systemctl status docker --no-pager
+pct exec 301 -- systemctl status docker --no-pager
+pct exec 3001 -- ss -tulpn
+qm list   # VMs 3055, 3056
+```
+
+---
+
+## Data source
+
+Inventory date: **2026-03-27**. Source: live `pct` / `pct exec` / `ps` on CODE-MNKY (`10.3.0.10`). Re-run after any provisioning change.

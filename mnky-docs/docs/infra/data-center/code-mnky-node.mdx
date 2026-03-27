@@ -182,6 +182,18 @@ This confirms CODE-MNKY’s role as a primary capacity and GPU node within the c
 
 ---
 
+## Workloads on CODE-MNKY (live vs docs)
+
+Terraform and older docs sometimes list VMIDs **3099–3104**. **Live inventory** (see [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory)) shows:
+
+- **QEMU VMs 3055–3056:** `mnky-supabase-prod`, `mnky-n8n-prod` (canonical Supabase and n8n on this node).
+- **LXCs 300, 301:** `mnky-automation-stack`, `mnky-ai-stack` — **no Docker stacks running** at last check; tags describe intent (AWX/Semaphore; AI tools), not current processes.
+- **LXC 3001:** `pegaprox` — **PegaProx** (Proxmox cluster management UI), ports 5000–5002.
+
+Reconcile `proxmox-terraform` / Ansible with this reality, or document **manual drift** until state is imported.
+
+---
+
 ## Refresh procedure for this page
 
 Whenever CODE-MNKY’s hardware or Proxmox configuration changes:

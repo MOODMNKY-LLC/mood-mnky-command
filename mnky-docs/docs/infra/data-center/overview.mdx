@@ -27,20 +27,20 @@ The Proxmox cluster consists of the following nodes:
 
 | Node        | Role / notes                                      | CPU                        | Cores / Threads | RAM (approx) | Status   |
 | ----------- | ------------------------------------------------- | -------------------------- | --------------- | ------------ | -------- |
-| CODE-MNKY   | Primary GPU host, LXCs 3099–3104, AI & stacks     | AMD Ryzen 5 4600G          | 6 / 12          | 125 GiB      | Online  |
+| CODE-MNKY   | Primary GPU host; LXCs 300/301/3001 + VMs 3055–3056 (live) | AMD Ryzen 5 4600G          | 6 / 12          | 125 GiB      | Online  |
 | CASA-MNKY   | General-purpose capacity                          | AMD Ryzen 5 4600G          | 6 / 12          | 62 GiB       | Online  |
 | DATA-MNKY   | High-core-capacity node                           | AMD Ryzen 7 5700X          | 8 / 16          | 62.7 GiB     | Online  |
 | SAGE-MNKY   | Additional compute & storage (STUD-zfs)           | AMD Ryzen 7 5700G          | 8 / 16          | 62 GiB       | Online  |
-| MOOD-MNKY    | Additional node, currently offline for introspect | (Specs captured when up)   | —               | —            | Offline |
+| MOOD-MNKY    | Media stack (LXC 120), Intel iGPU / VA-API        | Intel Core i9-13900KS      | —               | ~125 GiB     | Online  |
 
 Core characteristics:
 
 - **Hypervisor**: Proxmox VE 8.4.17, kernel `6.8.12-19-pve`, EFI boot, Secure Boot disabled.
-- **Workloads**:
-  - GPU-accelerated AI workloads (Ollama, LLM services) on CODE-MNKY.
-  - Automation (AWX, Semaphore) on LXC 3100.
-  - Media stack (Jellyfin, *arr, qBittorrent) on LXC 3103.
-  - Self-hosted Supabase, Flowise, n8n, and related services on LXCs 3101 and 3104.
+- **Workloads** (see [Data Center Map](/docs/infra/data-center/data-center-map) and [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory)):
+  - **Supabase** and **n8n** as QEMU VMs **3055** and **3056** on CODE-MNKY (canonical production).
+  - **PegaProx** (Proxmox UI helper) on LXC **3001** on CODE-MNKY.
+  - **LXC 300/301** reserved or legacy: automation and AI tags; **no Docker stacks running** at last inventory — reprovision or reclaim capacity as needed.
+  - **Media stack** (Jellyfin, *arr, qBittorrent) on **MOOD-MNKY LXC 120** (not on CODE-MNKY).
 - **Storage**:
   - Node-local ZFS pools (`CODE-MAIN-zfs`, `CODE-BKP-zfs`, `STUD-zfs`, `rpool` on each node).
   - Shared NFS export `hyper-mnky-shared` mounted across nodes.

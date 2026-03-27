@@ -280,6 +280,7 @@
               "docs/infra/data-center/datacenter-env",
               "docs/infra/data-center/nodes",
               "docs/infra/data-center/code-mnky-node",
+              "docs/infra/data-center/code-mnky-lxc-inventory",
               "docs/infra/data-center/casa-mnky-node",
               "docs/infra/data-center/data-mnky-node",
               "docs/infra/data-center/sage-mnky-node",
