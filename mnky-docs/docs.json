@@ -277,6 +277,7 @@
               "docs/infra/data-center/data-center-map",
               "docs/infra/data-center/data-center-upgrade-plan",
               "docs/infra/data-center/overview",
+              "docs/infra/data-center/datacenter-env",
               "docs/infra/data-center/nodes",
               "docs/infra/data-center/code-mnky-node",
               "docs/infra/data-center/casa-mnky-node",

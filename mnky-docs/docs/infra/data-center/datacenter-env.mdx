@@ -1,0 +1,106 @@
+---
+title: Datacenter Environment Inventory (datacenter.env)
+description: Canonical env layout for MOOD MNKY datacenter access + a redacted inventory of hosts/services and a checklist of missing credentials to record.
+---
+
+This page documents the canonical **operator environment file**: `datacenter.env`.
+
+It is the central place where we keep **datacenter access credentials and endpoints** for:
+
+- edge networking (pfSense)
+- storage (TrueNAS)
+- hypervisors (Proxmox nodes)
+- overlay remote access (NetBird)
+- application edge / PaaS (Coolify; reverse proxy tier is documented elsewhere)
+- media-stack apps (Jellyfin + *arr + Jellyseerr + qBittorrent/Gluetun)
+
+## Safety rules (non-negotiable)
+
+- Do not paste secret values into docs. In Mintlify, reference **variable names only**.
+- `datacenter.env` is secret-bearing; store it in your secrets store / private operator workspace.
+- If you need to share access data, share a **redacted** excerpt or the variable names list.
+
+## Canonical file layout
+
+`datacenter.env` is organized into stable sections so operators can find things quickly and automation can source consistent keys:
+
+- **Edge: pfSense** (`PFSENSE_*`)
+- **Storage: TrueNAS Scale** (`TRUENAS_*`, plus back-compat `TRUNAS_*`)
+- **Hypervisors: Proxmox cluster** (`PROXMOX_*`)
+- **Hypervisors: Proxmox standalone (MNKY-HQ)** (`PROXMOX_MNKY_HQ_*`)
+- **Overlay: NetBird control plane** (`NETBIRD_*`)
+- **App platform: PaaS / reverse proxy** (`COOLIFY_*`)
+- **Media: VPN egress** (`PROTONVPN_*`, `GLUETUN_*`, `PORT_FORWARD_ONLY`)
+- **Media: qBittorrent** (`QB_WEBUI_*`)
+- **Media: Jellyfin** (`JELLYFIN_*`)
+- **Media: *arr + Jellyseerr** (`SONARR_*`, `RADARR_*`, `LIDARR_*`, `JELLYSEERR_*`)
+
+### Normalization rules
+
+- **Typos**: keep existing keys for compatibility, but add preferred aliases.\n+  - Example: `TRUNAS_*` remains, but `TRUENAS_*` is the preferred namespace.\n+- **Host blocks**: when a host exists, keys should be complete and predictable:\n+  - `*_HOST` (optional), `*_FQDN` (optional), `*_IP`, `*_SSH_PORT`, `*_USERNAME`, `*_PASSWORD`\n+- **URLs**: if a service has a LAN URL and a public URL, store both explicitly.
+
+## Redacted inventory (variable map)
+
+### Edge network
+
+- **pfSense** (default gateway)\n+  - `PFSENSE_IP`, `PFSENSE_SSH_PORT`, `PFSENSE_USERNAME`, `PFSENSE_PASSWORD`\n+  - Related docs: `docs/infra/edge-network/pfsense`
+
+### Storage
+
+- **TrueNAS Scale** (NFS backing for `hyper-mnky-shared`)\n+  - Back-compat: `TRUNAS_IP`, `TRUNAS_SSH_PORT`, `TRUNAS_USERNAME`, `TRUNAS_PASSWORD`\n+  - Preferred: `TRUENAS_IP`, `TRUENAS_SSH_PORT`, `TRUENAS_USERNAME`, `TRUENAS_PASSWORD`\n+  - Related docs: `docs/infra/data-center/storage-and-network`
+
+### Hypervisors
+
+- **Proxmox cluster nodes**\n+  - DATA: `PROXMOX_DATA_MNKY_*`\n+  - MOOD: `PROXMOX_MOOD_MNKY_*`\n+  - SAGE: `PROXMOX_SAGE_MNKY_*`\n+  - CODE: `PROXMOX_CODE_MNKY_*`\n+  - CASA: `PROXMOX_CASA_MNKY_*`\n+  - Related docs: `docs/infra/data-center/data-center-map`
+
+- **Standalone Proxmox: MNKY-HQ**\n+  - `PROXMOX_MNKY_HQ_HOST`, `PROXMOX_MNKY_HQ_FQDN`, `PROXMOX_MNKY_HQ_IP`, `PROXMOX_MNKY_HQ_SSH_PORT`, `PROXMOX_MNKY_HQ_USERNAME`, `PROXMOX_MNKY_HQ_PASSWORD`\n+  - Related docs: `docs/infra/data-center/mnky-hq-node`
+
+### Overlay remote access
+
+- **NetBird (self-hosted control plane)**\n+  - Operator URL: `NETBIRD_MANAGEMENT_URL`\n+  - Host access: `NETBIRD_SERVER_IP`, `NETBIRD_SERVER_SSH_PORT`, `NETBIRD_SERVER_USERNAME`, `NETBIRD_SERVER_PASSWORD`\n+  - Secrets: `NETBIRD_SERVICE_WORKER_SECRET`, `NETBIRD_SETUP_TOKEN`\n+  - Related docs: `docs/infra/edge-network/netbird`
+
+### App platform
+
+- **Coolify**\n+  - `COOLIFY_DOMAIN`, `COOLIFY_API_KEY`
+
+### Media stack
+
+- **VPN egress (Gluetun + ProtonVPN)**\n+  - `PROTONVPN_*`, `PORT_FORWARD_ONLY`, `GLUETUN_FIREWALL_OUTBOUND_SUBNETS`\n+  - Note: these are sensitive and should never appear in docs outside variable names.
+
+- **qBittorrent Web UI (operator credential)**\n+  - `QB_WEBUI_USERNAME`, `QB_WEBUI_PASSWORD`
+
+- **Jellyfin**\n+  - `JELLYFIN_URL`, `JELLYFIN_USERNAME`, `JELLYFIN_PASSWORD`, `JELLYFIN_API_KEY`\n+  - Related docs: `docs/infra/data-center/media-stack`
+
+- **Sonarr**\n+  - `SONARR_URL`, `SONARR_USERNAME`, `SONARR_PASSWORD`, `SONARR_API_KEY`
+
+- **Radarr**\n+  - `RADARR_URL`, `RADARR_USERNAME`, `RADARR_PASSWORD`, `RADARR_API_KEY`
+
+- **Lidarr**\n+  - `LIDARR_URL`, `LIDARR_USERNAME`, `LIDARR_PASSWORD`, `LIDARR_API_KEY`
+
+- **Jellyseerr**\n+  - `JELLYSEERR_ADMIN_EMAIL`, `JELLYSEERR_ADMIN_USERNAME`, `JELLYSEERR_ADMIN_PASSWORD`\n+  - `JELLYSEERR_PUBLIC_URL` (Traefik hostname), `JELLYSEERR_URL` (LAN URL), `JELLYSEERR_API_KEY`
+
+## Coverage map (env vs docs)
+
+### Present in `datacenter.env`
+
+pfSense, TrueNAS, Proxmox node access, NetBird access + tokens, Coolify, and the media-stack app credentials/endpoints.
+
+### Present in datacenter docs but missing from `datacenter.env` (add next)
+
+The Data Center Map documents these stacks and where they run, but there are no corresponding env entries yet:
+
+- **Ollama** (LXC/stack mentions: `mnky-ai-stack`)
+- **Flowise**
+- **n8n**
+- **Self-hosted Supabase** (multiple mentions: dedicated stack + broader AI stack)
+- **MinIO** (mentioned as part of the AI stack in the cluster map)
+
+Suggested key families to add after confirming runtime endpoints:\n+`OLLAMA_*`, `FLOWISE_*`, `N8N_*`, `SUPABASE_*`, `MINIO_*`
+
+## Required credentials/services checklist (requested by ops)
+
+These are explicitly required to confirm and record (in `datacenter.env` or the appropriate secrets store), but are not currently represented in `datacenter.env` based on this inventory pass:
+
+- MeshCentral\n+- Loki\n+- Prometheus\n+- Grafana\n+- Uptime Kuma\n+- pfSense (present)\n+- Infisical\n+- Authentik\n+- Coolify (present)\n+- Traefik\n+- Proxmox Backup Server (PBS)\n+- Media stack expansions: Jellyseerr/Prowlarr/Jackett/Sonarr/Radarr/Lidarr (partial present), plus MinIO/TrueNAS (partial present)\n+- GitHub\n+- OpenAI\n+- Notion\n+- Discord\n+- n8n (docs mention, env missing)\n+- Flowise (docs mention, env missing)
+
+When adding these, prefer a consistent shape per service:\n+`<SERVICE>_URL`, `<SERVICE>_LAN_URL` (if applicable), `<SERVICE>_USERNAME`, `<SERVICE>_PASSWORD`, `<SERVICE>_API_KEY`, and `<SERVICE>_ADMIN_EMAIL` where relevant.
