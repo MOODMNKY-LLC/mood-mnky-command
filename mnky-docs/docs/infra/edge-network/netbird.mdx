@@ -54,7 +54,13 @@ Values below are **stable identifiers** from the management API (not secrets). R
 | `10.4.0.0/24` | 50 | yes | CASA VLAN | `d721017ljorc73cnd3gg` |
 | `10.0.13.0/24` | 50 | yes | DATA internal segment (vmbr1 on DATA-MNKY) | `d721507ljorc73cnfnhg` |
 
-**`network_id`:** `mnky-datacenter`. **Distribution / access control** on each enabled classic route: **`Datacenter`** only (peers not in that group do not install `10.x` routes).
+**`network_id`:** `mnky-datacenter`. **Distribution:** classic routes are typically distributed to peers in **`Datacenter`**. **Access control** on the primary DATA route (`10.0.0.0/24` via pfSense) also includes **`Remote-Operators`** so laptops and approved **Android** peers (e.g. NVIDIA Shield) can **use** the route when they are in both groups—re-verify IDs in the dashboard after changes.
+
+### Android TV / Shield (remote SMB to TrueNAS)
+
+The **Shield** NetBird peer (`mdarcy`) is in **`All`**, **`Datacenter`**, and **`Remote-Operators`**. With **`DisableClientRoutes` off**, the **`10.0.0.0/24`** route can reach **`TRUNAS_IP`** (SMB / `rclone`) **while traveling**. **At home**, the same overlay route can **overlap** the physical LAN and break local `10.x` reachability—disconnect NetBird or **disable only that network route** in the app when on-site.
+
+**Suggested Shield app toggles:** **disable NetBird DNS** (SMB uses IPs); **keep NetBird firewall on**; **do not force relay** unless connectivity fails; **Rosenpass** is not a priority on Android. See [Storage and network](/docs/infra/data-center/storage-and-network) for Termux / `rclone` patterns (no secrets in docs).
 
 ### Role groups (2026-03-26)
 

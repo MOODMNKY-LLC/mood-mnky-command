@@ -28,6 +28,7 @@ It is the central place where we keep **datacenter access credentials and endpoi
 
 - **Edge: pfSense** (`PFSENSE_*`)
 - **Storage: TrueNAS Scale** (`TRUENAS_*`, plus back-compat `TRUNAS_*`)
+- **Edge client: NVIDIA Shield + TrueNAS SMB** (`SHIELD_MNKY_*`, `TRUENAS_SHIELD_SMB_*`, `SHIELD_RCLONE_*`, optional `NETBIRD_*` notes for Shield remote path)
 - **Hypervisors: Proxmox cluster** (`PROXMOX_*`)
 - **Hypervisors: Proxmox standalone (MNKY-HQ)** (`PROXMOX_MNKY_HQ_*`)
 - **Overlay: NetBird control plane** (`NETBIRD_*`)
@@ -52,6 +53,7 @@ It is the central place where we keep **datacenter access credentials and endpoi
 ### Storage
 
 - **TrueNAS Scale** (NFS for `hyper-mnky-shared`): back-compat `TRUNAS_*`; preferred `TRUENAS_*` — see [Storage and network](/docs/infra/data-center/storage-and-network).
+- **TrueNAS SMB (Shield TV):** `TRUENAS_SHIELD_SMB_USER`, `TRUENAS_SHIELD_SMB_PASSWORD`, `TRUENAS_SHIELD_SMB_DOMAIN`, share name keys `TRUENAS_SHIELD_SMB_SHARE_*` — paired with `SHIELD_MNKY_*` (SSH/ADB) and `SHIELD_RCLONE_REMOTE_*` for Termux `rclone` remotes.
 
 ### Hypervisors
 
@@ -60,7 +62,7 @@ It is the central place where we keep **datacenter access credentials and endpoi
 
 ### Overlay remote access
 
-- **NetBird:** `NETBIRD_MANAGEMENT_URL`, `NETBIRD_SERVER_*`, `NETBIRD_SERVICE_WORKER_SECRET`, `NETBIRD_SETUP_TOKEN` — see [NetBird](/docs/infra/edge-network/netbird).
+- **NetBird:** `NETBIRD_MANAGEMENT_URL`, `NETBIRD_SERVER_*`, `NETBIRD_SERVICE_WORKER_SECRET`, `NETBIRD_SETUP_TOKEN` — see [NetBird](/docs/infra/edge-network/netbird). Optional operator labels: `NETBIRD_SHIELD_PEER_NAME`, `NETBIRD_DATA_LAN_ROUTE_CIDR`, `NETBIRD_DATA_LAN_ROUTE_VIA` (document Shield + DATA LAN route semantics; no secrets).
 
 ### App platform
 

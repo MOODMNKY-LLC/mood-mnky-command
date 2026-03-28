@@ -1,23 +1,35 @@
 ---
 title: MOOD-MNKY Node Deep Dive
-description: Hardware and storage profile of the MOOD-MNKY node (formerly PRO-MNKY), including its Intel iGPU media stack role.
+description: Hardware, PCIe layout, and storage profile of the MOOD-MNKY node (formerly PRO-MNKY), including GPU roles for the media stack.
 ---
 
 ## Overview
 
-`MOOD-MNKY` (formerly PRO-MNKY) is an additional node in the cluster. It is now online and hosts the target **media stack** (ARR + Jellyfin + qBittorrent) using the node’s **Intel iGPU** for VA-API/QSV transcoding.
+`MOOD-MNKY` (formerly PRO-MNKY) is a cluster node that hosts the target **media stack** (ARR + Jellyfin + qBittorrent). Transcoding can use **Intel Arc A750** and/or **UHD 770** (iGPU) depending on LXC device passthrough and stack configuration—verify live `/dev/dri` bindings after changes.
+
+### Motherboard and PCIe layout (ASUS PRIME Z790M-PLUS)
+
+| Item | Detail |
+| ---- | ------ |
+| **Primary PCIe** | **PCIe 5.0 ×16** from CPU — **Intel Arc A750** (dGPU) |
+| **Second long slot** | **PCIe 4.0 ×16 physical, ×4 electrical** from chipset — **empty**; best datacenter ROI is usually a **10GbE (or 25GbE)** NIC aligned with switch/NAS, or an **×4 NVMe** carrier if local fast disk is the bottleneck—not a second GPU |
+| **Small slots** | **PCIe 4.0 ×1** (one usable per DMI; second may be unavailable/disabled on board) |
+| **M.2** | Three **NVMe** sockets populated (CPU-linked + chipset); **SATA** also present |
 
 Hardware highlights observed on the host:
 
-- CPU: Intel Core i9-13900KS
-- iGPU device nodes: `/dev/dri/card1` and `/dev/dri/renderD128`
+- CPU: Intel Core i9-13900KS (Raptor Lake)
+- dGPU: Intel Arc A750 on CPU **PEG** port
+- iGPU: Intel UHD 770 — device nodes typically under `/dev/dri/` (indices vary by boot order vs dGPU)
+- Networking: dual **Realtek RTL8125** 2.5GbE plus **Intel 1GbE** (PCH)
+- Storage: **three Samsung 980 PRO–class NVMe** + **SATA SSD** (exact pool layout: confirm with `zpool` / Proxmox storage on-node)
 - Host memory: ~125 GiB
 
 ---
 
 ## Role
 
-- Target compute + GPU/iGPU node for the MOOD MNKY **media stack**.
+- Target compute + GPU node for the MOOD MNKY **media stack**.
 - Runs LXC **120** (`mnky-media-stack`) which provides:
   - Jellyfin media playback and hardware transcoding
   - qBittorrent download ingestion
@@ -25,14 +37,15 @@ Hardware highlights observed on the host:
   - Jellyseerr requests/discovery
 - Storage access: TrueNAS shared media NFS dataset (mounted into the LXC as `/mnt/media`)
 
-See: [`Media Stack (ARR + Jellyfin + qBittorrent)](/docs/infra/data-center/media-stack)`.
+See: [`Media Stack (ARR + Jellyfin + qBittorrent)](/docs/infra/data-center/media-stack).
 
 ---
 
 ## Next steps
 
-If you change MOOD-MNKY’s hardware (CPU, iGPU, or storage pools), re-capture the node profile by updating these facts and re-verifying:
+If you change MOOD-MNKY’s hardware (CPU, GPU passthrough, NICs, or pools), re-capture the node profile by updating these facts and re-verifying:
 
-1. The iGPU devices visible to containers (e.g. `/dev/dri/renderD128`)
+1. The GPU/iGPU devices visible to the media LXC (e.g. `/dev/dri/card*`, `renderD*`)
 2. TrueNAS NFS media mounts
 3. The media-stack LXC’s Docker/Compose health
+4. If you add a card in the **chipset ×4** slot: **IOMMU groups**, thermals, and **power limit** for that slot (see ASUS manual)

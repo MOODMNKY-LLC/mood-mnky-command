@@ -60,7 +60,19 @@ From `CLUSTER-NODES-HARDWARE.md` and Proxmox storage config:
 
 ### MOOD-MNKY
 
-- ZFS pool configuration to be documented when node is online and a snapshot has been collected.
+- **NVMe + SATA** SSDs present on-node (see [MOOD-MNKY node](/docs/infra/data-center/mood-mnky-node)); exact **ZFS pool names and topology** should be confirmed with `zpool list` / Proxmox **Datacenter → Storage** on MOOD-MNKY.
+
+---
+
+## Edge client: NVIDIA Shield TV (TrueNAS SMB + Termux)
+
+A **SHIELD Android TV** on the DATA LAN can reach TrueNAS **SMB** shares for media and Steam library staging. **SSH** for automation uses **Termux** on port **8022** (not 22). **Wireless ADB** is commonly **5555** when enabled in developer options.
+
+- **SMB shares (TrueNAS):** `Media` → dataset `.../PRO-MNKY/Media` (Jellyfin library tree); `Steam-Library` → `.../PRO-MNKY/Steam-Library`.
+- **Automation:** `rclone` in Termux with dedicated remotes (e.g. `truenas_media`, `truenas_steam`); use **`rclone copy` / `sync` / `lsd`**—**FUSE `rclone mount`** is generally **not available** on stock Termux/Android without a working `fusermount` stack.
+- **Credentials:** dedicated TrueNAS SMB user for the Shield—store **`TRUENAS_SHIELD_SMB_*`** and **`SHIELD_*`** keys only in **`datacenter.env`** / Infisical; never in Mintlify.
+
+**Remote access:** With NetBird connected and the **`10.0.0.0/24`** route active, the same **`10.0.0.5`** SMB targets work **off-LAN**; see [NetBird](/docs/infra/edge-network/netbird).
 
 ---
 
