@@ -142,6 +142,7 @@ The **MNKY VERSE Companion** and **Collection Manga** engine extend the Dojo, ga
 
 ## Contributing and Docs
 
+- **AI ecosystem (agents & staff):** [docs/AI-ECOSYSTEM-SOURCE-OF-TRUTH.md](docs/AI-ECOSYSTEM-SOURCE-OF-TRUTH.md) — canonical map of products, truth hierarchy, cloud vs self-hosted, secrets policy, and agent workflows; link this from onboarding and Cursor context.
 - **Design system:** [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)
 - **Shopify nav and footer:** [Shopify/docs/NAVIGATION-MENU-SETUP.md](Shopify/docs/NAVIGATION-MENU-SETUP.md)
 - **Dojo storefront stack:** [docs/VERSE-STOREFRONT-STACK.md](docs/VERSE-STOREFRONT-STACK.md) — Next.js + Hydrogen React (Storefront API); not a Remix Hydrogen app.
