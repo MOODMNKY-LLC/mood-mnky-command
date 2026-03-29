@@ -17,6 +17,10 @@ Underlying data comes from:
 - Proxmox API outputs (`pvesh get /nodes/*/storage`, `/cluster/resources`)
 - Hardware snapshots in `/root/hardware-snapshots/<node>/<timestamp>/` (currently detailed for CODE-MNKY)
 
+## Layer-3 segments
+
+Physical and logical **storage** (ZFS, NFS) still attach to **hosts** that live on specific **RFC1918 site VLANs** (`10.0.0.0/24` through `10.4.0.0/24`). For **why each /24 exists** (DATA core vs MOOD public plane vs CODE automation, typical anchors, and NetBird context), use the canonical page [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity). This document stays focused on **disks and paths**.
+
 ---
 
 ## ZFS pools per node

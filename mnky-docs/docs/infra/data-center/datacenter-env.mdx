@@ -14,7 +14,7 @@ It is the central place where we keep **datacenter access credentials and endpoi
 - application edge / PaaS (Coolify; reverse proxy tier is documented elsewhere)
 - media-stack apps (Jellyfin + *arr + Jellyseerr + qBittorrent/Gluetun)
 
-**Related topology:** [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) (live LXCs 300/301/3001 vs VMs 3055/3056).
+**Related topology:** [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) (live LXCs 300/301/3001 vs VMs 3055/3056); [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity) (which `datacenter.env` blocks map to which site /24).
 
 ## Safety rules (non-negotiable)
 
@@ -43,6 +43,18 @@ It is the central place where we keep **datacenter access credentials and endpoi
 - **Typos**: keep existing keys for compatibility, but add preferred aliases (e.g. `TRUNAS_*` vs `TRUENAS_*`).
 - **Host blocks**: when a host exists, keys should be complete and predictable: `*_HOST` (optional), `*_FQDN` (optional), `*_IP`, `*_SSH_PORT`, `*_USERNAME`, `*_PASSWORD`.
 - **URLs**: if a service has a LAN URL and a public URL, store both explicitly.
+
+## Segment map (non-secret)
+
+Map `datacenter.env` key groups to **site CIDRs** (full narrative: [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity)):
+
+- **`10.0.0.0/24` (DATA / site core):** `PROXMOX_DATA_MNKY_*`; TrueNAS `TRUNAS_*` / `TRUENAS_*`; `SHIELD_MNKY_*` and Shield SMB keys (edge clients on DATA LAN); `NETBIRD_SERVER_*` (self-hosted control plane); `TRAEFIK_*`; `COOLIFY_HQ_SSH_*`; `MNKY_REGISTRY_*`; Infisical or other infra hosts when documented on DATA.
+- **`10.1.0.0/24` (MOOD):** `PROXMOX_MOOD_MNKY_*`; `COOLIFY_MOOD_SSH_*` (Coolify on the MOOD node).
+- **`10.2.0.0/24` (SAGE):** `PROXMOX_SAGE_MNKY_*`.
+- **`10.3.0.0/24` (CODE):** `PROXMOX_CODE_MNKY_*` (Supabase, n8n, Ollama, and other CODE-segment workloads).
+- **`10.4.0.0/24` (CASA):** `PROXMOX_CASA_MNKY_*`.
+- **Standalone HQ:** `PROXMOX_MNKY_HQ_*` (MNKY-HQ; not one of the five cluster /24s above).
+- **Overlay:** `NETBIRD_*` (management URL, API, setup tokens) applies to all peers; routing semantics are in [NetBird](/docs/infra/edge-network/netbird).
 
 ## Redacted inventory (variable map)
 

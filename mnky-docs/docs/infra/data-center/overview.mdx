@@ -12,14 +12,19 @@ This page provides a high-level view of the cluster, its hardware profile, and h
 For deeper detail, refer to:
 
 - [Edge network (pfSense + NetBird)](/docs/infra/edge-network/overview) – remote access, overlay, and site routing (published mirror of internal `docs/network/` notes)
-- `/infra/data-center/nodes` – node profiles
-- `/infra/data-center/code-mnky-node` – CODE-MNKY hardware deep dive
-- `/infra/data-center/casa-mnky-node` – CASA-MNKY hardware deep dive
-- `/infra/data-center/data-mnky-node` – DATA-MNKY hardware deep dive
-- `/infra/data-center/sage-mnky-node` – SAGE-MNKY hardware deep dive
-- `/infra/data-center/mnky-hq-node` – MNKY-HQ standalone networking Proxmox deep dive
-- `/infra/data-center/storage-and-network` – storage and network topology
-- `/infra/data-center/runbooks` – operational runbooks
+- [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity) – segment roles (DATA, MOOD, SAGE, CODE, CASA) and trust or exposure model
+- [Cluster nodes](/docs/infra/data-center/nodes) – node profiles
+- [CODE-MNKY node](/docs/infra/data-center/code-mnky-node) – CODE-MNKY hardware deep dive
+- [CASA-MNKY node](/docs/infra/data-center/casa-mnky-node) – CASA-MNKY hardware deep dive
+- [DATA-MNKY node](/docs/infra/data-center/data-mnky-node) – DATA-MNKY hardware deep dive
+- [SAGE-MNKY node](/docs/infra/data-center/sage-mnky-node) – SAGE-MNKY hardware deep dive
+- [MNKY-HQ node](/docs/infra/data-center/mnky-hq-node) – MNKY-HQ standalone networking Proxmox deep dive
+- [Storage and network topology](/docs/infra/data-center/storage-and-network) – storage and network topology
+- [Runbooks](/docs/infra/data-center/runbooks) – operational runbooks
+
+## Network segments (VLAN identity)
+
+Each cluster hypervisor sits on a **site /24** behind **pfSense**; remote access uses **NetBird** to the hub peer. For the canonical map of CIDRs, management IPs, intent (DATA core vs MOOD public plane vs CODE automation, and so on), and example anchors, read [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity).
 
 ## Cluster at a glance
 
@@ -56,6 +61,7 @@ Full node-level hardware snapshots are captured under `/root/hardware-snapshots/
 The Data Center documentation is organized as follows:
 
 - **Data Center Map**: comprehensive first-principles map of the cluster—every node, VM, LXC, storage, and topology. Use it as the single source of truth for "what runs where."
+- **VLAN subnets and identity**: canonical layer-3 segment roles (DATA / MOOD / SAGE / CODE / CASA), management IPs, and exposure model.
 - **Data Center Upgrade Plan**: living roadmap for phased upgrades (PBS, GitLab, Docker registry, workload rebalance). Updated as phases complete.
 - **Overview** (this page): global view of the cluster and doc set.
 - **Nodes**: summarized and per-node hardware/service profiles.

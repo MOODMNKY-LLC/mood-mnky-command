@@ -7,10 +7,14 @@ description: Detailed hardware and capability profiles for each node in the MOOD
 
 This page documents each node in the MOOD MNKY Proxmox cluster from a hardware and capability perspective.
 
+<Note>
+  **Live inventory:** the [Data Center Map](/docs/infra/data-center/data-center-map) is authoritative for current VMIDs and LXCs; refresh this page when hardware or placement changes.
+</Note>
+
 Source of truth:
 
 - Proxmox API snapshots summarized in `proxmox-terraform/CLUSTER-NODES-HARDWARE.md`.
-- Per-node hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host (collected for CODE-MNKY, CASA-MNKY, DATA-MNKY, and SAGE-MNKY; MOOD-MNKY pending while offline).
+- Per-node hardware snapshots under `/root/hardware-snapshots/<node>/<timestamp>/` on each host (collected for CODE-MNKY, CASA-MNKY, DATA-MNKY, SAGE-MNKY, and MOOD-MNKY when online).
 - LXC and service mappings from the homelab “as code” docs and runbooks.
 
 ### Node table
@@ -21,7 +25,7 @@ Source of truth:
 | CASA-MNKY   | Online  | AMD Ryzen 5 4600G (Radeon)  | 6 / 12          | 62 GiB       | ~1.11 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
 | DATA-MNKY   | Online  | AMD Ryzen 7 5700X           | 8 / 16          | 62.7 GiB     | ~1.72 TiB             | local-zfs, local, hyper-mnky-shared (NFS)                            |
 | SAGE-MNKY   | Online  | AMD Ryzen 7 5700G (Radeon)  | 8 / 16          | 62 GiB       | ~445 GiB              | STUD-zfs, local-zfs, local, hyper-mnky-shared (NFS)                  |
-| MOOD-MNKY    | Offline | (captured when online)      | —               | —            | —                     | (to be filled when node is online)                                   |
+| MOOD-MNKY   | Online  | Intel Core i9-13900KS       | —               | ~125 GiB     | ~2.7 TiB (rpool)      | rpool, hyper-mnky-shared (NFS)                                       |
 
 All online nodes run Proxmox VE 8.4.17 on kernel `6.8.12-19-pve`, with EFI boot and Secure Boot off.
 
@@ -33,14 +37,9 @@ CODE-MNKY is the primary GPU and stack host and the main focus for deep introspe
 
 ### Role
 
-- Hosts the main LXC stack (VMIDs 3099–3104) including:
-  - GPU dev LXC (3099) with Codex CLI and dev tooling.
-  - Automation stack (3100) with AWX and Semaphore.
-  - AI stack (3101) with Ollama, Flowise, n8n, MinIO, and self-hosted Supabase.
-  - Gaming and Sunshine stack (3102).
-  - Media stack (3103) with Jellyfin, *arr suite, and qBittorrent.
-  - Dedicated Supabase stack (3104) backing AI workloads as needed.
-- Target node for most Terraform-created LXCs (`target_node = "CODE-MNKY"`).
+- **Live on CODE-MNKY** (see [Data Center Map](/docs/infra/data-center/data-center-map)): QEMU VMs **3055** (Supabase) and **3056** (n8n); LXCs **300** (automation shell), **301** (legacy AI stack disk; no Docker stack at last inventory), **3001** (PegaProx).
+- Older docs referenced VMIDs **3099–3104**; treat the **map** as authoritative if numbers diverge.
+- Target node for many Terraform-created LXCs (`target_node = "CODE-MNKY"`).
 
 ### Hardware profile (snapshot-based)
 
@@ -65,7 +64,7 @@ Based on `/root/hardware-snapshots/CODE-MNKY/20260316T152000Z/`:
 - **PCI/USB**:
   - Full bus layout in `lspci-nnvv.txt`, `lspci-tree.txt`, `lsusb.txt`, `lsusb-tree.txt`.
 
-For a full narrative deep dive, see `/infra/data-center/code-mnky-node`.
+For a full narrative deep dive, see [CODE-MNKY node](/docs/infra/data-center/code-mnky-node).
 
 ---
 
@@ -91,7 +90,7 @@ Based on `/root/hardware-snapshots/CASA-MNKY/20260316T152857Z/` (plus cluster su
   - `local` (dir).
   - `hyper-mnky-shared` (NFS).
 
-For a full narrative deep dive, see `/infra/data-center/casa-mnky-node`.
+For a full narrative deep dive, see [CASA-MNKY node](/docs/infra/data-center/casa-mnky-node).
 
 ---
 
@@ -113,7 +112,7 @@ Based on `/root/hardware-snapshots/DATA-MNKY/20260316T152848Z/` (plus cluster su
 - **Root pool**: `rpool` (~1.81 TiB) mirrored over two NVMe devices.
 - **Storage (active)**: local ZFS + shared NFS (`hyper-mnky-shared`).
 
-For a full narrative deep dive, see `/infra/data-center/data-mnky-node`.
+For a full narrative deep dive, see [DATA-MNKY node](/docs/infra/data-center/data-mnky-node).
 
 ---
 
@@ -137,33 +136,28 @@ Based on `/root/hardware-snapshots/SAGE-MNKY/20260316T152852Z/` (plus cluster su
   - `rpool` (~460 GiB) – root pool.
 - **Storage (active)**: local ZFS + shared NFS (`hyper-mnky-shared`).
 
-For a full narrative deep dive, see `/infra/data-center/sage-mnky-node`.
+For a full narrative deep dive, see [SAGE-MNKY node](/docs/infra/data-center/sage-mnky-node).
 
 ---
 
 ## MOOD-MNKY
 
-MOOD-MNKY is currently offline from the perspective of detailed hardware documentation.
+MOOD-MNKY is online and hosts the **media stack** (LXC **120** — Jellyfin, \*arr, qBittorrent) per the [Data Center Map](/docs/infra/data-center/data-center-map).
 
 ### Role
 
-- Additional node in the cluster; hardware details to be captured once the node is brought online.
+- Intel **iGPU** / **VA-API** transcoding for media workloads.
+- **10.1.0.0/24** (MOOD VLAN); public-facing apps often fronted via Traefik on DATA — see [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity) and [Media stack](/docs/infra/data-center/media-stack).
 
-### Next steps
+### Hardware snapshots
 
-When MOOD-MNKY is online:
+Re-run the collector after major hardware changes:
 
 ```bash
 sudo /root/proxmox-ansible/scripts/collect-node-hardware.sh
 ```
 
-This will produce:
-
-```bash
-/root/hardware-snapshots/MOOD-MNKY/<timestamp>/
-```
-
-You can then mirror the structure above (identity, CPU, memory, storage, network, GPU if any, PCI/USB) to complete MOOD-MNKY's profile. See [MOOD-MNKY node deep dive](/docs/infra/data-center/mood-mnky-node).
+Output: `/root/hardware-snapshots/MOOD-MNKY/<timestamp>/`. See [MOOD-MNKY node deep dive](/docs/infra/data-center/mood-mnky-node).
 
 ---
 
@@ -174,5 +168,5 @@ When hardware changes on any node:
 1. Run the collector on that node.
 2. Update the summary row in the table at the top of this page.
 3. Refresh the relevant per-node section with details from the latest snapshot.
-4. If CODE-MNKY changed significantly, also revisit `/infra/data-center/code-mnky-node`.
+4. If CODE-MNKY changed significantly, also revisit [CODE-MNKY node](/docs/infra/data-center/code-mnky-node).
 

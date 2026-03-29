@@ -275,6 +275,7 @@
             "group": "Data Center (Proxmox)",
             "pages": [
               "docs/infra/data-center/data-center-map",
+              "docs/infra/data-center/vlan-subnets-and-identity",
               "docs/infra/data-center/data-center-upgrade-plan",
               "docs/infra/data-center/overview",
               "docs/infra/data-center/datacenter-env",

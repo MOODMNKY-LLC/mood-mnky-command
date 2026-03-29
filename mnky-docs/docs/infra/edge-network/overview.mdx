@@ -25,6 +25,8 @@ This page is the **internal source of truth** for how remote access and site rou
 | **Proxmox cluster** | Workloads; **not** competing subnet routers | Nodes may keep NetBird for **admin** access; **network routes** for site prefixes are **disabled** on hypervisors in favor of pfSense |
 | **Identity / policy tags** | Flat **groups** (no nesting); peers in **multiple** groups | **2026-03-26:** **Hypervisors**, **Infra-Edge**, **Monitoring**, **Apps**, **Remote-Operators**, **BreakGlass** — see [NetBird platform](/docs/infra/edge-network/netbird). **Cluster hypervisors** keep **`DisableClientRoutes: true`** locally so **Corosync** never uses **`wt0`** for site prefixes. |
 
+For **workload and trust semantics** per /24 (DATA core vs MOOD public plane vs CODE automation, example anchors, and NetBird context), see [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity).
+
 ## Traffic model (hub-and-spoke)
 
 Remote users and devices connect to NetBird; **routed** traffic to on-prem prefixes goes **through the pfSense peer** (not through a second Linux router on DATA unless you intentionally design HA).
@@ -46,8 +48,8 @@ flowchart TB
     d["10.0.0.0/24"]
     m["10.1.0.0/24"]
     s["10.2.0.0/24"]
-    c["10.3.0.0/24"]
-    a["10.4.0.0/24"]
+    codeVlan["10.3.0.0/24"]
+    casaVlan["10.4.0.0/24"]
   end
   laptop --> cgNAT
   cgNAT --> wt0
@@ -56,8 +58,8 @@ flowchart TB
   vt1 --> d
   v6 --> m
   v6 --> s
-  v6 --> c
-  v6 --> a
+  v6 --> codeVlan
+  v6 --> casaVlan
 ```
 
 ## Package and version snapshot (pfSense)
@@ -83,6 +85,9 @@ Install on FreeBSD/pfSense may require `IGNORE_OSVERSION=yes` when package ABI l
   </Card>
   <Card title="Data center map" icon="server" href="/docs/infra/data-center/data-center-map">
     Proxmox nodes, VMs, and LXCs—cluster topology.
+  </Card>
+  <Card title="VLAN subnets and identity" icon="map" href="/docs/infra/data-center/vlan-subnets-and-identity">
+    Segment roles, management IPs, and exposure model per site /24.
   </Card>
 </CardGroup>
 

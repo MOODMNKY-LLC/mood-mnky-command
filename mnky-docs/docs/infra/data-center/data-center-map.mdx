@@ -18,6 +18,10 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 | **Quorum** | 5 nodes (typically all online; verify with `pvecm status`) |
 | **Node count** | 5 (CODE-MNKY, CASA-MNKY, DATA-MNKY, SAGE-MNKY, MOOD-MNKY) |
 
+<Note>
+  **Segment reference:** see [VLAN subnets and identity](/docs/infra/data-center/vlan-subnets-and-identity) for workload and trust semantics per site /24 (DATA, MOOD, SAGE, CODE, CASA).
+</Note>
+
 **High-level roles:** CODE-MNKY is the primary GPU and workload host (LXCs + QEMU VMs). CASA-MNKY, DATA-MNKY, and SAGE-MNKY provide additional compute and storage capacity and share NFS. MOOD-MNKY hosts the Intel iGPU media stack (LXC 120). For a live CODE-MNKY LXC breakdown, see [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory).
 
 ---
@@ -29,6 +33,8 @@ The **Data Center Map** is the comprehensive, first-principles reference for the
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online |
+| **Site CIDR** | `10.3.0.0/24` (CODE VLAN) |
+| **Proxmox mgmt IP** | `10.3.0.10` |
 | **Role** | GPU host; LXCs 300, 301, 3001 + VMs 3055–3056 (live); Terraform `target_node` may lag |
 | **CPU** | AMD Ryzen 5 4600G with Radeon Graphics |
 | **Cores / threads** | 6 / 12 (1 socket, ~3566 MHz) |
@@ -70,6 +76,8 @@ See [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) f
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online |
+| **Site CIDR** | `10.4.0.0/24` (CASA VLAN) |
+| **Proxmox mgmt IP** | `10.4.0.10` |
 | **Role** | General-purpose compute; migration target |
 | **CPU** | AMD Ryzen 5 4600G with Radeon Graphics |
 | **Cores / threads** | 6 / 12 (1 socket, ~3667 MHz) |
@@ -88,6 +96,8 @@ See [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) f
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online |
+| **Site CIDR** | `10.0.0.0/24` (DATA LAN) |
+| **Proxmox mgmt IP** | `10.0.0.10` |
 | **Role** | High-core, large disk; TrueNAS/PBS host candidate |
 | **CPU** | AMD Ryzen 7 5700X 8-Core Processor |
 | **Cores / threads** | 8 / 16 (1 socket, ~3713 MHz) |
@@ -106,6 +116,8 @@ See [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) f
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online |
+| **Site CIDR** | `10.2.0.0/24` (SAGE VLAN) |
+| **Proxmox mgmt IP** | `10.2.0.10` |
 | **Role** | Additional compute; dedicated STUD-zfs pool |
 | **CPU** | AMD Ryzen 7 5700G with Radeon Graphics |
 | **Cores / threads** | 8 / 16 (1 socket) |
@@ -124,6 +136,8 @@ See [CODE-MNKY LXC inventory](/docs/infra/data-center/code-mnky-lxc-inventory) f
 | Attribute | Value |
 |-----------|--------|
 | **Status** | Online (media-stack target) |
+| **Site CIDR** | `10.1.0.0/24` (MOOD VLAN) |
+| **Proxmox mgmt IP** | `10.1.0.10` |
 | **Role** | Additional node; Intel iGPU media workloads for VA-API transcoding |
 | **CPU** | Intel Core i9-13900KS (Intel iGPU / VA-API capable) |
 | **Memory** | ~125 GiB (host) |
