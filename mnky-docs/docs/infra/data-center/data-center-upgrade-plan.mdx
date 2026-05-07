@@ -49,7 +49,7 @@ The main architectural risk is concentration: CODE-MNKY is the only node running
 
 ### Shared storage and volumes
 
-- **hyper-mnky-shared (NFS):** Backed by TrueNAS 10.0.0.5:/mnt/HYPER-MNKY/proxmox/shared; used for ISO, snippets, template, scripts across nodes. Per-LXC datashare: lxc-private/<vmid> on TrueNAS, mounted in each LXC as ~/truenas-data.
+- **hyper-mnky-shared (NFS):** Backed by TrueNAS 10.0.0.5:/mnt/HYPER-MNKY/proxmox/shared; used for ISO, snippets, template, scripts across nodes. Per-LXC datashare: lxc-private/vmid on TrueNAS, mounted in each LXC as ~/truenas-data.
 - **Node-local:** CODE-MAIN-zfs (primary LXC disk), CODE-BKP-zfs (backup/secondary), STUD-zfs on SAGE-MNKY.
 
 ### Proxmox Backup Server (PBS) and TrueNAS
