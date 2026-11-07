@@ -45,11 +45,18 @@ export default function PendingApprovalPage() {
               </CardTitle>
               <CardDescription className="text-center text-[var(--verse-text-muted)]">
                 Your account is pending approval. An administrator will activate
-                it shortly. You will be able to access the dashboard once
-                approved.
+                Dojo member and LABZ access shortly. You can still browse the
+                public brand site while you wait.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-2">
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => router.push("/main")}
+              >
+                Browse MOOD MNKY
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"

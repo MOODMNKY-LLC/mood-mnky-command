@@ -18,7 +18,7 @@ const baseUrl =
 export const metadata: Metadata = {
   title: "MOOD MNKY – Fragrance, Community, Innovation",
   description:
-    "Bespoke fragrance and the MNKY DOJO. Explore our community, blending lab, and fragrance oils.",
+    "MOOD MNKY — bespoke fragrance, community, and MNKY ID. Explore The Dojo, blending, and honest account paths.",
   applicationName: "MOOD MNKY",
   metadataBase: new URL(baseUrl),
   openGraph: {
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     siteName: "MOOD MNKY",
     title: "MOOD MNKY – Fragrance, Community, Innovation",
     description:
-      "Bespoke fragrance and the MNKY DOJO. Explore our community, blending lab, and fragrance oils.",
+      "MOOD MNKY — bespoke fragrance, community, and MNKY ID. Explore The Dojo, blending, and honest account paths.",
     url: baseUrl,
   },
   twitter: {
     card: "summary_large_image",
     title: "MOOD MNKY – Fragrance, Community, Innovation",
     description:
-      "Bespoke fragrance and the MNKY DOJO. Explore our community, blending lab, and fragrance oils.",
+      "MOOD MNKY — bespoke fragrance, community, and MNKY ID. Explore The Dojo, blending, and honest account paths.",
   },
   alternates: {
     canonical: baseUrl,

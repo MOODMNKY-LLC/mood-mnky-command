@@ -14,6 +14,7 @@ import {
   MainCustomizationAgentsSplit,
   MainFooter,
 } from "@/components/main"
+import { MainAccountPaths } from "@/components/main/main-account-paths"
 import {
   getMainLandingData,
   getMainAgents,
@@ -45,6 +46,10 @@ export default async function MainLandingPage() {
           className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
           style={{ marginTop: "var(--main-section-gap)" }}
         >
+          <section className="col-span-full">
+            <MainAccountPaths />
+          </section>
+
           <section className="col-span-full">
             <MainFeatureCards items={landingData.features} />
           </section>

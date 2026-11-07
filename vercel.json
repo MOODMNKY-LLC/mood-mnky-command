@@ -1,4 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "ignoreCommand": "node -e \"const m=process.env.VERCEL_GIT_COMMIT_MESSAGE||''; process.exit(/\\[skip vercel\\]|\\[skip deploy\\]/.test(m)?0:1)\""
 }

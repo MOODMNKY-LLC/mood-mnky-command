@@ -9,7 +9,7 @@ import { ROUTES } from "@/lib/nav-routes"
 import { FOOTER_GROUPS } from "@/lib/main-nav-config"
 
 export function MainFooter() {
-  const { discover, dojo, connect } = FOOTER_GROUPS
+  const { discover, dojo, identity, connect } = FOOTER_GROUPS
   const { openTour } = useMainTouchpointTour()
 
   return (
@@ -73,6 +73,22 @@ export function MainFooter() {
             </span>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
               {dojo.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Identity
+            </span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              {identity.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

@@ -139,34 +139,55 @@ export function MainHeroSplit() {
           />
         </div>
 
-        {/* Left: Copy + CTAs */}
+        {/* Left: Copy + CTAs — brand is the hero signal */}
         <div className="relative z-10 flex flex-col justify-center">
+          <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Fragrance · Community · Identity
+          </p>
           <h1
             className="font-bold tracking-tight text-foreground"
             style={{ fontSize: "var(--main-hero-title-size)" }}
           >
-            Bespoke experiences.
-            <br />
-            Your story, your scent.
+            <span className="sr-only">MOOD MNKY — </span>
+            <BrandMatrixText
+              variant="MOOD MNKY"
+              size={5}
+              gap={1}
+              className="h-10 md:h-12 lg:h-14"
+            />
           </h1>
-          <div
-            role="paragraph"
-            className="mt-4 max-w-lg text-muted-foreground"
+          <p
+            className="mt-5 max-w-lg font-medium tracking-tight text-foreground"
             style={{ fontSize: "var(--main-hero-subtitle-size)" }}
           >
-            Extreme personalization, sensory journeys, and handcrafted blends.{" "}
+            Bespoke experiences. Your story, your scent.
+          </p>
+          <div
+            role="paragraph"
+            className="mt-3 max-w-lg text-muted-foreground"
+          >
+            Extreme personalization, sensory journeys, and handcrafted blends.
             Always scentsing the{" "}
-            <BrandMatrixText variant="MOOD" size={3} gap={0.5} className="mx-0.5 inline-block h-5 align-baseline md:h-6" />
+            <BrandMatrixText
+              variant="MOOD"
+              size={3}
+              gap={0.5}
+              className="mx-0.5 inline-block h-5 align-baseline md:h-6"
+            />
             .
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Create an account to shop, blend, and save your scents.
+          <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+            Start with a MNKY ID when enrollment is open, or use your existing
+            Dojo / shop sign-in. VIP and services stay separately approved.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild size="lg" className="main-btn-float">
-              <Link href="/auth/sign-up">Join the Dojo</Link>
+              <Link href="/main/mnky-id">Your MNKY ID</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="main-btn-glass">
+              <Link href="/auth/sign-up">Dojo / shop sign-up</Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost">
               <a
                 href="https://shop.moodmnky.com"
                 target="_blank"

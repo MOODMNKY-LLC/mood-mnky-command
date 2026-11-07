@@ -20,6 +20,9 @@ export const ROUTES = {
   MAIN_DESIGN: "/main/design",
   MAIN_MEDIA: "/main/media",
   MAIN_SEARCH: "/main/search",
+  MAIN_MNKY_ID: "/main/mnky-id",
+  MAIN_MNKY_ID_CREATE: "/main/mnky-id/create",
+  MAIN_MNKY_ID_SIGN_IN: "/main/mnky-id/sign-in",
   AUTH_SIGN_UP: "/auth/sign-up",
   AUTH_LOGIN: "/auth/login",
   /** Storefront (shop and blend). Use for Main CTA "Enter the Dojo". */
