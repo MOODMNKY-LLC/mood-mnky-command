@@ -32,6 +32,9 @@
     "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
     "voice:preview": "node scripts/preview-voices.mjs",
     "test:flowise-uploads": "node --test --import tsx lib/flowise-uploads.test.ts",
+    "test:access-boundaries": "node --test --import tsx lib/auth/access-decision.test.ts lib/mnky-id.test.ts",
+    "test:unit": "node --test --import tsx lib/flowise-uploads.test.ts lib/auth/access-decision.test.ts lib/mnky-id.test.ts",
+
     "shopify:setup-customer-metafields": "tsx scripts/setup-customer-metafield-definitions.ts",
     "publish-infra": "tsx scripts/publish-infra-artifacts.ts"
   },

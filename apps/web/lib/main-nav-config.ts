@@ -19,10 +19,11 @@ export const ABOUT_LINKS = [
   { href: ROUTES.MAIN_SERVICES, label: "Services" },
 ] as const;
 
-/** Join / Belong: Community, Loyalty. */
+/** Join / Belong: Community, Loyalty, MNKY ID. */
 export const JOIN_LINKS = [
   { href: ROUTES.MAIN_COMMUNITY, label: "Community" },
   { href: ROUTES.MAIN_LOYALTY, label: "Loyalty" },
+  { href: ROUTES.MAIN_MNKY_ID, label: "MNKY ID" },
 ] as const;
 
 /** Primary CTA: Enter the Dojo (storefront). */
@@ -42,6 +43,11 @@ export const FOOTER_GROUPS = {
   dojo: [
     { href: ROUTES.STOREFRONT, label: "Enter Dojo" },
     { href: ROUTES.AUTH_SIGN_UP, label: "Sign up" },
+  ],
+  identity: [
+    { href: ROUTES.MAIN_MNKY_ID, label: "MNKY ID" },
+    { href: ROUTES.MAIN_MNKY_ID_CREATE, label: "Create ID intro" },
+    { href: ROUTES.MAIN_MNKY_ID_SIGN_IN, label: "Sign-in options" },
   ],
   connect: { chatQuery: "Tell me about MOOD MNKY – bespoke fragrance and the MNKY DOJO." },
 } as const;
