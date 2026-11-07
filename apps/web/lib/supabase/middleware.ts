@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { hasSupabaseAnonConfig } from "@/lib/supabase/config"
 import {
+  resolveMissingConfigAccess,
   resolveSessionAccess,
   type SessionProfile,
 } from "@/lib/auth/access-decision"
@@ -17,24 +19,27 @@ export async function updateSession(
 ) {
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
   const pathname =
     (options?.effectivePathname as string | undefined) ??
     request.nextUrl.pathname
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  // Fail CLOSED for protected Dojo/LABZ/member/API when anon config is missing.
+  // Public Main / auth UI / embeds / illustrative /review/* may still render.
+  if (!hasSupabaseAnonConfig()) {
     console.error(
       "[Supabase] Missing env vars. Add .env.local at the monorepo root with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. pnpm dev loads it via dotenv-cli. See .env.example."
     )
-    // Preview/misconfig: do not 500 the whole site. Allow public Main/auth/embeds
-    // so reviewers can still see the UI; keep member routes gated.
-    const decision = resolveSessionAccess({
-      pathname,
-      hasUser: false,
-      profile: null,
-    })
+    const decision = resolveMissingConfigAccess(pathname)
+    if (decision.type === "unavailable") {
+      return NextResponse.json(
+        {
+          error: "auth_backend_unavailable",
+          message:
+            "Supabase anon configuration is missing. Protected APIs are unavailable.",
+        },
+        { status: decision.status },
+      )
+    }
     if (decision.type === "redirect") {
       const url = request.nextUrl.clone()
       url.pathname = decision.pathname
@@ -45,6 +50,9 @@ export async function updateSession(
     }
     return NextResponse.next({ request })
   }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
   const supabase = createServerClient(
     supabaseUrl,

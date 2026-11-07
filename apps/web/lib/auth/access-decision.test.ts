@@ -2,8 +2,10 @@ import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 import {
   resolveSessionAccess,
+  resolveMissingConfigAccess,
   isMainPath,
   isPublicEmbedPath,
+  isIllustrativeReviewPath,
 } from "./access-decision"
 import { safeReturnPath, loginHrefWithReturn } from "./safe-return-path"
 import {
@@ -100,6 +102,61 @@ describe("protected Dojo / LABZ", () => {
   })
 })
 
+describe("missing Supabase config fail-closed", () => {
+  it("allows Main, auth UI, embeds, and illustrative review only", () => {
+    assert.deepEqual(resolveMissingConfigAccess("/main"), { type: "allow" })
+    assert.deepEqual(resolveMissingConfigAccess("/auth/login"), {
+      type: "allow",
+    })
+    assert.deepEqual(resolveMissingConfigAccess("/dojo/glossary"), {
+      type: "allow",
+    })
+    assert.equal(isIllustrativeReviewPath("/review/member-home"), true)
+    assert.deepEqual(resolveMissingConfigAccess("/review/member-home"), {
+      type: "allow",
+    })
+  })
+
+  it("blocks Dojo/member, LABZ/platform, and APIs when config missing", () => {
+    assert.deepEqual(resolveMissingConfigAccess("/dojo/me"), {
+      type: "redirect",
+      pathname: "/auth/login",
+    })
+    assert.deepEqual(resolveMissingConfigAccess("/platform"), {
+      type: "redirect",
+      pathname: "/auth/login",
+    })
+    assert.deepEqual(resolveMissingConfigAccess("/api/me"), {
+      type: "unavailable",
+      status: 503,
+    })
+    // ?review=1 is not evaluated here — pathname alone must not unlock Dojo
+    assert.deepEqual(resolveMissingConfigAccess("/dojo/me"), {
+      type: "redirect",
+      pathname: "/auth/login",
+    })
+  })
+
+  it("never treats review paths as granting session access via resolveSessionAccess guest rules alone beyond allow", () => {
+    assert.deepEqual(
+      resolveSessionAccess({
+        pathname: "/review/member-home",
+        hasUser: false,
+        profile: null,
+      }),
+      { type: "allow" },
+    )
+    assert.deepEqual(
+      resolveSessionAccess({
+        pathname: "/dojo/me",
+        hasUser: false,
+        profile: null,
+      }),
+      { type: "redirect", pathname: "/auth/login" },
+    )
+  })
+})
+
 describe("safe return + gated links + bridge draft", () => {
   it("sanitizes next and builds login href", () => {
     assert.equal(safeReturnPath("//evil"), "/")
@@ -110,11 +167,12 @@ describe("safe return + gated links + bridge draft", () => {
   })
 
   it("keeps enrollment/VIP gated off by default", () => {
-    assert.deepEqual(getMnkyIdEnrollmentLink({}), {
+    const emptyEnv = {} as NodeJS.ProcessEnv
+    assert.deepEqual(getMnkyIdEnrollmentLink(emptyEnv), {
       enabled: false,
       reason: "flag_off",
     })
-    assert.deepEqual(getVipPortalLink({}), {
+    assert.deepEqual(getVipPortalLink(emptyEnv), {
       enabled: false,
       reason: "flag_off",
     })

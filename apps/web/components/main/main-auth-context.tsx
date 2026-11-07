@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { hasSupabaseAnonConfig } from "@/lib/supabase/config"
 import { BUCKETS, getPublicUrl } from "@/lib/supabase/storage"
 import type { BucketId } from "@/lib/supabase/storage"
 import { MainUserProvider } from "./main-user-context"
@@ -10,6 +11,11 @@ export async function MainAuthContext({
 }: {
   children: React.ReactNode
 }) {
+  // Missing anon config → render Main as guest. Does not invent a session or grant rights.
+  if (!hasSupabaseAnonConfig()) {
+    return <MainUserProvider user={null}>{children}</MainUserProvider>
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

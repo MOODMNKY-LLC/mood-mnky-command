@@ -62,6 +62,34 @@ export function isPendingProfile(profile: SessionProfile | null | undefined): bo
   return profile?.role === "pending"
 }
 
+/** Illustrative, read-only review surfaces — never real sessions or grants. */
+export function isIllustrativeReviewPath(pathname: string): boolean {
+  return pathname === "/review" || pathname.startsWith("/review/")
+}
+
+export type MissingConfigAccessDecision =
+  | { type: "allow" }
+  | { type: "redirect"; pathname: string }
+  | { type: "unavailable"; status: 503 }
+
+/**
+ * Fail-closed when Supabase anon config is missing.
+ * Public Main / auth UI / embeds / illustrative review may render.
+ * APIs, Dojo/member, LABZ/platform stay closed — no guest API pass-through.
+ * Query flags like ?review=1 never unlock protected routes here.
+ */
+export function resolveMissingConfigAccess(
+  pathname: string,
+): MissingConfigAccessDecision {
+  if (isIllustrativeReviewPath(pathname)) return { type: "allow" }
+  if (isMainPath(pathname)) return { type: "allow" }
+  if (isAuthPath(pathname)) return { type: "allow" }
+  if (isPublicEmbedPath(pathname)) return { type: "allow" }
+  if (isVerseAuthPath(pathname)) return { type: "allow" }
+  if (isApiPath(pathname)) return { type: "unavailable", status: 503 }
+  return { type: "redirect", pathname: "/auth/login" }
+}
+
 /**
  * Public Main stays browsable for guests, members, pending, and admins.
  * Dojo/member and LABZ stay protected. Creating an identity never grants VIP.
@@ -79,22 +107,30 @@ export function resolveSessionAccess(params: {
   const verseAuthRoute = isVerseAuthPath(pathname)
   const publicEmbed = isPublicEmbedPath(pathname)
   const memberRoute = isMemberPath(pathname)
+  const reviewRoute = isIllustrativeReviewPath(pathname)
 
   if (!hasUser) {
-    if (authRoute || apiRoute || verseAuthRoute || publicEmbed || mainRoute) {
+    if (
+      authRoute ||
+      apiRoute ||
+      verseAuthRoute ||
+      publicEmbed ||
+      mainRoute ||
+      reviewRoute
+    ) {
       return { type: "allow" }
     }
     return { type: "redirect", pathname: "/auth/login" }
   }
 
   if (isPendingProfile(profile)) {
-    if (authRoute || apiRoute || mainRoute) {
+    if (authRoute || apiRoute || mainRoute || reviewRoute) {
       return { type: "allow" }
     }
     return { type: "redirect", pathname: "/auth/pending-approval" }
   }
 
-  if (authRoute || apiRoute) {
+  if (authRoute || apiRoute || reviewRoute) {
     return { type: "allow" }
   }
 

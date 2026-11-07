@@ -52,10 +52,16 @@ export function ConsumerLoginCard({
         </p>
         <div className="flex flex-col items-center gap-2 text-center">
           <Link
-            href="/main"
+            href="/main?review=1"
             className="text-xs text-[var(--verse-text-muted)] transition-colors hover:text-[var(--verse-text)]"
           >
             Back to MOOD MNKY
+          </Link>
+          <Link
+            href="/review/member-home"
+            className="text-xs text-[var(--verse-text-muted)] underline-offset-2 transition-colors hover:text-[var(--verse-text)] hover:underline"
+          >
+            Illustrative member home (preview sample)
           </Link>
           {vip.enabled ? (
             <a
