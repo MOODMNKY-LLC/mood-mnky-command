@@ -20,13 +20,30 @@ export async function updateSession(
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  const pathname =
+    (options?.effectivePathname as string | undefined) ??
+    request.nextUrl.pathname
+
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error(
       "[Supabase] Missing env vars. Add .env.local at the monorepo root with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. pnpm dev loads it via dotenv-cli. See .env.example."
     )
-    throw new Error(
-      "Supabase URL and Key required. Put .env.local at the monorepo root with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. See https://supabase.com/dashboard/project/_/settings/api"
-    )
+    // Preview/misconfig: do not 500 the whole site. Allow public Main/auth/embeds
+    // so reviewers can still see the UI; keep member routes gated.
+    const decision = resolveSessionAccess({
+      pathname,
+      hasUser: false,
+      profile: null,
+    })
+    if (decision.type === "redirect") {
+      const url = request.nextUrl.clone()
+      url.pathname = decision.pathname
+      if (decision.pathname === "/auth/login" && pathname.startsWith("/")) {
+        url.searchParams.set("next", pathname)
+      }
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next({ request })
   }
 
   const supabase = createServerClient(
@@ -53,10 +70,6 @@ export async function updateSession(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const pathname =
-    (options?.effectivePathname as string | undefined) ??
-    request.nextUrl.pathname
 
   let profile: SessionProfile | null = null
   if (user) {
