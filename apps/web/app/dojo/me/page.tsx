@@ -10,7 +10,9 @@ import { DojoQuickActionsCard } from "@/components/dojo/dojo-quick-actions-card"
 import { DojoHomeSections } from "@/components/dojo/dojo-home-sections";
 import { DojoFreeTierOnboarding } from "@/components/dojo/dojo-free-tier-onboarding";
 import { DojoFreeTierVerification } from "@/components/dojo/dojo-free-tier-verification";
+import { DojoPrivateServicesPreview } from "@/components/dojo/dojo-private-services-preview";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
+import { isIllustrativePreviewEnabled } from "@/lib/private-services/preview-states";
 
 function getQuestAction(rule: unknown, issueSlugById: Record<string, string>): { href: string; label: string } | null {
   const r = rule as { requirements?: Array<{ type?: string; issueId?: string }> } | null;
@@ -284,6 +286,7 @@ export default async function DojoMePage() {
         subscriptionTier={subscriptionTier}
         promptDismissedAt={promptDismissedAt}
       />
+      {isIllustrativePreviewEnabled() ? <DojoPrivateServicesPreview /> : null}
       <div className="grid auto-rows-min gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <DojoCharacterCard
           displayName={displayName}

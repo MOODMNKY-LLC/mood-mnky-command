@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAnonConfig } from "@/lib/supabase/config";
 import { getCustomerAccessToken } from "@/lib/shopify/customer-account-client";
 import { VerseProviders } from "./verse-providers";
 import { VerseStorefrontShell } from "./verse-storefront-shell";
@@ -10,6 +11,18 @@ export async function VerseAuthContext({
 }: {
   children: React.ReactNode;
 }) {
+  // Missing anon config → guest shell so public embeds (blending guide, etc.) do not 500.
+  // Does not invent a session or grant member/admin rights.
+  if (!hasSupabaseAnonConfig()) {
+    return (
+      <VerseProviders>
+        <VerseStorefrontShell isAdmin={false} user={null} shopifyLinked={false}>
+          {children}
+        </VerseStorefrontShell>
+      </VerseProviders>
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

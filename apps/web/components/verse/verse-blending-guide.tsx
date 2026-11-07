@@ -79,16 +79,19 @@ export function VerseBlendingGuide() {
         <FragranceWheel />
       </div>
 
-      {/* CTAs */}
+      {/* CTAs — prefer public embeds + illustrative review; avoid dead gated destinations */}
       <div className="flex flex-wrap gap-3">
         <VerseButton asChild>
           <Link href="/dojo/fragrance-wheel">Full Fragrance Wheel</Link>
         </VerseButton>
         <VerseButton variant="outline" asChild>
-          <Link href="/dojo/explore">Browse Notes Glossary</Link>
+          <Link href="/dojo/glossary">Notes glossary</Link>
         </VerseButton>
         <VerseButton variant="outline" asChild>
-          <Link href="/dojo/products">Shop Products</Link>
+          <Link href="/main/collections">Collections on Main</Link>
+        </VerseButton>
+        <VerseButton variant="outline" asChild>
+          <Link href="/review">Review journey</Link>
         </VerseButton>
       </div>
     </div>

@@ -29,27 +29,34 @@ export default function PendingApprovalPage() {
         <div className="flex flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-1">
             <h1 className="text-xl font-semibold tracking-tight text-[var(--verse-text)]">
-              MOOD MNKY LABZ
+              Account pending
             </h1>
             <p className="text-sm text-[var(--verse-text-muted)]">
-              Account activation pending
+              Dojo member access awaits approval
             </p>
           </div>
           <Card className="auth-card w-full">
             <CardHeader className="pb-4">
-              <div className="flex justify-center mb-2">
+              <div className="mb-2 flex justify-center">
                 <Clock className="h-12 w-12 text-[var(--verse-text-muted)]/60" />
               </div>
-              <CardTitle className="text-lg text-center text-[var(--verse-text)]">
-                Pending Approval
+              <CardTitle className="text-center text-lg text-[var(--verse-text)]">
+                Pending approval
               </CardTitle>
               <CardDescription className="text-center text-[var(--verse-text-muted)]">
-                Your account is pending approval. An administrator will activate
-                it shortly. You will be able to access the dashboard once
-                approved.
+                An administrator will activate Dojo member and LABZ access
+                shortly. You can still browse the public brand site while you
+                wait. Creating an account does not grant private VERSE services.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-2">
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => router.push("/main")}
+              >
+                Browse MOOD MNKY
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"
