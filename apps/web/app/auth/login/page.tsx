@@ -1,36 +1,36 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { AuthPageLayout } from "@/components/auth/auth-page-layout"
-import { DualAuthTabs, type AuthTab } from "@/components/auth/dual-auth-tabs"
 import { AuthVerseLogoBlock } from "@/components/auth/auth-verse-logo-block"
-import { AuthLabzLogoBlock } from "@/components/auth/auth-labz-logo-block"
+import { ConsumerLoginCard } from "@/components/auth/consumer-login-card"
+import { safeReturnPath } from "@/lib/auth/safe-return-path"
 
-const MASCOT_VERSE = "/verse/mood-mnky-3d.png"
-const MASCOT_LABZ = "/verse/code-mnky-3d.png"
+const MASCOT = "/verse/mood-mnky-3d.png"
 
+/**
+ * Consumer account entry — no Dojo/LABZ tab chooser.
+ * Staff LABZ login lives at /auth/staff (not offered as a consumer path).
+ */
 export default function LoginPage() {
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState<AuthTab>("verse")
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
 
-  const next = searchParams.get("next")
-  const verseRedirectTo = next?.startsWith("/") ? next : "/verse"
+  const next = safeReturnPath(searchParams.get("next"), "/dojo/me")
 
   useEffect(() => setMounted(true), [])
 
   const isDark = !mounted ? true : (resolvedTheme ?? "dark") === "dark"
-  const mascotSrc = activeTab === "verse" ? MASCOT_VERSE : MASCOT_LABZ
-  const mascotAlt = activeTab === "verse" ? "MOOD MNKY mascot" : "CODE MNKY mascot"
 
   const mascot = (
     <Image
-      src={mascotSrc}
-      alt={mascotAlt}
+      src={MASCOT}
+      alt="MOOD MNKY mascot"
       width={360}
       height={400}
       className="h-[80vh] min-h-[420px] w-auto max-w-full object-contain"
@@ -48,24 +48,18 @@ export default function LoginPage() {
   return (
     <AuthPageLayout mascot={mascot}>
       <div className="flex w-full max-w-lg flex-col items-center px-4">
-        {/* Fixed-height header slot: logos/headings align so nothing moves when switching tabs */}
-        <div className="flex h-[220px] w-full flex-col items-center justify-start md:h-[240px]">
-          {activeTab === "verse" ? (
-            <AuthVerseLogoBlock />
-          ) : (
-            <AuthLabzLogoBlock />
-          )}
+        <div className="flex h-[200px] w-full flex-col items-center justify-start md:h-[220px]">
+          <AuthVerseLogoBlock />
         </div>
-        {/* Fixed gap then auth components in same position */}
-        <div className="w-full pt-4">
-          <DualAuthTabs
-            value={activeTab}
-            defaultTab="verse"
-            onTabChange={setActiveTab}
-            appearance="default"
-            verseRedirectTo={verseRedirectTo}
-          />
+        <div className="w-full max-w-md pt-2">
+          <ConsumerLoginCard redirectTo={next} />
         </div>
+        <p className="mt-6 text-center text-[10px] text-muted-foreground">
+          Staff?{" "}
+          <Link href="/auth/staff" className="underline-offset-2 hover:underline">
+            LABZ operator sign-in
+          </Link>
+        </p>
       </div>
     </AuthPageLayout>
   )

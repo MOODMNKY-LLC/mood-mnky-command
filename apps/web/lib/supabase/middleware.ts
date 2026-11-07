@@ -1,6 +1,10 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import {
+  resolveSessionAccess,
+  type SessionProfile,
+} from "@/lib/auth/access-decision"
 
 export type UpdateSessionOptions = {
   /** When set, path-based checks use this instead of request.nextUrl.pathname (for host-based rewrite). */
@@ -33,7 +37,7 @@ export async function updateSession(
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           )
@@ -50,84 +54,48 @@ export async function updateSession(
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If accessing dashboard routes without auth, redirect to login
-  // Allow /auth, /api, /verse/auth (Discord OAuth), public Verse store-embed routes, and all /main (public marketing site)
   const pathname =
     (options?.effectivePathname as string | undefined) ??
     request.nextUrl.pathname
-  const isAuthRoute = pathname.startsWith("/auth")
-  const isApiRoute = pathname.startsWith("/api")
-  const isVerseAuthRoute = pathname.startsWith("/verse/auth")
-  const isMainRoute = pathname.startsWith("/main")
-  const publicVersePaths = [
-    "/verse/fragrance-wheel",
-    "/verse/blending-guide",
-    "/verse/glossary",
-    "/verse/formulas",
-    "/verse/fragrance-oils",
-  ]
-  const isPublicVerseRoute = publicVersePaths.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  )
-  if (
-    !user &&
-    !isAuthRoute &&
-    !isApiRoute &&
-    !isVerseAuthRoute &&
-    !isPublicVerseRoute &&
-    !isMainRoute
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
-    return NextResponse.redirect(url)
-  }
 
-  // If authenticated, check role and redirect pending users; non-admins to /verse
+  let profile: SessionProfile | null = null
   if (user) {
-    const isVerseRoute = pathname.startsWith("/verse")
-    const isDojoRoute = pathname.startsWith("/dojo")
-    const isMemberRoute = isVerseRoute || isDojoRoute
-
-    if (!isAuthRoute && !isApiRoute) {
-      // Use admin client for reliable profile lookup (bypasses RLS/Edge quirks).
-      // Fall back to session client if service role isn't configured.
-      let profile: { role?: string; is_admin?: boolean } | null = null
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        try {
-          const admin = createAdminClient()
-          const { data } = await admin
-            .from("profiles")
-            .select("role, is_admin")
-            .eq("id", user.id)
-            .single()
-          profile = data
-        } catch {
-          // Fall through to session-based fetch
-        }
-      }
-      if (profile == null) {
-        const { data } = await supabase
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const admin = createAdminClient()
+        const { data } = await admin
           .from("profiles")
           .select("role, is_admin")
           .eq("id", user.id)
           .single()
         profile = data
-      }
-
-      if (profile?.role === "pending") {
-        const url = request.nextUrl.clone()
-        url.pathname = "/auth/pending-approval"
-        return NextResponse.redirect(url)
-      }
-
-      // Non-admin users: redirect dashboard paths to /verse (allow /dojo as member route)
-      const isAdmin = profile?.role === "admin" || profile?.is_admin === true
-      if (!isAdmin && !isMemberRoute) {
-        const url = request.nextUrl.clone()
-        url.pathname = "/verse"
-        return NextResponse.redirect(url)
+      } catch {
+        // Fall through
       }
     }
+    if (profile == null) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role, is_admin")
+        .eq("id", user.id)
+        .single()
+      profile = data
+    }
+  }
+
+  const decision = resolveSessionAccess({
+    pathname,
+    hasUser: Boolean(user),
+    profile,
+  })
+
+  if (decision.type === "redirect") {
+    const url = request.nextUrl.clone()
+    url.pathname = decision.pathname
+    if (decision.pathname === "/auth/login" && pathname.startsWith("/")) {
+      url.searchParams.set("next", pathname)
+    }
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse

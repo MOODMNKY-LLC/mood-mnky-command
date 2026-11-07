@@ -70,6 +70,15 @@ export function MainTouchpointTour() {
   React.useEffect(() => {
     if (!mounted || !pathname?.startsWith("/main")) return
     try {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search)
+        if (
+          params.get("review") === "1" ||
+          process.env.NEXT_PUBLIC_REVIEW_PREVIEW === "1"
+        ) {
+          return
+        }
+      }
       if (localStorage.getItem(STORAGE_KEY)) return
       const t = setTimeout(() => setTourOpen(true), FIRST_VISIT_DELAY_MS)
       return () => clearTimeout(t)

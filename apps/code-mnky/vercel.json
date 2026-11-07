@@ -3,5 +3,6 @@
   "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=code-mnky",
   "installCommand": "cd ../.. && pnpm install",
   "outputDirectory": ".next",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "ignoreCommand": "node -e \"const b=process.env.VERCEL_GIT_COMMIT_REF||''; process.exit(/^preview\\\\/unified/.test(b)?0:1)\""
 }

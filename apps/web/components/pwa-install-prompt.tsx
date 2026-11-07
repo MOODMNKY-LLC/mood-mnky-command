@@ -61,6 +61,14 @@ export function PwaInstallPrompt() {
     if (typeof window === "undefined") return;
     if (isStandalone()) return;
     if (wasDismissedRecently()) return;
+    // Review/screenshot mode — hide install chrome that obscures the journey.
+    const params = new URLSearchParams(window.location.search);
+    if (
+      params.get("review") === "1" ||
+      process.env.NEXT_PUBLIC_REVIEW_PREVIEW === "1"
+    ) {
+      return;
+    }
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();

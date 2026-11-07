@@ -2,5 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd ../.. && pnpm install",
   "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=mt-portal",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "ignoreCommand": "node -e \"const b=process.env.VERCEL_GIT_COMMIT_REF||''; process.exit(/^preview\\\\/unified/.test(b)?0:1)\""
 }

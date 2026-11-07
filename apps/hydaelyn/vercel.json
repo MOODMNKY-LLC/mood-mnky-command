@@ -3,5 +3,6 @@
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm exec turbo run build --filter=hydaelyn",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "ignoreCommand": "node -e \"const b=process.env.VERCEL_GIT_COMMIT_REF||''; process.exit(/^preview\\\\/unified/.test(b)?0:1)\""
 }
