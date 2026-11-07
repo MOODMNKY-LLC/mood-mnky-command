@@ -1,5 +1,8 @@
 import { updateSession } from "@/lib/supabase/middleware"
+import { getRewrittenPath } from "@/lib/auth/root-rewrite"
 import { NextResponse, type NextRequest } from "next/server"
+
+export { getRewrittenPath } from "@/lib/auth/root-rewrite"
 
 const CANONICAL_HOST = "www.moodmnky.com"
 const COMMAND_DOMAIN = "mnky-command.moodmnky.com"
@@ -38,15 +41,6 @@ function getRedirectUrl(host: string, pathname: string, search: string): string 
   return `${base}${path}${search || ""}`
 }
 
-/**
- * On canonical host, root path is rewritten to /main so the marketing site is served at /.
- */
-function getRewrittenPath(host: string, pathname: string): string | null {
-  if (normalizeHost(host) !== CANONICAL_HOST) return null
-  if (pathname !== "/") return null
-  return "/main"
-}
-
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host") ?? ""
   const pathname = request.nextUrl.pathname
@@ -57,7 +51,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectTo, 301)
   }
 
-  const rewrittenPath = getRewrittenPath(host, pathname)
+  const rewrittenPath = getRewrittenPath(pathname)
   const effectivePathname = rewrittenPath ?? pathname
 
   const sessionResponse = await updateSession(request, {

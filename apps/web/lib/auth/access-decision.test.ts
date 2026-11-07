@@ -103,7 +103,8 @@ describe("protected Dojo / LABZ", () => {
 })
 
 describe("missing Supabase config fail-closed", () => {
-  it("allows Main, auth UI, embeds, and illustrative review only", () => {
+  it("allows Main, root, auth UI, embeds, and illustrative review only", () => {
+    assert.deepEqual(resolveMissingConfigAccess("/"), { type: "allow" })
     assert.deepEqual(resolveMissingConfigAccess("/main"), { type: "allow" })
     assert.deepEqual(resolveMissingConfigAccess("/auth/login"), {
       type: "allow",
@@ -111,8 +112,15 @@ describe("missing Supabase config fail-closed", () => {
     assert.deepEqual(resolveMissingConfigAccess("/dojo/glossary"), {
       type: "allow",
     })
+    assert.deepEqual(resolveMissingConfigAccess("/dojo/blending-guide"), {
+      type: "allow",
+    })
     assert.equal(isIllustrativeReviewPath("/review/member-home"), true)
+    assert.equal(isIllustrativeReviewPath("/review"), true)
     assert.deepEqual(resolveMissingConfigAccess("/review/member-home"), {
+      type: "allow",
+    })
+    assert.deepEqual(resolveMissingConfigAccess("/review/quests"), {
       type: "allow",
     })
   })

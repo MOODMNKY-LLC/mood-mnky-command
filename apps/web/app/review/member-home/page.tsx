@@ -3,7 +3,10 @@ import { DojoWelcomeHero } from "@/components/dojo/dojo-welcome-hero"
 import { DojoCharacterCard } from "@/components/dojo/dojo-character-card"
 import { DojoXpCard } from "@/components/dojo/dojo-xp-card"
 import { DojoQuestsCard } from "@/components/dojo/dojo-quests-card"
-import { DojoQuickActionsCard } from "@/components/dojo/dojo-quick-actions-card"
+import {
+  DojoQuickActionsCard,
+  ILLUSTRATIVE_QUICK_ACTIONS,
+} from "@/components/dojo/dojo-quick-actions-card"
 import { DojoHomeSections } from "@/components/dojo/dojo-home-sections"
 import { DojoPrivateServicesPreview } from "@/components/dojo/dojo-private-services-preview"
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
@@ -23,6 +26,10 @@ export default function IllustrativeMemberHomePage() {
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6">
       <p className="rounded-xl border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
         {data.banner}{" "}
+        <Link href="/review" className="underline underline-offset-2">
+          Review hub
+        </Link>
+        {" · "}
         <Link href="/auth/login?review=1" className="underline underline-offset-2">
           Account entry
         </Link>
@@ -56,7 +63,10 @@ export default function IllustrativeMemberHomePage() {
             actionLabel: q.action?.label,
           }))}
         />
-        <DojoQuickActionsCard />
+        <DojoQuickActionsCard
+          actions={ILLUSTRATIVE_QUICK_ACTIONS}
+          description="Illustrative shortcuts — not live member destinations"
+        />
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted/50 p-4">

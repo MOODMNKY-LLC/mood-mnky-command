@@ -81,6 +81,8 @@ export type MissingConfigAccessDecision =
 export function resolveMissingConfigAccess(
   pathname: string,
 ): MissingConfigAccessDecision {
+  // `/` is rewritten to `/main` in proxy; allow as defense-in-depth for share/root entry.
+  if (pathname === "/") return { type: "allow" }
   if (isIllustrativeReviewPath(pathname)) return { type: "allow" }
   if (isMainPath(pathname)) return { type: "allow" }
   if (isAuthPath(pathname)) return { type: "allow" }

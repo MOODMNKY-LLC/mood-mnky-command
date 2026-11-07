@@ -14,6 +14,7 @@ import {
   MainCustomizationAgentsSplit,
   MainFooter,
 } from "@/components/main"
+import { MainScentShowcase } from "@/components/main/main-scent-showcase"
 import {
   getMainLandingData,
   getMainAgents,
@@ -66,8 +67,8 @@ export default async function MainLandingPage() {
             faqItems={landingData.faq}
           />
 
-        {/* Featured fragrances – MNKY Science (single-line carousel, auto-scroll, pause on hover) */}
-        {featuredFragrances.length > 0 && (
+        {/* Featured fragrances – live catalog when available; else source brand scent/vessel art */}
+        {featuredFragrances.length > 0 ? (
           <BlurFade delay={0.16} inView inViewMargin="-20px" className="col-span-full">
             <section className="space-y-6">
               <div className="text-center space-y-2">
@@ -82,9 +83,11 @@ export default async function MainLandingPage() {
               <MainFragranceCarousel oils={featuredFragrances} />
             </section>
           </BlurFade>
+        ) : (
+          <MainScentShowcase />
         )}
 
-        {/* Explore – Dojo + Blending (bento 2-col) */}
+        {/* Explore – public guide + intended Dojo gate (honest destinations) */}
         <BlurFade delay={0.17} inView inViewMargin="-20px" className="col-span-full">
           <section className="grid gap-6 md:grid-cols-2">
             <MainGlassCard className="flex flex-col">
@@ -92,23 +95,33 @@ export default async function MainLandingPage() {
                 The Dojo
               </h2>
               <p className="mt-2 flex-1 text-sm text-muted-foreground">
-                Shop, explore the blending guide, and connect in the community.
+                Live member hub requires a real signed-in account. For preview,
+                use the illustrative review journey — no fake credentials.
               </p>
-              <Button asChild className="mt-4">
-                <Link href="/dojo">Explore Dojo</Link>
-              </Button>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button asChild>
+                  <Link href="/review">Review journey</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/dojo">Explore Dojo</Link>
+                </Button>
+              </div>
             </MainGlassCard>
             <MainGlassCard className="flex flex-col">
               <h2 className="text-xl font-semibold text-foreground">
                 Blending Lab
               </h2>
               <p className="mt-2 flex-1 text-sm text-muted-foreground">
-                Create your scent with the formula calculator and fragrance
-                library.
+                Public blending guide and fragrance wheel — no sign-in required.
               </p>
-              <Button asChild variant="outline" className="mt-4">
-                <Link href="/dojo/blending-guide">Blending Guide</Link>
-              </Button>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button asChild variant="outline">
+                  <Link href="/dojo/blending-guide">Blending Guide</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/dojo/fragrance-wheel">Fragrance Wheel</Link>
+                </Button>
+              </div>
             </MainGlassCard>
           </section>
         </BlurFade>

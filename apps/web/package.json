@@ -32,7 +32,7 @@
     "dev:tunnel": "node scripts/ngrok-tunnel.mjs",
     "voice:preview": "node scripts/preview-voices.mjs",
     "test:flowise-uploads": "node --test --import tsx lib/flowise-uploads.test.ts",
-    "test:unified-experience": "node --test --import tsx lib/auth/access-decision.test.ts",
+    "test:unified-experience": "node --test --import tsx lib/auth/access-decision.test.ts proxy.test.ts",
     "shopify:setup-customer-metafields": "tsx scripts/setup-customer-metafield-definitions.ts",
     "publish-infra": "tsx scripts/publish-infra-artifacts.ts"
   },
